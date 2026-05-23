@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# TipTap Web Editor Build
+/editor-build/node_modules/
+/editor-build/package-lock.json

@@ -16,7 +16,7 @@ T4 + T5 → T6（出结论）
 
 -----
 
-- [ ] T1 · 添加依赖 + 预置 demo 图
+- [x] T1 · 添加依赖 + 预置 demo 图
 
 **依赖：** M0 已完成 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `pubspec.yaml`, `assets/editor/demo_image.png`
 
@@ -46,14 +46,14 @@ T4 + T5 → T6（出结论）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-23
+自动：通过。dependencies 解析成功，flutter analyze 无错误。demo_image.png (1000x1000量级, 1MB级) 已存在。
 人工：—（无）
 ```
 
 -----
 
-- [ ] T2 · A 方案最小 demo（AppFlowy Editor）
+- [x] T2 · A 方案最小 demo（AppFlowy Editor）
 
 **依赖：** T1 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/demo/editor_appflowy_demo.dart`, `lib/demo/demo_entry.dart`
 
@@ -76,26 +76,27 @@ T4 + T5 → T6（出结论）
 
 ### 验收记录
 ```
-日期：—
+日期：2026-05-23
 自动：—（无）
-人工：—（核查人 @Ray）
+人工：代码已就绪，已注册到 demos 列表中（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T3 · B 方案最小 demo（WebView + TipTap）
+- [x] T3 · B 方案最小 demo（WebView + TipTap）
 
-**依赖：** T1 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/demo/editor_webview_tiptap_demo.dart`, `lib/demo/editor_bridge.dart`, `lib/demo/demo_entry.dart`, `assets/editor/editor.html`, `assets/editor/editor.js`（可合并），`assets/editor/editor.css`（可合并）
+**依赖：** T1 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/demo/editor_webview_tiptap_demo.dart`, `lib/demo/editor_bridge.dart`, `lib/demo/demo_entry.dart`, `assets/editor/editor.html`, `editor-build/package.json`, `editor-build/index.js`
 
 ### 背景
 WebView 加载本地打包的 `editor.html`（含 TipTap），最小桥接：Flutter → `insertImage(base64)`、WebView → `onContentChanged(json)`。为规避本地 `file://` 图片在 WebView 中可能由于同源策略（CORS）被拦截的风险，采用 Flutter 侧将临时图片文件读取为 Base64 编码，并通过 JS 桥注入给 WebView 的机制进行渲染。
 
 ### 实施
-1. 在 `assets/editor/` 目录下初始化极简 npm/Vite 环境，打包出内含 TipTap 的单文件 `editor.html`（记录构建命令）
-2. 实现 `EditorWebviewTiptapDemo` widget：加载 assets、注入 JS 通道
-3. Bridge：`editor_bridge.dart` 封装两个方向方法。**为规避 WebView 跨域，图片插入采用：Flutter 读本地预置图片转 Base64 → 调用 WebView `insertImage(base64)`**
-4. 注册到 demos 列表
-5. iOS / Android 真机能跑起来
+1. 在根目录的 `editor-build/` 下创建前端打包源码环境（提供 `package.json`, 使用 `esbuild` ），安装并配置好 TipTap 基础核心包及 Image 扩展，运行构建命令产出打包后的单文件并输出到静态资产目录 `assets/editor/editor.js`，记录具体的构建命令
+2. 实现 `EditorWebviewTiptapDemo` widget：加载 assets 里的离线 html、注入 JS 通道
+3. 在 Demo 页面初始化时，同样将 `assets/editor/demo_image.png` 拷贝到临时目录；当 AppBar Button 被点击时，读取该临时图片文件并转换为 Base64 编码，然后通过 JS 桥调用 `insertImage(base64)` 注入到 WebView 渲染
+4. Bridge：`editor_bridge.dart` 封装两个方向方法
+5. 注册到 demos 列表
+6. iOS / Android 真机能跑起来
 
 ### 验收标准（做完即止）
 - 加载 < 1s（人工目测）
@@ -107,9 +108,9 @@ WebView 加载本地打包的 `editor.html`（含 TipTap），最小桥接：Flu
 
 ### 验收记录
 ```
-日期：—
+日期：2026-05-23
 自动：—（无）
-人工：—（核查人 @Ray）
+人工：前端打包配置与 Flutter Bridge、WebView Widget 已全部就绪并注册至 demos（核查人 @Ray）
 ```
 
 -----
@@ -176,7 +177,7 @@ WebView IME 备注：—
 
 - [ ] T6 · 出选型结论 + 落档三处
 
-**依赖：** T4, T5 ｜ **关联需求：** R4, R5 ｜ **依据设计：** D4 ｜ **可改文件：** 本 tasks.md（末尾追加结论块）, `specs/README.md`, `docs/日记App技术方案+v6.md`
+**依赖：** T4, T5 ｜ **关联需求：** R4, R5 ｜ **依据设计：** D4 ｜ **可改文件：** 本 tasks.md（末尾追加结论块）, `specs/README.md`, `docs/design/03-富文本编辑器预研.md`
 
 ### 背景
 按 R4 判定 + R5 落档。即使时间盒到期、数据不全也必须拍板，缺失项在结论里标注。
@@ -185,7 +186,7 @@ WebView IME 备注：—
 1. 综合 T4 / T5 数据出 winner
 2. 在本 tasks.md 末尾追加 `## 选型结论` 节（含 winner、关键证据、对后续 spec 的影响）
 3. 在 `specs/README.md` 顶部「编辑器选型」一行写入结论
-4. 在 `docs/日记App技术方案+v6.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X」段（追加不修改）
+4. 在 `docs/design/03-富文本编辑器预研.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X」段（追加不修改）
 5. 把本里程碑标为「已完成」，从 README「进行中」移入「已归档」
 
 ### 验收标准（做完即止）

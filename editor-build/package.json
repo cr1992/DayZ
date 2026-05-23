@@ -1,0 +1,15 @@
+{
+  "name": "tiptap-editor-bundle",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "esbuild index.js --bundle --minify --outfile=../assets/editor/editor.js"
+  },
+  "dependencies": {
+    "@tiptap/core": "^2.10.3",
+    "@tiptap/extension-image": "^2.10.3",
+    "@tiptap/starter-kit": "^2.10.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2"
+  }
+}

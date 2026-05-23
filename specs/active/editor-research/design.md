@@ -35,7 +35,8 @@
 ## 文件变更
 
 - `pubspec.yaml`                              修改（添加 `appflowy_editor`、`webview_flutter`）
-- `assets/editor/`                            新建（B demo 的 HTML / JS / CSS 打包产物）
+- `editor-build/`                             新建（前端 TipTap 打包编译源码环境，不打包进 App）
+- `assets/editor/`                            新建（B demo 的离线 HTML / JS 编译产物，不含 node_modules）
 - `assets/editor/demo_image.png`              新建（预置图，A/B 共用）
 - `lib/demo/editor_appflowy_demo.dart`        新建（A demo widget）
 - `lib/demo/editor_webview_tiptap_demo.dart`  新建（B demo widget）
