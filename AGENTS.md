@@ -6,7 +6,7 @@
 
 | 想知道 | 看这里 |
 |---|---|
-| 技术选型 / 加密 / 备份 / 编辑器决策 | [`docs/日记App技术方案+v6.md`](./docs/%E6%97%A5%E8%AE%B0App%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88+v6.md) |
+| 技术选型 / 加密 / 备份 / 编辑器决策 | [`docs/README.md`](./docs/README.md) |
 | spec 怎么写、执行协议、档位选择 | [`docs/spec-guide-ai.md`](./docs/spec-guide-ai.md) |
 | 当前有哪些功能在做、状态、依赖 | [`specs/README.md`](./specs/README.md) |
 | 单个功能的需求 / 设计 / 任务 | `specs/active/<feature>/` |

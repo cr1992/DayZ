@@ -47,7 +47,7 @@ v6 第 4 节明确编辑器是「唯一真正难点」，方案 A（AppFlowy Edi
 结论 MUST 同步到三处：
 1. 本 spec 的 verification 段或 tasks 末尾的「选型结论」记录块；
 2. `specs/README.md` 顶部追加「编辑器选型 = A / B」一行（或在本里程碑归档时附带）；
-3. `docs/日记App技术方案+v6.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X，理由 Y」（不改原文，仅追加）。
+3. `docs/design/03-rich-text-editor-research.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X，理由 Y」（不改原文，仅追加）。
 
 后续依赖该结论的 spec（编辑器集成、JSON 契约、PDF 导出、撤销/重做）才能开工。
 

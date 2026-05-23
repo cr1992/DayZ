@@ -48,7 +48,7 @@ graph LR
 **依赖：** M0 已完成 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle`（如需）
 
 ### 背景
-添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。配置 build_runner。
+添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）、flutter_gen_runner（dev）。配置 build_runner 与 flutter_gen_runner。
 
 ### 实施
 1. pubspec.yaml 添加上述依赖（锁版本）
@@ -520,4 +520,35 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 日期：—
 自动：—
 人工：—（核查人 @Ray）
+```
+
+-----
+
+- [ ] T15 · 配置并测试静态资源生成
+
+**依赖：** T1 ｜ **关联需求：** R9 ｜ **依据设计：** D11 ｜ **可改文件：** `pubspec.yaml`, `flutter_gen.yaml`, `assets/*`
+
+### 背景
+按 v6 第 7 小节（静态资源管理方案），搭建类型安全的静态资源引用基础设施。
+
+### 实施
+1. 创建 `assets/images/`, `assets/icons/`, `assets/fonts/` 物理目录。
+2. 根目录添加 `flutter_gen.yaml` 配置文件。
+3. `pubspec.yaml` 中将整个 `assets/` 或各个子目录配置好。
+4. `dart run build_runner build` 跑一次确认 `lib/gen/assets.gen.dart` 能够正常生成。
+
+### 验收标准（做完即止）
+- `lib/gen/assets.gen.dart` 成功生成，其中包含对应的类。
+
+### 验收方式
+- 自动：
+  ```bash
+  dart run build_runner build && test -f lib/gen/assets.gen.dart
+  ```
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：—（无）
 ```

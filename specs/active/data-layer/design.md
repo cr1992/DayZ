@@ -79,6 +79,12 @@
 - **理由：** db 实例集中管理；rekey 入口在 db 层最合理。
 - **代价：** 引入对 db 单例的依赖；可接受。
 
+### D11 · 静态资源管理选型决策
+- **背景：** 避免字符串硬编码，规范化资源目录。
+- **选择：** 使用 `flutter_gen` 自动生成资产引用类，物理目录统一按 `assets/images/`, `assets/icons/`, `assets/fonts/` 组织。
+- **理由：** `flutter_gen` 与 `build_runner` 集成好，无需引入额外工作流。
+- **代价：** 需要配置 `flutter_gen.yaml` 并运行代码生成。
+
 ## 架构
 
 ```mermaid

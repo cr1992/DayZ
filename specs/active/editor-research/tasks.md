@@ -177,7 +177,7 @@ WebView IME 备注：—
 
 - [ ] T6 · 出选型结论 + 落档三处
 
-**依赖：** T4, T5 ｜ **关联需求：** R4, R5 ｜ **依据设计：** D4 ｜ **可改文件：** 本 tasks.md（末尾追加结论块）, `specs/README.md`, `docs/design/03-富文本编辑器预研.md`
+**依赖：** T4, T5 ｜ **关联需求：** R4, R5 ｜ **依据设计：** D4 ｜ **可改文件：** 本 tasks.md（末尾追加结论块）, `specs/README.md`, `docs/design/03-rich-text-editor-research.md`
 
 ### 背景
 按 R4 判定 + R5 落档。即使时间盒到期、数据不全也必须拍板，缺失项在结论里标注。
@@ -186,7 +186,7 @@ WebView IME 备注：—
 1. 综合 T4 / T5 数据出 winner
 2. 在本 tasks.md 末尾追加 `## 选型结论` 节（含 winner、关键证据、对后续 spec 的影响）
 3. 在 `specs/README.md` 顶部「编辑器选型」一行写入结论
-4. 在 `docs/design/03-富文本编辑器预研.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X」段（追加不修改）
+4. 在 `docs/design/03-rich-text-editor-research.md` 第 4 节末尾追加「v0.7 选型补丁：选定 X」段（追加不修改）
 5. 把本里程碑标为「已完成」，从 README「进行中」移入「已归档」
 
 ### 验收标准（做完即止）
