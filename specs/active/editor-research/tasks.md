@@ -62,9 +62,10 @@ T4 + T5 → T6（出结论）
 
 ### 实施
 1. 实现 `EditorAppflowyDemo` widget
-2. AppBar Button 调用 AppFlowy Editor API 在光标位置插入图片节点
-3. 注册到 demos 列表
-4. iOS / Android 真机能跑起来
+2. **初始化时，将 `assets/editor/demo_image.png` 释放到 `getTemporaryDirectory()` 获取真实文件路径**
+3. AppBar Button 调用 AppFlowy Editor API，用上一步的绝对路径在光标位置插入图片节点
+4. 注册到 demos 列表
+5. iOS / Android 真机能跑起来
 
 ### 验收标准（做完即止）
 - 输入文字、插入图片、拖动/缩放、回显四步均可演示（人工 @Ray）
@@ -87,12 +88,12 @@ T4 + T5 → T6（出结论）
 **依赖：** T1 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/demo/editor_webview_tiptap_demo.dart`, `lib/demo/editor_bridge.dart`, `lib/demo/demo_entry.dart`, `assets/editor/editor.html`, `assets/editor/editor.js`（可合并），`assets/editor/editor.css`（可合并）
 
 ### 背景
-WebView 加载本地打包的 `editor.html`（含 TipTap），最小桥接：Flutter → `insertImage(path)`、WebView → `onContentChanged(json)`。图片用 `<img src="file://...">` 渲染（iOS 需开 `allowFileAccessFromFileURLs` 等价配置，由 webview_flutter 控制）。
+WebView 加载本地打包的 `editor.html`（含 TipTap），最小桥接：Flutter → `insertImage(base64)`、WebView → `onContentChanged(json)`。为规避本地 `file://` 图片在 WebView 中可能由于同源策略（CORS）被拦截的风险，采用 Flutter 侧将临时图片文件读取为 Base64 编码，并通过 JS 桥注入给 WebView 的机制进行渲染。
 
 ### 实施
-1. 在 `assets/editor/` 内打包出 TipTap bundle（一次性脚本或直接放预构建产物，记录命令）
-2. 实现 `EditorWebviewTiptapDemo` widget：加载 assets、注入 JS 通道、AppBar Button 调 `insertImage`
-3. Bridge：`editor_bridge.dart` 封装两个方向方法
+1. 在 `assets/editor/` 目录下初始化极简 npm/Vite 环境，打包出内含 TipTap 的单文件 `editor.html`（记录构建命令）
+2. 实现 `EditorWebviewTiptapDemo` widget：加载 assets、注入 JS 通道
+3. Bridge：`editor_bridge.dart` 封装两个方向方法。**为规避 WebView 跨域，图片插入采用：Flutter 读本地预置图片转 Base64 → 调用 WebView `insertImage(base64)`**
 4. 注册到 demos 列表
 5. iOS / Android 真机能跑起来
 

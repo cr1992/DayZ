@@ -9,18 +9,18 @@
 
 ### D1 · A demo 边界
 - **背景：** 不能让 demo 自己也变成大项目；只验证「日常体验三件事」。
-- **选择：** A demo 用 AppFlowy Editor 最新稳定版，仅做一个全屏编辑区 + 一个 AppBar Button 触发「插入本地图片」（从应用临时目录拷一张预置 demo 图作为已选图，避免引入相册权限）。不接相册、不接相机、不接 JSON 持久化（demo 关闭即丢）。
-- **理由：** 避开权限申请、避开存储集成、专注于编辑器内能力。
+- **选择：** A demo 用 AppFlowy Editor 最新稳定版，仅做一个全屏编辑区 + 一个 AppBar Button 触发「插入本地图片」。为避免引入相册权限，**需在运行时将 `assets/editor/demo_image.png` 释放到应用临时目录**，以提供真实的本地绝对路径（`file://`）。不接相册、不接相机、不接 JSON 持久化（demo 关闭即丢）。
+- **理由：** 避开权限申请、避开存储集成、专注于编辑器内能力；同时满足编辑器对真实文件路径的要求。
 - **代价：** 不模拟真实选图流程；但选图体验本就由 Flutter 侧统一处理（v6 4.2），不影响选型判定。
 
 ### D2 · B demo 边界
 - **背景：** WebView 集成涉及本地 HTML 打包、JS 桥、键盘联动；demo 不做工业级。
 - **选择：**
   - 用 `webview_flutter` 加载 `assets/` 下打包的 `editor.html`（内嵌 TipTap + 必要 JS，不联网）；
-  - 桥接最小：Flutter → WebView `insertImage(path)`、WebView → Flutter `onContentChanged(json)`；
-  - 图片插入：点 Flutter AppBar Button → 用预置 demo 图路径调用 `insertImage`；WebView 端用 `<img src="file://...">` 或读 base64 渲染（端到端二选一明确）。
-- **理由：** 离线 HTML 是必须项（v6 4.2）；桥接两个方向是 B 体验的核心，少了无法评估。
-- **代价：** assets 打包 TipTap bundle 需要前端构建步骤；只此一次，可接受。
+  - 桥接最小：Flutter → WebView `insertImage(base64)`、WebView → Flutter `onContentChanged(json)`；
+  - 图片插入：点 Flutter AppBar Button → 考虑到 WebView 加载本地文件常遇 CORS 跨域拦截，**优先采用在 Flutter 端将临时目录图片读取为 Base64 字符串，通过桥接直接注入 WebView 渲染**。
+- **理由：** 离线 HTML 是必须项（v6 4.2）；桥接两个方向是 B 体验的核心；Base64 注入规避了最易卡壳的跨域权限黑盒。
+- **代价：** assets 打包 TipTap bundle 需要前端构建步骤；Base64 传输稍耗内存，但在 Demo 阶段完全可接受。
 
 ### D3 · 评测设备覆盖
 - iOS：iPhone 11 / 13 任一（真机优先；模拟器中文输入法不可靠，禁用）。
@@ -48,3 +48,4 @@
 - **TipTap bundle 体积**：assets 加几百 KB～几 MB；MVP 可接受，正式集成时考虑用 deferred component / on-demand。
 - **WebView 中文输入法**：Android 上历史有 IME 输入框聚焦问题；T4 真机评测必须覆盖。
 - **预置 demo 图分辨率**：太小看不出缩放/混排；用 1500×1000 量级 JPEG 作为基线。
+- **WebView CORS 与本地加载安全限制**：若直接引用本地绝对路径图片可能被 Web 浏览器内核同源策略阻拦，已通过首选 Base64 注入方案降低该风险。
