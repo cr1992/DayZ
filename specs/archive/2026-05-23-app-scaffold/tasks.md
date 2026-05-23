@@ -77,10 +77,10 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-flutter --version：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-23
+flutter --version：Flutter 3.44.0 • channel stable
+自动：全部通过
+人工：已填 flutter --version (核查人 @Ray)
 ```
 
 -----
@@ -109,8 +109,8 @@ flutter --version：—
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-23
+自动：全部通过
 人工：—（无）
 ```
 
@@ -143,9 +143,9 @@ flutter --version：—
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-23
+自动：全部通过
+人工：待确认（核查人 @Ray）
 ```
 
 -----
@@ -175,8 +175,8 @@ flutter --version：—
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-23
+自动：全部通过
 人工：—（无）
 ```
 
@@ -207,8 +207,8 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-23
+自动：全部通过
 人工：—（无）
 ```
 
@@ -239,9 +239,9 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-23
+自动：全部通过
+人工：待确认（核查人 @Ray）
 ```
 
 -----
@@ -275,9 +275,9 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-23
+自动：部分失败。IPHONEOS_DEPLOYMENT_TARGET 确认为 13.0。`flutter build ios` 因环境缺少 iOS SDK (26.2) 而失败，待本地复测。
+人工：待确认（核查人 @Ray）
 ```
 
 -----
@@ -310,7 +310,7 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-23
+自动：部分失败。已确认 minSdk = 26 和 applicationId = com.dayz。`flutter build apk` 因网络环境问题(TLS handshake 下载 kotlin-gradle-plugin 失败)未通过，待本地复测。
+人工：待确认（核查人 @Ray）
 ```

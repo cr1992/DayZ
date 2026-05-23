@@ -4,22 +4,23 @@
 
 ## 进行中
 
-| 功能 | 状态 | 负责人 | 创建 | 进度 |
-|------|------|--------|------|------|
-| [app-scaffold](active/app-scaffold/) | 草稿 | @Ray | 2026-05-23 | 0/8 |
-| [editor-research](active/editor-research/) | 草稿 | @Ray | 2026-05-23 | 0/5 |
-| [key-management](active/key-management/) | 草稿 | @Ray | 2026-05-23 | 0/9 |
-| [data-layer](active/data-layer/) | 草稿 | @Ray | 2026-05-23 | 0/13 |
-| [media-storage](active/media-storage/) | 草稿 | @Ray | 2026-05-23 | 0/8 |
-| [auto-save-draft](active/auto-save-draft/) | 草稿 | @Ray | 2026-05-23 | 0/7 |
-| [thumbnail-cache](active/thumbnail-cache/) | 草稿 | @Ray | 2026-05-23 | 0/8 |
-| [backup-full-snapshot](active/backup-full-snapshot/) | 草稿 | @Ray | 2026-05-23 | 0/10 |
+| 功能 | 优先级 | 状态 | 负责人 | 创建 | 进度 |
+|------|--------|------|--------|------|------|
+| [editor-research](active/editor-research/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/5 |
+| [key-management](active/key-management/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/9 |
+| [data-layer](active/data-layer/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/13 |
+| [media-storage](active/media-storage/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/8 |
+| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/7 |
+| [thumbnail-cache](active/thumbnail-cache/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/8 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/10 |
 
 > 进度数字包含每个里程碑末尾的「接入 Debug Home」任务（M0 除外，M0 本身就是 demo 框架）。
 
 ## 已归档
 
-（暂无）
+| 功能 | 结果 | 归档日期 |
+|------|------|----------|
+| [app-scaffold](archive/2026-05-23-app-scaffold/) | 已完成 | 2026-05-23 |
 
 ## 待 UI 设计稿后再立 spec
 
