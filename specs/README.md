@@ -4,17 +4,15 @@
 
 ## 进行中
 
-| 功能 | 优先级 | 状态 | 负责人 | 创建 | 进度 |
-|------|--------|------|--------|------|------|
-| [editor-research](active/editor-research/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/5 |
-| [key-management](active/key-management/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/9 |
-| [data-layer](active/data-layer/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/13 |
-| [media-storage](active/media-storage/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/8 |
-| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/7 |
-| [thumbnail-cache](active/thumbnail-cache/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/8 |
-| [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | @Ray | 2026-05-23 | 0/10 |
-
-> 进度数字包含每个里程碑末尾的「接入 Debug Home」任务（M0 除外，M0 本身就是 demo 框架）。
+| 功能 | 优先级 | 状态 | 负责人 | 创建 |
+|------|--------|------|--------|------|
+| [editor-research](active/editor-research/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [key-management](active/key-management/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [data-layer](active/data-layer/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [media-storage](active/media-storage/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [thumbnail-cache](active/thumbnail-cache/) | P1 | 草稿 | @Ray | 2026-05-23 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | @Ray | 2026-05-23 |
 
 ## 已归档
 
