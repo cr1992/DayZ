@@ -8,11 +8,11 @@
 
 默认精简档；命中下表任一右列条件，升级标准档。
 
-|维度                         |精简档 |标准档  |
-|---------------------------|----|-----|
-|任务数                        |≤ ~8|> ~8 |
-|涉及安全 / 权限 / 无障碍 / 性能 / 多端兼容|否   |是（任一）|
-|跨多个模块                      |否   |是    |
+| 维度 | 精简档 | 标准档 |
+|------|--------|--------|
+| 任务数 | ≤ ~8 | > ~8 |
+| 涉及安全 / 权限 / 无障碍 / 性能 / 多端兼容 | 否 | 是（任一） |
+| 跨多个模块 | 否 | 是 |
 
 两档共享：`R`/`NF` 编号、`D` 决策编号、任务双向引用、执行协议、任务边界、自动/人工两段验收。
 标准档额外含：`NF` 非功能需求、verification.md、文件头文档状态、README 索引、里程碑。
@@ -51,7 +51,6 @@
 ```
 
 规则：
-
 - 描述外部可观测行为，不描述内部实现。
 - 出现可度量硬约束（对比度、性能阈值）就地用 `NF1` 编号补一节。
 - 该 NF 若只需单任务内验证，留精简档；若需跨任务/全站校验，升级标准档并启用 verification.md，不得塞进单任务人工项。
@@ -122,20 +121,18 @@ T1, T2（并行）→ T3 → T4
 - 自动：
   ```bash
   {自动化命令}
-```
-
+  ```
 - 人工（仅当无法自动化时）：
   - {目视/操作核查项，注明核查人}
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
 人工：—（核查人 @）
 ```
-
 ```
+
 任务状态：`- [ ]` 未开始 ｜ `- [-]` 进行中（含「自动已过、待人工确认」）｜ `- [x]` 已完成。
 
 任务完成规则：自动命令全部通过 + 人工核查项全部经核查人确认 + 验收记录填写完毕，方可置 `[x]`。
@@ -152,13 +149,12 @@ T1, T2（并行）→ T3 → T4
 
 目录：
 ```
-
 specs/
 ├── README.md
 ├── active/{功能名}/{requirement,design,tasks}.md + verification.md
 └── archive/{YYYY-MM-DD}-{功能名}/ 或 cancelled-{YYYY-MM-DD}-{功能名}/
-
 ```
+
 ## 状态与元数据
 
 两种状态各有唯一来源，不互相复制：
@@ -176,10 +172,9 @@ specs/
 ```
 
 功能完成判定（置「已完成」的充要条件，三者全满足才可归档）：
-
 1. tasks.md 所有任务 `[x]`，每个任务验收记录已填。
-1. 若存在 verification.md，所有检查项已勾选、验证命令通过；含人工成分的检查项以人工确认为勾选前提（自动过但人工未复核则不算勾选）。
-1. README.md 中该功能状态更新为「已完成」。
+2. 若存在 verification.md，所有检查项已勾选、验证命令通过；含人工成分的检查项以人工确认为勾选前提（自动过但人工未复核则不算勾选）。
+3. README.md 中该功能状态更新为「已完成」。
 
 归档后返工：「已完成」是终态，归档目录只读、不复活、不追加任务。返工一律新建 spec：小修建精简档（README 交叉引用「修复自」），大改建标准档（交叉引用「衍生自/被取代」）。够不上立 spec 的改动直接改，不走流程。
 
@@ -189,9 +184,9 @@ specs/
 # Specs 索引
 
 ## 进行中
-| 功能 | 状态 | 负责人 | 创建 | 进度 |
-|------|------|--------|------|------|
-| [add-dark-mode](active/add-dark-mode/) | 进行中 | @yourname | 2026-05-23 | 3/7 |
+| 功能 | 优先级 | 状态 | 负责人 | 创建 | 进度 |
+|------|--------|------|--------|------|------|
+| [add-dark-mode](active/add-dark-mode/) | P1 | 进行中 | @yourname | 2026-05-23 | 3/7 |
 
 ## 已归档
 | 功能 | 结果 | 归档日期 |
@@ -199,7 +194,14 @@ specs/
 | [add-search](archive/2026-04-10-add-search/) | 已完成 | 2026-04-10 |
 ```
 
-「进度」列是快照，以 tasks.md 为准，可省略。
+列说明：
+- **优先级**（P0/P1/P2…）：跨 spec 的横向排序，规划时定，是「先做哪个」的依据。其家在 README（属性是相对其他功能而言的，不归任何单个 spec）。
+- **状态**：功能生命周期，本表为唯一来源。
+- **进度**：快照，以 tasks.md 为准，可省略。
+
+执行选取规则：在「未开始 / 进行中」的 spec 中，挑**优先级最高**的执行；同级则按创建顺序。
+
+> 就绪状态（就绪 / 被阻塞）暂不设列：它派生自 spec 间依赖，而当前规范未建模跨 spec 依赖，无依赖时该列恒为「就绪」、无信息量。待引入 spec 间依赖后再启用——届时选取规则相应改为「优先级最高且就绪（无未完成前置）者」。
 
 ## requirement.md（标准档）
 
@@ -229,8 +231,8 @@ specs/
 graph TD
   ...
 ```
-
 ```
+
 ## tasks.md（标准档）
 
 模板同精简档 P3，外加：
@@ -244,15 +246,13 @@ graph LR
 ```
 
 并行组：
-
 - Group A：T1, T2
 - Group B：T3, T4
 
 里程碑（仅当存在可独立交付/演示的切点时标，与任务数无关）：
-
 - M1 …（T1-T4）：{可独立交付的子集}
-
 ```
+
 验收边界（tasks 与 verification 划清）：
 - tasks 验收 = 单任务自身可独立验证的条件。
 - verification 验收 = 跨多个任务才成立的集成/端到端/专项检查。
@@ -298,14 +298,13 @@ graph LR
 ```bash
 {自动化命令}
 ```
-
 ```
+
 归档：
 ```bash
 mv specs/active/{功能名} specs/archive/{YYYY-MM-DD}-{功能名}            # 已完成
 mv specs/active/{功能名} specs/archive/cancelled-{YYYY-MM-DD}-{功能名}  # 已废弃
 ```
-
 归档后同步更新 README，将该行移入「已归档」表。
 
 -----
@@ -313,18 +312,17 @@ mv specs/active/{功能名} specs/archive/cancelled-{YYYY-MM-DD}-{功能名}  # 
 # 第三部分 · 执行协议（两档通用，每个任务必须遵守）
 
 1. **先复述后执行**：动手前复述本任务「关联需求 / 依据设计 / 可改文件」，确认无误再开始。
-1. **文件白名单**：只改「可改文件」内的文件；需动清单外文件，停下说明原因并请求确认。任务对应的测试/spec 文件视为「可改文件」的隐含延伸，可直接创建，无需单独声明。
-1. **验收标准即终点**：做完验收标准列出的项即停。衍生想法记入「已知风险」或新任务，不在本任务内顺手扩展。
-1. **验收方式为准**：有自动命令的以命令通过为准；无法自动化的以显式标注的人工核查项（注核查人）为准。两者都不接受「我觉得做完了」式自评。
-1. **失败处理**：验收未通过时，同一改动方向最多重试 2 次 → 仍失败则停止并回退本任务改动 → 升级给人，附失败现象与已尝试的修法。不反复试错、不带病推进到下一任务。
-1. **人工项交接**：任务含人工核查项时，AI 完成自动部分后置 `[-]`（待确认），交接核查人，不得自行确认人工项。**核查人给出明确确认后，AI 可代填验收记录的人工行并将状态置 `[x]`**；未获确认不得置 `[x]`。
+2. **文件白名单**：只改「可改文件」内的文件；需动清单外文件，停下说明原因并请求确认。任务对应的测试/spec 文件视为「可改文件」的隐含延伸，可直接创建，无需单独声明。
+3. **验收标准即终点**：做完验收标准列出的项即停。衍生想法记入「已知风险」或新任务，不在本任务内顺手扩展。
+4. **验收方式为准**：有自动命令的以命令通过为准；无法自动化的以显式标注的人工核查项（注核查人）为准。两者都不接受「我觉得做完了」式自评。
+5. **失败处理**：验收未通过时，同一改动方向最多重试 2 次 → 仍失败则停止并回退本任务改动 → 升级给人，附失败现象与已尝试的修法。不反复试错、不带病推进到下一任务。
+6. **人工项交接**：任务含人工核查项时，AI 完成自动部分后置 `[-]`（待确认），交接核查人，不得自行确认人工项。**核查人给出明确确认后，AI 可代填验收记录的人工行并将状态置 `[x]`**；未获确认不得置 `[x]`。
 
 -----
 
 # 完整示例（深色模式，标准档）
 
 ## requirement.md
-
 ```markdown
 ---
 作者：@yourname
@@ -375,7 +373,6 @@ SHALL 在最新版 Chrome/Safari/Firefox 及 mobile/desktop 下正常工作。
 ```
 
 ## design.md
-
 ```markdown
 ---
 作者：@yourname
@@ -426,7 +423,6 @@ graph TD
 ```
 
 ## 文件变更
-
 - `src/contexts/ThemeContext.tsx`   新建
 - `src/components/ThemeToggle.tsx`   新建
 - `src/styles/globals.css`           修改
@@ -434,11 +430,10 @@ graph TD
 - `src/app/settings/page.tsx`        修改
 
 ## 已知风险
-
 - 引入 SSR 后 localStorage 需改造（hydration mismatch），暂不处理
 - 不监听系统主题变化事件，用户切换系统主题后需手动同步
-
 ```
+
 ## tasks.md
 ```markdown
 ---
@@ -462,7 +457,6 @@ graph LR
 ```
 
 并行组：
-
 - Group A：T1, T2
 - Group B：T3, T4
 - Group C：T5, T6
@@ -476,24 +470,19 @@ graph LR
 **依赖：** 无 ｜ **关联需求：** R1, R3 ｜ **依据设计：** D2 ｜ **可改文件：** `src/styles/globals.css`
 
 ### 背景
-
 在 globals.css 定义 light/dark 两套 CSS 变量，经 `<html data-theme>` 切换。
 
 ### 实施
-
 1. 添加 `:root[data-theme="light"]` 变量组
-1. 添加 `:root[data-theme="dark"]` 变量组
-1. 覆盖 `--bg`、`--text`、`--border`、`--surface`
+2. 添加 `:root[data-theme="dark"]` 变量组
+3. 覆盖 `--bg`、`--text`、`--border`、`--surface`
 
 ### 验收标准（做完即止）
-
 - 两套变量均已定义（自动）
 - 切换 data-theme 后 CSS 变量即时响应（人工目视）
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   grep -q ':root\[data-theme="light"\]' src/styles/globals.css \
     && grep -q ':root\[data-theme="dark"\]' src/styles/globals.css \
@@ -503,7 +492,6 @@ graph LR
   - DevTools 切换 data-theme 后 `--bg` 等实时变化
 
 ### 验收记录
-
 ```
 日期：2026-05-23
 自动：断言全部通过（exit 0）
@@ -517,33 +505,27 @@ graph LR
 **依赖：** 无 ｜ **关联需求：** R2, R3 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `src/contexts/ThemeContext.tsx`
 
 ### 背景
-
 管理 light/dark 状态，初始化优先级 localStorage → 系统偏好 → light。
 职责边界：本任务只管状态与 toggle，不操作 DOM；同步 data-theme 归 T3。
 
 ### 实施
-
 1. 创建 ThemeContext 与 ThemeProvider
-1. 初始化优先级逻辑
-1. toggleTheme() 同步写 localStorage
-1. localStorage 不可用时静默 fallback
+2. 初始化优先级逻辑
+3. toggleTheme() 同步写 localStorage
+4. localStorage 不可用时静默 fallback
 
 ### 验收标准（做完即止）
-
 - toggleTheme() 后状态正确切换（自动）
 - localStorage 有值时优先（自动）
 - localStorage 抛错不崩溃（自动）
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   npx jest ThemeContext --coverage
   ```
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
@@ -557,29 +539,23 @@ graph LR
 **依赖：** T1, T2 ｜ **关联需求：** R1 ｜ **依据设计：** D2 ｜ **可改文件：** `src/app/layout.tsx`
 
 ### 背景
-
 根布局挂载 ThemeProvider。职责边界：同步 `document.documentElement.dataset.theme` 归本任务（T2 不碰 DOM）。
 
 ### 实施
-
 1. 根布局包裹 ThemeProvider
-1. useEffect 监听 theme，同步 data-theme
+2. useEffect 监听 theme，同步 data-theme
 
 ### 验收标准（做完即止）
-
 - 加载后 `<html>` 有正确 data-theme（自动）
 - 切换后 data-theme 即时更新（自动）
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   npx playwright test theme-mount.spec.ts
   ```
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
@@ -593,35 +569,28 @@ graph LR
 **依赖：** T2 ｜ **关联需求：** R1, NF2 ｜ **依据设计：** D1 ｜ **可改文件：** `src/components/ThemeToggle.tsx`
 
 ### 背景
-
 消费 ThemeContext，显示主题图标，点击切换。
 
 ### 实施
-
 1. 按 theme 显示图标
-1. 点击调用 toggleTheme()
-1. 支持 className，添加 aria-label
+2. 点击调用 toggleTheme()
+3. 支持 className，添加 aria-label
 
 ### 验收标准（做完即止）
-
 - 点击后主题切换（自动）
 - aria-label 存在（自动，满足 NF2）
 - className 透传（自动）
 
 ### 禁止
-
 - 不预留多主题接口（范围外）；不做动画（归 T5）
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   npx jest ThemeToggle --coverage
   ```
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
@@ -635,22 +604,17 @@ graph LR
 **依赖：** T3 ｜ **关联需求：** R1 ｜ **依据设计：** D2 ｜ **可改文件：** `src/styles/globals.css`
 
 ### 背景
-
 body 加 transition，切换时颜色平滑过渡。
 
 ### 实施
-
 - body 添加 color/background-color 的 transition
 
 ### 验收标准（做完即止）
-
 - transition 属性已生效（自动）
 - 切换平滑无突变（人工目视）
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   npx playwright test theme-transition.spec.ts
   ```
@@ -658,7 +622,6 @@ body 加 transition，切换时颜色平滑过渡。
   - 切换时颜色渐变自然，无闪烁或硬切
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
@@ -672,39 +635,31 @@ body 加 transition，切换时颜色平滑过渡。
 **依赖：** T4 ｜ **关联需求：** R1 ｜ **依据设计：** D2 ｜ **可改文件：** `src/app/settings/page.tsx`
 
 ### 背景
-
 Settings 页「外观」区块顶部放 ThemeToggle。
 
 ### 实施
-
 1. 外观区块引入 ThemeToggle
-1. 加「主题」文字标签
+2. 加「主题」文字标签
 
 ### 验收标准（做完即止）
-
 - 可见 ThemeToggle（自动）
 - 点击全局切换（自动）
 
 ### 禁止
-
 - 不重构现有「外观」区块既有布局与其他设置项
 
 ### 验收方式
-
 - 自动：
-  
   ```bash
   npx playwright test settings-theme.spec.ts
   ```
 
 ### 验收记录
-
 ```
 日期：—
 自动：—
 人工：—（无）
 ```
-
 ```
 （全站对比度、多端兼容、视觉回归属跨任务校验，归 verification.md，不作为单任务。）
 
@@ -749,7 +704,4 @@ Settings 页「外观」区块顶部放 ThemeToggle。
 npx axe-cli http://localhost:3000 --include main
 npx playwright test visual-regression.spec.ts
 ```
-
-```
-
 ```
