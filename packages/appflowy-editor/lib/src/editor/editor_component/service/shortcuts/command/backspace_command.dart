@@ -107,6 +107,21 @@ CommandShortcutEventHandler _backspaceInCollapsedSelection = (editorState) {
             // merge with the previous node contains delta.
             element.delta != null;
       });
+
+      final immediatePrev = node.previous;
+      if (immediatePrev != null && immediatePrev.delta == null && immediatePrev.type != TableBlockKeys.type) {
+        editorState.selectionType = SelectionType.block;
+        editorState.updateSelectionWithReason(
+          Selection.single(
+            path: immediatePrev.path,
+            startOffset: 0,
+            endOffset: 1,
+          ),
+          reason: SelectionUpdateReason.uiEvent,
+        );
+        return KeyEventResult.handled;
+      }
+
       // table nodes should be deleted using the table menu
       // in-table paragraphs should only be deleted inside the table
       if (prev != null && tableParent == prevTableParent) {

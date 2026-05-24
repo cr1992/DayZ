@@ -56,13 +56,17 @@ class _EditorAppflowyDemoState extends State<EditorAppflowyDemo> {
     final Node imageNode = Node(
       type: 'image',
       attributes: {
-        'src': tempImagePath,
+        'url': tempImagePath,
       },
     );
 
     if (selection != null) {
       // 插入到当前选中位置
       transaction.insertNode(selection.start.path, imageNode);
+      // 将光标移到图片下方的段落（原段落被挤到了下一个位置）
+      transaction.afterSelection = Selection.collapsed(
+        Position(path: selection.start.path.next, offset: 0),
+      );
     } else {
       // 插入到文档最开始
       transaction.insertNode([0], imageNode);
@@ -84,8 +88,21 @@ class _EditorAppflowyDemoState extends State<EditorAppflowyDemo> {
           ),
         ],
       ),
-      body: AppFlowyEditor(
+      body: MobileToolbarV2(
+        toolbarHeight: 48.0,
+        toolbarItems: [
+          textDecorationMobileToolbarItemV2,
+          blocksMobileToolbarItem,
+          linkMobileToolbarItem,
+          dividerMobileToolbarItem,
+        ],
         editorState: editorState,
+        child: AppFlowyEditor(
+          editorState: editorState,
+          editorStyle: const EditorStyle.mobile(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          ),
+        ),
       ),
     );
   }

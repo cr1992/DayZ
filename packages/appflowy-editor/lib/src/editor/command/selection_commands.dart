@@ -290,7 +290,16 @@ extension SelectionTransform on EditorState {
             reason: SelectionUpdateReason.uiEvent,
           );
         } else {
-          throw UnimplementedError();
+          updateSelectionWithReason(
+            Selection.collapsed(
+              selection.start.copyWith(
+                offset: direction == SelectionMoveDirection.forward
+                    ? (start?.offset ?? 0)
+                    : (end?.offset ?? 1),
+              ),
+            ),
+            reason: SelectionUpdateReason.uiEvent,
+          );
         }
         break;
       case SelectionMoveRange.word:
@@ -316,7 +325,16 @@ extension SelectionTransform on EditorState {
             );
           }
         } else {
-          throw UnimplementedError();
+          updateSelectionWithReason(
+            Selection.collapsed(
+              selection.start.copyWith(
+                offset: direction == SelectionMoveDirection.forward
+                    ? (start?.offset ?? 0)
+                    : (end?.offset ?? 1),
+              ),
+            ),
+            reason: SelectionUpdateReason.uiEvent,
+          );
         }
 
         break;
@@ -334,7 +352,16 @@ extension SelectionTransform on EditorState {
             reason: SelectionUpdateReason.uiEvent,
           );
         } else {
-          throw UnimplementedError();
+          updateSelectionWithReason(
+            Selection.collapsed(
+              selection.start.copyWith(
+                offset: direction == SelectionMoveDirection.forward
+                    ? (start?.offset ?? 0)
+                    : (end?.offset ?? 1),
+              ),
+            ),
+            reason: SelectionUpdateReason.uiEvent,
+          );
         }
         break;
       default:
