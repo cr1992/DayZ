@@ -4,10 +4,9 @@ packages:
   appflowy_editor:
     dependency: "direct main"
     description:
-      name: appflowy_editor
-      sha256: c2367acdd93c7eeefaf6c58e5fed1a1c62cf02b8368102b786b5c6a0d1c583cf
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/appflowy-editor"
+      relative: true
+    source: path
     version: "6.2.0"
   archive:
     dependency: transitive
