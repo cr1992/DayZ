@@ -47,3 +47,27 @@ app.*.map.json
 # TipTap Web Editor Build
 /editor-build/node_modules/
 /editor-build/package-lock.json
+
+# Nested Flutter/Dart/Android/iOS/Desktop/Web generated files
+**/android/local.properties
+**/android/key.properties
+**/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+**/android/app/src/main/kotlin/io/flutter/plugins/GeneratedPluginRegistrant.kt
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Runner/GeneratedPluginRegistrant.h
+**/ios/Runner/GeneratedPluginRegistrant.m
+**/lib/generated_plugin_registrant.dart
+**/linux/flutter/ephemeral/
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+**/example/pubspec.lock
+
