@@ -49,30 +49,7 @@ class _EditorAppflowyDemoState extends State<EditorAppflowyDemo> {
       return;
     }
 
-    final selection = editorState.selection;
-    final transaction = editorState.transaction;
-    
-    // 创建图片节点
-    final Node imageNode = Node(
-      type: 'image',
-      attributes: {
-        'url': tempImagePath,
-      },
-    );
-
-    if (selection != null) {
-      // 插入到当前选中位置
-      transaction.insertNode(selection.start.path, imageNode);
-      // 将光标移到图片下方的段落（原段落被挤到了下一个位置）
-      transaction.afterSelection = Selection.collapsed(
-        Position(path: selection.start.path.next, offset: 0),
-      );
-    } else {
-      // 插入到文档最开始
-      transaction.insertNode([0], imageNode);
-    }
-    
-    editorState.apply(transaction);
+    editorState.insertImageNode(tempImagePath!);
   }
 
   @override
