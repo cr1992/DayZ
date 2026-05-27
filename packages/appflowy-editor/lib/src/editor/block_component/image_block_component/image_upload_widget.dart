@@ -413,9 +413,12 @@ extension InsertImage on EditorState {
       return;
     }
     final transaction = this.transaction;
+    
+    final isParagraphEmpty = node.type == ParagraphBlockKeys.type &&
+        (node.delta?.isEmpty ?? false);
+
     // if the current node is empty paragraph, replace it with image node
-    if (node.type == ParagraphBlockKeys.type &&
-        (node.delta?.isEmpty ?? false)) {
+    if (isParagraphEmpty) {
       transaction
         ..insertNode(
           node.path,
@@ -423,19 +426,28 @@ extension InsertImage on EditorState {
             url: src,
           ),
         )
-        ..deleteNode(node);
+        ..deleteNode(node)
+        ..insertNode(
+          node.path.next,
+          paragraphNode(),
+        );
     } else {
-      transaction.insertNode(
-        node.path.next,
-        imageNode(
-          url: src,
-        ),
-      );
+      transaction
+        ..insertNode(
+          node.path.next,
+          imageNode(
+            url: src,
+          ),
+        )
+        ..insertNode(
+          node.path.next.next,
+          paragraphNode(),
+        );
     }
 
     transaction.afterSelection = Selection.collapsed(
       Position(
-        path: node.path.next,
+        path: isParagraphEmpty ? node.path.next : node.path.next.next,
         offset: 0,
       ),
     );

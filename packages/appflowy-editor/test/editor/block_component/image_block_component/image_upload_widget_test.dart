@@ -20,7 +20,7 @@ void main() {
       );
 
       await editorState.insertImageNode('https://appflowy.io/image.jpg');
-      expect(editorState.document.root.children.length, 2);
+      expect(editorState.document.root.children.length, 3);
     });
   });
 
