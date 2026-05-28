@@ -25,8 +25,10 @@ class DeltaTextInputService extends TextInputService with DeltaTextInputClient {
   @override
   TextEditingValue? currentTextEditingValue;
 
+  // >>> DAYZ-PATCH[P004]: 补 onFocusReceived 覆写以兼容最新 Flutter Stable 的 TextInputClient 接口
   @override
   bool onFocusReceived() => false;
+  // <<< DAYZ-PATCH[P004]
 
   TextInputConnection? _textInputConnection;
 

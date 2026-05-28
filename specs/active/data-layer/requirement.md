@@ -89,6 +89,3 @@ SHALL 在 iOS / Android 两端正常工作；db 文件相对路径一致（`<app
 
 ### NF5 · 类型安全
 所有 Repository 公开 API MUST 用强类型 model（不用 Map / dynamic）；time 字段统一用 `DateTime`（UTC）而非 `int`。
-
-### R9 · 类型安全的静态资源引用 (Assets Management)
-系统 MUST 提供类型安全的静态资源访问能力，内置资源统一存放在 `assets/` 并按类别分子目录。避免代码中出现硬编码的字符串路径。

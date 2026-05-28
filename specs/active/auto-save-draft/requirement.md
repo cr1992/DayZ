@@ -68,8 +68,12 @@ EditingSessionRepo.upsert MUST 是原子的（Drift 事务）；写盘失败 MUS
 ### R8 · 编辑器中立接口
 DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJson, isNew, cursorPos)` 入参；不预设 AppFlowy / TipTap / TextField。MR 出结论后由后续 spec 把编辑器 onChanged 接到 DraftCoordinator.onChanged。
 
-### R9 · WebView 方案预留通道
-若 MR 最终选 B（WebView+TipTap），编辑器内容变化时 TipTap 经桥推 JSON 至 Flutter 内存；本里程碑的 DraftCoordinator MUST 能接收来自任意来源（包括桥）的 onChanged 调用，**不预设来源**。无需为 WebView 单独提供接口。
+### R9 · WebView 方案预留通道（方案 A 下不适用，保留为远期 B 兜底）
+> **选型已定（v0.7）**：MR 结论选 **方案 A（AppFlowy Editor，纯 Dart，无 WebView）**——见 `docs/design/03` 第 4 节末「选型补丁」与 `specs/active/editor-json-contract`。本项目无 WebView 桥，本需求**当前不适用**。
+>
+> 本需求的实质约束（DraftCoordinator 能接收来自**任意来源**的 onChanged、不预设来源）已被 **R8（编辑器中立接口）完全覆盖**——R8 的中立 payload 接口对 AppFlowy onChanged 与（假设的）WebView 桥推送一视同仁。故 R9 不引入任何额外接口或任务，仅作为**远期方案 B 兜底**保留：若将来弃 A 改 B，WebView 桥推送的 onChanged 可直接复用 R8 接口，无需改 DraftCoordinator。
+>
+> 验证归属：R9 无独立验收，由 R8 的「来源无关」验收覆盖（见 verification 单行模型/中立接口检查）。
 
 ## 非功能需求
 

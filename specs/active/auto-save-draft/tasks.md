@@ -64,27 +64,30 @@ graph LR
 
 -----
 
-- [ ] T2 · DraftRecoveryStatus 数据类 + Saver 接口
+- [ ] T2 · DraftRecoveryStatus 数据类 + Saver 接口（编辑器中立）
 
-**依赖：** T1 ｜ **关联需求：** R3, R7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）
+**依赖：** T1 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）
 
 ### 背景
-先把外露接口与数据类钉死，后续 T3 填实现。
+先把外露接口与数据类钉死，后续 T3 填实现。本任务承接 R8「编辑器中立接口」：`onChanged` 只接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，**签名中不出现任何编辑器类型**（AppFlowy / TipTap / TextField）；来源无关——AppFlowy onChanged 与任意其他来源（含 R9 远期 WebView 桥）一视同仁。R9 在方案 A 下不适用，其「来源无关」实质已被本接口覆盖，无需额外接口。
 
 ### 实施
 1. `class DraftRecoveryStatus { bool hasResidual; String? targetId; bool isNew; DateTime? lastUpdated; }`
-2. `class DraftCoordinator { onChanged(...); forceFlush(); clear(); startupCheck(); }` 骨架
-3. 接口注释覆盖语义边界（单行模型、串行队列、失败静默重试）
+2. `class DraftCoordinator { onChanged({required String? targetId, required String draftJson, required bool isNew, int? cursorPos}); forceFlush(); clear(); startupCheck(); }` 骨架
+3. 接口注释覆盖语义边界（单行模型、串行队列、失败静默重试、编辑器中立/来源无关）
 
 ### 验收标准（做完即止）
 - 接口签名锁定（自动 grep）
-- 文档注释含语义说明（自动 grep 关键词）
+- `onChanged` 入参为 plain payload，签名中不含编辑器类型名（AppFlowy / TipTap / WebView），满足 R8 编辑器中立（自动 grep）
+- 文档注释含语义说明（含「编辑器中立 / 来源无关」关键词）（自动 grep）
 
 ### 验收方式
 - 自动：
   ```bash
   grep -q 'class DraftCoordinator' lib/drafts/draft_coordinator.dart \
-    && grep -q 'class DraftRecoveryStatus' lib/drafts/draft_recovery_status.dart
+    && grep -q 'class DraftRecoveryStatus' lib/drafts/draft_recovery_status.dart \
+    && grep -q 'draftJson' lib/drafts/draft_coordinator.dart \
+    && ! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart
   ```
 
 ### 验收记录

@@ -413,7 +413,7 @@ extension InsertImage on EditorState {
       return;
     }
     final transaction = this.transaction;
-    
+    // >>> DAYZ-PATCH[P001]: 插入图片后在其下方追加空段落并把光标聚焦到该段落，方案A图片交互弱项补足
     final isParagraphEmpty = node.type == ParagraphBlockKeys.type &&
         (node.delta?.isEmpty ?? false);
 
@@ -451,6 +451,7 @@ extension InsertImage on EditorState {
         offset: 0,
       ),
     );
+    // <<< DAYZ-PATCH[P001]
 
     return apply(transaction);
   }

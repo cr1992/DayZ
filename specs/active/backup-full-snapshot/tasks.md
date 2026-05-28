@@ -174,18 +174,23 @@ graph LR
 **依赖：** T5 ｜ **关联需求：** R5（步骤 5-9）, R8, R9 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加）, `test/backup/restorer_apply_test.dart`
 
 ### 实施
+> 遵守 `docs/design/09`「约定二·覆盖式还原」：新产物全部先写临时位置，全成功后才原子切换；任一步失败只删临时产物，旧 db + 旧 media 原样不动。**严禁先清空旧 media 再写回**（会造成「db 在、图全丢」）。
 1. `BackupRestorer.apply(parsedSession)`：
    - 关 db
-   - 当前 main.sqlite → main.sqlite.bak
-   - 解密备份 db → 写 main.sqlite.restoring → rename
-   - 清空 `<documents>/media/`
-   - 逐个 media entry：流式解密 backupKey → 重加密 deviceKey → 写 `<documents>/media/<id>.bin`
-   - 清空 `<documents>/thumbs/`
+   - **写临时位置阶段**（绝不触碰现役 `main.sqlite` 与 `media/`）：
+     - 解密备份 db → 写 `<documents>/db/main.sqlite.restoring`
+     - 逐个 media entry：流式解密 backupKey → 重加密 deviceKey → 写 `<documents>/media/.restoring/<id>.bin`
+   - **切换阶段**（仅在上一步全部成功后进入，集中 rename）：
+     - 旧 `media/` 下现役文件移到 `media/.old/`
+     - `media/.restoring/*` rename 到 `media/`
+     - `main.sqlite.restoring` rename 到 `main.sqlite`
+   - 删旧产物（`media/.old/`、旧 db）
+   - 删除 `<documents>/thumbs/`（派生数据，删旧即可）
    - 重开 db
-   - 失败用 main.sqlite.bak 回滚
+   - 写临时位置阶段或切换前任一步失败：只删临时产物，旧 db + 旧 media 完整保留
 2. 测试：
    - 正常 apply 后 db 与 media 全部就位
-   - apply 中途 fail（注入故障）→ db 用 .bak 回滚 → 媒体目录虽然空但 db 还是旧的（已知 tradeoff，验证）
+   - 写临时位置阶段注入故障（解密 db / 重加密 media 失败）→ 旧 db + 旧 media **完整可用**，旧 db 引用的每个 media 仍存在且可解密；仅临时产物被清（验证无数据丢失、满足「全旧或全新」不变式）
    - 媒体重加密管道无临时 plain 文件
 
 ### 验收方式
@@ -262,7 +267,7 @@ graph LR
 **依赖：** T4 ｜ **关联需求：** NF5 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/backup/backup_exporter.dart` / `backup_restorer.dart`（finally 块完善）, `test/backup/cleanup_test.dart`
 
 ### 实施
-1. exporter 与 restorer 顶层 try/finally 中清理：`<tmp>/full_*.db`、`<output>.tmp`、`<db>.bak`、`<documents>/media/.tmp` 残留
+1. exporter 与 restorer 顶层 try/finally 中清理：`<tmp>/full_*.db`、`<output>.tmp`、`<db>/main.sqlite.restoring`、`<documents>/media/.restoring/`、`<documents>/media/.old/`、`<documents>/media/.tmp` 残留
 2. 测试：
    - 正常路径完成后临时目录干净
    - 异常路径完成后临时目录干净

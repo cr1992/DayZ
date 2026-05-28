@@ -108,6 +108,7 @@ CommandShortcutEventHandler _backspaceInCollapsedSelection = (editorState) {
             element.delta != null;
       });
 
+      // >>> DAYZ-PATCH[P003]: 退格时前一节点无 delta 且非表格块，先整块选中而非直接合并删除
       final immediatePrev = node.previous;
       if (immediatePrev != null && immediatePrev.delta == null && immediatePrev.type != TableBlockKeys.type) {
         editorState.selectionType = SelectionType.block;
@@ -121,6 +122,7 @@ CommandShortcutEventHandler _backspaceInCollapsedSelection = (editorState) {
         );
         return KeyEventResult.handled;
       }
+      // <<< DAYZ-PATCH[P003]
 
       // table nodes should be deleted using the table menu
       // in-table paragraphs should only be deleted inside the table

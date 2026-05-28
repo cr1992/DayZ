@@ -25,6 +25,7 @@
 - **包名 `com.dayz`**，iOS 13+，Android minSdk 26（详见 [M0](./specs/active/app-scaffold/)）。
 - **作者署名统一 `@Ray`**。
 - **本地 Package 修改规范**：对 `packages/` 下本地 package 的修改，必须在 `packages/CHANGELOG.md` 中补充变更说明；且 Package 相关的代码、测试、`pubspec.lock` 及 CHANGELOG 文件必须作为一个独立的 Git Commit 提交，不得同业务或 Demo 层代码混合。
+- **vendored 包改动留痕**：改 `packages/` 下 vendored 包（如 `appflowy-editor`）的源码，MUST 三件套齐全：① 在改动区间打成对标记 `// >>> DAYZ-PATCH[Pxxx]: 原因` … `// <<< DAYZ-PATCH[Pxxx]`（每个 patch 一个稳定 ID）；② 在 `packages/CHANGELOG.md` 的「Patch 台账」登记 ID + 文件定位 + 原因 + 关联 + upstream；③ 提交前跑 `bash scripts/check_patches.sh` 对账（须退出 0）。机制与升级 SOP 见 [`specs/active/appflowy-patch-tracking/`](./specs/active/appflowy-patch-tracking/)。
 - **AI 助手交互规范**：本项目的问答与开发指导始终使用中文回复；且未经用户明确许可，AI 助手严禁执行任何 `git commit` 或提交代码的操作。
 
 其余规则（加密路径、Repository 边界、媒体密钥归属、isolate 处理重活、时区字段同步重算等）在 v6 与各 spec 中有明文——遵循 spec 即可，本文不复述。

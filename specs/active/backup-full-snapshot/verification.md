@@ -18,7 +18,7 @@
 | schema 不兼容还原 | 篡改 manifest schema_version=999 | 抛 SchemaIncompatible | R7 | 自动 |
 | confirmOverwrite false | callback 返 false | 抛 BackupCancelledException、本机库不变 | R10 | 自动 |
 | 正常还原往返 | export → restore | entries / media 完全一致；FTS 搜索可用 | R3, R5, R6 | 自动 |
-| 中途崩溃回滚 | restore apply 阶段注入故障 | db 用 .bak 回滚，本机库可打开 | R8 | 自动 |
+| 中途崩溃回滚 | restore 写临时位置阶段注入故障 | 旧 db + 旧 media 原样不动、完整可用；仅临时产物被清 | R8 | 自动 |
 | 缩略图懒生成 | restore 完成后立即查 thumbs/ | 目录空或部分文件；warmup 异步进行 | R6, D7 | 自动 |
 | FTS 立即可用 | restore 完成后搜索 | 返回原 entries | R6 | 自动 |
 
@@ -28,16 +28,17 @@
 - [ ] hexdump `.mydiary` 在 header 后所有位置不可见明文 — 自动：随机抽样 bytes 不出现 "SQLite" / 测试 entry plain 文字
 - [ ] export 不创建明文临时文件 — 自动：监视临时目录
 - [ ] restore 不创建明文临时文件 — 自动：监视临时目录
-- [ ] 任一正常 / 异常 / 取消路径结束后无残留 `.tmp` / `.bak` / `full_*.db` — 自动：T9 cleanup_test
+- [ ] 任一正常 / 异常 / 取消路径结束后无残留 `.tmp` / `.restoring` / `media/.old` / `full_*.db` — 自动：T9 cleanup_test
 
 ### 性能（NF1, NF2, NF3）
 - [ ] 中端真机 10000 entries + 500 media 导出 < 3 分钟 — 人工（@Ray），数据来源 T8
 - [ ] 同体量还原 < 4 分钟 — 人工（@Ray）
 - [ ] 导出 / 还原 RSS 增量 < 300 MiB — 人工（@Ray），借 Profiler
 
-### 还原原子性（R8）
-- [ ] db 替换前失败：本机库未受影响 — 自动
-- [ ] media 阶段失败：db 已回滚（.bak）、媒体目录虽空但与 db 一致（媒体丢失但 db 知道）— 自动
+### 还原原子性（R8，依 docs/design/09 约定二）
+- [ ] 写临时位置阶段（解密 db / 重加密 media）注入故障 → 旧 db 与旧 media **完整可用**、可正常打开并读出原 entries 与原图；仅 `main.sqlite.restoring` / `media/.restoring/` 被清 — 自动
+- [ ] 切换阶段前注入故障 → 同上，现役产物未被触碰 — 自动
+- [ ] 还原失败后本机状态满足不变式：**全旧或全新**，不出现「db 在、media 被清空」的半成品（断言旧 db 引用的每个 media 文件仍存在且可解密）— 自动
 
 ### 与 M5 协作约束（R6, D7）
 - [ ] restore 调用栈中不出现「同步全量重建缩略图」函数 — 自动 grep

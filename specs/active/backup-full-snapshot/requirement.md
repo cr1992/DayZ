@@ -75,16 +75,23 @@ manifest.json MUST 含：
 `onProgress(phase, processed, total)` MUST 在四阶段上报：`vacuuming`、`exporting_db`、`exporting_media`（按 media 数量计数）、`finalizing`。
 `onCancel` MUST 在调用方触发时停止流式处理（在 TAR entry 边界或 1 MiB 加密块边界）。
 
-### R5 · 整库覆盖式还原
-系统 MUST 提供 `BackupRestorer.restore({inputPath, password, onProgress, confirmOverwrite}) -> Future<void>`，按 v6 8.4 步骤：
+### R5 · 整库覆盖式还原（写临时位置 + 全成功后原子切换）
+系统 MUST 提供 `BackupRestorer.restore({inputPath, password, onProgress, confirmOverwrite}) -> Future<void>`，按 v6 8.4 步骤，并遵守 `docs/design/09`「约定二·覆盖式还原」——**新产物全部先写临时位置，全部成功后才原子切换；任一步失败只删临时产物，旧 db 与旧 media 原样不动**：
 1. 读 `.mydiary` header → 取 salt → `deriveBackupKey(password, salt)`
 2. 解密 payload → TAR 流
 3. 读 `manifest.json` → 校验 `schema_version` 与当前 App 兼容（不一致：通过 App migration 路径或拒绝并提示）
 4. **回调 `confirmOverwrite()` 请用户确认**（高危操作）；未确认中止
 5. 关闭当前 db 连接（`Database.close()`）
-6. 解密 `db/main.sqlite` → 写到 `<app_documents>/db/main.sqlite.restoring` → rename 替换当前 db 文件
-7. 清空 `<app_documents>/media/` → 解密每个 `media/<id>.bin` 后用**当前设备的设备媒体密钥重加密**写回（M3 MediaCodec）
-8. 清空 `<app_documents>/thumbs/`（缩略图全部重建）
+6. **写临时位置阶段（不触碰任何现役产物）**：
+   - 解密 `db/main.sqlite` → 写到 `<app_documents>/db/main.sqlite.restoring`
+   - 解密每个 `media/<id>.bin` → 用**当前设备的设备媒体密钥重加密** → 写到独立临时目录 `<app_documents>/media/.restoring/<id>.bin`（M3 MediaCodec）
+   - 此阶段全程 **绝不删除、绝不覆盖现役 `<app_documents>/db/main.sqlite` 与 `<app_documents>/media/` 下任何文件**
+7. **切换阶段（仅在第 6 步全部成功后进入，集中做 rename，尽量短）**：
+   - rename `<app_documents>/media/<id>.bin` 现役旧文件移走（或将旧 `media/` 整体移到 `media/.old/`）
+   - rename `<app_documents>/media/.restoring/*` → `<app_documents>/media/`
+   - rename `main.sqlite.restoring` → `<app_documents>/db/main.sqlite`
+   - 切换成功后删除被替换下来的旧 db 与旧 media（`media/.old/`）
+8. 删除 `<app_documents>/thumbs/`（缩略图全部重建；属派生数据，删旧即可，无需临时位置保护）
 9. 重启数据层（重新打开 db）
 10. **同步**调用 SQL 重建 `entries_fts`（秒级）
 11. **异步**调用 `ThumbnailCache.warmup(allMediaIds)` —— **绝对不能**同步全量重建
@@ -97,11 +104,12 @@ manifest.json MUST 含：
 若 manifest.schema_version > 当前 App.schemaVersion：拒绝并提示「请升级 App 后再还原」。
 若 manifest.schema_version < 当前 App.schemaVersion：通过 App 自身的 Drift migration 路径升级（即还原成 schema 1 → migrate 到当前）。
 
-### R8 · 失败回滚
-还原过程中任一步失败 MUST 整体回滚：
-- db 替换前失败：不影响当前库
-- db 替换后但 media 拷入失败：必须能用先备份的 `<db>.bak`（M1 D5 同款）回滚 db
-- restore 调用方收到失败错时本机数据应当一致（要么完全旧的、要么完全新的，**不允许半成品**）
+### R8 · 失败回滚（旧态保全，无数据丢失）
+还原过程中任一步失败 MUST 保证本机数据为**旧态完整可用**——遵守 `docs/design/09`「约定二」：
+- 失败发生在 R5 第 6 步「写临时位置阶段」（解密 / 重加密 / 空间不足等）：**只删除临时产物**（`main.sqlite.restoring`、`media/.restoring/`），旧 db 与旧 media 原封不动、原样可用。
+- 失败发生在 R5 第 7 步「切换阶段」之前：同上，旧产物未被触碰。
+- restore 调用方收到失败错时，本机数据 MUST 满足覆盖式还原不变式：**要么全旧（旧 db + 旧 media 完整）、要么全新（新 db + 与之匹配的新 media 全部就位）**，**绝不允许「旧 db 在、但它引用的 media 已被清空」的半成品**（这正是先清空旧 media 再写回模型的数据丢失坑，本 spec 明令禁止）。
+- 切换阶段（一组集中的 rename）设计上应尽量短且独立；切换全部成功后才删旧产物，故切换中途失败仍可凭未删除的旧产物保持旧态。
 
 ### R9 · 媒体重加密「明文不落临时文件」
 解密旧密钥 → 重加密为新设备密钥的过程，明文 MUST 仅在内存 / 流中（复用 M3 MediaStore 流式 API 的能力）。
@@ -127,4 +135,4 @@ manifest.json MUST 含：
 hexdump `.mydiary` 任意位置（除 header 8 + 1 + 2 + salt_len 字节外）MUST 不可读出明文 db / manifest / 媒体内容。
 
 ### NF5 · 安全 - 中间产物清理
-导出 / 还原结束后（成功或失败）MUST 清理：`<tmp>/full_*.db`、`<output>.tmp`、`<db>.bak`、任何 `.tmp`。
+导出 / 还原结束后（成功或失败）MUST 清理：`<tmp>/full_*.db`、`<output>.tmp`、还原临时产物 `<db>/main.sqlite.restoring` 与 `<media>/.restoring/`、切换后被替换下来的旧产物 `<media>/.old/`、任何 `.tmp`。

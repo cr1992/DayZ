@@ -23,3 +23,4 @@
 - [06-加密与安全策略](./design/06-encryption-and-security-policy.md)
 - [07-静态资源管理方案](./design/07-static-resource-management-scheme.md)
 - [08-远期规划与分阶段实施](./design/08-long-term-planning-and-phased-implementation.md)
+- [09-文件与数据库写入原子性约定](./design/09-file-db-write-atomicity.md)

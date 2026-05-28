@@ -81,16 +81,17 @@ graph LR
 **依赖：** T1, M1, M2, M3 ｜ **关联需求：** R1, R2, R8, NF1, NF4 ｜ **依据设计：** D1, D2, D5 ｜ **可改文件：** `lib/thumbnails/generator.dart`, `test/thumbnails/generator_test.dart`
 
 ### 背景
-isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤：MediaCodec 解密原图 → image 解码 → resize（长边 384）→ JPEG quality 85 编码 → MediaCodec 加密 → 写 `<thumbs>/<id>.bin.tmp` → rename → 调 MediaRepo.updateThumb。
+isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤：MediaCodec 解密原图 → image 解码 → resize（长边 384）→ JPEG quality 85 编码 → MediaCodec 加密 → 写 `<thumbs>/<id>.bin.tmp` → rename → 调 MediaRepo.updateThumb。补偿式一致性见 R8 / D5 / `docs/design/09`：先文件后 db，db 事务失败则删除已写的缩略图文件。
 
 ### 实施
 1. 在 isolate 内执行（用 Isolate.run 包装）
 2. 主 isolate 提供 db 写入；isolate 内不直接持 db 句柄
-3. 设计上：isolate 返回密文字节 + 新尺寸；主 isolate 完成 rename + db 更新（事务边界）
+3. 设计上：isolate 返回密文字节 + 新尺寸；主 isolate 完成「写 `.tmp` → rename → db 事务更新 thumb 字段」；**db 事务失败 MUST 删除已 rename 的缩略图文件**（补偿，避免孤儿）
 4. 测试：
    - 1500×1000 → 缩略图长边 = 384、JPEG 解码后宽高准确
    - 失败原图（损坏字节）抛 `ThumbnailGenerationException`
    - 生成成功后 media.thumb_path 与 thumb_src_updated_at 都写入
+   - 注入 db 更新失败 → 已写的 `<thumbs>/<id>.bin` 被删除（无孤儿）、任务报失败
 
 ### 验收方式
 - 自动：`flutter test test/thumbnails/generator_test.dart`

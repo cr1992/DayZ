@@ -290,6 +290,7 @@ extension SelectionTransform on EditorState {
             reason: SelectionUpdateReason.uiEvent,
           );
         } else {
+          // >>> DAYZ-PATCH[P002]: 选区折叠且节点无 delta 时不再抛 UnimplementedError，退回首/尾偏移
           updateSelectionWithReason(
             Selection.collapsed(
               selection.start.copyWith(
@@ -300,6 +301,7 @@ extension SelectionTransform on EditorState {
             ),
             reason: SelectionUpdateReason.uiEvent,
           );
+          // <<< DAYZ-PATCH[P002]
         }
         break;
       case SelectionMoveRange.word:
@@ -325,6 +327,7 @@ extension SelectionTransform on EditorState {
             );
           }
         } else {
+          // >>> DAYZ-PATCH[P002]: 选区折叠且节点无 delta 时不再抛 UnimplementedError，退回首/尾偏移
           updateSelectionWithReason(
             Selection.collapsed(
               selection.start.copyWith(
@@ -335,6 +338,7 @@ extension SelectionTransform on EditorState {
             ),
             reason: SelectionUpdateReason.uiEvent,
           );
+          // <<< DAYZ-PATCH[P002]
         }
 
         break;
@@ -352,6 +356,7 @@ extension SelectionTransform on EditorState {
             reason: SelectionUpdateReason.uiEvent,
           );
         } else {
+          // >>> DAYZ-PATCH[P002]: 选区折叠且节点无 delta 时不再抛 UnimplementedError，退回首/尾偏移
           updateSelectionWithReason(
             Selection.collapsed(
               selection.start.copyWith(
@@ -362,6 +367,7 @@ extension SelectionTransform on EditorState {
             ),
             reason: SelectionUpdateReason.uiEvent,
           );
+          // <<< DAYZ-PATCH[P002]
         }
         break;
       default:

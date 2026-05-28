@@ -37,12 +37,14 @@
 - **理由：** Dart Stream backpressure 自然；M3 T6 已提供这两个 API；TAR 包支持流式 entry。
 - **代价：** 需 TAR 包支持 streaming entry（`archive` 包的 `TarFileEncoder` 接 `InputStream`，可行）；若包不支持流，需自实现 TAR writer（约 200 行）。
 
-### D5 · 还原原子化
-- **背景：** R8 / v6 8.4 第 6 步。
-- **选项：** 关 db → 替换 → 重开 / 替换后再切换实例 / 拷贝到新位置后改 db 路径配置。
-- **选择：** **关闭当前 db connection → 备份当前 `main.sqlite` 为 `main.sqlite.bak` → 写 `main.sqlite.restoring` → rename → 解 media → 重开 db**。任一步失败用 `.bak` 回滚。
-- **理由：** rename 原子；`.bak` 在 D5 之外也复用 M1 rekey 兜底思路。
-- **代价：** 短期磁盘 ×2；可接受（v6 已默认）。
+### D5 · 还原原子化（写临时位置 + 全成功后原子切换）
+- **背景：** R8 / v6 8.4 第 6 步；遵守 `docs/design/09`「约定二·覆盖式还原」。
+- **选项：**
+  - ①「先清空旧 media → 逐个写回 → 失败用 `main.sqlite.bak` 回滚 db」——**已否决**：media 写回中途失败、回滚到旧 db 后，旧 db 引用的 media 已被清空 → 「db 在、图全丢」的数据丢失。
+  - ②「新 db + 新 media 全部先写临时位置，全部成功后才原子切换（rename），失败只删临时产物」。
+- **选择：** **方案②**。关 db → 新 db 写 `main.sqlite.restoring`、每个新 media 写 `media/.restoring/<id>.bin`（写临时位置阶段绝不触碰现役产物）→ 全部成功后进入切换阶段（集中 rename：旧 media 移到 `media/.old/` → `media/.restoring/*` rename 到位 → `main.sqlite.restoring` rename 到位）→ 删旧产物 → 重开 db。任一步失败只删临时产物，旧 db + 旧 media 原样不动。
+- **理由：** 满足「要么全旧、要么全新」不变式，无数据丢失窗口；rename 原子；写临时位置阶段失败时现役产物从未被破坏，无需「回滚 db」这一危险动作。
+- **代价：** 还原峰值磁盘约 ×2（旧产物 + 临时新产物并存到切换完成）；可接受（v6 已默认还原期磁盘翻倍）。临时产物清理由 NF5 / T9 承接。
 
 ### D6 · 重建 FTS 同步策略
 - **背景：** R6 + v6 8.4 第 5 步。
@@ -96,11 +98,15 @@ graph TD
   Mani --> Confirm{confirmOverwrite}
   Confirm -- 否 --> Abort[(中止)]
   Confirm -- 是 --> Close[关 db]
-  Close --> DbBak[main.sqlite → .bak]
-  TarRead --> NewDb[解密 db → restoring]
-  NewDb --> Replace[rename → main.sqlite]
-  TarRead --> MediaIn[每个 media：<br/>解密 backupKey → 重加密 deviceKey]
-  MediaIn --> Reopen[重开 db]
+  Close --> WriteTmp[写临时位置阶段<br/>不触碰现役产物]
+  TarRead --> NewDb[解密 db → main.sqlite.restoring]
+  TarRead --> MediaTmp[每个 media：解密 backupKey<br/>→ 重加密 deviceKey<br/>→ media/.restoring/&lt;id&gt;.bin]
+  NewDb --> WriteTmp
+  MediaTmp --> WriteTmp
+  WriteTmp -- 任一失败 --> Keep[只删临时产物<br/>旧 db+旧 media 原样可用]
+  WriteTmp -- 全部成功 --> Switch[切换阶段：集中 rename<br/>旧 media→.old → .restoring→到位 → db→到位]
+  Switch --> DropOld[删旧产物]
+  DropOld --> Reopen[重开 db]
   Reopen --> FTS[同步重建 entries_fts]
   FTS --> Warmup[ThumbnailCache.warmup]
   Warmup --> Done[(还原完成)]
@@ -123,7 +129,7 @@ graph TD
 
 - **archive 包流式 TAR 支持**：需验证 TAR encoder/decoder 支持 stream entry；不支持则自实现 ~200 行。
 - **iOS Pod / Android NDK 影响**：archive 是纯 Dart，无原生依赖；放心。
-- **磁盘空间瞬时翻倍**：导出时 VACUUM 临时 db + .mydiary 中间文件；还原时旧 db 备份 + 新 db；T1 提前校验空间。
+- **磁盘空间瞬时翻倍**：导出时 VACUUM 临时 db + .mydiary 中间文件；还原时旧产物（db + media）与临时新产物（`main.sqlite.restoring` + `media/.restoring/`）并存到切换完成，峰值约 ×2；T1 提前校验空间，空间不足按 R8 失败保留旧态。
 - **VACUUM INTO 加密 db 行为**：SQLCipher 的 VACUUM INTO 应仍保持加密；测试覆盖。
 - **schema_version 跨大版本还原**：v0 起步只支持 schema=1；后续版本需补 migration 路径，本期文档化。
 - **NF1 / NF2 3-4 分钟基线**：基于估算；T8 真机基准验证；不达标在已知风险更新。

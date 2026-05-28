@@ -36,6 +36,10 @@
 - [ ] editing_session 表始终至多一行 — 自动：T6 中插入多次后查询 count = 1
 - [ ] 不存在多 targetId 并发未 flush — 自动：T3 串行队列测试覆盖
 
+### 编辑器中立接口（R8；R9 在方案 A 下不适用，由本项覆盖其「来源无关」实质）
+- [ ] `DraftCoordinator.onChanged` 仅接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，签名与实现中不出现编辑器类型名 — 自动：`! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart`
+- [ ] 来源无关：以两种不同「来源」（demo 的 TextField onChanged 与直接构造的 payload）调用 onChanged，写入行为一致 — 自动：T3 / demo 测试覆盖
+
 ## 回归检查
 
 - [ ] M2 EditingSessionRepo 单测仍通过 — 自动：`flutter test test/data/editing_session_repo_test.dart`

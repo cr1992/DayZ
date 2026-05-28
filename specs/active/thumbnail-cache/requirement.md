@@ -64,8 +64,12 @@ API：`ThumbnailCache.requestWithPriority(mediaId, priority)`。
 ### R7 · 还原期约束（与 M6 协作）
 本里程碑 MUST 保证：还原（M6）后**不会被强制同步全量重建**。M6 调用方式只能是「不调」（按需）或「调 warmup」（异步预热）。`ThumbnailCache.warmup` MUST 不阻塞调用者。
 
-### R8 · 元数据一致性
-任一任务完成 MUST 在同一个事务内同时更新文件 + media 表 thumb 字段；任一步失败回滚全部。
+### R8 · 元数据一致性（补偿式：先文件 → db 事务 → db 失败删文件）
+文件 IO 进不了 SQLite 事务（物理不可能在「同一事务内同时更新文件 + db 行」），故采用补偿式次序，遵守 `docs/design/09`「约定一·通用写入」：
+1. 先写缩略图文件到 `<thumbs>/<media_id>.bin.tmp` → rename 为 `<thumbs>/<media_id>.bin`；
+2. db 事务更新 media 表 thumb 字段（`thumb_path` / `thumb_w` / `thumb_h` / `thumb_src_updated_at`）；
+3. **db 事务失败 MUST 删除步骤 1 已写的缩略图文件**，使「文件在、db 无引用」的孤儿不残留，任务整体视为失败。
+- 不变式：media 表 `thumb_path` 指向的文件必然已落盘；进程在步骤 2 前崩溃留下的孤儿文件（db 未引用）无害，由后续运维/启动清扫处理（见 D2 代价）。
 
 ## 非功能需求
 
