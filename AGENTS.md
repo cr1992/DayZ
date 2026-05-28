@@ -22,7 +22,7 @@
 ## 本项目专有约定（v6 / spec-guide 之外的）
 
 - **UI 设计稿未到，基础层先行**。基础 spec 末尾都挂一个 Debug Home 入口（M0 提供框架），真机调试走 demo 页。
-- **包名 `com.dayz`**，iOS 13+，Android minSdk 26（详见 [M0](./specs/active/app-scaffold/)）。
+- **包名 `com.dayz`**，iOS 13+，Android minSdk 26（详见 [M0](./specs/archive/2026-05-23-app-scaffold/)）。
 - **作者署名统一 `@Ray`**。
 - **本地 Package 修改规范**：对 `packages/` 下本地 package 的修改，必须在 `packages/CHANGELOG.md` 中补充变更说明；且 Package 相关的代码、测试、`pubspec.lock` 及 CHANGELOG 文件必须作为一个独立的 Git Commit 提交，不得同业务或 Demo 层代码混合。
 - **vendored 包改动留痕**：改 `packages/` 下 vendored 包（如 `appflowy-editor`）的源码，MUST 三件套齐全：① 在改动区间打成对标记 `// >>> DAYZ-PATCH[Pxxx]: 原因` … `// <<< DAYZ-PATCH[Pxxx]`（每个 patch 一个稳定 ID）；② 在 `packages/CHANGELOG.md` 的「Patch 台账」登记 ID + 文件定位 + 原因 + 关联 + upstream；③ 提交前跑 `bash scripts/check_patches.sh` 对账（须退出 0）。机制与升级 SOP 见 [`specs/active/appflowy-patch-tracking/`](./specs/active/appflowy-patch-tracking/)。
