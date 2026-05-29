@@ -18,7 +18,8 @@ tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
 
 find "$SPECS_DIR" -type f -name '*.md' -not -path '*/archive/*' | while IFS= read -r md; do
   dir="$(dirname "$md")"
-  # 逐行提取所有 ](target) 链接（含图片 ![](target)）
+  # 逐行提取所有 ](target) 链接（含图片 ![](target)）；先经 awk 把代码围栏内与行内 code
+  # 的内容清空（保留行号），使 ```fence``` 里的示例链接、`](x)` 不被当成真链接（与另两道 lint 一致）。
   while IFS= read -r hit; do
     [ -n "$hit" ] || continue
     lineno="${hit%%:*}"
@@ -42,7 +43,12 @@ find "$SPECS_DIR" -type f -name '*.md' -not -path '*/archive/*' | while IFS= rea
     if [ ! -e "$check" ]; then
       printf '%s:%s: 死链 -> %s (目标不存在)\n' "${md#./}" "$lineno" "$target" >> "$tmp"
     fi
-  done < <(grep -noE '\]\([^)]*\)' "$md" 2>/dev/null || true)
+  done < <(awk '
+    BEGIN { infence = 0 }
+    /^[[:space:]]*(```|~~~)/ { infence = !infence; print ""; next }   # 围栏行：清空但保留行号
+    { if (infence) { print ""; next }                                  # 围栏内整段不算真链接
+      s = $0; gsub(/`[^`]*`/, "", s); print s }                        # 非围栏行去掉行内 code 段
+  ' "$md" 2>/dev/null | grep -noE '\]\([^)]*\)' 2>/dev/null || true)
 done
 
 if [ -s "$tmp" ]; then

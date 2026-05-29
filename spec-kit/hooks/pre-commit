@@ -3,9 +3,9 @@ set -euo pipefail
 #
 # spec-kit · pre-commit 闸
 #
-# 用途：提交前对**暂存区**里的 specs/**/*.md 跑三道 lint
-#       (check_dead_links / lint_acceptance_commands / lint_keywords)，
-#       任一非 0 → 拒绝提交并打印原因。荣誉制对人/LLM 都不可靠，故设硬闸。
+# 用途：提交前对暂存区里的 specs/**/*.md 跑三道 lint，任一非 0 → 拒绝提交。荣誉制对人/LLM 都不可靠，故设硬闸。
+#       · 关键词 / 验收闸校验**暂存内容**（物化暂存 blob 到临时镜像），不受未暂存改动影响；
+#       · 死链闸在**工作树**全量解析（链接目标常在未改动文件或 specs 外，镜像里没有）。
 # 用法：作为 git pre-commit hook 自动触发；也可手动 `bash spec-kit/hooks/pre-commit`。
 #       跳过(应急)：`SKIP_SPEC_LINT=1 git commit ...`。
 # 退出码：0=全部通过或无 spec 改动或被跳过；1=任一闸报违规；2=找不到 kit 脚本(环境错)。
@@ -57,34 +57,57 @@ SCRIPTS_DIR="$(find_scripts_dir)" || {
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT"
 
-# 暂存区中即将提交、且仍存在的 specs/**/*.md（ACM=新增/改动/复制，删除的不查）
-staged_specs="$(git diff --cached --name-only --diff-filter=ACM -- 'specs/*.md' 'specs/**/*.md' 2>/dev/null || true)"
+# 暂存区里涉及 specs 的改动，分两个集合各取所用：
+#   · staged_content = 新增/改动/复制（ACM）：其**暂存内容**喂给内容型 lint（关键词/验收）；
+#   · staged_any     = 含删除/改名（ACMRD）：任一存在即跑死链（删/改名 spec 也可能制造死链）。
+staged_content="$(git diff --cached --name-only --diff-filter=ACM  -- 'specs/*.md' 'specs/**/*.md' 2>/dev/null || true)"
+staged_any="$(git diff --cached --name-only --diff-filter=ACMRD -- 'specs/*.md' 'specs/**/*.md' 2>/dev/null || true)"
 
-if [ -z "$staged_specs" ]; then
+if [ -z "$staged_any" ]; then
   exit 0
 fi
 
 echo "[spec-kit] 检测到 specs 文档改动，运行 spec lint ..." >&2
 
-# 三道闸全量扫描 specs/（启发式脚本以目录为单位更稳；暂存的子集已确认有改动）
 fail=0
+
+# 内容型 lint 校验的是**暂存内容**而非工作树：把暂存 blob 物化到临时镜像再扫。
+# 否则「git add -p 部分暂存」或「改了没 git add」会让校验对象 ≠ 真正提交的内容——硬闸的健全性硬伤。
+# 只镜像有改动的文件：pre-commit 负责拦本次提交引入的新违规；全量扫描交给 CI（见 README「接 CI」）。
+STAGED_DIR=""
+if [ -n "$staged_content" ]; then
+  STAGED_DIR="$(mktemp -d "${TMPDIR:-/tmp}/spec-kit-staged.XXXXXX")"
+  trap 'rm -rf "$STAGED_DIR"' EXIT
+  printf '%s\n' "$staged_content" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    mkdir -p "$STAGED_DIR/$(dirname "$f")"
+    git show ":$f" > "$STAGED_DIR/$f" 2>/dev/null || true   # 暂存版 blob
+  done
+fi
+
+# $1=脚本名 $2=人读标题 $3=要扫的 SPECS_DIR $4=进入哪个工作目录跑（让输出仍是干净的 specs/...:行号）
 run_gate() {
-  # $1 = 脚本名, $2 = 人读标题
   local script="$SCRIPTS_DIR/$1"
   if [ ! -f "$script" ]; then
     echo "[spec-kit] 错误：缺少 ${1}（${script}）。" >&2
     fail=1
     return
   fi
-  if ! bash "$script" "$ROOT/specs"; then
+  if ! ( cd "$4" && bash "$script" "$3" ); then
     echo "[spec-kit] ✗ $2 未通过（见上方 路径:行号 明细）。" >&2
     fail=1
   fi
 }
 
-run_gate check_dead_links.sh        "死链检查"
-run_gate lint_acceptance_commands.sh "验收命令抗规避检查"
-run_gate lint_keywords.sh            "RFC2119 关键词大小写检查"
+# 内容型：扫暂存镜像（cd 进镜像、传相对 specs，输出路径仍为 specs/...）。
+if [ -n "$STAGED_DIR" ]; then
+  run_gate lint_acceptance_commands.sh "验收命令抗规避检查" "specs" "$STAGED_DIR"
+  run_gate lint_keywords.sh            "RFC2119 关键词检查" "specs" "$STAGED_DIR"
+fi
+
+# 死链：必须在工作树全量解析——链接目标可能是未改动的邻居，或 specs 外的 ../docs/… 文件，
+# 临时镜像里没有这些，只有真实工作树能正确判定可达性。
+run_gate check_dead_links.sh "死链检查" "specs" "$ROOT"
 
 if [ "$fail" -ne 0 ]; then
   echo "" >&2

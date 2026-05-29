@@ -23,11 +23,18 @@ SPECS_DIR="${SPECS_DIR%/}"
 tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
 
 find "$SPECS_DIR" -type f \( -name 'tasks.md' -o -name 'verification.md' \) -not -path '*/archive/*' | while IFS= read -r f; do
-  awk -v F="${f#./}" '
-    BEGIN { infence = 0 }
+  awk -v F="${f#./}" -v BN="$(basename "$f")" '
+    BEGIN { infence = 0; inscope = (BN == "verification.md") ? 1 : 0 }
     {
       line = $0
       if (line ~ /^[[:space:]]*(```|~~~)/) { infence = !infence; next }
+      # tasks.md 只在「验收 / 验证」小节内判定命令（散文里提到 grep 不算验收命令）；
+      # verification.md 整篇皆为验证，全程在范围内。标题行据其文字开关作用域。
+      if (!infence && BN != "verification.md" && line ~ /^[[:space:]]*#{1,6}[[:space:]]/) {
+        inscope = (line ~ /验收|验证/) ? 1 : 0
+        next
+      }
+      if (!inscope) next
       # 命令文本 cmd：围栏内取整行；否则只取反引号 span 内的内容
       if (infence) {
         cmd = line
