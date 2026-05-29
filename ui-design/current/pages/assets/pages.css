@@ -1,0 +1,161 @@
+/* ============================================================
+   DayZ · 外壳（viewer）样式
+   仅负责：顶栏 / 工作台 / iPhone 外框 / 原型 iframe 栈 /
+   静态画布(多状态平铺) / 左侧索引
+   屏幕内部样式见 screen.css（在各 iframe 内加载）
+   ============================================================ */
+:root[data-mode="light"] { --ws-bg: #E7E2D8; --ws-dot: #CFC8B9; }
+:root[data-mode="dark"]  { --ws-bg: #0F0E0A; --ws-dot: #211E17; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-sans);
+  overflow: hidden; -webkit-font-smoothing: antialiased;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar .brand { white-space: nowrap; }
+.topbar .seg-present {
+  display: inline-flex; background: var(--bg-2); border-radius: var(--r-full);
+  padding: 4px; gap: 2px; margin-left: var(--sp-2);
+}
+.topbar .seg-present button {
+  font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+  border: none; background: transparent; color: var(--ink-2);
+  padding: 7px 15px; border-radius: var(--r-full);
+  display: inline-flex; align-items: center; gap: 7px; line-height: 1;
+}
+.topbar .seg-present button svg { width: 15px; height: 15px; display: block; }
+.topbar .seg-present button[aria-selected="true"] {
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); font-weight: 600;
+}
+.topbar .spacer { margin-left: auto; }
+.topbar .hint { font-size: 12px; color: var(--ink-3); margin-right: var(--sp-2); }
+@media (max-width: 760px) { .topbar .hint { display: none; } }
+
+/* ---------- 工作台 ---------- */
+.workspace { position: absolute; inset: 0; top: 57px; background: var(--ws-bg); overflow: hidden; transition: background var(--dur) var(--ease); }
+.workspace.mode-proto .canvas-rail, .workspace.mode-proto .board { display: none; }
+.workspace.mode-canvas .proto-host { display: none; }
+
+/* ============================================================
+   iPhone 外框（现代款 · 灵动岛由屏内自绘 · 窄边框）
+   ============================================================ */
+.iphone {
+  --screen-w: 390px; --screen-h: 844px; --bezel: 14px;
+  width: calc(var(--screen-w) + var(--bezel) * 2);
+  height: calc(var(--screen-h) + var(--bezel) * 2);
+  border-radius: 66px; padding: var(--bezel);
+  background: linear-gradient(150deg, #3A3A3E 0%, #1C1C1F 38%, #2B2B2F 60%, #131316 100%);
+  box-shadow: 0 0 0 2px #060607, inset 0 0 0 2px rgba(255,255,255,0.10),
+    0 28px 60px -12px rgba(20,16,10,0.45), 0 8px 22px -8px rgba(20,16,10,0.40);
+  position: relative; flex-shrink: 0;
+}
+:root[data-mode="dark"] .iphone {
+  box-shadow: 0 0 0 2px #000, inset 0 0 0 2px rgba(255,255,255,0.07),
+    0 30px 70px -14px rgba(0,0,0,0.7), 0 8px 22px -8px rgba(0,0,0,0.6);
+}
+.iphone::before { content: ""; position: absolute; left: -3px; top: 132px; width: 3px; height: 34px; border-radius: 3px 0 0 3px; background: #18181b; box-shadow: 0 50px 0 #18181b, 0 108px 0 #18181b; }
+.iphone::after  { content: ""; position: absolute; right: -3px; top: 184px; width: 3px; height: 64px; border-radius: 0 3px 3px 0; background: #18181b; }
+.iphone .screen { width: var(--screen-w); height: var(--screen-h); border-radius: 52px; background: var(--bg); overflow: hidden; position: relative; }
+
+/* ---------- 原型模式：单机 + iframe 路由栈 ---------- */
+.proto-host { position: absolute; inset: 0; display: grid; place-items: center; }
+.proto-stack { position: absolute; inset: 0; z-index: 1; }
+.proto-page {
+  position: absolute; inset: 0; background: var(--bg);
+  transition: transform 0.36s var(--ease), filter 0.36s var(--ease);
+}
+.proto-page iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
+.proto-page.is-entering { transform: translateX(100%); }
+.proto-page.is-leaving  { transform: translateX(100%); }
+.proto-page.is-behind   { transform: translateX(-24%); filter: brightness(0.93); }
+.proto-page.is-parked   { transform: translateX(100%); pointer-events: none; }
+.proto-page.is-behind, .proto-page.is-leaving, .proto-page.is-parked { pointer-events: none; }
+
+/* ============================================================
+   画布模式（静态 · 多状态平铺 · 左侧索引）
+   ============================================================ */
+.canvas-rail {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 210px; z-index: 40;
+  display: flex; flex-direction: column; gap: 1px; padding: 16px 10px;
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  border-right: 1px solid var(--hairline);
+  backdrop-filter: saturate(1.2) blur(10px); overflow-y: auto;
+}
+.canvas-rail .rail-title { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 4px 10px 10px; }
+.rail-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: var(--r-sm); cursor: pointer; color: var(--ink-2); min-height: 40px; }
+.rail-item:hover { background: var(--bg-2); color: var(--ink); }
+.rail-item.on { background: var(--accent-soft); color: var(--accent-ink); }
+.rail-item .ri-idx { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); width: 16px; flex-shrink: 0; }
+.rail-item.on .ri-idx { color: var(--accent-ink); }
+.rail-item .ri-nm { font-size: 14px; font-weight: 500; }
+
+/* ============================================================
+   画布模式（无限画布 · 点阵网格 · 拖拽平移 + 滚轮/捏合缩放）
+   ============================================================ */
+.board {
+  position: absolute; inset: 0; left: 210px; overflow: hidden;
+  background-color: var(--ws-bg);
+  background-image: radial-gradient(var(--ws-dot) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  background-position: 0 0;
+  cursor: grab; touch-action: none; user-select: none;
+  transition: background-color var(--dur) var(--ease);
+}
+.board.is-panning { cursor: grabbing; }
+
+.canvas-world {
+  position: absolute; left: 0; top: 0; transform-origin: 0 0;
+  display: flex; flex-direction: column; gap: 88px;
+  padding: 64px; will-change: transform;
+}
+
+/* 浮动缩放控件 */
+.cv-zoom {
+  position: absolute; right: 20px; bottom: 20px; z-index: 50;
+  display: flex; align-items: center; gap: 2px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--hairline); border-radius: var(--r-full);
+  padding: 4px; box-shadow: var(--shadow-md); backdrop-filter: blur(8px) saturate(1.2);
+}
+.cv-zoom button {
+  font-family: inherit; cursor: pointer; border: none; background: transparent;
+  color: var(--ink-2); width: 30px; height: 30px; border-radius: var(--r-full);
+  display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+}
+.cv-zoom button:hover { background: var(--bg-2); color: var(--ink); }
+.cv-zoom button svg { width: 16px; height: 16px; display: block; }
+.cv-zoom .pct {
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+  min-width: 46px; text-align: center; cursor: pointer; user-select: none;
+  padding: 0 4px; border-radius: var(--r-sm);
+}
+.cv-zoom .pct:hover { background: var(--bg-2); color: var(--ink); }
+
+/* 区块 + 卡片 */
+.cv-section { margin: 0; }
+.cv-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: var(--sp-5); }
+.cv-head .idx { font-family: var(--font-mono); font-size: 12px; color: var(--accent-ink); background: var(--accent-soft); padding: 3px 8px; border-radius: var(--r-full); }
+.cv-head .nm { font-size: 20px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.cv-head .lbl { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+:root[data-mode="dark"] .cv-head .nm { color: #EDE8DD; }
+
+.cv-row { display: flex; flex-wrap: nowrap; gap: 40px; }
+.cv-card { display: flex; flex-direction: column; gap: 12px; }
+.cv-cap { font-size: 13px; font-weight: 500; color: var(--ink-2); padding-left: 4px; }
+:root[data-mode="dark"] .cv-cap { color: #ABA496; }
+.cv-frame {
+  --cv-scale: 0.66;
+  width: calc(390px * var(--cv-scale)); height: calc(844px * var(--cv-scale));
+  border-radius: 30px; overflow: hidden; position: relative;
+  background: var(--bg); border: 1px solid var(--hairline-2);
+  box-shadow: var(--shadow-md);
+}
+.cv-frame iframe {
+  width: 390px; height: 844px; border: 0; display: block;
+  transform: scale(var(--cv-scale)); transform-origin: top left;
+  pointer-events: none;
+}

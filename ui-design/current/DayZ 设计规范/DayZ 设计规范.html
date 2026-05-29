@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="purple" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayZ 设计规范</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/spec.css">
+</head>
+<body>
+
+<!-- 顶部控制栏 -->
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">Z</div>
+    <div><b>DayZ</b> <span>设计规范</span></div>
+  </div>
+  <div class="switcher" role="group" aria-label="主题色">
+    <button class="swatch-btn" data-set="purple" title="雾紫 Lavender"></button>
+    <button class="swatch-btn" data-set="amber" title="暖黄 Honey"></button>
+    <button class="swatch-btn" data-set="sage" title="雾绿 Sage"></button>
+  </div>
+  <button class="mode-toggle" id="modeToggle" title="切换明暗">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <span class="lbl">浅色</span>
+  </button>
+</header>
+
+<!-- Hero -->
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Design System · v1.0</div>
+    <h1>为长久书写而设计的安静系统</h1>
+    <p>DayZ 是一款本地优先、注重隐私的日记 App。这套规范以「温润、克制」为基调，中文优先排版，浅色为暖白纸感、深色为暖炭黑，并提供雾紫 / 暖黄 / 雾绿三套可整体切换的强调色体系。试试右上角的色环与明暗开关。</p>
+    <div class="meta">
+      <span class="pill">本地优先</span>
+      <span class="pill">浅色 + 深色</span>
+      <span class="pill">中文为主</span>
+      <span class="pill">3 套主题色</span>
+      <span class="pill">移动优先</span>
+    </div>
+  </section>
+
+  <!-- 01 主题色 -->
+  <section class="block" id="themes">
+    <div class="sec-head">
+      <div class="num">01 / COLOR THEME</div>
+      <h2>三套主题色</h2>
+      <p>每套都是一个完整、独立的强调色体系——不是同一个色相的深浅，而是三种气质。强调色用于按钮、选中态、链接、图标点缀，以及日记本（journal）的着色；大面积仍由中性色承载，保持安静。整套色板都饱和度克制，适合长期注视。</p>
+    </div>
+
+    <div class="grid" style="gap: var(--sp-8);">
+      <!-- 雾紫 -->
+      <div class="theme-row">
+        <div class="theme-id">
+          <div class="big" style="background: var(--accent);">Lavender</div>
+          <div class="zh">雾紫 · Lavender</div>
+          <div class="desc">薰衣草的雾感灰紫，沉静、内省，最贴合夜间书写。</div>
+        </div>
+        <div class="ramp" data-ramp></div>
+      </div>
+      <!-- 暖黄 -->
+      <div class="theme-row">
+        <div class="theme-id">
+          <div class="big" style="background: var(--amber-accent);" data-fixed="amber">Honey</div>
+          <div class="zh">暖黄 · Honey</div>
+          <div class="desc">琥珀蜜糖的暖黄，温和明亮、有生活气，不刺眼。</div>
+        </div>
+        <div class="ramp" data-ramp-fixed="amber"></div>
+      </div>
+      <!-- 雾绿 -->
+      <div class="theme-row">
+        <div class="theme-id">
+          <div class="big" style="background: var(--sage-accent);" data-fixed="sage">Sage</div>
+          <div class="zh">雾绿 · Sage</div>
+          <div class="desc">鼠尾草的雾绿，舒缓、自然、有呼吸感，久看不累。</div>
+        </div>
+        <div class="ramp" data-ramp-fixed="sage"></div>
+      </div>
+    </div>
+    <p class="t-caption" style="margin-top: var(--sp-6);">上方第一行随顶部主题切换实时联动；后两行固定展示对应主题，方便横向对比。每个色值在浅 / 深模式下都有对应取值。</p>
+  </section>
+
+  <!-- 02 中性色 -->
+  <section class="block" id="neutrals">
+    <div class="sec-head">
+      <div class="num">02 / NEUTRALS</div>
+      <h2>中性色 · 纸与墨</h2>
+      <p>中性色只随明暗模式变化。浅色不是纯白，而是带暖调的纸色，减少长时间阅读的反光疲劳；深色不是纯黑，而是暖炭黑，柔和而不刺眼。文字用「墨」的层级表达主次。</p>
+    </div>
+    <h3 class="sub">背景与表面</h3>
+    <div class="neutral-bar" data-neutrals="bg"></div>
+    <h3 class="sub">文字 / 墨色层级</h3>
+    <div class="neutral-bar" data-neutrals="ink"></div>
+  </section>
+
+  <!-- 03 字体 -->
+  <section class="block" id="type">
+    <div class="sec-head">
+      <div class="num">03 / TYPOGRAPHY</div>
+      <h2>字体排印</h2>
+      <p>中文为主。正文与日记内容用衬线（Noto Serif SC / Newsreader），带来书卷气与长文阅读的温度；界面文字用无衬线（Noto Sans SC / Hanken Grotesk），清晰利落。中文行高放宽至 1.8 以保证阅读舒适。</p>
+    </div>
+    <div class="panel type-spec">
+      <div class="type-row"><div class="key"><b>Display</b>Serif · 44 / 600</div><div class="t-display">今天也好好生活</div></div>
+      <div class="type-row"><div class="key"><b>Heading 1</b>Serif · 30 / 600</div><div class="t-h1">五月的午后，雨停了</div></div>
+      <div class="type-row"><div class="key"><b>Heading 2</b>Serif · 22 / 600</div><div class="t-h2">往年今日 · 三则回忆</div></div>
+      <div class="type-row"><div class="key"><b>Heading 3</b>Sans · 18 / 600</div><div class="t-h3">本月写了 18 篇日记</div></div>
+      <div class="type-row"><div class="key"><b>Body / 界面</b>Sans · 16 / 1.7</div><div class="t-body">界面文字使用无衬线体，承载按钮、标签、设置等功能性内容，强调清晰与一致。Mixed with English text.</div></div>
+      <div class="type-row"><div class="key"><b>Diary / 正文</b>Serif · 18 / 1.85</div><div class="t-diary">日记正文使用衬线体，行高放宽。窗外的雨下了一整个下午，我泡了杯茶，听着雨声把这周的事慢慢写下来，心也跟着静了。</div></div>
+      <div class="type-row"><div class="key"><b>Caption</b>Sans · 13</div><div class="t-caption">2026 年 5 月 29 日 · 周五 · 上海</div></div>
+      <div class="type-row"><div class="key"><b>Overline</b>Sans · 12 / 0.14em</div><div class="t-overline">ON THIS DAY · 往年今日</div></div>
+    </div>
+  </section>
+
+  <!-- 04 间距/圆角/阴影 -->
+  <section class="block" id="scale">
+    <div class="sec-head">
+      <div class="num">04 / SPACE · RADIUS · ELEVATION</div>
+      <h2>间距 · 圆角 · 投影</h2>
+      <p>间距以 4px 为基准，构成节奏一致的留白。圆角偏柔和，呼应温润气质。投影是暖调、轻薄的，深色模式下更多依赖描边与表面分层而非重阴影。</p>
+    </div>
+    <div class="grid cols-2" style="gap: var(--sp-6);">
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0;">间距标度</h3>
+        <div class="scale-list" data-spacing></div>
+      </div>
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0;">圆角</h3>
+        <div class="radius-demo">
+          <div class="b" style="border-radius:var(--r-xs)">xs 6</div>
+          <div class="b" style="border-radius:var(--r-sm)">sm 10</div>
+          <div class="b" style="border-radius:var(--r-md)">md 14</div>
+          <div class="b" style="border-radius:var(--r-lg)">lg 20</div>
+          <div class="b" style="border-radius:var(--r-xl)">xl 28</div>
+        </div>
+        <h3 class="sub">投影</h3>
+        <div class="elev-demo">
+          <div class="e" style="box-shadow:var(--shadow-sm)">sm</div>
+          <div class="e" style="box-shadow:var(--shadow-md)">md</div>
+          <div class="e" style="box-shadow:var(--shadow-lg)">lg</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 组件 -->
+  <section class="block" id="components">
+    <div class="sec-head">
+      <div class="num">05 / COMPONENTS</div>
+      <h2>组件总览</h2>
+      <p>组件全部基于上面的 token 构建，跟随主题与明暗实时变化。以下示例可点击交互，感受不同主题色落到真实界面里的样子。</p>
+    </div>
+
+    <h3 class="sub">按钮</h3>
+    <div class="demo">
+      <div class="row">
+        <button class="btn btn-primary">写一篇</button>
+        <button class="btn btn-soft">编辑</button>
+        <button class="btn btn-ghost">导出</button>
+        <button class="btn btn-text">查看全部</button>
+        <button class="btn btn-danger">删除</button>
+        <button class="btn btn-primary" disabled>已保存</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary btn-sm">小</button>
+        <button class="btn btn-primary">中</button>
+        <button class="btn btn-primary btn-lg">大</button>
+        <button class="btn btn-soft btn-icon" title="图标按钮">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+      <div class="note">.btn-primary / .btn-soft / .btn-ghost / .btn-text / .btn-danger · 尺寸 .btn-sm/.btn-lg</div>
+    </div>
+
+    <h3 class="sub">输入框</h3>
+    <div class="demo">
+      <div class="row" style="align-items:flex-start; gap:var(--sp-6);">
+        <div class="field">
+          <label>日记标题</label>
+          <input class="input" placeholder="给这一天起个名字…" value="雨后的午后">
+          <span class="help">留空时自动取正文第一行</span>
+        </div>
+        <div class="field">
+          <label>这一刻的想法</label>
+          <textarea class="textarea" placeholder="写点什么…"></textarea>
+        </div>
+      </div>
+      <div class="note">.input / .textarea · 聚焦态为 accent 描边 + 柔光环</div>
+    </div>
+
+    <h3 class="sub">开关 · 勾选 · 分段</h3>
+    <div class="demo">
+      <div class="row" style="gap:var(--sp-8);">
+        <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
+        <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
+        <div class="checks">
+          <div class="opt on" data-toggle><span class="box"></span>启用生物识别锁</div>
+          <div class="opt" data-toggle><span class="box"></span>显示往年今日</div>
+        </div>
+        <div class="checks">
+          <div class="opt on" data-toggle><span class="dot"></span>按日期排序</div>
+          <div class="opt" data-toggle><span class="dot"></span>按修改时间</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="segmented">
+          <button aria-selected="true">时间线</button>
+          <button aria-selected="false">日历</button>
+          <button aria-selected="false">地图</button>
+        </div>
+      </div>
+      <div class="note">.switch · .opt（勾选/单选） · .segmented</div>
+    </div>
+
+    <h3 class="sub">标签 · 心情 · 天气</h3>
+    <div class="demo">
+      <div class="row">
+        <span class="tag"># 旅行</span>
+        <span class="tag"># 读书 <span class="x">×</span></span>
+        <span class="tag tag-outline"># 工作</span>
+        <span class="tag tag-outline"># 家人</span>
+        <span class="tag tag-outline">+ 添加标签</span>
+      </div>
+      <div class="row mood-row" style="margin-top:var(--sp-5);">
+        <div class="mood sel"><div class="face" style="background:var(--accent-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14.5c1.4 1.7 5.6 1.7 7 0"/></svg></div><span>愉快</span></div>
+        <div class="mood"><div class="face" style="background:var(--surface-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01"/><path d="M9 14.8c1.2 1 4.8 1 6 0"/></svg></div><span>平静</span></div>
+        <div class="mood"><div class="face" style="background:var(--surface-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01"/><path d="M9 15h6"/></svg></div><span>一般</span></div>
+        <div class="mood"><div class="face" style="background:var(--surface-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01"/><path d="M8.5 15.5c1.4 -1.7 5.6 -1.7 7 0"/></svg></div><span>低落</span></div>
+        <div class="mood"><div class="face" style="background:var(--surface-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8.6l2.2 1M16 8.6l-2.2 1"/><path d="M9 11h.01M15 11h.01"/><path d="M9 15.4c1.2 -1 4.8 -1 6 0"/></svg></div><span>烦躁</span></div>
+      </div>
+      <div class="row weather-row" style="margin-top:var(--sp-5);">
+        <span class="weather-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg> 晴 26°</span>
+        <span class="weather-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 17a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.5A3.5 3.5 0 0 0 7 17z"/></svg> 多云 21°</span>
+        <span class="weather-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 13a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.5A3.5 3.5 0 0 0 6 13M8 17l-1 3M12 17l-1 3M16 17l-1 3"/></svg> 雨 18°</span>
+      </div>
+      <div class="note">.tag / .mood / .weather-chip · 心情与天气配色克制，跨主题通用</div>
+    </div>
+
+    <h3 class="sub">编辑器工具栏</h3>
+    <div class="demo">
+      <div class="toolbar">
+        <button class="tb on" data-toggle style="font-weight:700">B</button>
+        <button class="tb" data-toggle style="font-style:italic">I</button>
+        <button class="tb" data-toggle style="text-decoration:underline">U</button>
+        <span class="div"></span>
+        <button class="tb" data-toggle>H1</button>
+        <button class="tb" data-toggle>H2</button>
+        <span class="div"></span>
+        <button class="tb" data-toggle title="列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+        <button class="tb" data-toggle title="引用"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5H3v8h4M14 21c3 0 7-1 7-8V5h-7v8h4"/></svg></button>
+        <button class="tb" data-toggle title="待办"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>
+        <span class="div"></span>
+        <button class="tb" data-toggle title="图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></button>
+        <button class="tb" data-toggle title="位置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></button>
+      </div>
+      <div class="note">.toolbar · 激活态为 accent-soft 底；与 ProseMirror 编辑器对接</div>
+    </div>
+
+    <h3 class="sub">提示条 · 弹窗</h3>
+    <div class="demo">
+      <div class="row" style="align-items:flex-start;">
+        <div class="toast"><span>日记已保存到本地</span><span class="acc">查看</span></div>
+        <div class="toast surface"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span><span>已开启端到端加密</span></div>
+      </div>
+      <div class="row" style="margin-top:var(--sp-5);">
+        <div class="dialog">
+          <h4>删除这篇日记？</h4>
+          <p>删除后会进入回收站，30 天内可恢复；超过期限将彻底移除且无法找回。</p>
+          <div class="acts">
+            <button class="btn btn-ghost btn-sm">取消</button>
+            <button class="btn btn-danger btn-sm">删除</button>
+          </div>
+        </div>
+      </div>
+      <div class="note">.toast（深色/表面两种） · .dialog</div>
+    </div>
+  </section>
+
+  <!-- 06 真实界面 -->
+  <section class="block" id="screens">
+    <div class="sec-head">
+      <div class="num">06 / IN CONTEXT</div>
+      <h2>放进真实界面</h2>
+      <p>组件组合成时间线主界面。导航收在左侧抽屉里，底部不再放标签栏——只留一个 FAB：<b>轻点直接写日记，长按展开拍照 / 语音 / 清单</b>，让「记录」这件事永远只差一步。切换主题色与明暗，观察整体氛围如何随之微调。</p>
+    </div>
+    <div class="device">
+      <div class="screen">
+        <div class="app-top">
+          <button class="ico menu" title="侧边栏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="title" style="font-size:18px;">时间线</div>
+          <div class="acts">
+            <button class="ico" title="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="entry">
+            <div class="date"><div class="d">29</div><div class="m">MAY</div><div class="w">周五</div></div>
+            <div class="card">
+              <div class="photo"><img src="assets/demo_image.png" alt=""></div>
+              <div class="body">
+                <div class="head"><h4>雨后的午后</h4><span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .9-5 4.8 1.3 7L12 18l-6.3 3.2L7 14.2 2 9.4l7-.9z"/></svg></span></div>
+                <p class="excerpt">窗外的雨下了一整个下午，我泡了杯茶，听着雨声把这周的事慢慢写下来，心也跟着静了下来。</p>
+                <div class="foot">
+                  <span class="tag"># 生活</span>
+                  <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 上海</span>
+                  <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8.5 14.5c1.4 1.7 5.6 1.7 7 0"/></svg> 愉快</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="date"><div class="d">27</div><div class="m">MAY</div><div class="w">周三</div></div>
+            <div class="card">
+              <div class="body">
+                <div class="head"><h4>读完了一本书</h4></div>
+                <p class="excerpt">花了三个晚上读完，合上书的那一刻有点舍不得。把喜欢的句子抄了下来。</p>
+                <div class="foot">
+                  <span class="tag"># 读书</span>
+                  <span class="meta">😌 平静</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fab-wrap">
+          <div class="fab-scrim"></div>
+          <div class="fab-actions">
+            <div class="fab-action" data-label="📷 拍照日记"><span class="lab">拍照</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button></div>
+            <div class="fab-action" data-label="🎙 语音速记"><span class="lab">语音</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></button></div>
+            <div class="fab-action" data-label="☑ 清单 / 待办"><span class="lab">清单</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l2 2 4-4M3 6h.01M3 12h.01M3 18h.01M8 6h13M8 12h13M8 18h13"/></svg></button></div>
+          </div>
+          <button class="fab-main" title="写日记（长按展开）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <p class="drawer-hint">轻点 FAB = 直接写日记 · <b>长按</b>（按住约 0.35 秒）展开拍照 / 语音 / 清单</p>
+  </section>
+
+  <!-- 07 抽屉侧边栏 -->
+  <section class="block" id="drawer">
+    <div class="sec-head">
+      <div class="num">07 / SIDEBAR · DRAWER</div>
+      <h2>侧边栏 · 抽屉导航</h2>
+      <p>手机端从左滑出的抽屉，承载全局导航。信息结构借鉴 Day One：账户 → 搜索 → 视图（全部 / 往年今日 / 收藏 / 日历 / 媒体 / 地图）→ 日记本（带颜色与计数）→ 标签 → 底部设置。日记本用小色点呈现，对应数据库里 journal 的 <code>color</code> 字段；选中态用 accent-soft 底 + 左侧色条。点下方顶栏的菜单图标试试。</p>
+    </div>
+    <div class="device drawer-stage" id="drawerStage">
+      <div class="screen">
+        <div class="app-top">
+          <button class="ico menu" data-drawer-open title="打开侧边栏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="title" style="font-size:18px;">全部条目</div>
+          <div class="acts"><button class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button></div>
+        </div>
+        <div class="timeline">
+          <div class="entry">
+            <div class="date"><div class="d">29</div><div class="m">MAY</div></div>
+            <div class="card"><div class="body">
+              <div class="head"><h4>雨后的午后</h4></div>
+              <p class="excerpt">窗外的雨下了一整个下午，我泡了杯茶，把这周的事慢慢写下来。</p>
+              <div class="foot"><span class="tag"># 生活</span><span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8.5 14.5c1.4 1.7 5.6 1.7 7 0"/></svg> 愉快</span></div>
+            </div></div>
+          </div>
+          <div class="entry">
+            <div class="date"><div class="d">27</div><div class="m">MAY</div></div>
+            <div class="card"><div class="body">
+              <div class="head"><h4>读完了一本书</h4></div>
+              <p class="excerpt">花了三个晚上读完，合上书的那一刻有点舍不得。</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 遮罩 + 抽屉 -->
+        <div class="scrim"></div>
+        <aside class="drawer">
+          <div class="dw-head">
+            <div class="avatar">予</div>
+            <div class="who">
+              <b>予安</b>
+              <span>已写 128 篇 · 连续 12 天</span>
+            </div>
+          </div>
+          <div class="dw-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            搜索日记…
+          </div>
+
+          <div class="dw-section">
+            <div class="dw-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="name">全部条目</span><span class="count">128</span></div>
+            <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><path d="M3.05 11a9 9 0 1 1 .5 4"/><path d="M3 5v4h4"/></svg><span class="name">往年今日</span><span class="count">3</span></div>
+            <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l3 6.5 7 .9-5 4.8 1.3 7L12 18l-6.3 3.2L7 15.2 2 10.4l7-.9z"/></svg><span class="name">收藏</span><span class="count">16</span></div>
+            <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span class="name">日历</span></div>
+            <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg><span class="name">媒体</span></div>
+            <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="name">地图</span></div>
+          </div>
+
+          <div class="dw-section">
+            <div class="dw-label">日记本 <span class="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></div>
+            <div class="dw-item"><span class="dw-dot" style="background:var(--accent)"></span><span class="name">日常</span><span class="count">86</span></div>
+            <div class="dw-item"><span class="dw-dot" style="background:#5C8A68"></span><span class="name">旅行</span><span class="count">21</span></div>
+            <div class="dw-item"><span class="dw-dot" style="background:#C8993E"></span><span class="name">读书</span><span class="count">14</span></div>
+            <div class="dw-item"><span class="dw-dot" style="background:#7C84C4"></span><span class="name">灵感</span><span class="count">7</span></div>
+          </div>
+
+          <div class="dw-section">
+            <div class="dw-label">标签</div>
+            <div class="dw-tags">
+              <span class="tag tag-outline"># 生活</span>
+              <span class="tag tag-outline"># 工作</span>
+              <span class="tag tag-outline"># 家人</span>
+              <span class="tag tag-outline"># 美食</span>
+            </div>
+          </div>
+
+          <div class="dw-foot">
+            <div class="dw-item static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg><span class="name">回收站</span></div>
+            <div class="dw-item static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.3"/><circle cx="12" cy="12" r="2.4"/><path d="M12 5.7V2.4M12 18.3v3.3M5.7 12H2.4M18.3 12h3.3M16.5 7.5l2.3-2.3M16.5 16.5l2.3 2.3M7.5 16.5l-2.3 2.3M7.5 7.5 5.2 5.2"/></svg><span class="name">设置</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <p class="drawer-hint">点顶栏菜单图标打开，点遮罩处关闭 · <b data-drawer-open>打开侧边栏</b></p>
+  </section>
+
+  <footer class="footer">
+    <b>DayZ 设计规范 v1.0</b> · 本地优先的日记 App · 雾紫 / 暖黄 / 雾绿 × 浅色 / 深色<br>
+    所有数值定义于 <code>assets/tokens.css</code>，组件样式见 <code>assets/spec.css</code>。
+  </footer>
+</div>
+
+<script src="assets/spec.js"></script>
+<script>
+/* 渲染色板 / 中性色 / 间距标度（读取计算后的 token 值，自动跟随主题与明暗） */
+(function () {
+  const css = (name, el) => getComputedStyle(el || document.documentElement).getPropertyValue(name).trim();
+
+  const accentKeys = [
+    ["--accent", "Accent"],
+    ["--accent-strong", "Strong"],
+    ["--accent-ink", "Ink"],
+    ["--accent-soft", "Soft"],
+    ["--accent-soft-2", "Soft 2"],
+    ["--on-accent", "On"],
+  ];
+
+  function chipHTML(label, varName, value) {
+    return `<div class="chip"><div class="sw" style="background:${value}"></div>`
+      + `<div class="lab"><b>${label}</b><code>${value}</code></div></div>`;
+  }
+
+  function renderRamps() {
+    // 联动行：直接读当前主题
+    document.querySelectorAll("[data-ramp]").forEach((host) => {
+      host.innerHTML = accentKeys.map(([v, l]) => chipHTML(l, v, css(v))).join("");
+    });
+    // 固定行：临时建一个带 data-theme 的探针读取
+    document.querySelectorAll("[data-ramp-fixed]").forEach((host) => {
+      const theme = host.getAttribute("data-ramp-fixed");
+      const probe = document.createElement("div");
+      probe.setAttribute("data-theme", theme);
+      probe.setAttribute("data-mode", document.documentElement.getAttribute("data-mode"));
+      probe.style.display = "none";
+      document.body.appendChild(probe);
+      host.innerHTML = accentKeys.map(([v, l]) => chipHTML(l, v, css(v, probe))).join("");
+      probe.remove();
+    });
+    // 固定 big 色块
+    document.querySelectorAll("[data-fixed]").forEach((el) => {
+      const theme = el.getAttribute("data-fixed");
+      const probe = document.createElement("div");
+      probe.setAttribute("data-theme", theme);
+      probe.setAttribute("data-mode", document.documentElement.getAttribute("data-mode"));
+      probe.style.display = "none";
+      document.body.appendChild(probe);
+      el.style.background = css("--accent", probe);
+      el.style.color = css("--on-accent", probe);
+      probe.remove();
+    });
+  }
+
+  const neutralBg = [["--bg","底色 bg"],["--bg-2","凹陷 bg-2"],["--surface","表面 surface"],["--surface-2","次表面"],["--hairline","分割线"],["--hairline-2","强描边"]];
+  const neutralInk = [["--ink","主文字 ink"],["--ink-2","次级 ink-2"],["--ink-3","辅助 ink-3"],["--ink-4","禁用 ink-4"],["--accent-ink","强调文字"],["--danger","危险 danger"]];
+
+  function renderNeutrals() {
+    const map = { bg: neutralBg, ink: neutralInk };
+    document.querySelectorAll("[data-neutrals]").forEach((host) => {
+      const set = map[host.getAttribute("data-neutrals")];
+      host.innerHTML = set.map(([v, l]) => chipHTML(l, v, css(v))).join("");
+    });
+  }
+
+  const spaces = [["--sp-1","4"],["--sp-2","8"],["--sp-3","12"],["--sp-4","16"],["--sp-5","20"],["--sp-6","24"],["--sp-8","32"],["--sp-10","40"],["--sp-12","48"],["--sp-16","64"]];
+  function renderSpacing() {
+    const host = document.querySelector("[data-spacing]");
+    if (!host) return;
+    host.innerHTML = spaces.map(([v, px]) =>
+      `<div class="scale-item"><code>${v.replace("--","")} · ${px}px</code><div class="bar" style="width:${px}px"></div></div>`
+    ).join("");
+  }
+
+  function renderAll() { renderRamps(); renderNeutrals(); renderSpacing(); }
+  renderAll();
+
+  // 主题 / 明暗变化时重渲染色值
+  new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mode"] });
+})();
+</script>
+</body>
+</html>

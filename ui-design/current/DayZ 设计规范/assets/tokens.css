@@ -1,0 +1,150 @@
+/* ============================================================
+   DayZ Design Tokens
+   本地优先 · 注重隐私 · 温润安静的日记 App
+   主题：data-theme = purple | amber | sage
+   模式：data-mode  = light  | dark
+   ============================================================ */
+
+:root {
+  /* ---- 字体 ---- */
+  --font-sans: "Hanken Grotesk", "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-serif: "Newsreader", "Noto Serif SC", Georgia, "Songti SC", serif;
+  --font-diary: var(--font-serif);
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
+
+  /* ---- 间距（4px 基准）---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ---- 圆角 ---- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 999px;
+
+  /* ---- 动效 ---- */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 220ms;
+}
+
+/* ============================================================
+   中性色 —— 仅随明暗模式变化（温润纸感 / 暖炭黑）
+   ============================================================ */
+
+:root[data-mode="light"] {
+  --bg:            #FAF7F1;  /* 应用底色 · 暖白纸 */
+  --bg-2:          #F1ECE2;  /* 凹陷区 / 分组背景 */
+  --surface:       #FFFFFF;  /* 卡片 / 浮层 */
+  --surface-2:     #FBF8F2;  /* 次级表面 */
+  --ink:           #2C2823;  /* 主文字 · 暖墨 */
+  --ink-2:         #6A6359;  /* 次级文字 */
+  --ink-3:         #9C958A;  /* 占位 / 辅助 */
+  --ink-4:         #C3BCAF;  /* 禁用 */
+  --hairline:      #EBE4D9;  /* 分割线 */
+  --hairline-2:    #DCD3C4;  /* 强分割线 / 描边 */
+  --overlay:       rgba(44, 40, 33, 0.40);
+  --danger:        #C0553F;
+  --danger-soft:   #F7E7E1;
+  --favorite:      #D6A23A;  /* 收藏星标 */
+
+  --shadow-sm: 0 1px 2px rgba(60, 50, 35, 0.06), 0 1px 3px rgba(60, 50, 35, 0.05);
+  --shadow-md: 0 2px 8px rgba(60, 50, 35, 0.07), 0 10px 28px rgba(60, 50, 35, 0.07);
+  --shadow-lg: 0 16px 48px rgba(60, 50, 35, 0.16);
+}
+
+:root[data-mode="dark"] {
+  --bg:            #1A1813;  /* 暖炭黑（非纯黑）*/
+  --bg-2:          #131109;
+  --surface:       #242019;
+  --surface-2:     #2C2820;
+  --ink:           #EDE8DD;
+  --ink-2:         #ABA496;
+  --ink-3:         #7B7568;
+  --ink-4:         #565045;
+  --hairline:      #322E25;
+  --hairline-2:    #443F33;
+  --overlay:       rgba(0, 0, 0, 0.58);
+  --danger:        #E08068;
+  --danger-soft:   #3A241D;
+  --favorite:      #E5BC5E;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.46);
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.62);
+}
+
+/* ============================================================
+   主题强调色 —— 三套独立体系，随主题 + 明暗变化
+   每套提供：accent / accent-strong / accent-soft / accent-soft-2
+            / accent-ink / on-accent / accent-ring
+   ============================================================ */
+
+/* ---------- 雾紫 Lavender ---------- */
+:root[data-theme="purple"][data-mode="light"] {
+  --accent:        #786CAD;
+  --accent-strong: #635693;
+  --accent-soft:   #EEEBF6;
+  --accent-soft-2: #E0DAF0;
+  --accent-ink:    #564A86;
+  --on-accent:     #FFFFFF;
+  --accent-ring:   rgba(120, 108, 173, 0.32);
+}
+:root[data-theme="purple"][data-mode="dark"] {
+  --accent:        #ABA0D9;
+  --accent-strong: #BEB5E4;
+  --accent-soft:   #2B2742;
+  --accent-soft-2: #363052;
+  --accent-ink:    #C9C2E8;
+  --on-accent:     #201C32;
+  --accent-ring:   rgba(171, 160, 217, 0.34);
+}
+
+/* ---------- 暖黄 Honey ---------- */
+:root[data-theme="amber"][data-mode="light"] {
+  --accent:        #C8993E;
+  --accent-strong: #AE8129;
+  --accent-soft:   #FAF1DB;
+  --accent-soft-2: #F1E2BD;
+  --accent-ink:    #876012;
+  --on-accent:     #382B0C;
+  --accent-ring:   rgba(200, 153, 62, 0.34);
+}
+:root[data-theme="amber"][data-mode="dark"] {
+  --accent:        #DEB75C;
+  --accent-strong: #E9C775;
+  --accent-soft:   #322915;
+  --accent-soft-2: #40351F;
+  --accent-ink:    #E4C27B;
+  --on-accent:     #2A2108;
+  --accent-ring:   rgba(222, 183, 92, 0.32);
+}
+
+/* ---------- 雾绿 Sage ---------- */
+:root[data-theme="sage"][data-mode="light"] {
+  --accent:        #5C8A68;
+  --accent-strong: #4A7455;
+  --accent-soft:   #E6F0E8;
+  --accent-soft-2: #D2E4D6;
+  --accent-ink:    #3C6048;
+  --on-accent:     #FFFFFF;
+  --accent-ring:   rgba(92, 138, 104, 0.32);
+}
+:root[data-theme="sage"][data-mode="dark"] {
+  --accent:        #8FBA9B;
+  --accent-strong: #A3C9AD;
+  --accent-soft:   #1F2A20;
+  --accent-soft-2: #2B392B;
+  --accent-ink:    #ABCDB3;
+  --on-accent:     #16210F;
+  --accent-ring:   rgba(143, 186, 155, 0.32);
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayZ · 搜索</title>
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"results");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+</head>
+<body>
+<div class="pg">
+  <div class="search-head">
+    <div class="search-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <span class="q" data-when="typing">梅<span class="caret"></span></span>
+      <span class="q" data-when="results">梅子</span>
+      <span class="q" data-when="empty">梅子酱</span>
+    </div>
+    <button class="search-cancel" data-nav-back>取消</button>
+  </div>
+  <div class="app-scroll">
+    <!-- 输入中：最近搜索 + 标签建议 -->
+    <div data-when="typing">
+      <div class="search-sec">
+        <div class="h">最近搜索</div>
+      </div>
+      <div class="suggest-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>梅子<span class="sub">2 篇</span></div>
+      <div class="suggest-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>梅雨<span class="sub">5 篇</span></div>
+      <div class="suggest-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>没事别熬夜</div>
+      <div class="search-sec" style="padding-top:var(--sp-4)">
+        <div class="h">标签</div>
+        <div class="chips">
+          <span class="tag"># 生活</span>
+          <span class="tag"># 家</span>
+          <span class="tag"># 随想</span>
+          <span class="tag"># 旅行</span>
+          <span class="tag"># 食物</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 有结果 -->
+    <div data-when="results">
+      <div class="search-sec">
+        <div class="h">筛选</div>
+        <div class="chips">
+          <span class="tag"># 家 <span class="x">×</span></span>
+          <span class="tag tag-outline">全部日记本</span>
+          <span class="tag tag-outline">有照片</span>
+          <span class="tag tag-outline">2026</span>
+        </div>
+      </div>
+      <div class="search-stat">找到 <b>2</b> 篇 · 按时间倒序</div>
+      <div class="timeline">
+        <div class="entry">
+          <div class="date"><div class="d">27</div><div class="m">MAY</div><div class="w">周三</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="body">
+              <div class="head"><h4>外婆教我腌的<span class="hl">梅子</span></h4></div>
+              <p class="excerpt">玻璃罐要先用开水烫过，<span class="hl">梅子</span>和冰糖一层一层码好。她说急不得，要等一整个夏天。</p>
+              <div class="foot"><span class="tag"># 家</span><span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>杭州</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="entry">
+          <div class="date"><div class="d">12</div><div class="m">JUN</div><div class="w">周四</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="body">
+              <div class="head"><h4>开了去年的那罐</h4></div>
+              <p class="excerpt">放了一整年，<span class="hl">梅子</span>的颜色变得很深。配白粥刚刚好，酸里带一点回甘。</p>
+              <div class="foot"><span class="tag"># 食物</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 无结果 -->
+    <div class="empty" data-when="empty">
+      <div class="ill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2M8.5 11h5"/></svg></div>
+      <h3>没有找到「梅子酱」</h3>
+      <p>换个关键词，或去掉一些筛选条件再试试。</p>
+    </div>
+  </div>
+</div>
+<script src="../assets/screen.js"></script>
+</body>
+</html>

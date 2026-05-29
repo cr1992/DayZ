@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayZ · 时间线</title>
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+</head>
+<body>
+<div class="pg drawer-stage">
+  <div class="app-top">
+    <button class="ico menu" data-drawer-open aria-label="菜单">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="title"></div>
+    <div class="acts">
+      <button class="ico" data-search-open aria-label="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></button>
+      <button class="ico" data-nav="onthisday" aria-label="往年今日"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.6v3.7h3.7" stroke="currentColor"/><path d="M4.3 8.3A8.2 8.2 0 1 1 3.9 12.6" stroke="currentColor"/><path d="M12 7.8v4.4l3.1 1.8" stroke="currentColor"/></svg></button>
+    </div>
+    <form class="topsearch" data-search-form onsubmit="return false">
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input data-search-input type="text" placeholder="搜索日记、标签、地点" autocomplete="off">
+      </div>
+      <button type="button" class="cancel" data-search-close>取消</button>
+    </form>
+  </div>
+  <div class="app-scroll">
+    <!-- 默认 / 抽屉打开：有内容 -->
+    <div data-when="default drawer">
+      <div class="tl-month"><span class="y">5月</span><span class="c">2026 · 12 篇</span></div>
+      <div class="timeline">
+        <div class="entry">
+          <div class="date"><div class="d">29</div><div class="m">MAY</div><div class="w">周五</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="photo"><img src="../assets/img/bookstore.png" alt=""></div>
+            <div class="body">
+              <div class="head"><h4>雨后去了城南的旧书店</h4></div>
+              <p class="excerpt">梅雨季的间隙，石板路还湿着。老板说这套旧版的《东京梦华录》等了很久，今天总算有人问起。</p>
+              <div class="foot">
+                <span class="tag"># 生活</span>
+                <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>永康路</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="entry">
+          <div class="date"><div class="d">28</div><div class="m">MAY</div><div class="w">周四</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="body">
+              <div class="head"><h4>关于「慢」这件事</h4><span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.4l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.5l1-5.8L3.5 9.6l5.9-.9z"/></svg></span></div>
+              <p class="excerpt">越来越确信，慢不是效率的反义词。把一件事做到底，比同时开五个头更让人安心。今天只写了三百字，却很完整。</p>
+              <div class="foot">
+                <span class="tag"># 随想</span>
+                <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14.5c1.4 1.7 5.6 1.7 7 0"/></svg>愉快</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="entry">
+          <div class="date"><div class="d">27</div><div class="m">MAY</div><div class="w">周三</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="photo"><img src="../assets/img/plum.png" alt=""></div>
+            <div class="body">
+              <div class="head"><h4>外婆教我腌的梅子</h4></div>
+              <p class="excerpt">玻璃罐要先用开水烫过，梅子和冰糖一层一层码好。她说急不得，要等一整个夏天。</p>
+              <div class="foot">
+                <span class="tag"># 家</span>
+                <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>杭州</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-month"><span class="y">4月</span><span class="c">2026 · 9 篇</span></div>
+      <div class="timeline">
+        <div class="entry">
+          <div class="date"><div class="d">30</div><div class="m">APR</div><div class="w">周三</div></div>
+          <div class="card" data-nav="reader" style="cursor:pointer">
+            <div class="body">
+              <div class="head"><h4>春末的最后一场风</h4></div>
+              <p class="excerpt">楼下的樱花落得差不多了，风一吹满地都是。想起去年也是这个时候搬来这里。</p>
+              <div class="foot"><span class="tag"># 生活</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty" data-when="empty">
+      <div class="ill"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a.5.5 0 0 1-.5.5H6a2 2 0 0 1-2-2z" stroke="currentColor"/><path d="M14 4v5h5" stroke="currentColor"/><path d="M8.5 13h7M8.5 16.5h4" stroke="currentColor"/></svg></div>
+      <h3>还没有日记</h3>
+      <p>从今天开始记录。轻点右下角，写下第一页。</p>
+    </div>
+  </div>
+
+  <div class="scrim" data-drawer-close></div>
+  <aside class="drawer">
+    <div class="dw-head">
+      <div class="avatar">林</div>
+      <div class="who"><b>林晚</b><span>本地 · 已加密</span></div>
+    </div>
+    <div class="dw-section">
+      <div class="dw-label">日记本<span class="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>
+      <div class="dw-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M4 9h16"/></svg><span class="name">全部日记</span><span class="count">218</span></div>
+      <div class="dw-item"><span class="dw-dot" style="background:#786CAD"></span><span class="name">工作</span><span class="count">64</span></div>
+      <div class="dw-item"><span class="dw-dot" style="background:#5C8A68"></span><span class="name">旅行</span><span class="count">37</span></div>
+      <div class="dw-item"><span class="dw-dot" style="background:#C8993E"></span><span class="name">灵感</span><span class="count">22</span></div>
+    </div>
+    <div class="dw-section">
+      <div class="dw-label">浏览</div>
+      <div class="dw-item" data-nav="onthisday"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.6v3.7h3.7" stroke="currentColor"/><path d="M4.3 8.3A8.2 8.2 0 1 1 3.9 12.6" stroke="currentColor"/><path d="M12 7.8v4.4l3.1 1.8" stroke="currentColor"/></svg><span class="name">往年今日</span></div>
+      <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L4.5 10.2l5.9-.9z"/></svg><span class="name">收藏</span><span class="count">19</span></div>
+      <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg><span class="name">日历</span></div>
+      <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg><span class="name">回收站</span></div>
+    </div>
+    <div class="dw-foot">
+      <div class="dw-section">
+        <div class="dw-item" data-nav="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M19.4 13a7.6 7.6 0 0 0 .1-2l1.9-1.4-1.9-3.3-2.3.9a7.6 7.6 0 0 0-1.7-1L15.2 3.8H8.8L8.4 6.2a7.6 7.6 0 0 0-1.7 1l-2.3-.9-1.9 3.3L4.5 11a7.6 7.6 0 0 0 0 2l-1.9 1.4 1.9 3.3 2.3-.9a7.6 7.6 0 0 0 1.7 1l.4 2.4h6.4l.4-2.4a7.6 7.6 0 0 0 1.7-1l2.3.9 1.9-3.3z"/></svg><span class="name">设置</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="fab-wrap">
+    <div class="fab-scrim"></div>
+    <div class="fab-actions">
+      <div class="fab-action" data-label="拍照"><span class="lab">拍照</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2L8.2 4.7h7.6L17 6.5h2a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.4"/></svg></button></div>
+      <div class="fab-action" data-label="语音"><span class="lab">语音</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button></div>
+      <div class="fab-action" data-label="纯文字"><span class="lab">纯文字</span><button class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14M5 12h14M5 18h9"/></svg></button></div>
+    </div>
+    <button class="fab-main" aria-label="写日记"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+</div>
+<script src="../assets/screen.js"></script>
+</body>
+</html>
