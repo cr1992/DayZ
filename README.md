@@ -54,6 +54,21 @@ bash scripts/check_patches.sh
 
 新增功能或重大改动**先开 spec**,不在源码里直接发挥。
 
+## License
+
+本仓库为**混合授权**:
+
+- **本项目原创代码**(`lib/`、`editor-build/`、`specs/`、`docs/` 等)采用 **Mozilla Public License 2.0**(见根目录 [`LICENSE`](./LICENSE))。MPL-2.0 是文件级弱传染:修改受其约束的源文件须公开,但可与其他许可证代码组合使用。
+- **`packages/appflowy-editor/`** 是上游 [AppFlowy Editor](https://github.com/AppFlowy-IO/appflowy-editor) 的 fork,**保留其原本的双授权(AGPL-3.0 或 MPL-2.0)**,不可重新授权。本项目按其 **MPL-2.0** 一臂使用;对该 fork 的改动(见 `packages/CHANGELOG.md` 的 Patch 台账)亦以 MPL-2.0 公开。
+
+新增 Dart 源文件时,建议在文件顶部加 MPL-2.0 头注:
+
+```dart
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+```
+
 ## 维护者
 
 `@Ray`
