@@ -10,11 +10,14 @@ set -euo pipefail
 #       从 stdin 读 hook 输入 JSON，向 stdout 输出 hook 决策 JSON。
 #       白名单文件：<repo根>/.spec-task-whitelist，每行一个允许的路径 glob，'#' 开头为注释。
 # 退出码：恒为 0（决策通过 JSON 的 decision 字段表达，非退出码）。
-# 强制规范：spec「本任务可改文件」边界（防越界写）。**试点默认 warn，不阻断**。
-# 启发式/降级：file_path 优先用 jq 解析；无 jq 时用 grep/sed 提取，足够覆盖 Claude 的输入形态。
-# 改成强阻断：把下方 DECISION 变量从 "warn" 改成 "deny" 即可（届时越界写将被拒绝）。
+# 强制规范：spec「本任务可改文件」边界（防越界写）。**默认 deny，真阻断**——
+#   实测（Claude Code 官方文档）：PreToolUse 的 systemMessage 只给用户看、模型不可见，
+#   warn 模式无法让模型自纠；只有 permissionDecision=deny 的 reason/additionalContext 才进模型上下文。
+#   要「让模型不跑偏」必须 deny。
+# 启发式/降级：file_path（含 notebook_path）优先用 jq 解析；无 jq 时用 grep/sed 提取。
+# 想只提示不阻断：把下方 DECISION 改成 "warn"（仍会把提示注入模型上下文，但放行写入）。
 
-DECISION="warn"   # warn=仅提示放行；deny=阻断（试点阶段默认 warn）
+DECISION="deny"   # deny=阻断越界写并把原因反馈模型（默认）；warn=仅提示、放行
 
 # --- 读取 hook 输入 -------------------------------------------------------
 INPUT="$(cat || true)"
@@ -28,17 +31,18 @@ fi
 # --- 提取 tool_input.file_path -------------------------------------------
 file_path=""
 if command -v jq >/dev/null 2>&1; then
-  file_path="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
+  # Write/Edit/MultiEdit 用 file_path；NotebookEdit 用 notebook_path——两者都取。
+  file_path="$(printf '%s' "$INPUT" | jq -r '(.tool_input.file_path // .tool_input.notebook_path) // empty' 2>/dev/null || true)"
 fi
 if [ -z "$file_path" ]; then
-  # 降级：从 "file_path"："..." 里抠值（容忍空格；取首个匹配）。
+  # 降级：从 "file_path"/"notebook_path"："..." 里抠值（容忍空格；取首个匹配）。
   # 仅处理无转义引号的常规路径，足够 Claude Code 的实际输入。
   # grep 无命中会退出 1，叠加 pipefail/set -e 会误杀脚本 → 整体 || true 兜底。
   file_path="$(printf '%s' "$INPUT" \
     | tr ',' '\n' \
-    | grep '"file_path"' \
+    | grep -E '"(file_path|notebook_path)"' \
     | head -n 1 \
-    | sed -e 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' -e 's/".*//' || true)"
+    | sed -E -e 's/.*"(file_path|notebook_path)"[[:space:]]*:[[:space:]]*"//' -e 's/".*//' || true)"
 fi
 
 # 没有 file_path（非文件类工具或解析失败）→ 放行
@@ -60,25 +64,31 @@ fi
 # 物理根（解开 symlink，如 macOS /tmp -> /private/tmp），兼容两种绝对路径形态
 ROOT_P="$(cd "$ROOT" 2>/dev/null && pwd -P || printf '%s' "$ROOT")"
 
+# 把绝对路径归一成"相对仓库根"：物理化「最近的已存在祖先」再接回缺失尾段。
+# 这样同时兼容 ① symlink 根（/tmp vs /private/tmp 前缀不等）② 目标文件 / 其父目录
+# 尚不存在（新建文件——此时直接 cd dirname 会失败，会把白名单内的新文件误判成越界）。
+resolve_rel() {
+  p="$1"; rest=""; anc="$p"
+  while [ "$anc" != "/" ] && [ "$anc" != "." ] && [ ! -e "$anc" ]; do
+    rest="$(basename "$anc")${rest:+/$rest}"
+    anc="$(dirname "$anc")"
+  done
+  ancp="$(cd "$anc" 2>/dev/null && pwd -P || printf '%s' "$anc")"
+  full="$ancp${rest:+/$rest}"
+  case "$full" in
+    "$ROOT_P"/*) printf '%s' "${full#"$ROOT_P"/}" ;;
+    "$ROOT"/*)   printf '%s' "${full#"$ROOT"/}" ;;
+    *)           printf '%s' "$p" ;;   # 仓库外 → 原样（必落到清单外）
+  esac
+}
+
 # --- 把 file_path 归一成"相对仓库根"形式，便于 glob 匹配 ------------------
 rel="$file_path"
 case "$rel" in
   "$ROOT"/*)   rel="${rel#"$ROOT"/}" ;;    # 绝对路径在 repo 内 → 去掉根前缀
   "$ROOT_P"/*) rel="${rel#"$ROOT_P"/}" ;;  # 物理根前缀（symlink 解开后）
   ./*)         rel="${rel#./}" ;;          # ./foo → foo
-  /*)
-    # 绝对路径但前缀不直接匹配（如 macOS /tmp 与 /private/tmp 不一致）：
-    # 把所在目录物理化后再剥根。目录不存在则保持原样（视作 repo 外）。
-    d="$(dirname "$file_path")"
-    b="$(basename "$file_path")"
-    if dp="$(cd "$d" 2>/dev/null && pwd -P)"; then
-      cand="$dp/$b"
-      case "$cand" in
-        "$ROOT_P"/*) rel="${cand#"$ROOT_P"/}" ;;
-        "$ROOT"/*)   rel="${cand#"$ROOT"/}" ;;
-      esac
-    fi
-    ;;
+  /*)          rel="$(resolve_rel "$file_path")" ;;  # 其余绝对路径：物理化祖先后剥根
 esac
 
 # --- glob 匹配 ------------------------------------------------------------
@@ -146,10 +156,10 @@ rel_json="$(printf '%s' "$rel" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
 reason="[spec-kit] 写入目标 '$rel_json' 不在 .spec-task-whitelist 内（也非 test/**/*_test.dart）。本任务理应只改清单内文件，请确认是否越界。"
 
 if [ "$DECISION" = "deny" ]; then
-  # 强阻断：PreToolUse permissionDecision=deny
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$reason"
+  # 强阻断：permissionDecision=deny —— reason/additionalContext 进模型上下文（模型据此停手/改道/请示），并拦下写入。
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s","additionalContext":"%s"}}\n' "$reason" "$reason"
 else
-  # 试点默认：仅提示放行（不阻断）
-  printf '{"continue": true, "systemMessage": "%s"}\n' "$reason"
+  # warn：放行但提示。systemMessage 仅用户可见，故同时用 additionalContext 把同一提示注入模型上下文，让模型也能自纠。
+  printf '{"continue": true, "systemMessage": "%s", "hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "$reason" "$reason"
 fi
 exit 0

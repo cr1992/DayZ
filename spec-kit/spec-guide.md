@@ -136,7 +136,9 @@
 - {当前不处理的问题或后续需关注点}
 ```
 
-规则：决策必须用 `D` 编号且必须写「代价」。文件变更清单是任务「可改文件」的来源。架构图按需添加。
+规则：决策必须用 `D` 编号且必须写「代价」。架构图按需添加。
+
+**`## 文件变更` 是任务「可改文件」的唯一来源与上界（防跑偏的结构性根基）：** 任一 task 的「可改文件」**MUST ⊆ 本清单**——清单未列的文件**不得**进任何任务的白名单。这是「AI 跑偏」的头号来源：白名单一旦超出设计声明，下游 deny 闸也只会照单放行那次越界写（闸只认白名单，不认设计）。两类典型违例：① 任务顺手改了 `pubspec.lock`/`Podfile`/`build.gradle` 等构建副产物而清单只写了 `pubspec.yaml`；② 任务把另一个**模块**的文件（如在 A 模块的 spec 里写 B 模块 `lib/x/`）列入可改文件——这等于跨模块越界，且常与别的 spec 撞归属。需要动清单外文件时：**先回填 `## 文件变更`**（连带触发 §0「跨多模块」复核是否升档），再列入可改文件；归属未定的跨 spec 文件，先在 README/对应 spec 拍板归属，不要在两个 spec 各写一遍。
 
 ## P3 · tasks.md
 
@@ -425,7 +427,7 @@ graph LR
    - **测试文件（隐含延伸）**：测试目录下、按你栈测试命名约定（如 `*_test.{ext}` / `*.test.{ext}` / `*.spec.{ext}` / `test_*.{ext}`）、且针对某个可改文件的测试文件，自动放行（**镜像与否不限**——一个源文件天然可有多个按功能命名的测试）。例：可改 `src/app.{ext}` → 可直接创建 `test/app_theme_mount_test.{ext}`、`test/widgets/theme_transition_test.{ext}` 等。hook 只机检「在测试目录下且符合测试命名约定」。
    - **验收基建（显式预批）**：任务 inline `验收基建` 字段列出的共享测试文件（fixture / 测试目录下共享 helper / golden / 快照基线 / 测试用配置）。
    - 除这两类外的共享文件（lint / 静态分析配置、CI 配置、源码目录下他人代码、mock 等）仍属清单外，须停下声明并请求确认。
-   - （此条「只读不靠自觉」：文件白名单由 PreToolUse hook 试点校验写入路径，见「硬执行闸」。）
+   - （此条「不靠自觉」：文件白名单由 PreToolUse hook **默认 deny** 校验写入路径——越界写被拦下、原因反馈模型，模型据此停下请确认，见「硬执行闸」。）
 3. **验收标准即终点**：做完验收标准列出的项即停。衍生想法记入「已知风险」或新任务，不在本任务内顺手扩展。
 4. **验收方式为准**：有自动命令的以命令通过为准；无法自动化的以显式标注的人工核查项（注核查人）为准。两者都不接受「我觉得做完了」式自评。命令本身须满足 P3「验收命令的抗规避规则」（验行为、不 grep 被改文件自身）。
 5. **失败处理**：
@@ -445,11 +447,13 @@ graph LR
 | `check_dead_links.sh` 死链检查 | pre-commit / CI | `specs/`（及引用 specs 的文件）内所有相对链接可解析 |
 | `lint_acceptance_commands.sh` | pre-commit / CI | 验收命令不得 `grep` 被改文件自身（治「可糊弄命令」） |
 | `lint_keywords.sh` 关键词 lint | pre-commit / CI | requirement 内 RFC2119 关键词的**存在性/拼写/大小写**（**仅此**；SHALL↔SHOULD 分级是否正确属语义，lint 判不了，仍须人审） |
-| 文件白名单 hook（试点） | PreToolUse | 任务把「可改文件 + 预批例外」写到约定位置（`.spec-task-whitelist`），hook 据此对越界写入告警/拦截 |
+| 文件白名单 hook | PreToolUse | 任务把「可改文件 + 预批例外」写到 `.spec-task-whitelist`，hook 对越界写入**默认 deny 阻断**并把原因反馈模型（matcher 覆盖 Edit/MultiEdit/Write/NotebookEdit；无白名单文件则关闭） |
 
 **安装与用法：** 在目标 repo 根运行 `./spec-kit/install.sh` 安装四闸（pre-commit hook + 可选 `--with-claude` 注册 PreToolUse hook）。脚本可独立调用：`spec-kit/scripts/check_dead_links.sh [SPECS_DIR]`、`spec-kit/scripts/lint_acceptance_commands.sh [SPECS_DIR]`、`spec-kit/scripts/lint_keywords.sh [SPECS_DIR]`（默认作用于当前工作目录的 `specs/`，可由 `$1` 或 `SPECS_DIR` 覆盖；退出码 0=通过、1=有违规、2=用法/环境错误）。归档用 `spec-kit/scripts/archive_spec.sh <功能名> [--cancelled]`。pre-commit 紧急放行用 `SKIP_SPEC_LINT=1`。接 CI 时在流水线里直接调上述脚本即可。
 
-> 文件白名单 hook 因依赖「当前任务上下文」，需一条轻约定（任务执行时把白名单写到约定文件 `.spec-task-whitelist`、hook 读取）才能真正拦截，故先作试点（默认告警不阻断）；其余四闸可直接 100% 自动化。
+> 文件白名单 hook 依赖「当前任务上下文」：任务执行时把白名单写到 `.spec-task-whitelist`（无此文件＝功能关闭、零打扰）。**默认 deny**——实测（Claude Code 官方文档）PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，warn 模式拦不住模型跑偏；只有 `permissionDecision=deny` 的 `permissionDecisionReason`/`additionalContext` 才进**模型**上下文，模型据此停手/改道/请示。**要让模型「不跑偏」，必须 deny。** 其余四闸（死链/验收/关键词/归档）与栈无关、可 100% 自动化。
+>
+> **闸只认白名单、不认设计**：白名单本身正确（⊆ design `## 文件变更`，见 P2）是前提——deny 只能保证「不写白名单外」，保证不了「白名单没越出设计」。后者靠 P2 硬规则 + 人审（可另加一道 lint 校验 `可改文件 ⊆ 文件变更`）。
 
 -----
 

@@ -13,7 +13,7 @@ spec-kit 用四道闸把这些机械可检的问题挡在门外，让人审专�
 - **死链闸**：spec 里相对链接指向不存在的文件/目录 → 拒绝。
 - **验收命令抗规避闸**：tasks/verification 的验收里用正向 `grep` 源码文件冒充验收 → 拒绝（应跑测试断言行为）。
 - **关键词闸**：requirement 里把 `must/should/shall/may` 写成小写/变形 → 提示大写（只查拼写大小写，不判语义）。
-- **白名单闸**：Claude Code 写到「本任务可改文件清单」之外 → 提示（试点默认不阻断）。
+- **白名单闸**：Claude Code 写到「本任务可改文件清单」之外 → **默认 deny 阻断**并把原因反馈模型（让 AI 不跑偏）。
 
 ## 目录说明
 
@@ -47,7 +47,8 @@ bash spec-kit/install.sh --with-claude # 额外注册 Claude Code PreToolUse 白
 安装行为：
 
 - **幂等**：可反复运行；已装则跳过，不重复追加。
-- **不覆盖你已有的 pre-commit**：若 `.git/hooks/pre-commit` 已存在，先备份成 `.bak.<时间戳>`，再把 spec-kit 的调用**追加**进去（包在 `# >>> spec-kit pre-commit >>>` 标记之间）。
+- **不覆盖你已有的 pre-commit**：若 `.git/hooks/pre-commit` 已存在，先备份成 `.bak.<时间戳>`，再把 spec-kit 调用块（包在 `# >>> spec-kit pre-commit >>>` 标记之间）**插到 shebang 之后**——即让 spec-kit 闸**先于**你原有逻辑里可能的提前 `exit 0` 运行，避免闸被静默跳过。
+- **非 shell 的既有 hook 会停手**：若既有 pre-commit 的 shebang 不是 sh/bash/zsh（如 python/ruby/node），追加 bash 会损坏它，故 spec-kit **拒绝自动改写**、保留原文件并打印手工接入指引（或改走 CI）。
 - `--with-claude`：把 PreToolUse hook 合并进 `.claude/settings.json`（有 `jq` 自动合并；无 `jq` 则打印需手动粘贴的 JSON 片段）。
 
 安装脚本结尾会打印「已装什么 / 怎么用 / 怎么卸」。卸载就是删掉那对标记之间的区块（或本 kit 新建的整个 hook 文件）。
@@ -57,27 +58,40 @@ bash spec-kit/install.sh --with-claude # 额外注册 Claude Code PreToolUse 白
 ### 1. 死链闸 — `scripts/check_dead_links.sh [SPECS_DIR]`
 扫描 `SPECS_DIR` 下所有 `.md` 的 Markdown 相对链接 `[文字](相对路径)`（忽略 `http(s)://`、`mailto:`、`#锚点`），
 按链接所在 md 文件解析相对路径；目标文件或目录不存在即违规。
+代码围栏（```` ``` ````…）与行内 code（`` `…` ``）里的示例链接不算真链接、已跳过（与另两道 lint 行为一致）。
+（已知局限：只查内联式链接，不解析引用式 `[文字][ref]` + `[ref]: 路径`。）
 ```bash
 bash spec-kit/scripts/check_dead_links.sh            # 查 ./specs
 bash spec-kit/scripts/check_dead_links.sh path/to/specs
 ```
 
 ### 2. 验收命令抗规避闸 — `scripts/lint_acceptance_commands.sh [SPECS_DIR]`
-只看 `tasks.md` / `verification.md`。在「### 验收方式」/验收命令区里，若用**正向** `grep`（排除 `! grep` 与 `grep -v`）
-去匹配某个**源码文件路径**（`.dart/.ts/.tsx/.js/.css/.yaml/.sql/.go/.py/.kt/.swift` 等）当作验收 → 违规：
+只看 `tasks.md` / `verification.md`。**作用域**：`tasks.md` 仅在标题含「验收 / 验证」的小节内判定（如 `### 验收方式`），
+散文段（背景 / 概述 / 实施）里提到 `grep` 不算验收命令、不误报；`verification.md` 整篇皆为验证，全程判定。
+在作用域内若用**正向** `grep`（排除 `! grep` 与 `grep -v`）去匹配某个**源码文件路径**
+（`.dart/.ts/.tsx/.js/.css/.yaml/.sql/.go/.py/.kt/.swift` 等）当作验收 → 违规：
 这是"看代码里有没有这行字"而非"验证行为"，属规范 **P3 抗规避**禁止项，应改为跑测试断言行为。
 `! grep`（缺失守卫，断言某内容**不该**出现）放行。启发式从严避免误伤，宁可少报。
+（已知局限：标题只要含「验收/验证」子串即开启作用域，如「## 不要用 grep 做验收」会误开——实际标题用模板写法即可避开。）
 
 ### 3. 关键词闸 — `scripts/lint_keywords.sh [SPECS_DIR]`
-只看 `requirement.md`。校验 RFC2119 关键词（must / should / shall / may / must not …）的
-**存在性与大小写**：出现独立小写/变形写法 → 提示应大写。
-**只查拼写大小写，不判语义**——`SHALL` 与 `SHOULD` 的分级是否用对属于人审范畴，本闸不碰。
+只看 `requirement.md`。校验 RFC2119 关键词（must / should / shall / may / must not …）的**存在性与大小写**：
+- **大小写**：出现独立小写/变形写法（must/shall/should 及否定式）→ 提示应大写。
+- **存在性**：全篇无任何大写 RFC2119 关键词（MUST/SHALL/SHOULD/MAY）→ 报缺失，requirement 须用规范关键词描述系统行为。
+**只查拼写大小写与存在性，不判语义**——`SHALL` 与 `SHOULD` 的分级是否用对属于人审范畴，本闸不碰。
 
 ### 4. 白名单闸 — `hooks/claude-pretooluse-whitelist.sh`
-Claude Code 的 `PreToolUse`（matcher `Write|Edit`）钩子。从 stdin 读 hook 输入 JSON，取 `tool_input.file_path`
-（优先 `jq`，无 `jq` 用 `grep/sed` 降级提取），对照仓库根 `.spec-task-whitelist`：命中清单内、或 `test/**/*_test.dart`
-则放行；命中清单外则提示。**试点默认 `decision=warn`（不阻断）**——脚本顶部把 `DECISION` 改成 `deny` 即变强阻断。
+Claude Code 的 `PreToolUse`（matcher `Edit|MultiEdit|Write|NotebookEdit`）钩子。从 stdin 读 hook 输入 JSON，取
+`tool_input.file_path`（NotebookEdit 取 `notebook_path`；优先 `jq`，无 `jq` 用 `grep/sed` 降级），对照仓库根
+`.spec-task-whitelist`：命中清单内、或 `test/**/*_test.dart` 则放行；命中清单外则按 `DECISION` 处置。
+**默认 `DECISION=deny`（真阻断）**：越界写被拦下，并把原因经 `permissionDecisionReason`/`additionalContext`
+**反馈给模型**，模型据此停手/改道/请示——这才挡得住 AI 跑偏。
+（关键事实：PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，所以 `warn` 模式拦不住模型；warn 已改为
+同时用 `additionalContext` 把提示注入模型上下文，但仍放行。要真约束模型就用默认的 deny。脚本顶部 `DECISION` 可切回 `warn`。）
 **无 `.spec-task-whitelist` 文件时直接放行**（功能默认关闭，零打扰）。
+
+> 前提：白名单本身要正确——每个任务的「可改文件」应 ⊆ 该 spec 的 design `## 文件变更`（见 spec-guide P2）。
+> deny 只保证「不写白名单外」，保证不了「白名单没越出设计」；后者是 AI 跑偏的头号结构性来源，靠 spec 规则 + 人审兜。
 
 > 配套：`scripts/archive_spec.sh <功能名> [--cancelled]` 三步原子归档一个功能（移动 `specs/active/<功能名>`
 > 到 `specs/archive/<日期>-<功能名>`、改 README 索引表、全仓库修正引用、跑死链闸）。无法可靠定位 README 表结构时
@@ -111,7 +125,10 @@ lib/core/constants.dart
     bash spec-kit/scripts/lint_keywords.sh specs
 ```
 
-任一非 0 即让该步骤失败。CI 与本地 pre-commit 用同一批脚本，行为一致。
+任一非 0 即让该步骤失败。CI 与本地 pre-commit 用同一批脚本，但**作用范围有意分工**：
+- **本地 pre-commit**：只查本次提交涉及的文件，且关键词/验收闸校验的是**暂存内容**（物化暂存 blob，不受未暂存改动影响）、死链闸查工作树——快、精准、拦本次引入的新违规。
+- **CI**：对整个 `specs/` 全量扫描——兜底历史遗留与漏网，是最终真相。
+
 （白名单闸是 Claude Code 写时钩子，不在 CI 跑。）
 
 ## 按你的技术栈裁剪
