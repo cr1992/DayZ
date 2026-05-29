@@ -107,7 +107,7 @@
     });
     main.addEventListener("pointercancel", function () { clearTimeout(timer); wrap.classList.remove("pressing"); });
     main.addEventListener("pointerleave", function () { if (!longPressed) clearTimeout(timer); });
-    var fs = wrap.querySelector(".fab-scrim"); if (fs) fs.addEventListener("click", close);
+    var fs = document.querySelector(".fab-scrim"); if (fs) fs.addEventListener("click", close);
     wrap.querySelectorAll(".fab-action").forEach(function (a) {
       a.addEventListener("click", function () { close(); post({ type: "nav", to: "editor" }); });
     });

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayZ · 回忆卡片</title>
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+<style>
+  /* 预览舞台：在顶栏与固定底栏之间，居中卡片；卡片更高时此区滚动，底栏始终可见 */
+  .mem-stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100%; padding: var(--sp-5) var(--sp-5) var(--sp-6); box-sizing: border-box;
+  }
+  .pg.has-memdock .app-scroll { padding-bottom: 206px; }
+  .pg.has-memdock .app-scroll > :last-child { margin-bottom: 0; }
+
+  .mem-stage [hidden] { display: none !important; }
+
+  /* ---- 卡片本体（单条） ---- */
+  .mc {
+    width: 224px; border-radius: var(--r-lg); overflow: hidden;
+    box-shadow: 0 18px 44px -18px rgba(40, 32, 22, 0.5), 0 4px 14px -6px rgba(40, 32, 22, 0.3);
+    position: relative; flex-shrink: 0;
+  }
+  .mc.r916 { aspect-ratio: 9 / 16; }
+  .mc.r11 { aspect-ratio: 1 / 1; width: 300px; }
+
+  /* 纸感款 */
+  .mc.paper { background: var(--surface); display: flex; flex-direction: column; }
+  .mc.paper .ph { width: 100%; flex: 1 1 auto; min-height: 0; overflow: hidden; background: var(--accent-soft); }
+  .mc.paper .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mc.paper .body { padding: 14px 15px 15px; }
+  .mc.paper.r11 .body { padding: 12px 15px 14px; }
+  .mc.paper .ov { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); font-weight: 600; }
+  .mc.paper h3 { font-family: var(--font-serif); font-size: 17px; font-weight: 600; line-height: 1.25; color: var(--ink); margin: 6px 0 6px; letter-spacing: -0.01em; }
+  .mc.paper p { font-family: var(--font-serif); font-size: 12px; line-height: 1.6; color: var(--ink-2); margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .mc.paper.r11 p { -webkit-line-clamp: 2; }
+
+  /* 大图压字款 */
+  .mc.photo { background: #1a1712; }
+  .mc.photo .ph { position: absolute; inset: 0; }
+  .mc.photo .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mc.photo .ph::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0) 38%, rgba(20,16,12,0.82) 100%); }
+  .mc.photo .body { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 15px 15px; z-index: 1; }
+  .mc.photo .ov { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.82); font-weight: 600; }
+  .mc.photo h3 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; line-height: 1.25; color: #fff; margin: 7px 0 6px; letter-spacing: -0.01em; }
+  .mc.photo p { font-family: var(--font-serif); font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.86); margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* 卡片页脚：DayZ 字标 + 元信息 */
+  .mc .foot { display: flex; align-items: center; gap: 7px; margin-top: 11px; }
+  .mc.paper .foot { color: var(--ink-3); }
+  .mc.photo .foot { color: rgba(255,255,255,0.78); }
+  .mc .foot .z, .lc-foot .z { width: 16px; height: 16px; border-radius: 5px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-family: var(--font-serif); font-weight: 600; font-size: 11px; flex-shrink: 0; }
+  .mc.photo .foot .z { background: #fff; color: #1a1712; }
+  .mc .foot .wm { font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
+  .mc .foot .mt { margin-left: auto; font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px; }
+  .mc .foot .mt svg { width: 11px; height: 11px; }
+
+  /* ---- 长图（整天回忆，可竖向滚动看全貌） ---- */
+  .lc {
+    width: 236px; border-radius: var(--r-lg); overflow: hidden; flex-shrink: 0;
+    background: var(--surface); box-shadow: 0 18px 44px -18px rgba(40, 32, 22, 0.5), 0 4px 14px -6px rgba(40, 32, 22, 0.3);
+  }
+  .lc-top { padding: 18px 16px 14px; background: var(--accent-soft); border-bottom: 1px solid var(--hairline); }
+  .lc-top .ov { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); font-weight: 600; }
+  .lc-top h3 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--ink); margin: 7px 0 0; letter-spacing: -0.01em; }
+  .lc-item { padding: 15px 16px; border-bottom: 1px solid var(--hairline); }
+  .lc-item .yr { font-size: 10.5px; letter-spacing: 0.04em; color: var(--accent-ink); font-weight: 600; }
+  .lc-item .lph { width: 100%; aspect-ratio: 16/10; border-radius: var(--r-sm); overflow: hidden; margin: 9px 0 10px; background: var(--accent-soft); }
+  .lc-item .lph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lc-item h4 { font-family: var(--font-serif); font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ink); margin: 8px 0 5px; letter-spacing: -0.01em; }
+  .lc-item p { font-family: var(--font-serif); font-size: 12.5px; line-height: 1.7; color: var(--ink-2); margin: 0; text-wrap: pretty; }
+  .lc-foot { display: flex; align-items: center; gap: 7px; padding: 13px 16px; color: var(--ink-3); }
+  .lc-foot .wm { font-size: 11px; font-weight: 600; }
+  .lc-foot .ct { margin-left: auto; font-size: 10.5px; }
+
+  /* ---- 固定底栏：画幅 / 风格 + 操作（始终可见） ---- */
+  .mem-dock {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 15;
+    background: var(--surface); border-top: 1px solid var(--hairline);
+    padding: var(--sp-4) var(--sp-5) calc(var(--sp-4) + 14px);
+    display: flex; flex-direction: column; gap: var(--sp-3);
+    box-shadow: 0 -8px 24px -16px rgba(40, 32, 22, 0.3);
+  }
+  .mem-dock .row { display: flex; align-items: center; gap: var(--sp-4); }
+  .mem-dock .row .lab { font-size: 13px; color: var(--ink-3); width: 36px; flex-shrink: 0; }
+  .mem-dock .segmented { flex: 1; }
+  .mem-dock .row.dim { opacity: 0.4; pointer-events: none; }
+  .mem-actions { display: flex; gap: var(--sp-3); margin-top: 2px; }
+  .mem-actions .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .mem-actions .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="pg has-memdock">
+  <div class="app-top">
+    <button class="ico" data-nav-back aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+    <div class="title">回忆卡片</div>
+    <div class="acts"></div>
+  </div>
+
+  <div class="app-scroll">
+    <div class="mem-stage">
+      <!-- 单条卡片 -->
+      <div class="mc paper r916" data-card>
+        <div class="ph"><img src="../assets/img/sea.png" alt=""></div>
+        <div class="body">
+          <div class="ov">2021年5月 · 五年前的今天</div>
+          <h3>毕业那天的海</h3>
+          <p>论文答辩完，几个人开车去看了海。谁也没说话，就那样坐到太阳落下去。</p>
+          <div class="foot">
+            <span class="z">Z</span><span class="wm">DayZ</span>
+            <span class="mt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>青岛</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 长图（整天回忆） -->
+      <div class="lc" data-long hidden>
+        <div class="lc-top">
+          <div class="ov">往年今日 · 5月29日</div>
+          <h3>这一天，你写过 2 篇</h3>
+        </div>
+        <div class="lc-item">
+          <div class="yr">2024 · 两年前</div>
+          <h4>搬家第一夜</h4>
+          <p>纸箱还没拆完，先把台灯和被子找了出来。新房间的风从阳台进来，带着一点桂花的味道。</p>
+        </div>
+        <div class="lc-item">
+          <div class="yr">2021 · 五年前</div>
+          <div class="lph"><img src="../assets/img/sea.png" alt=""></div>
+          <h4>毕业那天的海</h4>
+          <p>论文答辩完，几个人开车去看了海。谁也没说话，就那样坐到太阳落下去。</p>
+        </div>
+        <div class="lc-foot"><span class="z">Z</span><span class="wm">DayZ</span><span class="ct">5月29日 · 共 2 段回忆</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mem-dock">
+    <div class="row" data-ratio-row>
+      <span class="lab">画幅</span>
+      <div class="segmented" data-ratio>
+        <button aria-selected="true" data-r="r916">竖版</button>
+        <button aria-selected="false" data-r="r11">方形</button>
+        <button aria-selected="false" data-r="long">长图</button>
+      </div>
+    </div>
+    <div class="row" data-style-row>
+      <span class="lab">风格</span>
+      <div class="segmented" data-style>
+        <button aria-selected="true" data-s="paper">纸感</button>
+        <button aria-selected="false" data-s="photo">大图压字</button>
+      </div>
+    </div>
+    <div class="mem-actions">
+      <button class="btn btn-soft btn-lg" data-save>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m4.5 18 4.8-4.4a2 2 0 0 1 2.7 0L20 19.5"/></svg>
+        保存
+      </button>
+      <button class="btn btn-primary btn-lg" data-share>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m8 7 4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+        分享
+      </button>
+    </div>
+  </div>
+</div>
+<script src="../assets/toast.js"></script>
+<script src="../assets/sheet.js"></script>
+<script src="../assets/screen.js"></script>
+<script>
+(function () {
+  var card = document.querySelector("[data-card]");
+  var long = document.querySelector("[data-long]");
+  var styleRow = document.querySelector("[data-style-row]");
+  var stage = document.querySelector(".mem-stage");
+  var mode = "r916";
+
+  function setSeg(group, attr, fn) {
+    group.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      group.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-selected", "false"); });
+      b.setAttribute("aria-selected", "true");
+      fn(b.getAttribute(attr));
+    });
+  }
+  setSeg(document.querySelector("[data-ratio]"), "data-r", function (r) {
+    mode = r;
+    if (r === "long") {
+      card.hidden = true; long.hidden = false;
+      styleRow.classList.add("dim");                 /* 长图固定纸感 */
+    } else {
+      long.hidden = true; card.hidden = false;
+      styleRow.classList.remove("dim");
+      card.classList.remove("r916", "r11"); card.classList.add(r);
+    }
+    stage.parentElement.scrollTop = 0;
+  });
+  setSeg(document.querySelector("[data-style]"), "data-s", function (s) {
+    card.classList.remove("paper", "photo"); card.classList.add(s);
+  });
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-save]")) { if (window.DZ) DZ.toast({ text: mode === "long" ? "长图已保存到相册" : "已保存到相册", tone: "ok" }); return; }
+    if (e.target.closest("[data-share]")) { if (window.DZ) DZ.toast(mode === "long" ? "已生成长图，打开分享" : "已打开分享"); return; }
+  });
+})();
+</script>
+</body>
+</html>

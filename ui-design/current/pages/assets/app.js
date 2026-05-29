@@ -24,6 +24,14 @@
       states: [{ k: "empty", n: "空白新建" }, { k: "writing", n: "书写中" }, { k: "rich", n: "富格式" }] },
     { id: "onthisday", idx: "04", name: "往年今日", label: "On This Day", proto: "default",
       states: [{ k: "default", n: "有内容" }, { k: "empty", n: "空" }] },
+    { id: "memory", idx: "04b", name: "回忆卡片", label: "Memory Card", proto: "default",
+      states: [{ k: "default", n: "竖版" }] },
+    { id: "favorites", idx: "07", name: "收藏", label: "Favorites", proto: "default",
+      states: [{ k: "default", n: "有内容" }, { k: "empty", n: "空" }] },
+    { id: "calendar", idx: "08", name: "日历", label: "Calendar", proto: "default",
+      states: [{ k: "default", n: "月视图" }] },
+    { id: "trash", idx: "09", name: "回收站", label: "Trash", proto: "default",
+      states: [{ k: "default", n: "有内容" }, { k: "empty", n: "空" }] },
     { id: "search", idx: "05", name: "搜索", label: "Search", proto: "results",
       states: [{ k: "typing", n: "输入中" }, { k: "results", n: "有结果" }, { k: "empty", n: "无结果" }] },
     { id: "settings", idx: "06", name: "设置", label: "Settings", proto: "default",
@@ -116,6 +124,16 @@
     if (d.type === "nav") { if (present === "proto") pushScreen(d.to, true); }
     else if (d.type === "back") { if (present === "proto") popScreen(); }
     else if (d.type === "ready") { try { e.source.postMessage({ type: "theme", theme: theme, mode: mode }, "*"); } catch (_) {} }
+    else if (d.type === "settheme" && d.theme) { theme = d.theme; applyTheme(); }
+    else if (d.type === "setmode") {
+      if (d.appearance === "system") {
+        var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        mode = dark ? "dark" : "light";
+      } else if (d.appearance === "dark" || d.appearance === "light") {
+        mode = d.appearance;
+      }
+      applyTheme();
+    }
   });
 
   /* ---------- 画布（无限画布 · 平移缩放浏览 · 卡片可交互）---------- */

@@ -415,6 +415,44 @@ h3.sub {
 .card .foot .meta svg { width: 12px; height: 12px; }
 .card .foot .tag { font-size: 11px; padding: 3px 9px; }
 
+/* ---------- 相册 · 九宫格 ---------- */
+/* 多图日记的网格：列数随张数变（朋友圈式，但更克制）。
+   2→2列 · 3→3列 · 4→2×2 · ≥5→3列；超出 maxVisible 的在最后一格盖「+N」收起。
+   Flutter：GridView.count（crossAxisCount 由张数决定 2/3）+ 最后一格 Stack 叠 +N 蒙层。 */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+.gallery[data-n="1"] { grid-template-columns: minmax(0, 64%); }
+.gallery[data-n="2"],
+.gallery[data-n="4"] { grid-template-columns: repeat(2, 1fr); }
+.gallery .ph {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-xs);
+  overflow: hidden;
+  background: var(--accent-soft-2);
+  cursor: pointer;
+}
+.gallery[data-n="1"] .ph { aspect-ratio: 4 / 3; }
+.gallery .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 「+N」收起蒙层：盖在最后一个可见格上 */
+.gallery .ph.more::after {
+  content: "+" attr(data-more);
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: rgba(20, 16, 10, 0.46);
+  color: #fff; font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600; letter-spacing: 0.02em;
+  -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px);
+}
+.gallery .ph.hidden { display: none; }
+/* 展开（仅阅读页用）：露出被收起的格、撤掉蒙层 */
+.gallery.expanded .ph.hidden { display: block; }
+.gallery.expanded .ph.more::after { display: none; }
+
 /* 编辑器工具栏 */
 .toolbar {
   display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
@@ -448,15 +486,43 @@ h3.sub {
 .nav-fab svg { width: 24px; height: 24px; }
 
 /* 提示条 / 弹窗 */
-.toast {
-  display: flex; align-items: center; gap: 12px; max-width: 360px;
-  background: var(--ink); color: var(--bg); padding: 13px 16px; border-radius: var(--r-md);
-  box-shadow: var(--shadow-lg); font-size: 14px;
+/* 提示条容器：底部居中堆叠，浮在 FAB 之上。
+   Flutter 对应：ScaffoldMessenger.showSnackBar（floating）或 Overlay 底部对齐；
+   .top = SnackBar 顶部变体；FAB 自动让位（这里用 padding-bottom 预留）。 */
+.toast-host {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-4); padding-bottom: 96px;   /* 让开底部 FAB */
+  pointer-events: none;
 }
-.toast .acc { color: var(--accent); font-weight: 600; cursor: pointer; margin-left: auto; }
-.toast.surface { background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); }
-.toast.surface .ic { color: var(--accent); display: grid; place-items: center; }
+.toast-host.no-fab { padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px)); }
+.toast-host.top { top: 0; bottom: auto; padding-bottom: var(--sp-4); padding-top: 56px; }
+
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 10px; max-width: 360px; width: max-content;
+  background: var(--ink); color: var(--bg); padding: 12px 14px; border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg); font-size: 14px; line-height: 1.45;
+  cursor: default;
+  opacity: 0; transform: translateY(14px) scale(0.985);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.toast.in { opacity: 1; transform: none; }
+.toast.out { opacity: 0; transform: translateY(8px) scale(0.985); }
+.toast .msg { flex: 1 1 auto; min-width: 0; }
+.toast .ic { display: grid; place-items: center; flex-shrink: 0; color: var(--accent); }
 .toast .ic svg { width: 18px; height: 18px; }
+.toast .acc {
+  flex-shrink: 0; margin-left: 2px; padding: 5px 8px; border: 0; background: none;
+  font: inherit; font-weight: 600; color: var(--accent); cursor: pointer;
+  border-radius: var(--r-xs);
+}
+.toast .acc:hover { background: color-mix(in oklab, var(--accent) 16%, transparent); }
+/* 表面款（更柔、更像页面的一部分） */
+.toast.surface { background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); }
+/* 语义：底色保持中性，仅图标点色（克制） */
+.toast.danger .ic { color: var(--danger); }
+.toast.fav .ic { color: var(--favorite); }
 
 .dialog {
   max-width: 360px; background: var(--surface); border: 1px solid var(--hairline);
@@ -465,6 +531,67 @@ h3.sub {
 .dialog h4 { font-family: var(--font-serif); font-size: 19px; font-weight: 600; margin: 0 0 8px; }
 .dialog p { font-size: 14px; color: var(--ink-2); margin: 0 0 var(--sp-5); line-height: 1.6; }
 .dialog .acts { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ============================================================
+   底部弹层 Sheet（动作菜单 / 选择器 / 轻表单）
+   引擎：assets/sheet.js（DZ.sheet）。底色用 --surface，从底部滑入。
+   Flutter：showModalBottomSheet（圆角顶、拖拽柄、SafeArea 底部留白）。
+   ============================================================ */
+.sheet-scrim {
+  position: absolute; inset: 0; z-index: 48;
+  background: var(--overlay);
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.sheet-scrim.in { opacity: 1; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 49;
+  background: var(--surface);
+  border-top-left-radius: var(--r-xl); border-top-right-radius: var(--r-xl);
+  box-shadow: 0 -12px 40px -16px rgba(40, 32, 22, 0.4), var(--shadow-lg);
+  padding: 8px var(--sp-4) calc(var(--sp-5) + 14px);
+  transform: translateY(101%);
+  transition: transform var(--dur) var(--ease);
+  max-height: 88%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+:root[data-mode="dark"] .sheet { box-shadow: 0 -12px 40px -16px rgba(0, 0, 0, 0.7), var(--shadow-lg); }
+.sheet.in { transform: none; }
+.sheet.out { transform: translateY(101%); }
+.sheet::-webkit-scrollbar { width: 0; }
+.sheet-grip { width: 38px; height: 4px; border-radius: var(--r-full); background: var(--hairline-2); margin: 4px auto 8px; }
+.sheet-head { text-align: center; padding: 2px var(--sp-3) var(--sp-3); }
+.sheet-head .t { font-family: var(--font-serif); font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.sheet-head .d { font-size: 13px; color: var(--ink-3); margin-top: 5px; line-height: 1.6; }
+.sheet-list { display: flex; flex-direction: column; gap: 2px; }
+.sheet-item {
+  appearance: none; border: none; background: none; width: 100%;
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 12px; min-height: 52px; border-radius: var(--r-md);
+  font-family: var(--font-sans); font-size: 15.5px; color: var(--ink);
+  cursor: pointer; text-align: left;
+}
+.sheet-item:hover { background: var(--bg-2); }
+.sheet-item:active { background: var(--accent-soft); }
+.sheet-item > .ic { width: 22px; height: 22px; color: var(--ink-2); flex-shrink: 0; display: grid; place-items: center; }
+.sheet-item > .ic svg { width: 21px; height: 21px; display: block; }
+.sheet-item .sw { width: 20px; height: 20px; border-radius: var(--r-full); flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }
+.sheet-item .tx { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sheet-item .tx b { font-weight: 500; }
+.sheet-item .tx span { font-size: 12.5px; color: var(--ink-3); font-weight: 400; }
+.sheet-item .chk { width: 20px; height: 20px; flex-shrink: 0; color: var(--accent); opacity: 0; transition: opacity .12s var(--ease); }
+.sheet-item .chk svg { width: 20px; height: 20px; display: block; }
+.sheet-item.sel { color: var(--accent-ink); }
+.sheet-item.sel .chk { opacity: 1; }
+.sheet-item.danger, .sheet-item.danger > .ic { color: var(--danger); }
+.sheet-sep { height: 1px; background: var(--hairline); margin: 6px 10px; }
+.sheet-body { padding: 2px var(--sp-1) 0; }
+.sheet-foot { display: flex; flex-direction: column; gap: 10px; margin-top: var(--sp-5); }
+.sheet-cancel {
+  appearance: none; border: none; width: 100%;
+  background: var(--bg-2); color: var(--ink);
+  font-family: var(--font-sans); font-size: 15.5px; font-weight: 600;
+  padding: 14px; border-radius: var(--r-md); cursor: pointer; margin-top: 8px;
+}
+.sheet-cancel:hover { background: var(--accent-soft); }
 
 /* ============================================================
    抽屉式侧边栏（手机端，从左滑出）
@@ -573,11 +700,11 @@ h3.sub {
 .fab-scrim {
   position: absolute; inset: 0; z-index: 6;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
-  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   opacity: 0; pointer-events: none;
   transition: opacity var(--dur) var(--ease);
 }
-.fab-wrap.open .fab-scrim { opacity: 1; pointer-events: auto; }
+.fab-wrap.open ~ .fab-scrim { opacity: 1; pointer-events: auto; }
 
 .fab-wrap { position: absolute; right: var(--sp-5); bottom: var(--sp-5); z-index: 7; }
 

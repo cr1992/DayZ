@@ -11,22 +11,38 @@
   const pref = load();
   let theme = pref.theme || "purple";
   let mode = pref.mode || "light";
+  let bg = pref.bg || "pure";
+  let paperSeed = pref.paperSeed || null;
 
   function apply() {
     root.setAttribute("data-theme", theme);
     root.setAttribute("data-mode", mode);
+    if (bg && bg !== "pure") root.setAttribute("data-bg", bg);
+    else root.removeAttribute("data-bg");
+    if (paperSeed) root.style.setProperty("--paper-seed", paperSeed);
     document.querySelectorAll(".swatch-btn").forEach((b) =>
       b.setAttribute("aria-pressed", String(b.dataset.set === theme))
     );
+    document.querySelectorAll(".paper-btn").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.bg === bg))
+    );
     const mt = document.getElementById("modeToggle");
     if (mt) mt.querySelector(".lbl").textContent = mode === "light" ? "浅色" : "深色";
-    save({ theme, mode });
+    save({ theme, mode, bg, paperSeed });
+  }
+
+  function jumpToContext() {
+    const el = document.getElementById("screens");
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 8, behavior: "smooth" });
   }
 
   document.addEventListener("click", (e) => {
     const sw = e.target.closest(".swatch-btn");
-    if (sw) { theme = sw.dataset.set; apply(); return; }
-    if (e.target.closest("#modeToggle")) { mode = mode === "light" ? "dark" : "light"; apply(); return; }
+    if (sw) { theme = sw.dataset.set; apply(); jumpToContext(); return; }   /* 点主题色：只切主题，不动纸 */
+    if (e.target.closest("#modeToggle")) { mode = mode === "light" ? "dark" : "light"; apply(); jumpToContext(); return; }
+
+    const paper = e.target.closest(".paper-btn");
+    if (paper) { bg = paper.dataset.bg; apply(); if (paper.closest(".topbar")) jumpToContext(); return; }   /* 单独切纸：只改纸不动主题；顶栏切才跳到真实界面 */
 
     // 演示用交互
     const opt = e.target.closest(".opt");
@@ -60,6 +76,15 @@
       dwi.classList.add("on");
       return;
     }
+  });
+
+  // 自定义纸色：色相滑块 → 生成柔和种子色，切到 custom
+  document.addEventListener("input", (e) => {
+    const hue = e.target.closest("#paperHue");
+    if (!hue) return;
+    paperSeed = "hsl(" + hue.value + " 42% 56%)";
+    bg = "custom";
+    apply();
   });
 
   apply();

@@ -16,6 +16,10 @@
 - **页面** — 产品页面设计交付物（`pages/`）：原型 + 画布双模式
 - **架构** — 页面原型架构（`docs/PROTOTYPE-ARCH.md`）：一套屏幕源/两种呈现 + Flutter 映射
 - **原型套件** — `prototype-kit/`：业务无关的可复用原型外壳（供新项目沿用）
+- **相册** — 多图日记九宫格 `.gallery`（列数随张数 + 超量收起）
+- **提示条** — 全局 toast 系统 `.toast` / `.toast-host` + 引擎 `DZ.toast()`
+- **弹层** — 底部弹层 sheet（动作菜单 / 选择器 / 轻表单）+ 引擎 `DZ.sheet()`
+- **背景/纸色** — `data-bg` 纸色轴（纯净/暖纸/主题微染/深褐/自定义）
 - **UI** — Flutter `lib/ui` 界面实现
 
 ---
@@ -68,3 +72,34 @@
 - [图标] **收藏星重绘（定档）**：原各处五角星为手绘、点位不对称（顶点偏移、左右臂不等长 → 视觉歪斜），统一替换为以中心 (12,12) 数学求点的对称五角星（外半径 9.5 / 内半径 4.2、顶点正上），填充/描边态只换 `fill`/`stroke`、path 不变。覆盖时间线卡片(`timeline.{js,html}`)、往年今日、阅读页收藏按钮、抽屉"收藏"、设计规范卡片/抽屉示例；规范路径登记进 DESIGN-REF §5 图标约定（防再次手绘走样）。
 - [侧边栏] **抽屉选择即关闭（定档）**：切换日记本 / 切浏览视图等选择类操作选完即自动收起抽屉（90ms 让选中态先闪现再滑出）；带导航的项（往年今日 / 设置）本就跳走。新建日记本「＋」不关闭。
 - [页面] **切换日记本刷新列表（定档）**：抽屉选中某本日记本后，更新顶栏标题为该本名（"全部日记"则留空）+ 列表滚回顶部 + 一次淡入重演（`.tl-refreshing`，模拟按所选本重新查询铺列表）；`screen.js` 派发 `dayz:journalchange`、`timeline.js` 接管刷新。对应 Flutter journal 变更后列表 rebuild + FadeTransition。
+- [相册] **多图日记九宫格 `.gallery`（定档）**：补上此前缺失的多图展示——克制版朋友圈网格，列数随张数变（2→2列 / 3→3列 / 4→2×2 田字 / ≥5→3列 / 1→单张大图）；超 9 张在第 9 格盖「+N」蒙层**收起**（`.ph.more[data-more]`），阅读页点它 `.expanded` 展开全部（`screen.js`），信息流卡片里点图因外层 `data-nav` 先行进阅读页。单张封面仍用 `.entry .photo`，多图才用 `.gallery`。落地 timeline（旧书店 4 图 / 梅子 9+ 收起）+ reader（梅子正文后相册 + 展开）+ 设计规范文档 demo（2/4/9+ 三例）。真源 spec.css（已同步 pages/assets），DESIGN-REF §3 登记。对应 Flutter `GridView.count`（crossAxisCount 由张数定）+ 末格 Stack 叠 +N。
+- [提示条] **全局 toast 系统（定档）**：填完「只有静态样例」的坑。提示条底部居中浮现、自动消失、可堆叠（容器 `.toast-host`，最多 3 条，浮在 FAB 之上）。底色保持中性（深色款 / `.surface` 表面款），**语义只靠图标点色**（成功/信息=主题色・`.danger`=`--danger`・`.fav`=`--favorite`）克制不喧哗；可带一个操作 `.acc`（撤销/查看/重试）。新增零依赖引擎 `assets/toast.js`（`DZ.toast()`，可传 tone/variant/action/onAction/duration/host），就近挂载 `[data-toast-host]`→`.screen`→`body`。设计规范文档静态示例改为**可交互 demo**（六按钮触发真实 toast + 浮现舞台）。真源 spec.css + toast.js（均已同步 pages/assets），DESIGN-REF §3 登记。踩坑：进场动画**不用 rAF**（节流态不触发）——append 后强制回流再加 `.in`。对应 Flutter `ScaffoldMessenger.showSnackBar(floating)` + `SnackBarAction`，FAB 由 Scaffold 自动让位。
+- [背景/纸色] **背景纸色系统 `data-bg`（定档）**：在中性暖纸之外再给几套背景“纸色”——**纯净 / 暖纸 / 主题微染 / 深褐 Sepia / 自定义**，每套含浅深两版。只覆盖背景相关中性色（`--bg/--bg-2/--surface/--surface-2/--hairline*`，Sepia 另微调 `--ink*`），强调色与排版不动。**主题微染 / 自定义用 `color-mix` 从 `--accent` / `--paper-seed` 派生**，自动随 theme + mode 联动；自定义由色相滑块生成种子色。新增轴 `data-bg`（tokens.css，已同步 pages/assets）+ 设计规范文档 §02 「背景·纸色」可切换区（`.paper-btn` + `#paperHue`，全局即时生效）；spec.js 持久化 `bg/paperSeed`。DESIGN-REF §1/§2.5 登记。对应 Flutter：`paper` 枚举 + 可空 `paperSeed`，低比例混入背景族（ThemeExtension）。作用范围暂为全局（每本日记本独立纸色待定，记入 BACKLOG）。
+- [设计规范] **「设计语言」章节（定档）**：在设计规范文档顶部（hero 之后、§01 之前）新增 §00「设计语言」——把一直在说的「为什么」沉淀为 8 条信念原则卡：温润·安静 / 少即是多 / 纸与墨 / 语义用最小手段 / 中文优先 / 一套 token·单一真源 / Flutter 优先 / 移动优先。供新设计拿不准时回来对照。文档专属样式 `.principle-grid`/`.principle`（不入跨端 spec.css）。
+- [背景/纸色] **纸色切换器搬到顶栏**：原只在 §02 中性色里（不好找），现在顶栏「主题色 ▏纸」并排放 4 个迷你色片（纯净/暖纸/主题微染/深褐），sticky 常驻、滚到任意区块都能随手切换实时预览；与 §02 的卡片式切换器共用 `.paper-btn` + spec.js，状态同步。
+- [设计规范/侧边栏] **§07 抽屉对齐真实屏（修腐化）**：设计规范文档的抽屉 demo 此前是旧版（带抽屉内搜索、媒体/地图/标签、回收站+设置都在底部），与真实页面 `pages/screens/timeline.html` 漂移。现同步为真实结构：去掉 `.dw-search`（搜索统一走顶栏）、日记本组置顶（全部日记 + 各本色点）、回收站并入「浏览」组、底部仅留设置、图标换成现行版本、账户改「林晚 · 本地·已加密」。DESIGN-REF §4 抽屉条目同步修正（删除已废的 `.dw-search` 与「回收站 static」说法）。
+- [设计规范] **§06/§07 改为「直接嵌入真实页面」（定档）**：手抄的设备 mock 反复与真实屏漂移（抽屉过期、标题不符等），治本之道——§06 IN CONTEXT / §07 SIDEBAR 改为 `<iframe class="screen-embed">` 嵌 `pages/screens/timeline.html`（§07 用 `?state=drawer` 直接展开抽屉）。文档随顶栏**主题 / 明暗 / 纸色实时同步**到 iframe（监听屏的 `ready` 回发 + MutationObserver 下发；screen.js 的 theme 消息扩展为携带 `bg/paperSeed`）。从此设计规范永远显示当前真实 UI，这类不一致一次性消除；顶部标题也不再需要单独对齐。
+- [设计规范] **§01 三套主题色固定行修复**：固定行原用 `<div data-theme>` 探针读色，但强调色选择器锁 `:root`，普通元素不匹配 → 三行都读成当前激活主题色（全同色）。改为「临时切根元素 `data-theme` 同步读值再还原」（`withTheme()`，渲染期间断开 MutationObserver 防递归）；并把 `data-bg` 纳入观察，切纸色时中性色板同步刷新。
+- [底部操作/侧边栏] **FAB 遮罩修复（定档）**：`.fab-scrim` 原放在 `.fab-wrap` 内，`inset:0` 只覆盖 58px 按钮盒、且 z(6) 高于按钮(2) → 展开时 `backdrop-filter:blur` 正好把按钮糊掉，且全屏压暗从未生效。改为把 `.fab-scrim` 移出、作为 `.fab-wrap` 的后继兄弟（同在 `.pg` 下）→ `inset:0` 覆盖整屏做压暗+模糊、z(6) 低于 `.fab-wrap`(7) 让按钮与动作清晰浮起；开态选择器改 `.fab-wrap.open ~ .fab-scrim`；`screen.js` 改 `document.querySelector('.fab-scrim')` 绑定关闭。timeline.html + spec.css + screen.js（pages，已同步）同改；DESIGN-REF §4 FAB 条目同步。对应 Flutter speed-dial 的 `ModalBarrier` 全屏遮罩。
+- [背景/纸色] **纸色清单定档（去捆绑 + 改用耐读纸）**：先后试过「主题微染（统一轻染）」「主题配套 paired（每主题配色纸）」与「点主题色联动换纸」，评估**同色系发闷、捆绑不自由**，**回退**：去掉 `warm`/`paired`/`sepia`，新增 3 张浅淡耐读纸 `mint` 浅绿（豆绿护眼）/ `mist` 雾蓝（低眩光）/ `cloud` 云灰（中性沉静）；保留 `pure` 纯净、`tinted` 主题微染、`custom` 自定义。主题色与纸**各管各的**（点主题只切主题）。每套都让 `surface` 比 `bg` 亮一档，卡片/文字浮起、突出主体。顶栏迷你色片 = 纯净/浅绿/雾蓝/云灰；§02 列全集。tokens.css 已同步 pages/assets，DESIGN-REF §1/§2.5 同步。
+- [设计规范] **顶栏色块悬浮名牌**：主题色与纸色小色块 hover 即时弹出名字（`data-tip` + `::before`；注意主题色块 `::after` 已被内圈环占用，故用 `::before`，否则文字被圆形裁剪「显示不全」）。
+- [设计规范] **顶栏切换后自动跳 §06**：点顶栏主题色 / 明暗 / 纸色后，平滑滚到 §06 IN CONTEXT（嵌入的真实手机屏）看效果（`spec.js` `jumpToContext`）；§02 内的纸色卡不跳。
+- [设计规范] **§00 设计语言精简为「只谈气质」**：把偏规范/技术的条目移出——撤掉「Flutter 优先 / 一套 token·单一真源 / 移动优先」（落到 CLAUDE / DESIGN-REF / PROTOTYPE-ARCH）；保留 5 条纯设计语言：温润·安静 / 少即是多 / 纸与墨 / 用最轻的方式表达 / 中文优先。文案去技术黑话（token、`var(--*)`、FAB、CJK、44px），改为面向一般人的设计化白话。
+- [文档] **新增展示用 `README.md`（根目录）+ `docs/screenshots/`**：README 顶部放 6 张代表性界面图（时间线九宫格 / 阅读 / 编辑 / 往年今日 / 设置 / 深色），含设计基调、特性、仓库导览；`docs/screenshots/README.md` 给出**重生成指南 + 截图踩坑**（直抓屏勿套 iframe、预览不跑过渡需禁用后再截、滚动被钉首屏）。设计改动后须更新这些图。
+- [原型套件] **本轮通用踩坑回灌 kit「易踩的坑」**：① 离屏预览冻结 CSS 过渡 / rAF（进场用强制回流非 rAF；验证动画态用「禁用过渡读最终值」非截图）；② `html-to-image` 截不到 iframe（直抓屏）；③ 一元素仅一个 `::before`/`::after`，加 tooltip 前查占用；④ `:root[data-theme]` 只匹配根元素，读他主题 token 要临时切根元素再还原（断 observer 防递归）；⑤ 全屏遮罩须作触发元素后继兄弟而非塞进小容器；⑥ 展示处用 iframe 嵌真实屏防漂移。纸色等业务内容不回灌。
+- [原型套件] **FAB 遮罩修复回灌 kit**：此为业务无关的通用外壳 bug，已同步修进 `prototype-kit/assets/spec.css`（`.fab-wrap.open ~ .fab-scrim` + 注释说明 scrim 须作 fab-wrap 后继兄弟）与 `screen.js`（`document.querySelector('.fab-scrim')` 绑定关闭）。纸色 `data-bg` 属 DayZ 业务，不回灌 kit。
+- [弹层] **底部弹层 sheet 系统（定档）**：新增业务无关零依赖引擎 `assets/sheet.js`（`DZ.sheet()`），从底部滑入、scrim 点击关闭、圆角顶 + 拖拽柄 + SafeArea 底部留白。一套支持三形态：**动作菜单**（`items[]`，支持 icon / 色点 swatch / `tone:'danger'` / 分隔 `sep` / `desc` 次级行）、**单选选择器**（`selected` 命中项右侧打勾）、**轻表单**（`content` 自定义节点 + `primary/secondary` 按钮）。样式入 `spec.css`（跨端组件，z 48/49 浮于抽屉与 chrome 之上），已同步 pages/assets；DESIGN-REF §3 登记。踩坑同 toast：进场强制回流再加 `.in`（不用 rAF）。对应 Flutter `showModalBottomSheet`。
+- [阅读页] **收藏 toggle + ⋯ 更多菜单（定档）**：顶栏星标由静态金星改为**可点 toggle**（实心金 ⇆ 空心线，`data-fav-toggle`，`screen.js` 通用绘制 + toast）；⋯ 接通**条目动作菜单**（`data-entry-menu`）—— 编辑（跳编辑页）/ 分享 / 移到日记本（唤起日记本单选选择器）/ 收藏·取消收藏（与顶栏星双向同步）/ 删除。菜单项文案与图标集中在 `screen.js`，供阅读页 / 往年今日复用。
+- [阅读页/侧边栏] **删除 = 移到回收站（定档）**：删除走二次确认 sheet（危险红「移到回收站」+ 取消），确认后 toast「已移到回收站」带**撤销**（撤销 → toast「已恢复」），随后返回时间线。与新建的回收站屏闭环。
+- [往年今日] **⋯ → 生成回忆卡片（定档）**：顶栏 ⋯ 接通菜单 —— 生成回忆卡片（跳回忆卡片屏）/ 分享这一天。填上 BACKLOG「生成回忆卡片图」入口。
+- [页面] **新屏 · 回忆卡片 `memory.html`（定档）**：把一条回忆渲染成可分享卡片图的**预览屏**。画幅可切（竖版 9:16 / 方形 1:1）、风格可切（纸感：暖纸+衬线 / 大图压字：满幅照片+底部渐隐压字），卡片含日期+第几年前、标题、摘录、地点、DayZ 字标；底部「保存到相册 / 分享」（原型以 toast 模拟，落地走 `RepaintBoundary.toImage()` → `share_plus`/存相册）。屏内专属样式 + 逻辑内联（一次性，不入 spec）。
+- [设置] **主题色 + 外观模式选择器（定档）**：两行接通底部选择器 sheet —— 主题色（雾紫 / 暖黄 / 雾绿，色点 + 打勾）、外观模式（**浅色 / 深色 / 跟随系统**三选一）。选择经 `postMessage({type:'settheme'|'setmode'})` 上抛外壳 `app.js` 即时换肤（跟随系统用 `matchMedia(prefers-color-scheme)`）；对应 Flutter 改 `ThemeData` 全树 rebuild。
+- [侧边栏] **新建日记本流程（定档）**：抽屉「＋」接通新建表单 sheet —— 命名输入 + 选色（六色板，三主题色 + 三扩展色，打勾选中）+「创建」；确认后即时把新日记本（色点 + 名 + 计数 0）插入抽屉日记本组并 toast。屏内表单选色样式 `.nj-*`（screen.css）。
+- [页面] **新屏 · 收藏 `favorites.html`（定档）**：从抽屉「收藏」进入，过滤出收藏条目（复用时间线卡片 + 金星），含计数头与空状态。
+- [页面] **新屏 · 回收站 `trash.html`（定档）**：从抽屉「回收站」进入。30 天自动清除提示条 + 软删条目卡（标题/摘录/「删除于…·N 天后清除」），每条**恢复 / 彻底删除**（彻底删走二次确认）；顶栏「清空」（二次确认）；删空切空状态。屏内专属样式 `.trash-*` + 逻辑内联。
+- [页面] **新屏 · 日历 `calendar.html`（定档）**：从抽屉「日历」进入。全屏月视图（周一起始、有条目日 accent 圆点、今日环、选中日实底），月份 ‹ › 导航 + 顶栏「回到今天」；下方列出选中日的条目（点进阅读页）。5 月真实数据，其余月份按种子生成示意。屏内专属样式 `.cm-*` + 逻辑内联。
+- [页面] **外壳注册 4 新屏 + 抽屉接通导航**：`app.js` `SCREENS[]` 增 回忆卡片 / 收藏 / 日历 / 回收站；抽屉「收藏 / 日历 / 回收站」补 `data-nav`（此前仅选中+关抽屉，背后无屏）。各新屏均引入 `toast.js` + `sheet.js`。
+- [架构] **PROTOTYPE-ARCH 同步**：§4 postMessage 协议增 `settheme` / `setmode`（屏→外壳，对应 Flutter 改 ThemeData）；§6 Flutter 映射增「底部弹层 → `showModalBottomSheet`」「回忆卡片导出 → `RepaintBoundary.toImage()`+`share_plus`」。
+- [原型套件] **底部弹层 sheet 回灌 kit**：`DZ.sheet` 引擎与样式业务无关，已同步进 `prototype-kit/assets/sheet.js` + `spec.css`，并在示例屏 detail 接一个 ⋯ 动作菜单演示；README 组件清单补一条。DayZ 的菜单文案/新建日记本/回忆卡片属业务，不回灌。
+- [弹层/原型套件] **`DZ.confirm()` 便捷封装 + settheme/setmode 外壳协议回灌**：① 给 sheet 引擎加 `DZ.confirm({title,desc,confirmLabel,icon,danger,onConfirm})`——"确认再执行"是最高频特化，DayZ 删除/彻底删/清空回收站改用它；同步进 kit。② 把"设置屏请求换肤"的 `settheme`/`setmode`（含`跟随系统`→`matchMedia`）从 DayZ `app.js` 回灌到 `prototype-kit/assets/app.js`——纯外壳机制，任何带设置页的原型可用；kit PROTOTYPE-ARCH §4/§6 同步。
+- [页面] **回忆卡片改版（定档）**：① 修底栏溢出——画幅/风格选择器 + 保存/分享改为**固定底栏**（始终可见，卡片更高时上方预览区滚动），修掉「`.btn` 内 SVG 无尺寸约束被撑爆」。② 新增**长图**画幅——把往年今日"这一天"的多段回忆（含年份分隔 + 配图 + 摘录）竖排成一张可分享长图（纸感款，长图固定纸感、风格行置灰）；满足"往年今日分享一个长图"。画幅三选：竖版 9:16 / 方形 1:1 / 长图。

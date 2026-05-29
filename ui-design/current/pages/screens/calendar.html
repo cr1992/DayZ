@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayZ · 日历</title>
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+<style>
+  .cm { padding: var(--sp-2) var(--sp-5) 0; }
+  .cm-head { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+  .cm-title { flex: 1; text-align: center; font-family: var(--font-serif); font-size: 19px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .cm-nav {
+    appearance: none; border: none; background: transparent; cursor: pointer;
+    width: 38px; height: 38px; border-radius: var(--r-full); flex: none;
+    display: grid; place-items: center; color: var(--ink-2);
+  }
+  .cm-nav:hover { background: var(--bg-2); color: var(--ink); }
+  .cm-nav svg { width: 19px; height: 19px; }
+  .cm-wd { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+  .cm-wd span { text-align: center; font-size: 11.5px; color: var(--ink-3); padding: 4px 0; }
+  .cm-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cm-day {
+    appearance: none; border: none; background: none; position: relative;
+    aspect-ratio: 1 / 1; display: grid; place-items: center; border-radius: var(--r-md);
+    font-family: var(--font-serif); font-size: 16px; color: var(--ink-4); cursor: default;
+  }
+  .cm-day.pad { visibility: hidden; }
+  .cm-day.has { color: var(--ink); cursor: pointer; }
+  .cm-day.has:hover { background: var(--accent-soft); }
+  .cm-day.has::after {
+    content: ""; position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  }
+  .cm-day.today { box-shadow: inset 0 0 0 1.5px var(--accent-ring); color: var(--accent-ink); font-weight: 600; }
+  .cm-day.sel { background: var(--accent); color: var(--on-accent); }
+  .cm-day.sel::after { background: var(--on-accent); }
+  .cm-day.sel.today { box-shadow: none; }
+
+  .cm-detail { margin-top: var(--sp-5); border-top: 1px solid var(--hairline); padding: var(--sp-5) 0 0; }
+  .cm-detail .dh { display: flex; align-items: baseline; gap: 10px; padding: 0 var(--sp-5); }
+  .cm-detail .dh .dd { font-family: var(--font-serif); font-size: 19px; font-weight: 600; color: var(--ink); }
+  .cm-detail .dh .dc { font-size: 12.5px; color: var(--ink-3); }
+  .cm-entries { display: flex; flex-direction: column; gap: 2px; margin-top: var(--sp-3); }
+  .cm-entry {
+    display: flex; align-items: flex-start; gap: var(--sp-3);
+    padding: 12px var(--sp-5); cursor: pointer;
+  }
+  .cm-entry:hover { background: var(--bg-2); }
+  .cm-entry .bar { width: 3px; align-self: stretch; border-radius: var(--r-full); background: var(--accent-soft-2); flex-shrink: 0; margin-top: 2px; }
+  .cm-entry .ct { flex: 1; min-width: 0; }
+  .cm-entry h4 { font-family: var(--font-serif); font-size: 15.5px; font-weight: 600; margin: 0 0 3px; color: var(--ink); }
+  .cm-entry p { font-size: 13px; line-height: 1.6; color: var(--ink-2); margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .cm-entry .star { color: var(--favorite); flex-shrink: 0; }
+  .cm-entry .star svg { width: 15px; height: 15px; display: block; margin-top: 2px; }
+  .cm-none { padding: var(--sp-4) var(--sp-5); font-size: 13.5px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="pg">
+  <div class="app-top">
+    <button class="ico" data-nav-back aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+    <div class="title">日历</div>
+    <div class="acts"><button class="ico" data-today aria-label="回到今天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 12V8M12 12l2.6 2.2"/></svg></button></div>
+  </div>
+  <div class="app-scroll">
+    <div class="cm">
+      <div class="cm-head">
+        <button class="cm-nav" data-prev aria-label="上个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+        <div class="cm-title" data-title>2026 年 5 月</div>
+        <button class="cm-nav" data-next aria-label="下个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></button>
+      </div>
+      <div class="cm-wd"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="cm-grid" data-grid></div>
+    </div>
+    <div class="cm-detail" data-detail></div>
+  </div>
+</div>
+<script src="../assets/toast.js"></script>
+<script src="../assets/sheet.js"></script>
+<script src="../assets/screen.js"></script>
+<script>
+(function () {
+  var MO = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  var WD = ["日","一","二","三","四","五","六"];
+  var TODAY = { y: 2026, m: 5, d: 29 };
+  var TITLES = ["雨后去了城南的旧书店","关于「慢」这件事","外婆教我腌的梅子","午后的长散步","读完一本旧书","清晨第一杯咖啡","窗外的玉兰开了","周末逛了趟市集","深夜随手记","重听一张旧唱片"];
+  var EX = ["梅雨季的间隙，石板路还湿着，老板说那套旧书等了很久。","把一件事做到底，比同时开五个头更让人安心。","玻璃罐先用开水烫过，她说急不得，要等一整个夏天。","走了很久，把一周攒下的念头都走散了。","翻到一半忽然舍不得读完，便留着明天。","没有特别的事，只是想把平常的一天认真留下来。","风一吹满地都是，想起去年也是这个时候。"];
+
+  function dim(y, m) { return new Date(y, m, 0).getDate(); }
+  function firstWD(y, m) { var d = new Date(y, m - 1, 1).getDay(); return (d + 6) % 7; }
+  function rng(seed) { var s = seed % 2147483647; if (s <= 0) s += 2147483646; return function () { s = s * 16807 % 2147483647; return (s - 1) / 2147483646; }; }
+
+  // 哪些天有条目 + 条数（5 月写死，其余按种子生成）
+  function monthData(y, m) {
+    if (y === 2026 && m === 5) return { 29: 1, 28: 1, 27: 1, 24: 2, 18: 1, 12: 1, 9: 1, 5: 1, 3: 2 };
+    var rnd = rng(y * 100 + m), out = {}, n = 4 + Math.floor(rnd() * 6), d = dim(y, m);
+    while (Object.keys(out).length < n) { var day = 1 + Math.floor(rnd() * d); out[day] = 1 + (rnd() < 0.25 ? 1 : 0); }
+    return out;
+  }
+
+  var view = { y: TODAY.y, m: TODAY.m };
+  var sel = { y: TODAY.y, m: TODAY.m, d: TODAY.d };
+  var grid = document.querySelector("[data-grid]");
+  var titleEl = document.querySelector("[data-title]");
+  var detail = document.querySelector("[data-detail]");
+
+  function entriesFor(y, m, d, count) {
+    var rnd = rng(y * 1000 + m * 50 + d), items = [];
+    for (var i = 0; i < count; i++) {
+      items.push({
+        title: TITLES[Math.floor(rnd() * TITLES.length)],
+        ex: EX[Math.floor(rnd() * EX.length)],
+        star: rnd() < 0.3
+      });
+    }
+    return items;
+  }
+
+  function renderGrid() {
+    var data = monthData(view.y, view.m);
+    titleEl.textContent = view.y + " 年 " + MO[view.m - 1];
+    var pad = firstWD(view.y, view.m), n = dim(view.y, view.m), html = "";
+    for (var i = 0; i < pad; i++) html += '<button class="cm-day pad" tabindex="-1"></button>';
+    for (var d = 1; d <= n; d++) {
+      var has = !!data[d];
+      var isToday = view.y === TODAY.y && view.m === TODAY.m && d === TODAY.d;
+      var isSel = view.y === sel.y && view.m === sel.m && d === sel.d;
+      html += '<button class="cm-day' + (has ? " has" : "") + (isToday ? " today" : "") + (isSel && has ? " sel" : "") + '"' +
+        (has ? ' data-day="' + d + '" data-count="' + data[d] + '"' : ' disabled') + '>' + d + '</button>';
+    }
+    grid.innerHTML = html;
+  }
+
+  function renderDetail() {
+    var data = monthData(sel.y, sel.m);
+    var count = data[sel.d] || 0;
+    var wd = WD[new Date(sel.y, sel.m - 1, sel.d).getDay()];
+    var head = '<div class="dh"><span class="dd">' + sel.m + '月 ' + sel.d + '日</span><span class="dc">周' + wd + ' · ' + (count ? count + ' 篇' : '没有日记') + '</span></div>';
+    if (!count) { detail.innerHTML = head + '<div class="cm-none">这一天没有记录。点上方有圆点的日子查看当天的日记。</div>'; return; }
+    var items = entriesFor(sel.y, sel.m, sel.d, count).map(function (it) {
+      return '<div class="cm-entry" data-nav="reader"><div class="bar"></div><div class="ct"><h4>' + it.title + '</h4><p>' + it.ex + '</p></div>' +
+        (it.star ? '<span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg></span>' : '') + '</div>';
+    }).join("");
+    detail.innerHTML = head + '<div class="cm-entries">' + items + '</div>';
+  }
+
+  function render() { renderGrid(); renderDetail(); }
+  render();
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-prev]")) { view.m--; if (view.m === 0) { view.m = 12; view.y--; } renderGrid(); return; }
+    if (e.target.closest("[data-next]")) { view.m++; if (view.m === 13) { view.m = 1; view.y++; } renderGrid(); return; }
+    if (e.target.closest("[data-today]")) { view = { y: TODAY.y, m: TODAY.m }; sel = { y: TODAY.y, m: TODAY.m, d: TODAY.d }; render(); return; }
+    var day = e.target.closest("[data-day]");
+    if (day) { sel = { y: view.y, m: view.m, d: +day.getAttribute("data-day") }; render(); return; }
+  });
+})();
+</script>
+</body>
+</html>

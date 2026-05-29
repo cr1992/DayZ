@@ -17,8 +17,8 @@
   <div class="app-top">
     <button class="ico" data-nav-back aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
     <div class="acts">
-      <button class="ico" aria-label="收藏" style="color:var(--favorite)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg></button>
-      <button class="ico" aria-label="更多"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+      <button class="ico on" data-fav-toggle aria-label="收藏"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg></button>
+      <button class="ico" data-entry-menu data-faved="true" data-journal="" aria-label="更多"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
     </div>
   </div>
   <div class="app-scroll">
@@ -44,6 +44,19 @@
         <p>青梅是清晨去市场挑的，要挑那种带着白霜、捏起来还硬的。回来用盐搓掉绒毛，泡一夜去涩，第二天才和冰糖一层一层码进罐子里。</p>
         <p>「急不得，」她把盖子拧紧，放到阴凉的角落，「要等一整个夏天。」我忽然明白，她腌的从来不只是梅子。</p>
       </div>
+      <div class="gallery" data-n="9" data-when="default" style="margin:var(--sp-5) 0 0">
+        <div class="ph"><img src="../assets/img/plum.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/sea.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/bookstore.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/plum.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/sea.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/bookstore.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/plum.png" alt=""></div>
+        <div class="ph"><img src="../assets/img/sea.png" alt=""></div>
+        <div class="ph more" data-more="2"><img src="../assets/img/bookstore.png" alt=""></div>
+        <div class="ph hidden"><img src="../assets/img/plum.png" alt=""></div>
+        <div class="ph hidden"><img src="../assets/img/sea.png" alt=""></div>
+      </div>
       <div class="r-body" data-when="text">
         <p>越来越确信，慢不是效率的反义词。它更像一种把注意力收回来的能力——只做一件事，并且把它做完。</p>
         <p>今天只写了三百字，删掉的比留下的多。可合上本子的时候，心里是稳的。比起同时开五个头，这样的一天更让人安心。</p>
@@ -61,6 +74,8 @@
     </div>
   </div>
 </div>
+<script src="../assets/toast.js"></script>
+<script src="../assets/sheet.js"></script>
 <script src="../assets/screen.js"></script>
 </body>
 </html>

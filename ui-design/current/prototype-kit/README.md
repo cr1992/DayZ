@@ -43,6 +43,12 @@
 - **吸顶子头与「覆盖式顶栏」之间留出一段空隙** → `position:sticky` 的 `top` 是相对滚动容器**内容盒**量的，而 `.app-scroll` 已 `padding-top:var(--top-h)` 把内容推到顶栏之下；此时吸顶子头要用 **`top:0`**（不是 `top:var(--top-h)`，否则会把 `--top-h` 叠加两次，正好空出一整段）。
 - **`box-shadow`/`transition` 让阴影压根不显示** → CSS **不能从 `none` 过渡 `box-shadow`**（部分引擎会卡在起始帧、computed 恒为透明零值）。要么去掉过渡做即时，要么给一个**显式透明起点**（`box-shadow: 0 0 0 0 rgba(...,0)`）再过渡到目标值。debug 时：`transition:none` 一关阴影就出来 = 八成是这个坑。
 - **顶栏与紧贴其下的吸顶子头「看着割裂」** → 让两者用**同一份毛玻璃配方**（同 `--bg` 透明度 + 同 `blur`），并把分割线/投影从「两者之间」挪到「整个头部最下沿」（只给真正吸顶中的那一个子头 + 柔和投影），即并成一条连续磨砂头。
+- **离屏预览不推进 CSS 过渡 / `requestAnimationFrame`** → 在工具的离屏预览里，靠 `transition`/rAF 才到达的「最终态」会**冻结在起点**（toast 停在 `opacity:0`、FAB/抽屉遮罩不显、抽屉停在画外）。后果有二：① **别用 rAF 触发进场**——append 后 `void el.offsetWidth` 强制回流再加 `.in` 类（同步、可靠）；② **别用截图判断动画态**——验证时注入 `transition:none` 再读 computed，或直接读最终值，否则会误判组件坏了。
+- **`html-to-image` 截图捕获不到 `<iframe>` 内容** → 嵌入屏的截图会是一片黑/空。要出图就**直接 `show_html` 那一屏再截**，别做「嵌 N 个 iframe 的手机框排版页」。（但用 iframe 嵌真实屏来**展示/防漂移**仍然很值——只是别指望截图。）
+- **一个元素只有一个 `::before` / 一个 `::after`** → 给元素加伪元素 tooltip 前先确认它没被占用（如圆形色块的内圈环常用 `::after`）；冲突会让你的 tooltip 继承到 `inset`/圆形裁剪，文字「显示不全」。错开用 `::before` 即可。
+- **`:root[data-theme=…]` 只匹配根元素** → 想读「另一套主题」的 token 值，别建一个 `<div data-theme>` 探针（匹配不到，读回的是当前激活主题）。正确做法：临时切 `document.documentElement` 的 `data-theme`，`getComputedStyle` 同步读完再还原（期间断开相关 `MutationObserver` 防递归；同步读不触发重绘、无闪烁）。
+- **全屏遮罩（modal barrier）塞进小的定位容器里** → 比如把 `.fab-scrim` 放进只有按钮大小的 `.fab-wrap` 内，`inset:0` 只盖住按钮、且层级压在按钮之上把它糊掉。遮罩要作触发元素的**后继兄弟**（同在 `.pg`/`.screen` 下）：`inset:0` 才铺满整屏，`z-index` 低于触发元素让按钮/动作清晰浮起，开态用 `.trigger.open ~ .scrim` 驱动。
+- **展示文档里手抄产品屏的 mock** → 必然与真实屏漂移（标题、抽屉结构…改了这边忘那边）。治本：展示处用 `<iframe>` 直接嵌真实屏，再用 `postMessage` 把主题/明暗/纸色同步进去——文档永远显示当前真实 UI。
 
 ---
 
@@ -55,12 +61,13 @@ prototype-kit/
 │  ├─ app.js               外壳逻辑(主题下发 / 路由栈+预热 / 画布平移缩放) ← 只改顶部 SCREENS[]
 │  ├─ screen.css           屏内样式(iOS chrome / 固定头滚动区 / 抽屉 / 空状态) ← 通用
 │  ├─ screen.js            屏内逻辑(注入 chrome / 按 ?state 显隐 / 抽屉·FAB / postMessage 导航) ← 通用
+│  ├─ sheet.js             底部弹层引擎 DZ.sheet(动作菜单/选择器/轻表单) ← 通用、零依赖、按需引入
 │  ├─ tokens.css           设计 token(颜色/字体/间距/圆角/阴影)            ← 换成你的设计规范
 │  └─ spec.css             组件样式                                       ← 换成你的设计规范
 └─ screens/
    ├─ _template.html       空屏模板(照契约,复制改名即用)
    ├─ home.html            示例:列表 + 空状态,点行 → 详情
-   └─ detail.html          示例:详情 + 返回
+   └─ detail.html          示例:详情 + 返回(顶栏 ⋯ 演示 DZ.sheet 动作菜单)
 ```
 
 直接打开 `index.html` 就能跑(默认带 DayZ 的 token 作示例视觉)。

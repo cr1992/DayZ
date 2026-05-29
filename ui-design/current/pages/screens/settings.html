@@ -58,15 +58,15 @@
       <div class="set-group">
         <div class="lab">外观</div>
         <div class="set-list">
-          <div class="set-row">
+          <div class="set-row tappable" data-theme-picker role="button">
             <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a4 4 0 0 0 0 8 3 3 0 0 1 0 6"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="8.5" r="1"/></svg></span>
             <span class="tx"><b>主题色</b><span>雾紫 / 暖黄 / 雾绿</span></span>
-            <span class="val"><span class="dw-dot" style="background:var(--accent);width:13px;height:13px"></span>雾紫</span>
+            <span class="val"><span class="dw-dot" style="background:var(--accent);width:13px;height:13px"></span>雾紫<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span>
           </div>
-          <div class="set-row">
+          <div class="set-row tappable" data-mode-picker data-appearance="system" role="button">
             <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2"/></svg></span>
             <span class="tx"><b>外观模式</b><span>跟随系统</span></span>
-            <span class="val">浅色<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span>
+            <span class="val"><span class="mv">跟随系统</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span>
           </div>
         </div>
       </div>
@@ -83,6 +83,8 @@
     </div>
   </div>
 </div>
+<script src="../assets/toast.js"></script>
+<script src="../assets/sheet.js"></script>
 <script src="../assets/screen.js"></script>
 </body>
 </html>

@@ -110,6 +110,17 @@
     if (d.type === "nav") { if (present === "proto") pushScreen(d.to, true); }
     else if (d.type === "back") { if (present === "proto") popScreen(); }
     else if (d.type === "ready") { try { e.source.postMessage({ type: "theme", theme: theme, mode: mode }, "*"); } catch (_) {} }
+    /* 设置类屏可请求换肤：{type:'settheme',theme} / {type:'setmode',appearance:'light'|'dark'|'system'} */
+    else if (d.type === "settheme" && d.theme) { theme = d.theme; applyTheme(); }
+    else if (d.type === "setmode") {
+      if (d.appearance === "system") {
+        var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        mode = dark ? "dark" : "light";
+      } else if (d.appearance === "dark" || d.appearance === "light") {
+        mode = d.appearance;
+      }
+      applyTheme();
+    }
   });
 
   /* ---------- 画布（无限画布 · 平移缩放浏览 · 卡片可交互）---------- */

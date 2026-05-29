@@ -44,12 +44,14 @@
 ---
 
 ## 1. 主题与明暗切换机制
-- 在根元素挂 `data-theme` + `data-mode`：
+- 在根元素挂 `data-theme` + `data-mode`（+ 可选 `data-bg`）：
   - `data-theme` = `purple`（雾紫）｜ `amber`（暖黄）｜ `sage`（雾绿）
   - `data-mode` = `light` ｜ `dark`
+  - `data-bg`（背景纸色，可选）= 缺省`纯净` ｜ `mint` 浅绿 ｜ `mist` 雾蓝 ｜ `cloud` 云灰 ｜ `tinted` 主题微染 ｜ `custom` 自定义（均浅淡耐读；曾有 warm/paired/sepia，已移除）
 - **中性色只随 `data-mode` 变；强调色随 `data-theme` + `data-mode` 变。**
-- 三套主题**共享同一套 token 命名与语义**，仅色相不同 → 组件只要用变量就自动适配 6 种组合。
-- `spec.js` 负责切换并持久化到 `localStorage['dayz-spec-pref']`。
+- **背景纸色随 `data-bg` 覆盖背景相关中性色**（`--bg/--bg-2/--surface/--surface-2/--hairline*`，Sepia 另微调 `--ink*`）；`tinted` / `custom` 用 `color-mix` 从 `--accent` / `--paper-seed` 派生，故自动随 theme + mode 联动。详见 §2.5。
+- 三套主题**共享同一套 token 命名与语义**，仅色相不同 → 组件只要用变量就自动适配 6 种组合（× 纸色再叠加）。
+- `spec.js` 负责切换并持久化到 `localStorage['dayz-spec-pref']`（含 `theme/mode/bg/paperSeed`）。
 
 ---
 
@@ -91,6 +93,22 @@
 ### 2.4 排版类（直接套用）
 `.t-display` `.t-h1` `.t-h2`（衬线）· `.t-h3`（无衬线粗）· `.t-body`（UI 正文 1.7）· `.t-diary`（日记衬线 1.85）· `.t-caption` · `.t-overline`
 > CJK 正文行高 1.7–1.8；标题/日记正文用衬线，界面文字用无衬线。
+
+### 2.5 背景 · 纸色（`data-bg`，覆盖背景中性色）
+在根元素挂 `data-bg` 切换背景「纸色」；只改 `--bg / --bg-2 / --surface / --surface-2 / --hairline / --hairline-2`（Sepia 另微调 `--ink/--ink-2/--ink-3` 更暖），**强调色与排版不动**。每套都有浅 / 深两版。
+| `data-bg` | 含义 | 派生方式 |
+|---|---|---|
+| （缺省） | 纯净 · 中性暖纸 | 固定值（即 §2.2 基础中性色） |
+| `mint` | 浅绿 · 豆绿护眼 | 固定值（浅淡耐读，theme 无关） |
+| `mist` | 雾蓝 · 清冷低眩光 | 固定值（浅淡耐读，theme 无关） |
+| `cloud` | 云灰 · 中性沉静 | 固定值（浅淡耐读，theme 无关） |
+| `tinted` | 主题微染 · 跟 accent 走 | `color-mix(in oklab, var(--accent) N%, 基底)` → **随 theme + mode 联动**（轻染） |
+| `custom` | 自定义 | `color-mix(in oklab, var(--paper-seed) N%, 基底)`；`--paper-seed` 由 JS 设（如色相滑块 → `hsl(H 42% 56%)`） |
+> 曾有 `warm` 暖纸 / `paired` 主题配套 / `sepia` 深褐，评估同色发闷、捆绑不自由后移除；纸与主题色各自独立（点主题不换纸）。每套都让 `surface` 比 `bg` 亮一档，突出主体。
+- **不要写死背景色**：组件一律用 `var(--bg/--surface/...)`，纸色切换即自动生效。
+- 切换 + 持久化在 `spec.js`（`.paper-btn[data-bg]` 点击；`#paperHue` 滑块 → `custom` + 设种子）。展示见 `design-system.html` §02。
+- **联动**：点顶栏主题色（`.swatch-btn`）= 切主题 **并** 把纸设为 `paired`（配套纸）；单独点纸（`.paper-btn`）只改纸、不动主题。顶栏切换后自动滚到 §06 真实界面看效果（`spec.js` `jumpToContext`）。
+- **Flutter**：纸色 = 一个 `paper` 枚举 + 可空 `paperSeed` 颜色；`tinted`/`custom` 用 HSL/oklch 把 accent 或 seed 以低比例混入基底背景（`Color.alphaBlend` 或手算），映射到 `ThemeExtension` 的背景族。
 
 ---
 
@@ -154,14 +172,48 @@
 按钮 `.tb`（激活 `.on`）；分隔 `.div`；演示切换加 `data-toggle`。对接 **AppFlowy Editor**（能力集见 §3b 「编辑页 `.compose-*`」）。
 
 ### 提示条 `.toast` / 弹窗 `.dialog`
-`.toast` 深色款 + `.toast.surface` 表面款（`.ic` 图标 / `.acc` 操作）；`.dialog`（`h4` + `p` + `.acts`）。
+**全局 toast 系统**：底部居中浮现、自动消失、可堆叠（容器 `.toast-host`，最多 3 条）。底色保持中性（`.toast` 深色款 / `.toast.surface` 表面款），**语义只靠图标点色**承载（默认/成功/信息=主题色 · `.danger`=`--danger` · `.fav`=`--favorite`），克制不喧哗。可带一个操作 `.acc`（撤销/查看/重试）。
+- **引擎**：`assets/toast.js`，调 `DZ.toast('文案')` 或 `DZ.toast({text,tone,variant,action,onAction,duration,icon,host})`。`tone`=`default|ok|info|danger|fav`；`variant`=`dark|surface`；有 `action` 时默认停留更久（4.2s vs 2.6s）；无 `action` 时点整条关闭。就近挂载到 `[data-toast-host]` → `.screen` → `body`。
+- **进场**：`.toast` 起始 `opacity:0 + translateY`，append 后强制回流再加 `.in` 触发过渡（**不要用 rAF**——节流态不触发）；退场加 `.out`。
+- **容器修饰**：`.toast-host.top`（顶部变体）、`.toast-host.no-fab`（无 FAB 屏，缩小底部留白；默认留 96px 让开 FAB）。
+> Flutter：`ScaffoldMessenger.showSnackBar`（`behavior: floating`）+ `SnackBarAction`；底色中性、`Icon` 着语义色；FAB 由 Scaffold 自动让位。
+```html
+<!-- 静态结构（引擎会生成同构 DOM） -->
+<div class="toast danger"><span class="ic"><svg…></svg></span><span class="msg">已移到回收站</span><button class="acc">撤销</button></div>
+<div class="toast surface"><span class="ic"><svg…></svg></span><span class="msg">已开启端到端加密</span></div>
+```
+`.dialog`（`h4` + `p` + `.acts`）。
+
+### 底部弹层 `.sheet`（动作菜单 / 选择器 / 轻表单）
+**全局 sheet 系统**：从底部滑入、scrim 点击关闭、圆角顶 + 拖拽柄 + 底部留白。一套引擎 `assets/sheet.js`（`DZ.sheet(opts)`）覆盖三种形态：
+- **动作菜单**：`items:[{label, icon, tone:'danger', onTap}]`，默认带「取消」行。
+- **单选选择器**：`items:[{label, swatch:'#色', selected:true, onTap}]`，命中项右侧打勾。
+- **轻表单**：`content`(节点/HTML) + `primary:{label,onTap}`（可加 `secondary`）。
+- item 字段：`label / desc`(次级行) `/ icon`(SVG 串) `/ swatch`(色点) `/ tone:'danger' / selected / keepOpen / onTap`；`sep:true` 为分隔线。
+- 就近挂载到 `.pg` → `.screen` → `body`；z 48/49（浮于抽屉与 chrome 之上）。进场同 toast：append 后强制回流再加 `.in`（不用 rAF）。
+- **业务用法集中在 `screen.js`**：条目动作菜单（`[data-entry-menu]`）、移到日记本、删除确认、新建日记本（`[data-new-journal]`）、设置选择器（`[data-theme-picker]`/`[data-mode-picker]`）、往年今日 ⋯（`[data-otd-menu]`）。
+> Flutter：`showModalBottomSheet`（圆角顶 + 拖拽柄 + `SafeArea` 底部留白）；单选用 `ListTile`+`trailing: Icon(check)`，表单用内嵌 `Column`+`FilledButton`。
+```html
+<!-- 引擎生成同构 DOM；手写一般只调 DZ.sheet() -->
+<div class="sheet-scrim in"></div>
+<div class="sheet in">
+  <div class="sheet-grip"></div>
+  <div class="sheet-head"><div class="t">更多</div></div>
+  <div class="sheet-list">
+    <button class="sheet-item"><span class="ic"><svg…></svg></span><span class="tx"><b>编辑</b></span><span class="chk"><svg…></svg></span></button>
+    <div class="sheet-sep"></div>
+    <button class="sheet-item danger"><span class="ic"><svg…></svg></span><span class="tx"><b>删除</b></span><span class="chk"></span></button>
+  </div>
+  <button class="sheet-cancel">取消</button>
+</div>
+```
 
 ### 时间线日记卡片 `.entry`
 ```html
 <div class="entry">
   <div class="date"><div class="d">29</div><div class="m">MAY</div><div class="w">周五</div></div>
   <div class="card">
-    <div class="photo"><img src="…"></div>      <!-- 可选配图 -->
+    <div class="photo"><img src="…"></div>      <!-- 单张封面（多图改用 .gallery，见下） -->
     <div class="body">
       <div class="head"><h4>标题</h4><span class="star"><svg…></svg></span></div>
       <p class="excerpt">两行摘要…</p>
@@ -172,6 +224,17 @@
       </div>
     </div>
   </div>
+</div>
+```
+
+### 相册九宫格 `.gallery`（多图日记）
+卡片正文区 / 阅读页正文后的多图网格。列数随张数变（克制版朋友圈）：`data-n="2"`→2列、`"3"`→3列、`"4"`→2×2 田字、`≥5`→3列铺满、`"1"`→单张大图(4:3)。超 9 张时在**第 9 格**加 `.more`（`data-more="N"` 显示「+N」蒙层）**收起**，被收起的格加 `.hidden`；阅读页点 `.more` 由 `screen.js` 给 `.gallery` 加 `.expanded` 露出全部。信息流卡片里外层 `data-nav` 先行导航 → 点图直接进阅读页（不就地展开）。单张封面仍用 `.entry .photo`，多图才用 `.gallery`。
+> Flutter：`GridView.count`（crossAxisCount 由张数 2/3 决定）+ 最后一格 `Stack` 叠 +N 蒙层；点 +N 展开或进相册查看器。
+```html
+<div class="gallery" data-n="9">
+  <div class="ph"><img src="…" alt=""></div>          <!-- 第 1–8 格 -->
+  <div class="ph more" data-more="2"><img …></div>   <!-- 第 9 格：+2 收起 -->
+  <div class="ph hidden"><img …></div>              <!-- 仅阅读页：展开后露出 -->
 </div>
 ```
 
@@ -247,6 +310,14 @@
 ### 编辑器富格式块 `.cb-*`（compose-body 内 · 演示 AppFlowy 块）
 `.cb-h`(标题) · `.cb-list`(有序/无序) · `.cb-todo`(待办，勾选态 `.done`，`.bx`+`.tx`) · `.cb-quote`(引用)。仅用于编辑页「富格式」状态示意。
 
+### 新建日记本选色 `.nj-*`（sheet 内表单 · 仅原型）
+`.nj-colorlab`(小标题) + `.nj-colors > .nj-color[data-c]`（六色圆钮，选中 `.on` = 外环 + 白勾）。由 `screen.js` `openNewJournal()` 注入 sheet 的 `content`。色板 = 三主题色 + 三扩展色。
+
+### 设置可点选行 `.set-row.tappable`（仅原型）
+给 `.set-row` 加 `.tappable` → hover/active 底纹 + 指针，标记「点开选择器」。配 `data-theme-picker` / `data-mode-picker[data-appearance]`；右侧 `.val` 显当前值（主题色含色点，外观含 `.mv`）。
+
+> 一次性屏内样式（不登记、不复用）：回收站 `.trash-*`、日历 `.cm-*`、回忆卡片 `.mc`/`.mem-*` 直接写在各自 `screens/*.html` 的 `<style>`（按 `_template` 约定）。
+
 ---
 
 ## 4. 模式 / Patterns
@@ -257,24 +328,25 @@
 ### 抽屉侧边栏 `.drawer-stage`（手机端导航主入口）
 结构：`.drawer-stage > .screen > [内容] + .scrim + .drawer`。
 打开/关闭：任意元素加 `data-drawer-open` / `data-drawer-close`；点 `.scrim` 关闭。状态类 `.drawer-stage.open`。
-抽屉内：`.dw-head`（`.avatar`+`.who`）→ `.dw-search` → 若干 `.dw-section`（`.dw-label` 分组标题 + `.dw-item`）→ `.dw-foot`。
-- `.dw-item` 选中加 `.on`（accent-soft 底 + 左侧色条）；不可选条目加 `.static`（设置/回收站）。
+抽屉内：`.dw-head`（`.avatar`+`.who`）→ 若干 `.dw-section`（`.dw-label` 分组标题 + `.dw-item`）→ `.dw-foot`（内嵌一个 `.dw-section`，仅放「设置」）。**搜索不在抽屉里**，统一走顶栏。结构（与真实屏一致）：日记本（全部日记 + 各本色点）→ 浏览（往年今日 / 收藏 / 日历 / 回收站）→ 底部设置。抽屉底色用暖纸 `--bg`（非纯白）。
+- `.dw-item` 选中加 `.on`（accent-soft 底 + 左侧色条）；带 `data-nav` 的项（往年今日 / 设置）点击走导航、不参与同组选中。
 - 日记本色点 `.dw-dot`（对应 DB 里 journal.color）；右侧计数 `.count`。
 > 同组内 `.dw-item` 点击互斥选中已由 `spec.js` 处理。
 
 ### 底部 FAB 速拨 `.fab-wrap`（取代标签栏）
 **轻点 = 写日记；长按 ~0.35s = 展开二级动作**（拍照/语音/清单）。
+**`.fab-scrim` 是 `.fab-wrap` 的「后继兄弟」（同在 `.pg`/`.screen` 下），不在 `.fab-wrap` 内**——这样它能 `position:absolute; inset:0` 覆盖整屏做背景压暗+模糊，且 z-index(6) 低于 `.fab-wrap`(7)，展开时按钮与动作浮在遮罩之上、保持清晰（曾因放在 wrap 内、z 高于按钮而把按钮糊掉，已修）。开态由 `.fab-wrap.open ~ .fab-scrim` 驱动。
 ```html
 <div class="fab-wrap">
-  <div class="fab-scrim"></div>
   <div class="fab-actions">
-    <div class="fab-action" data-label="📷 拍照"><span class="lab">拍照</span><button class="mini"><svg…></svg></button></div>
-    <!-- 语音 / 清单… -->
+    <div class="fab-action" data-label="拍照"><span class="lab">拍照</span><button class="mini"><svg…></svg></button></div>
+    <!-- 语音 / 纯文字… -->
   </div>
   <button class="fab-main"><svg><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
+<div class="fab-scrim"></div>   <!-- 紧跟 .fab-wrap 之后，全屏遮罩 -->
 ```
-长按/轻点逻辑、提示气泡 `.fab-toast` 均由 `spec.js` 接管；`data-label` 是点击二级动作时的提示文案。
+长按/轻点逻辑由 `screen.js`（产品）/ `spec.js`（规范演示）接管；`data-label` 是二级动作提示文案。点 `.fab-scrim` 关闭（`screen.js` 用 `document.querySelector('.fab-scrim')` 绑定）。
 > **立体**：`.fab-main` 用色相受光渐变 + 三层投影（主色光晕/环境影/接触影）+ `::before` 顶部细高光；按压态加深下沉、长按态浮起。Flutter 用 `BoxDecoration(gradient + boxShadow[])` 落地（无 inset 阴影，顶高光用顶部浅渐变或 0.5px 白边）。
 > 导航走抽屉、创建走 FAB —— 这是 DayZ 的移动端基本盘，新页面沿用即可。
 

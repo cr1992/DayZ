@@ -101,6 +101,8 @@
 | 屏 → 外壳 | `{type:'nav', to:'<id>'}` | 进入某屏（原型 push；画布忽略） |
 | 屏 → 外壳 | `{type:'back'}` | 返回（原型 pop） |
 | 屏 → 外壳 | `{type:'ready'}` | 屏已就绪，索要当前主题 |
+| 屏 → 外壳 | `{type:'settheme', theme}` | 设置类屏请求换主题色 → 外壳 applyTheme + 广播 |
+| 屏 → 外壳 | `{type:'setmode', appearance}` | 请求外观 light/dark/system（system 用 `matchMedia(prefers-color-scheme)`） |
 | 外壳 → 屏 | `{type:'theme', theme, mode}` | 下发主题/明暗，屏即时换肤 |
 
 > 屏内交互例：**顶栏展开搜索**——点 `[data-search-open]` 使 `.app-top` 加 `.searching` 展开 `.topsearch` 输入框，回车发 `{type:'nav',to:'search'}`；`[data-search-close]` 收起。全由 `screen.js` 处理，不需外壳参与。
@@ -153,6 +155,8 @@
 | FAB `.fab-wrap`（轻点写/长按展开） | `FloatingActionButton` + 自定义 `GestureDetector(onLongPress)`；展开用 `showModalBottomSheet` 或自绘 speed-dial |
 | FAB 立体（渐变+多层影+顶高光） | `Container(decoration: BoxDecoration(gradient: LinearGradient(...), boxShadow: [BoxShadow×3], shape: circle))`；顶高光用顶部浅色渐变或 0.5px 白色半透明 `Border`（Flutter 无 inset 阴影） |
 | 主题 token（`tokens.css`） | `ThemeData` + 自定义 `ThemeExtension`（三主题×明暗 = 6 套）；token 名一一对应 |
+| 底部弹层 `.sheet`（`DZ.sheet` / `DZ.confirm`：动作菜单/选择器/轻表单/确认） | `showModalBottomSheet`（圆角顶 + 拖拽柄 + `SafeArea` 底部留白）；确认用 `showModalBottomSheet`/`AlertDialog`，单选用 `ListTile`+`trailing: check` |
+| 设置选择器 → `settheme/setmode` | 设置页改 `ThemeData` / `ThemeMode`，全树 rebuild；「跟随系统」= `ThemeMode.system` + `MediaQuery.platformBrightness` |
 | 顶栏展开搜索（`.topsearch` + `data-search-*`） | `SearchAnchor`/`showSearch(SearchDelegate)`，或 `AppBar` 内 `TextField` 切换；提交 → push 搜索结果页 |
 | 主题广播到 iframe | 顶层 `ThemeData` 切换，全树自动 rebuild；无需广播 |
 | 富文本编辑器（`editor.html` 工具栏） | **AppFlowy Editor**（`packages/appflowy-editor`），工具集即 §DESIGN-REF 所列；内容存 `content_json` + `content_plain` |

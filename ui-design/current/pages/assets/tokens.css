@@ -35,6 +35,9 @@
   /* ---- 动效 ---- */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --dur: 220ms;
+
+  /* ---- 自定义纸色种子（data-bg="custom" 时生效；默认跟随主题色）---- */
+  --paper-seed: var(--accent);
 }
 
 /* ============================================================
@@ -81,6 +84,80 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.46);
   --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.62);
+}
+
+/* ============================================================
+   背景 · 纸色（data-bg）—— 第三条轴，只改背景相关中性色，text/ink 与强调色不动。
+   预设（缺省）纯净 Pure · mint 浅绿 · mist 雾蓝 · cloud 云灰 —— 浅淡、适合长读的纸；
+   tinted 主题微染（随 accent）· custom 自定义（由 --paper-seed 派生）。
+   每套都让 surface 比 bg 更亮一档，卡片/文字浮起、突出主体。
+   说明：这些块带 [data-mode][data-bg]，特异性高于基础 [data-mode]，故覆盖之。
+   ============================================================ */
+
+/* ---- 浅绿 Mint（豆绿护眼，清新耐读）---- */
+:root[data-mode="light"][data-bg="mint"] {
+  --bg: #E9EFE4; --bg-2: #DBE4D2; --surface: #F7FBF3; --surface-2: #ECF2E6;
+  --hairline: #D7E0CC; --hairline-2: #C6D1B6;
+}
+:root[data-mode="dark"][data-bg="mint"] {
+  --bg: #121611; --bg-2: #0C0F0A; --surface: #1C211A; --surface-2: #232921;
+  --hairline: #2A3127; --hairline-2: #394434;
+}
+
+/* ---- 雾蓝 Mist（清冷淡蓝，低眩光）---- */
+:root[data-mode="light"][data-bg="mist"] {
+  --bg: #E8EEF1; --bg-2: #DAE3E8; --surface: #F7FBFC; --surface-2: #EBF1F3;
+  --hairline: #D5DFE4; --hairline-2: #C2CDD4;
+}
+:root[data-mode="dark"][data-bg="mist"] {
+  --bg: #11151A; --bg-2: #0B0E12; --surface: #1B2026; --surface-2: #222831;
+  --hairline: #2A3038; --hairline-2: #38414C;
+}
+
+/* ---- 云灰 Cloud（中性微暖灰，沉静）---- */
+:root[data-mode="light"][data-bg="cloud"] {
+  --bg: #ECEBE8; --bg-2: #DFDDD9; --surface: #FBFAF8; --surface-2: #EEEDEA;
+  --hairline: #DCD9D4; --hairline-2: #CBC7C1;
+}
+:root[data-mode="dark"][data-bg="cloud"] {
+  --bg: #161513; --bg-2: #100F0D; --surface: #211F1C; --surface-2: #282623;
+  --hairline: #2F2C28; --hairline-2: #403C37;
+}
+
+/* ---- 主题微染 Tinted（随 accent 走）---- */
+:root[data-mode="light"][data-bg="tinted"] {
+  --bg:        color-mix(in oklab, var(--accent) 7%,  #FCFAF6);
+  --bg-2:      color-mix(in oklab, var(--accent) 13%, #F0EBE2);
+  --surface:   color-mix(in oklab, var(--accent) 3.5%, #FFFFFF);
+  --surface-2: color-mix(in oklab, var(--accent) 6%,  #FBF8F2);
+  --hairline:  color-mix(in oklab, var(--accent) 15%, #EBE4D9);
+  --hairline-2:color-mix(in oklab, var(--accent) 22%, #DCD3C4);
+}
+:root[data-mode="dark"][data-bg="tinted"] {
+  --bg:        color-mix(in oklab, var(--accent) 10%, #17150F);
+  --bg-2:      color-mix(in oklab, var(--accent) 8%,  #100F08);
+  --surface:   color-mix(in oklab, var(--accent) 12%, #232019);
+  --surface-2: color-mix(in oklab, var(--accent) 15%, #2B2820);
+  --hairline:  color-mix(in oklab, var(--accent) 17%, #322E25);
+  --hairline-2:color-mix(in oklab, var(--accent) 22%, #443F33);
+}
+
+/* ---- 自定义 Custom（由 --paper-seed 派生）---- */
+:root[data-mode="light"][data-bg="custom"] {
+  --bg:        color-mix(in oklab, var(--paper-seed) 8%,  #FCFAF6);
+  --bg-2:      color-mix(in oklab, var(--paper-seed) 14%, #F0EBE2);
+  --surface:   color-mix(in oklab, var(--paper-seed) 4%,  #FFFFFF);
+  --surface-2: color-mix(in oklab, var(--paper-seed) 7%,  #FBF8F2);
+  --hairline:  color-mix(in oklab, var(--paper-seed) 16%, #EBE4D9);
+  --hairline-2:color-mix(in oklab, var(--paper-seed) 23%, #DCD3C4);
+}
+:root[data-mode="dark"][data-bg="custom"] {
+  --bg:        color-mix(in oklab, var(--paper-seed) 12%, #17150F);
+  --bg-2:      color-mix(in oklab, var(--paper-seed) 10%, #100F08);
+  --surface:   color-mix(in oklab, var(--paper-seed) 14%, #232019);
+  --surface-2: color-mix(in oklab, var(--paper-seed) 17%, #2B2820);
+  --hairline:  color-mix(in oklab, var(--paper-seed) 19%, #322E25);
+  --hairline-2:color-mix(in oklab, var(--paper-seed) 25%, #443F33);
 }
 
 /* ============================================================
