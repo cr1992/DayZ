@@ -29,6 +29,9 @@ spec-kit/
 │   ├── pre-commit                      # git 提交闸：暂存的 specs/**/*.md 跑三道 lint
 │   └── claude-pretooluse-whitelist.sh  # Claude Code PreToolUse 白名单闸
 ├── install.sh                          # 一键安装（幂等、不覆盖既有 hook、--with-claude 可选）
+├── docs/
+│   ├── DESIGN.md                       # 设计与决策记录：整体设计 + 决策 why + 实操发现的问题 + 多-agent 适配（概览）
+│   └── multi-agent-adapters.md         # 多-agent 写时闸适配·实现级详细设计（Codex/Kiro/Gemini，可选接入）
 └── README.md                           # 本文件
 ```
 
