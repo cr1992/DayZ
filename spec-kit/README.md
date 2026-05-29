@@ -19,20 +19,25 @@ spec-kit 用四道闸把这些机械可检的问题挡在门外，让人审专�
 
 ```
 spec-kit/
-├── spec-guide.md                       # spec 写作规范（P1/P2/P3… 条款，闸引用其编号）
+├── spec-guide.md                          # spec 写作规范（P1/P2/P3… 条款，闸引用其编号）
 ├── scripts/
-│   ├── check_dead_links.sh             # 死链闸
-│   ├── lint_acceptance_commands.sh     # 验收命令抗规避闸（规范 P3）
-│   ├── lint_keywords.sh                # RFC2119 关键词大小写闸
-│   └── archive_spec.sh                 # 功能归档：移目录 + 改 README 索引 + 全仓库改引用 + 查死链
+│   ├── check_dead_links.sh                # 死链闸
+│   ├── lint_acceptance_commands.sh        # 验收命令抗规避闸（规范 P3）
+│   ├── lint_keywords.sh                   # RFC2119 关键词大小写 + 存在性闸
+│   ├── lint_whitelist_scope.sh            # 通用 git 兜底闸：暂存文件 ⊆ .spec-task-whitelist
+│   └── archive_spec.sh                    # 功能归档：移目录 + 改 README 索引 + 全仓库改引用 + 查死链
 ├── hooks/
-│   ├── pre-commit                      # git 提交闸：暂存的 specs/**/*.md 跑三道 lint
-│   └── claude-pretooluse-whitelist.sh  # Claude Code PreToolUse 白名单闸
-├── install.sh                          # 一键安装（幂等、不覆盖既有 hook、--with-claude 可选）
+│   ├── pre-commit                         # git 提交闸：暂存的 specs/**/*.md 跑三道 lint
+│   ├── whitelist_core.sh                  # 写时白名单判定核心（各 agent 适配器共用：归一化/glob/test放行/json_escape）
+│   ├── claude-pretooluse-whitelist.sh     # Claude  PreToolUse 写时白名单适配器
+│   ├── gemini-beforetool-whitelist.sh     # Gemini  BeforeTool 写时白名单适配器
+│   ├── codex-pretooluse-whitelist.sh      # Codex   PreToolUse 写时白名单适配器
+│   └── kiro-pretooluse-whitelist.sh       # Kiro    preToolUse 写时白名单适配器
+├── install.sh                             # 一键安装（幂等、不覆盖既有 hook、--with-<agent>/--with-backstop 可选）
 ├── docs/
-│   ├── DESIGN.md                       # 设计与决策记录：整体设计 + 决策 why + 实操发现的问题 + 多-agent 适配（概览）
-│   └── multi-agent-adapters.md         # 多-agent 写时闸适配·实现级详细设计（Codex/Kiro/Gemini，可选接入）
-└── README.md                           # 本文件
+│   ├── DESIGN.md                          # 设计与决策记录：整体设计 + 决策 why + 实操发现的问题 + 多-agent 适配（概览）
+│   └── multi-agent-adapters.md            # 多-agent 写时闸适配·实现级详细设计（Codex/Kiro/Gemini）
+└── README.md                              # 本文件
 ```
 
 约定：所有脚本默认作用于**当前工作目录下的 `specs/`**，可用第一个参数或环境变量 `SPECS_DIR` 覆盖。
@@ -43,16 +48,22 @@ spec-kit/
 把 `spec-kit/` 放进你的仓库（或作为子模块/vendored 目录），在**仓库根**运行：
 
 ```bash
-bash spec-kit/install.sh              # 只装 git pre-commit 闸
-bash spec-kit/install.sh --with-claude # 额外注册 Claude Code PreToolUse 白名单闸
+bash spec-kit/install.sh                 # 只装 git pre-commit 三道闸
+bash spec-kit/install.sh --with-claude    # + Claude 写时白名单 hook（默认 deny + 原因回传模型）
+bash spec-kit/install.sh --with-gemini    # + Gemini（--with-codex / --with-kiro 同理）
+bash spec-kit/install.sh --with-all-agents --with-backstop   # 四 agent 全装 + 通用 git 兜底闸
 ```
+
+> 也可不先 vendored，直接在线一行装（见上层 railkit）：
+> `curl -fsSL https://raw.githubusercontent.com/cr1992/railkit/main/bootstrap.sh | bash -s -- spec-kit --with-claude`
 
 安装行为：
 
-- **幂等**：可反复运行；已装则跳过，不重复追加。
-- **不覆盖你已有的 pre-commit**：若 `.git/hooks/pre-commit` 已存在，先备份成 `.bak.<时间戳>`，再把 spec-kit 调用块（包在 `# >>> spec-kit pre-commit >>>` 标记之间）**插到 shebang 之后**——即让 spec-kit 闸**先于**你原有逻辑里可能的提前 `exit 0` 运行，避免闸被静默跳过。
-- **非 shell 的既有 hook 会停手**：若既有 pre-commit 的 shebang 不是 sh/bash/zsh（如 python/ruby/node），追加 bash 会损坏它，故 spec-kit **拒绝自动改写**、保留原文件并打印手工接入指引（或改走 CI）。
-- `--with-claude`：把 PreToolUse hook 合并进 `.claude/settings.json`（有 `jq` 自动合并；无 `jq` 则打印需手动粘贴的 JSON 片段）。
+- **幂等**：可反复运行；已装则跳过，不重复追加（各 agent 配置按 matcher+command 去重）。
+- **不覆盖你已有的 pre-commit**：若 `.git/hooks/pre-commit` 已存在，先备份成 `.bak.<时间戳>`，再把 spec-kit 调用块（包在 `# >>> spec-kit pre-commit >>>` 标记之间）**插到 shebang 之后**——让 spec-kit 闸**先于**你原有逻辑里可能的提前 `exit 0` 运行，避免被静默跳过。worktree 下用 `--git-common-dir` 定位 hooks（否则装错目录、闸失效）。
+- **非 shell 的既有 hook 会停手**：若既有 pre-commit 的 shebang 不是 sh/bash/zsh（如 python/ruby/node），追加 bash 会损坏它，故 spec-kit **拒绝自动改写**、保留原文件并打印手工接入指引。
+- **写时白名单各 agent 接入**（可选、互不影响、都默认 deny）：`--with-claude`→`.claude/settings.json`、`--with-gemini`→`.gemini/settings.json`、`--with-codex`→项目级 `.codex/config.toml`（需信任）、`--with-kiro`→合并进现有 `.kiro/agents/*.json`（不新建孤儿 agent）。Codex/Kiro/Gemini 装后建议在真实 agent 各 live 核一次（见 `docs/multi-agent-adapters.md` §7）。
+- `--with-backstop`：装通用 git 兜底闸（`lint_whitelist_scope.sh`，暂存文件 ⊆ 白名单），补写时 hook 漏掉的 shell 重定向写 / 无 hook 的 agent。
 
 安装脚本结尾会打印「已装什么 / 怎么用 / 怎么卸」。卸载就是删掉那对标记之间的区块（或本 kit 新建的整个 hook 文件）。
 
@@ -83,10 +94,15 @@ bash spec-kit/scripts/check_dead_links.sh path/to/specs
 - **存在性**：全篇无任何大写 RFC2119 关键词（MUST/SHALL/SHOULD/MAY）→ 报缺失，requirement 须用规范关键词描述系统行为。
 **只查拼写大小写与存在性，不判语义**——`SHALL` 与 `SHOULD` 的分级是否用对属于人审范畴，本闸不碰。
 
-### 4. 白名单闸 — `hooks/claude-pretooluse-whitelist.sh`
-Claude Code 的 `PreToolUse`（matcher `Edit|MultiEdit|Write|NotebookEdit`）钩子。从 stdin 读 hook 输入 JSON，取
-`tool_input.file_path`（NotebookEdit 取 `notebook_path`；优先 `jq`，无 `jq` 用 `grep/sed` 降级），对照仓库根
-`.spec-task-whitelist`：命中清单内、或 `test/**/*_test.dart` 则放行；命中清单外则按 `DECISION` 处置。
+### 4. 写时白名单闸（多 agent）— `hooks/whitelist_core.sh` + 各 agent 适配器
+判定逻辑（定位仓库根 / 路径归一化含相对路径按 cwd 锚定 + 新建文件祖先物理化 / glob 匹配 / `test/**/*_test.dart` 自动放行 /
+**无 `.spec-task-whitelist` 则全放行** / `json_escape`）全在与 agent 无关的 **`whitelist_core.sh`**；每个 agent 一个**薄适配器**只翻译自家 I/O：
+- `claude-pretooluse-whitelist.sh`（Claude `PreToolUse`，取 `tool_input.file_path`/`notebook_path`）
+- `gemini-beforetool-whitelist.sh`（Gemini `BeforeTool`，取 `tool_input.file_path`）
+- `codex-pretooluse-whitelist.sh`（Codex `PreToolUse`，解析 `apply_patch` 信封头行取多路径；不用 set -e 防 fail-open）
+- `kiro-pretooluse-whitelist.sh`（Kiro `preToolUse`，取 `operations[].path`，`exit 2 + stderr` 表达 deny）
+
+命中清单内、或 `test/**/*_test.dart` 则放行；命中清单外则按 `DECISION` 处置（核心退出码 0=放行 / 10=越界并逐行打越界路径 / 2=环境错）。
 **默认 `DECISION=deny`（真阻断）**：越界写被拦下，并把原因经 `permissionDecisionReason`/`additionalContext`
 **反馈给模型**，模型据此停手/改道/请示——这才挡得住 AI 跑偏。
 （关键事实：PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，所以 `warn` 模式拦不住模型；warn 已改为

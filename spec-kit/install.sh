@@ -11,20 +11,29 @@ set -euo pipefail
 # 特性：幂等可重跑；**不覆盖**用户已有的 pre-commit（备份 .bak 后追加调用本 kit）。
 # 强制规范：把"硬闸"落到本地 git 与 Claude Code，使 spec 约束对人和 LLM 都生效。
 
-WITH_CLAUDE=0
+WITH_CLAUDE=0; WITH_GEMINI=0; WITH_CODEX=0; WITH_KIRO=0; WITH_BACKSTOP=0
+print_usage() {
+  cat <<'USAGE'
+用法: bash spec-kit/install.sh [选项...]
+  （无选项）         只装 git pre-commit 三道闸（死链/验收/关键词，与 agent 无关）
+  --with-claude     注册 Claude Code PreToolUse 写时白名单 hook
+  --with-gemini     注册 Gemini CLI BeforeTool 写时白名单 hook (.gemini/settings.json)
+  --with-codex      注册 Codex CLI PreToolUse 写时白名单 hook (项目级 .codex/config.toml)
+  --with-kiro       注册 Kiro preToolUse 写时白名单 hook (合并进现有 .kiro/agents/*.json)
+  --with-all-agents 上面四个 agent 一起装
+  --with-backstop   装通用 git 兜底闸（暂存文件 ⊆ .spec-task-whitelist，补 shell 绕过/无 hook 的 agent）
+USAGE
+}
 for arg in "$@"; do
   case "$arg" in
-    --with-claude) WITH_CLAUDE=1 ;;
-    -h|--help)
-      echo "用法: bash spec-kit/install.sh [--with-claude]"
-      echo "  --with-claude  额外注册 Claude Code PreToolUse 白名单 hook"
-      exit 0
-      ;;
-    *)
-      echo "未知参数: $arg" >&2
-      echo "用法: bash spec-kit/install.sh [--with-claude]" >&2
-      exit 2
-      ;;
+    --with-claude)     WITH_CLAUDE=1 ;;
+    --with-gemini)     WITH_GEMINI=1 ;;
+    --with-codex)      WITH_CODEX=1 ;;
+    --with-kiro)       WITH_KIRO=1 ;;
+    --with-all-agents) WITH_CLAUDE=1; WITH_GEMINI=1; WITH_CODEX=1; WITH_KIRO=1 ;;
+    --with-backstop)   WITH_BACKSTOP=1 ;;
+    -h|--help) print_usage; exit 0 ;;
+    *) echo "未知参数: $arg" >&2; print_usage >&2; exit 2 ;;
   esac
 done
 
@@ -224,6 +233,107 @@ install_claude() {
   echo "已注册：Claude PreToolUse 白名单 hook -> $settings"
 }
 
+# --- 其它 agent 写时 hook（绝对路径；各 agent 无统一 project-dir 变量，按机器安装，移动仓库后重跑即可）---
+GEMINI_HOOK="$HOOKS_SRC/gemini-beforetool-whitelist.sh"
+CODEX_HOOK="$HOOKS_SRC/codex-pretooluse-whitelist.sh"
+KIRO_HOOK="$HOOKS_SRC/kiro-pretooluse-whitelist.sh"
+
+install_gemini() {
+  local settings="$ROOT/.gemini/settings.json"; mkdir -p "$ROOT/.gemini"
+  local cmd="bash \"$GEMINI_HOOK\""
+  if ! command -v jq >/dev/null 2>&1; then
+    echo ""; echo "未检测到 jq：请手动把下面合并进 $settings 的 hooks.BeforeTool："
+    printf '{ "hooks": { "BeforeTool": [ { "matcher": "^(write_file|replace)$", "hooks": [ { "type": "command", "command": "%s" } ] } ] } }\n' "$cmd"
+    return
+  fi
+  [ -f "$settings" ] || printf '%s\n' '{}' > "$settings"
+  if jq -e --arg c "$cmd" '(.hooks.BeforeTool // []) | any(.[]?; (.matcher=="^(write_file|replace)$") and ((.hooks//[])|any(.[]?;.command==$c)))' "$settings" >/dev/null 2>&1; then
+    echo "已就绪：Gemini BeforeTool 白名单 hook 已在 ${settings}（幂等）。"; return
+  fi
+  local tmp; tmp="$(mktemp "${TMPDIR:-/tmp}/spec-kit.XXXXXX")"
+  jq --arg c "$cmd" '.hooks=(.hooks//{}) | .hooks.BeforeTool=((.hooks.BeforeTool//[])+[{"matcher":"^(write_file|replace)$","hooks":[{"type":"command","command":$c}]}])' "$settings" > "$tmp" && mv "$tmp" "$settings"
+  echo "已注册：Gemini BeforeTool 白名单 hook -> $settings"
+}
+
+install_codex() {
+  local cfg="$ROOT/.codex/config.toml"; mkdir -p "$ROOT/.codex"
+  local B="# >>> spec-kit codex >>>" E="# <<< spec-kit codex <<<"
+  if [ -f "$cfg" ] && grep -qF "$B" "$cfg" 2>/dev/null; then
+    echo "已就绪：Codex PreToolUse hook 已在 ${cfg}（幂等）。"; return
+  fi
+  # 确保 [features] hooks=true（TOML 无 jq：仅在「无 hooks=true」时处理，已有 [features] 表则提示手工以免重复表头）
+  if [ -f "$cfg" ] && grep -qE '^[[:space:]]*hooks[[:space:]]*=[[:space:]]*true' "$cfg"; then
+    :
+  elif [ -f "$cfg" ] && grep -qE '^\[features\]' "$cfg"; then
+    echo "⚠ ${cfg} 已有 [features] 表但未见 hooks = true，请手动在其下加一行：hooks = true" >&2
+  else
+    { echo "[features]"; echo "hooks = true"; } >> "$cfg"
+  fi
+  cat >> "$cfg" <<EOF
+
+$B
+[[hooks.PreToolUse]]
+matcher = "^(apply_patch|Edit|Write|MultiEdit)\$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash "$CODEX_HOOK"'
+$E
+EOF
+  echo "已注册：Codex PreToolUse 白名单 hook -> $cfg"
+  echo "  注意：CI/非交互需在 requirements.toml 信任本 hook 或加 --dangerously-bypass-hook-trust；请在真实 Codex 验证对 apply_patch 触发。" >&2
+}
+
+install_kiro() {
+  if ! command -v jq >/dev/null 2>&1; then echo "未检测到 jq：Kiro 接入需 jq，已跳过。" >&2; return; fi
+  local cmd="bash \"$KIRO_HOOK\"" found=0 a tmp
+  for a in "$ROOT"/.kiro/agents/*.json; do
+    [ -f "$a" ] || continue
+    found=1
+    if jq -e --arg c "$cmd" '(.hooks.preToolUse // []) | any(.[]?; (.matcher=="fs_write") and (.command==$c))' "$a" >/dev/null 2>&1; then
+      echo "已就绪：Kiro preToolUse 已在 $a（幂等）。"; continue
+    fi
+    tmp="$(mktemp "${TMPDIR:-/tmp}/spec-kit.XXXXXX")"
+    jq --arg c "$cmd" '.hooks=(.hooks//{}) | .hooks.preToolUse=((.hooks.preToolUse//[])+[{"matcher":"fs_write","command":$c,"timeout_ms":5000}])' "$a" > "$tmp" && mv "$tmp" "$a"
+    echo "已注册：Kiro preToolUse 白名单 hook -> $a"
+  done
+  if [ "$found" -eq 0 ]; then
+    echo "⚠ 未找到 .kiro/agents/*.json：Kiro hook 只在被激活的 agent 上生效，故不新建孤儿 agent。" >&2
+    echo "  请在你的 Kiro agent 配置 hooks.preToolUse 手动加：{\"matcher\":\"fs_write\",\"command\":\"$cmd\",\"timeout_ms\":5000}" >&2
+  else
+    echo "  注意：装完请用真实 Kiro run 确认 hook 真触发（fs_write schema 需 live 核）。" >&2
+  fi
+}
+
+# --- 通用 git 兜底闸（D7：暂存文件 ⊆ 白名单）---
+BACKSTOP_BEGIN="# >>> spec-kit backstop >>>"
+BACKSTOP_END="# <<< spec-kit backstop <<<"
+make_backstop_block() {
+  cat <<EOF
+$BACKSTOP_BEGIN
+# 由 spec-kit/install.sh --with-backstop 安装。删除本 BEGIN..END 区块即卸载。
+ROOT="\$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+bash "$SCRIPTS_REF/lint_whitelist_scope.sh" || exit \$?
+$BACKSTOP_END
+EOF
+}
+install_backstop() {
+  if [ -e "$HOOK_DST" ] && grep -qF "$BACKSTOP_BEGIN" "$HOOK_DST" 2>/dev/null; then
+    echo "已就绪：兜底闸已在 $HOOK_DST（幂等）。"; return
+  fi
+  if [ ! -e "$HOOK_DST" ]; then
+    { echo "#!/usr/bin/env bash"; echo "set -euo pipefail"; echo ""; make_backstop_block; } > "$HOOK_DST"
+    chmod +x "$HOOK_DST"; echo "已安装兜底闸：$HOOK_DST（新建）"; return
+  fi
+  local first; first="$(head -n 1 "$HOOK_DST" 2>/dev/null || true)"
+  if ! hook_is_shell "$first"; then
+    echo "⚠ 既有 $HOOK_DST 非 shell，兜底闸未装，请手工调用 lint_whitelist_scope.sh。" >&2; return
+  fi
+  local tmp; tmp="$(mktemp "${TMPDIR:-/tmp}/spec-kit-bk.XXXXXX")"
+  { head -n 1 "$HOOK_DST"; echo ""; make_backstop_block; echo ""; tail -n +2 "$HOOK_DST"; } > "$tmp" && mv "$tmp" "$HOOK_DST"
+  chmod +x "$HOOK_DST"; echo "已插入兜底闸：$HOOK_DST"
+}
+
 # --- 执行 -----------------------------------------------------------------
 echo "== spec-kit 安装 =="
 echo "仓库根: $ROOT"
@@ -231,9 +341,11 @@ echo "kit 目录: $KIT_DIR"
 echo ""
 
 install_precommit
-if [ "$WITH_CLAUDE" -eq 1 ]; then
-  install_claude
-fi
+if [ "$WITH_CLAUDE"   -eq 1 ]; then install_claude;   fi
+if [ "$WITH_GEMINI"   -eq 1 ]; then install_gemini;   fi
+if [ "$WITH_CODEX"    -eq 1 ]; then install_codex;    fi
+if [ "$WITH_KIRO"     -eq 1 ]; then install_kiro;     fi
+if [ "$WITH_BACKSTOP" -eq 1 ]; then install_backstop; fi
 
 # --- 收尾说明 -------------------------------------------------------------
 echo ""
@@ -245,9 +357,11 @@ if [ "$PRECOMMIT_INSTALLED" -eq 1 ]; then
 else
   echo "⚠ 未安装 pre-commit 闸：既有 hook 非 shell，已停手（见上方提示）。请改走 CI 或手工接入。"
 fi
-if [ "$WITH_CLAUDE" -eq 1 ]; then
-  echo "  • Claude PreToolUse 白名单 hook -> $ROOT/.claude/settings.json"
-fi
+if [ "$WITH_CLAUDE"   -eq 1 ]; then echo "  • Claude PreToolUse 白名单 hook  -> $ROOT/.claude/settings.json"; fi
+if [ "$WITH_GEMINI"   -eq 1 ]; then echo "  • Gemini BeforeTool 白名单 hook  -> $ROOT/.gemini/settings.json"; fi
+if [ "$WITH_CODEX"    -eq 1 ]; then echo "  • Codex PreToolUse 白名单 hook   -> $ROOT/.codex/config.toml（项目级，需信任）"; fi
+if [ "$WITH_KIRO"     -eq 1 ]; then echo "  • Kiro preToolUse 白名单 hook    -> $ROOT/.kiro/agents/*.json"; fi
+if [ "$WITH_BACKSTOP" -eq 1 ]; then echo "  • 通用兜底闸（暂存文件⊆白名单）  -> $HOOK_DST"; fi
 cat <<EOF
 
 怎么用：
