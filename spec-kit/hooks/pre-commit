@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#
+# spec-kit · pre-commit 闸
+#
+# 用途：提交前对**暂存区**里的 specs/**/*.md 跑三道 lint
+#       (check_dead_links / lint_acceptance_commands / lint_keywords)，
+#       任一非 0 → 拒绝提交并打印原因。荣誉制对人/LLM 都不可靠，故设硬闸。
+# 用法：作为 git pre-commit hook 自动触发；也可手动 `bash spec-kit/hooks/pre-commit`。
+#       跳过(应急)：`SKIP_SPEC_LINT=1 git commit ...`。
+# 退出码：0=全部通过或无 spec 改动或被跳过；1=任一闸报违规；2=找不到 kit 脚本(环境错)。
+# 强制规范：spec 文档的链接完整性(P-死链)、验收命令抗规避(P3)、RFC2119 关键词大小写(P-关键词)。
+# 注意：本脚本可能被 install.sh 追加进既有 .git/hooks/pre-commit；它只负责 spec lint，
+#       不触碰其它 hook 逻辑，且通过相对自身定位 kit 脚本，安装位置无关。
+
+# --- 应急跳过 -------------------------------------------------------------
+if [ "${SKIP_SPEC_LINT:-0}" = "1" ]; then
+  echo "[spec-kit] SKIP_SPEC_LINT=1，跳过 spec lint。" >&2
+  exit 0
+fi
+
+# --- 定位 kit 的 scripts 目录 --------------------------------------------
+# 不用 readlink -f(BSD 不支持)。优先按"本脚本相对位置"找；
+# 既支持源码布局 spec-kit/hooks/pre-commit -> ../scripts，
+# 也支持 install.sh 把本文件复制/链接到 .git/hooks 后由 SPEC_KIT_SCRIPTS 注入。
+find_scripts_dir() {
+  # 1) 显式覆盖优先
+  if [ -n "${SPEC_KIT_SCRIPTS:-}" ] && [ -d "$SPEC_KIT_SCRIPTS" ]; then
+    printf '%s\n' "$SPEC_KIT_SCRIPTS"
+    return 0
+  fi
+  # 2) 相对本脚本：hooks/.. = spec-kit 根
+  local self_dir
+  self_dir="$(cd "$(dirname "$0")" && pwd)"
+  if [ -d "$self_dir/../scripts" ]; then
+    (cd "$self_dir/../scripts" && pwd)
+    return 0
+  fi
+  # 3) 在仓库根下找 spec-kit/scripts
+  local root
+  if root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    if [ -d "$root/spec-kit/scripts" ]; then
+      printf '%s\n' "$root/spec-kit/scripts"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+SCRIPTS_DIR="$(find_scripts_dir)" || {
+  echo "[spec-kit] 错误：找不到 spec-kit/scripts 目录。" >&2
+  echo "[spec-kit] 可设 SPEC_KIT_SCRIPTS=/path/to/spec-kit/scripts 指定。" >&2
+  exit 2
+}
+
+# --- 仓库根 + 暂存的 spec markdown ---------------------------------------
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$ROOT"
+
+# 暂存区中即将提交、且仍存在的 specs/**/*.md（ACM=新增/改动/复制，删除的不查）
+staged_specs="$(git diff --cached --name-only --diff-filter=ACM -- 'specs/*.md' 'specs/**/*.md' 2>/dev/null || true)"
+
+if [ -z "$staged_specs" ]; then
+  exit 0
+fi
+
+echo "[spec-kit] 检测到 specs 文档改动，运行 spec lint ..." >&2
+
+# 三道闸全量扫描 specs/（启发式脚本以目录为单位更稳；暂存的子集已确认有改动）
+fail=0
+run_gate() {
+  # $1 = 脚本名, $2 = 人读标题
+  local script="$SCRIPTS_DIR/$1"
+  if [ ! -f "$script" ]; then
+    echo "[spec-kit] 错误：缺少 ${1}（${script}）。" >&2
+    fail=1
+    return
+  fi
+  if ! bash "$script" "$ROOT/specs"; then
+    echo "[spec-kit] ✗ $2 未通过（见上方 路径:行号 明细）。" >&2
+    fail=1
+  fi
+}
+
+run_gate check_dead_links.sh        "死链检查"
+run_gate lint_acceptance_commands.sh "验收命令抗规避检查"
+run_gate lint_keywords.sh            "RFC2119 关键词大小写检查"
+
+if [ "$fail" -ne 0 ]; then
+  echo "" >&2
+  echo "[spec-kit] 提交被拒绝：请修复以上 spec 违规后重试。" >&2
+  echo "[spec-kit] 确需绕过：SKIP_SPEC_LINT=1 git commit ..." >&2
+  exit 1
+fi
+
+echo "[spec-kit] ✓ spec lint 全部通过。" >&2
+exit 0
