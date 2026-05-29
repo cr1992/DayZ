@@ -48,7 +48,7 @@ bash scripts/check_patches.sh
 
 - [`AGENTS.md`](./AGENTS.md) — 协作规范与红线(唯一规范源)
 - [`CLAUDE.md`](./CLAUDE.md) — 仓库现状、架构大图、命令导航
-- [`docs/spec-guide-ai.md`](./docs/spec-guide-ai.md) — 怎么写和执行 spec
+- [`spec-kit/spec-guide.md`](./spec-kit/spec-guide.md) — spec 怎么写/执行的**规则真源**（DayZ 占位映射与专项见 overlay [`docs/spec-guide-ai.md`](./docs/spec-guide-ai.md)）
 - [`specs/README.md`](./specs/README.md) — 有哪些功能、状态、依赖(功能生命周期唯一真相)
 - [`docs/README.md`](./docs/README.md) — 冻结的技术决策(选型 / Schema / 加密 / 备份)
 

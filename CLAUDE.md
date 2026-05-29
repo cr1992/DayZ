@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 DayZ 是一个 **spec 驱动、本地优先、隐私优先的日记 App**（Flutter / Dart，stable 渠道最新版）。两个反直觉但关键的事实：
 
 1. **应用代码基本还没写。** `lib/` 下 `backup/ data/ drafts/ media/ security/ thumbnails/ ui/` 七个模块目录目前**只有 `.gitkeep` 占位**；真正有代码的只有 `lib/main.dart`、`lib/app.dart` 和 `lib/demo/`。下面「架构大图」描述的是 **spec/design 规定的目标架构（处方），尚未落码**——不要去这些目录里找不存在的实现。
-2. **架构活在文档里，不在源码里。** 模块边界、文件清单、依赖方向写在 `docs/design/*.md`（冻结决策）和 `specs/active/<feature>/design.md`（每个模块的"文件变更"清单）。**接到编码任务 → 先在对应 spec 的 `tasks.md` 找 `T#`，按 `docs/spec-guide-ai.md` 的执行协议做；新增功能/重大改动先开 spec，不在源码里直接发挥。**
+2. **架构活在文档里，不在源码里。** 模块边界、文件清单、依赖方向写在 `docs/design/*.md`（冻结决策）和 `specs/active/<feature>/design.md`（每个模块的"文件变更"清单）。**接到编码任务 → 先在对应 spec 的 `tasks.md` 找 `T#`，按 `spec-kit/spec-guide.md`（规则真源；DayZ 专项 overlay 见 `docs/spec-guide-ai.md`）的执行协议做；新增功能/重大改动先开 spec，不在源码里直接发挥。**
 
 ## 常用命令
 
@@ -67,7 +67,7 @@ bash scripts/check_patches.sh
 | 想知道 | 看这里 |
 |---|---|
 | 协作规范 / 红线 / 项目专有约定 | [`AGENTS.md`](./AGENTS.md)（**唯一规范源**，本文不复述） |
-| 怎么写 / 执行 spec、档位选择、归档流程、执行协议 | `docs/spec-guide-ai.md` |
+| 怎么写 / 执行 spec、档位选择、归档流程、执行协议 | `spec-kit/spec-guide.md`（**规则真源**）；DayZ 占位映射与专项 overlay `docs/spec-guide-ai.md` |
 | 当前有哪些功能、状态、优先级、负责人 | `specs/README.md`（功能生命周期**唯一真相**） |
 | 某功能的需求 / 设计 / 任务 / 验收 | `specs/active/<feature>/{requirement,design,tasks,verification}.md` |
 | 冻结的技术决策（选型 / Schema / 加密 / 备份 / 资源） | `docs/README.md`（索引）→ `docs/design/0X-*.md` |
