@@ -28,4 +28,5 @@
 - **视觉验收的默认升级**：通用规则说「确实无法自动化的（视觉/真机/人因）走人工核查项，禁止用假装能测的 grep 凑数」。
   DayZ 在 UI 还原线把默认从 *default-人工* 升级为 *default-确定性闸（参数/几何断言）+ golden/SSIM 自动验，视觉模型/人眼仅标红终审、不阻断*——
   详见 [`design/10-ui-restore-and-design-sync.md`](./design/10-ui-restore-and-design-sync.md)，随 `design-sync-automation` spec 定稿。**「禁止假装能测的 grep」红线不变**。
+- **UI 页面级 spec 的优先级 = 页面层级 × 数据依赖就绪**：通用「排序维护纪律」（见 [`../spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)）落到 DayZ UI 线时再加一条——页面级 spec 之间的先后**按页面层级（导航树深度：外壳 → 入口 / landing 页 → 次级页 → 叶子页）细排**，并叠加「该页所依赖的底层数据 spec 是否就绪」这一硬门。三档拆分与波次（W0 基础层 → W1 ui-kit/shell → W2 页面级并行 → W3/W4 依附件）见 [`design/10-ui-restore-and-design-sync.md`](./design/10-ui-restore-and-design-sync.md) §9；**页面层级与屏清单一律以设计稿真源 `ui-design/current/` 为准，不在规范里写死屏数 / 屏清单**。
 - （后续 DayZ 专项约定追加于此；通用规则的改动一律去改 [`../spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)，不在本文重复。）

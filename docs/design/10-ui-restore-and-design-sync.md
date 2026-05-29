@@ -168,6 +168,8 @@ Phase 5  Pin & Report    ── 更新各屏 pinned hash（screens.yaml）+ 产�
 
 **有哪些页面级 spec、各依赖哪个底层 spec——以 `specs/README.md` 与设计稿当前屏清单为准**，本文不枚举。
 
+**页面级 spec 之间的先后，按页面层级（导航树深度）细排**：外壳 / 入口页先于其下钻的次级页、叶子页；层级以设计稿导航结构（`ui-design/current/`）为准，本文不写死。其上仍叠加「该屏依赖的底层数据 spec 已就绪」这一硬门——两者取较晚者。
+
 ```
 W0  design-tokens-theme  +  design-sync-automation(期一：token 重生管线 + diff 路由骨架)
 W1  ui-kit-components → ui-shell-navigation
