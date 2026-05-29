@@ -16,6 +16,7 @@
 | [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-23 |
 | [editor-json-contract](active/editor-json-contract/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
 | [assets-management](active/assets-management/) | P2 | 草稿 | 无 | @Ray | 2026-05-29 |
+| [design-tokens-theme](active/design-tokens-theme/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
 
 ## 已归档
 
@@ -26,6 +27,8 @@
 | [appflowy-patch-tracking](archive/2026-05-29-appflowy-patch-tracking/) | 已完成 | 2026-05-29 |
 
 ## 待 UI 设计稿后再立 spec
+
+> 设计稿已到位（`ui-design/`）。UI 系列 spec 的分层、拆分与依赖拓扑见 [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。基础档 `design-tokens-theme` 已立项（见上表）；下列页面级/外壳功能随后按 §9 波次补 spec：
 
 下列功能包含 UI，**待设计稿到位后**再补需求/设计/任务文档：
 
