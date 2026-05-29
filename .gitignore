@@ -71,3 +71,6 @@ app.*.map.json
 **/windows/flutter/generated_plugins.cmake
 **/example/pubspec.lock
 
+# Claude Code —— settings.json（共享，含 spec-kit 闸）入库；个人/本地设置放 settings.local.json，不入库
+.claude/settings.local.json
+
