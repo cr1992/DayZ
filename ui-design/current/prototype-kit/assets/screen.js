@@ -62,24 +62,7 @@
     var chip = e.target.closest(".compose-meta .chip-btn");
     if (chip) { chip.classList.toggle("on"); return; }
     var dwi = e.target.closest(".dw-item");
-    if (dwi && !dwi.hasAttribute("data-nav")) {
-      var sec = dwi.closest(".dw-section");
-      sec.querySelectorAll(".dw-item").forEach(function (i) { i.classList.remove("on"); });
-      dwi.classList.add("on");
-      /* 切换日记本：更新顶栏标题 + 通知屏内刷新列表 */
-      var label = sec.querySelector(".dw-label");
-      if (label && /日记本/.test(label.textContent)) {
-        var nameEl = dwi.querySelector(".name");
-        var jName = nameEl ? nameEl.textContent.trim() : "";
-        var titleEl = document.querySelector(".app-top .title");
-        if (titleEl) titleEl.textContent = (jName === "全部日记") ? "" : jName;
-        document.dispatchEvent(new CustomEvent("dayz:journalchange", { detail: { name: jName } }));
-      }
-      /* 抽屉的选择类操作（切日记本 / 切浏览视图）选完即关闭抽屉 */
-      var stage = dwi.closest(".drawer-stage");
-      if (stage) setTimeout(function () { stage.classList.remove("open"); }, 90);
-      return;
-    }
+    if (dwi && !dwi.hasAttribute("data-nav")) { dwi.closest(".dw-section").querySelectorAll(".dw-item").forEach(function (i) { i.classList.remove("on"); }); dwi.classList.add("on"); return; }
     var todo = e.target.closest(".cb-todo");
     if (todo) { todo.classList.toggle("done"); return; }
   });

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit · 新屏模板</title>
+<!-- 首屏脚本：把 URL 参数(?theme/?mode/?state)写到 <html> 上，供 screen.css/js 读取。照抄，勿删。 -->
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+<!-- 屏内专属样式可写这里的 <style>；通用组件放 spec.css -->
+</head>
+<body>
+<!--
+  契约：
+  - 根 .pg；固定头用 .app-top（标题 .title / 左侧 .ico 返回 / 右侧 .acts）。
+  - 滚动区 .app-scroll；iOS chrome（灵动岛/状态栏/Home 条）由 screen.js 注入，勿自绘。
+  - 多状态：给块加 data-when="xxx"，?state=xxx 命中才显示；并在外壳 app.js 的 SCREENS[].states 登记。
+  - 跳转：元素加 data-nav="<目标屏id>"（前进）或 data-nav-back（返回）；screen.js 转成 postMessage，外壳路由。
+  - 可选：.drawer-stage + .scrim + .drawer（抽屉）、.fab-wrap（FAB）、.toolbar.editor-dock（底部工具栏）。
+-->
+<div class="pg">
+  <div class="app-top">
+    <button class="ico" data-nav-back aria-label="返回">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>
+    </button>
+    <div class="title">新屏标题</div>
+    <div class="acts"></div>
+  </div>
+
+  <div class="app-scroll">
+    <div data-when="default">
+      <!-- 默认态内容 -->
+    </div>
+    <!-- 其他状态：
+    <div data-when="empty">空状态…</div>
+    -->
+  </div>
+</div>
+<script src="../assets/screen.js"></script>
+</body>
+</html>

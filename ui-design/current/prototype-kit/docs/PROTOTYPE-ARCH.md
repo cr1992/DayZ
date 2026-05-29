@@ -37,8 +37,8 @@
 | 文件 | 职责 | 谁加载 |
 |---|---|---|
 | `screens/<id>.html` | 单屏本体：结构 + 多状态块（`data-when`） | 两种模式都以 iframe 加载；也可单独打开调试 |
-| `assets/screen.css` | **屏内**样式：iOS chrome、覆盖式固定头（滚动后毛玻璃覆盖状态栏，`--top-h` 让位）、滚动区、抽屉层级、空状态、多状态显隐 | 仅 `screens/*.html` |
-| `assets/screen.js` | **屏内**逻辑：注入 chrome、按 `?state=` 显隐、实测顶栏高写 `--top-h` + 滚动切 `.scrolled`、屏内交互（抽屉/FAB/开关）、`postMessage` 导航、接收主题 | 仅 `screens/*.html` |
+| `assets/screen.css` | **屏内**样式：iOS chrome、固定头/滚动区、抽屉层级、空状态、多状态显隐 | 仅 `screens/*.html` |
+| `assets/screen.js` | **屏内**逻辑：注入 chrome、按 `?state=` 显隐、屏内交互（抽屉/FAB/开关）、`postMessage` 导航、接收主题 | 仅 `screens/*.html` |
 | `assets/tokens.css` `spec.css` | 设计 token + 组件（自设计规范复制，保持同步） | 屏 + 外壳 |
 | `index.html` | **外壳**：顶栏（主题/明暗/呈现切换）、iPhone 外框、原型栈容器、画布容器 | 顶层 |
 | `assets/pages.css` | **外壳**样式：iPhone 外框、iframe 路由栈转场、**无限画布**（点阵网格 `.board` / 变换层 `.canvas-world` / 缩放控件 `.cv-zoom`）与左侧索引 | 仅外壳 |
@@ -66,7 +66,7 @@
 </head>
 <body>
   <div class="pg [drawer-stage] [has-dock]">
-    <div class="app-top">…固定头…</div>      <!-- 或 .search-head；覆盖层，内容从下穿行，滚动后毛玻璃覆状态栏 -->
+    <div class="app-top">…固定头…</div>      <!-- 或 .search-head -->
     <div class="app-scroll">
       <div data-when="default">…默认状态内容…</div>
       <div class="empty" data-when="empty">…空状态…</div>
@@ -149,12 +149,6 @@
 | `?state=` 多状态 | 页面入参 + 状态管理（`Riverpod`/`Bloc`）：空/有数据/加载 用同一 Widget 按 state 渲染 |
 | iOS chrome（状态栏/灵动岛/Home 条） | 真机系统提供；用 `SafeArea` + `MediaQuery.padding` 让位，不要自绘 |
 | 固定头 `.app-top` + `.app-scroll` | `Scaffold(appBar: …)` 或 `CustomScrollView` + `SliverAppBar(pinned:true)` |
-| 覆盖式毛玻璃顶栏（覆盖状态栏 + 滚动浮起） | `extendBodyBehindAppBar:true` + `SliverAppBar`（`flexibleSpace: ClipRect(BackdropFilter(ImageFilter.blur))`，半透 `backgroundColor`）；滚动渐显用 M3 `scrolledUnderElevation`/`surfaceTintColor` 或监听 `ScrollController` 切换。`--top-h` 让位 = `SafeArea`/`MediaQuery.padding` 自动处理，无需手算 |
-| 月份吸顶 `.tl-month` + 吸顶阴影 `.stuck` | `SliverPersistentHeader(pinned:true)`，每月一段；阴影只在 builder 的 `overlapsContent==true` 时给 `BoxShadow`（与本原型 `.stuck` 等价，且原生判定，无需手算）|
-| 日期跳转日历 `.cal-*` | 顶栏下落面板 = `OverlayEntry`/`PopupRoute` 或 `showModalBottomSheet`；日历用 `table_calendar` 或自绘 `GridView`；跳转用 **`scrollable_positioned_list`**（`ItemScrollController.scrollTo(index)`，长列表跳任意项的稳妥解）|
-| 向上无限滚动 + 月份索引 | `ScrollController` 近底加载（或 `infinite_scroll_pagination`）；月份索引 = Drift 一条 `GROUP BY ym` 计数查询，正文走游标分页 |
-| ⚠️ 吸顶头 + 跳到「未加载的远期日期」 | 痛点：`SliverPersistentHeader`(pinned) 与 `scrollable_positioned_list`(jump by index) 不易兼得。**退步方案**：日历跳转只定位到**月**（section 头），不强求精确到日——月级定位即够用（Day One 同此精度），同时保住完美吸顶头 |
-| 吸顶头与顶栏「并成一条磨砂」 | 两者同一 `BackdropFilter` 配方即可；相邻不重叠，无需特殊处理 |
 | 抽屉 `.drawer-stage` | `Scaffold(drawer: Drawer(...))`，`scrim` 与滑动系统内置 |
 | FAB `.fab-wrap`（轻点写/长按展开） | `FloatingActionButton` + 自定义 `GestureDetector(onLongPress)`；展开用 `showModalBottomSheet` 或自绘 speed-dial |
 | FAB 立体（渐变+多层影+顶高光） | `Container(decoration: BoxDecoration(gradient: LinearGradient(...), boxShadow: [BoxShadow×3], shape: circle))`；顶高光用顶部浅色渐变或 0.5px 白色半透明 `Border`（Flutter 无 inset 阴影） |

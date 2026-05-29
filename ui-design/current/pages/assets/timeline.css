@@ -1,0 +1,131 @@
+/* ============================================================
+   DayZ · 时间线专属样式（仅 timeline.html 加载）
+   日期快速跳转日历面板 · 月份头可点 · 无限滚动加载器
+   依赖 tokens.css / spec.css / screen.css。
+   ============================================================ */
+
+/* ---- 月份吸顶头改为可点击触发器（跳转日期）---- */
+button.tl-month {
+  appearance: none; -webkit-appearance: none;
+  width: 100%; border: none; cursor: pointer;
+  font: inherit; color: var(--ink); text-align: left;
+}
+button.tl-month .tl-cal {
+  width: 16px; height: 16px; margin-left: auto; color: var(--ink-3);
+  transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+button.tl-month:hover .tl-cal { color: var(--accent-ink); }
+button.tl-month:active .tl-cal { transform: scale(0.9); }
+.pg.cal-open button.tl-month[aria-expanded="true"] .tl-cal { color: var(--accent-ink); }
+
+/* 顶栏 + 吸顶月份共用同一毛玻璃 → 并成一条连续磨砂头（消除割裂感）。
+   接缝不再夹在两者之间（去掉顶栏底线），而是由「真正吸顶中的月份」底部
+   的一道柔和投影，与下方内容分层。.stuck 由 timeline.js 在滚动时判定。 */
+.tl-month {
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter: saturate(1.5) blur(20px);
+  backdrop-filter: saturate(1.5) blur(20px);
+}
+.pg.scrolled > .app-top { box-shadow: none; }
+.pg.scrolled .tl-month.stuck { box-shadow: 0 9px 16px -11px rgba(60, 50, 35, 0.34); }
+:root[data-mode="dark"] .pg.scrolled .tl-month.stuck { box-shadow: 0 11px 20px -11px rgba(0, 0, 0, 0.6); }
+
+/* ---- 无限滚动：底部「更早」加载器 ---- */
+.tl-loader {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: var(--sp-5) 0 var(--sp-2); color: var(--ink-3); font-size: 12.5px;
+}
+.tl-loader .spin {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid var(--hairline-2); border-top-color: var(--accent);
+  animation: tl-spin 0.7s linear infinite;
+}
+.tl-loader.done .spin { display: none; }
+.tl-loader.done { color: var(--ink-4); }
+@keyframes tl-spin { to { transform: rotate(360deg); } }
+
+/* ---- 切换日记本：列表淡入重演（模拟按所选本重新查询铺列表）---- */
+@keyframes tl-refresh { from { opacity: 0; } to { opacity: 1; } }
+.tl-refreshing { animation: tl-refresh .3s var(--ease) both; }
+
+/* ---- 日期跳转日历面板 ---- */
+.cal-scrim {
+  position: absolute; inset: 0; z-index: 27;
+  background: var(--overlay); opacity: 0; pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+.pg.cal-open .cal-scrim { opacity: 1; pointer-events: auto; }
+
+.cal-panel {
+  position: absolute; top: var(--top-h, 96px); left: var(--sp-3); right: var(--sp-3);
+  z-index: 28; background: var(--surface);
+  border: 1px solid var(--hairline); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  opacity: 0; transform: translateY(-10px) scale(0.985); transform-origin: top center;
+  pointer-events: none; transition: opacity .2s var(--ease), transform .2s var(--ease);
+}
+.pg.cal-open .cal-panel { opacity: 1; transform: none; pointer-events: auto; }
+
+.cal-head { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.cal-title {
+  appearance: none; border: none; background: none; cursor: pointer;
+  flex: 1; text-align: center; font-family: var(--font-serif);
+  font-size: 17px; font-weight: 600; color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 8px; border-radius: var(--r-sm);
+}
+.cal-title:hover { background: var(--bg-2); }
+.cal-title svg { width: 14px; height: 14px; color: var(--ink-3); }
+.cal-nav {
+  appearance: none; border: none; background: transparent; cursor: pointer;
+  width: 34px; height: 34px; border-radius: var(--r-full); flex: none;
+  display: grid; place-items: center; color: var(--ink-2);
+}
+.cal-nav:hover { background: var(--bg-2); color: var(--ink); }
+.cal-nav:disabled { color: var(--ink-4); cursor: default; }
+.cal-nav:disabled:hover { background: transparent; }
+.cal-nav svg { width: 18px; height: 18px; }
+
+/* 月视图：星期 + 日格 */
+.cal-wd { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+.cal-wd span { text-align: center; font-size: 11px; color: var(--ink-3); padding: 2px 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.cal-day {
+  appearance: none; border: none; background: none;
+  aspect-ratio: 1 / 1; min-height: 38px; position: relative;
+  display: grid; place-items: center; border-radius: var(--r-sm);
+  font-family: var(--font-serif); font-size: 14px; color: var(--ink-4);
+  cursor: default;
+}
+.cal-day.pad { visibility: hidden; }
+.cal-day.has { color: var(--ink); cursor: pointer; }
+.cal-day.has:hover { background: var(--accent-soft); }
+.cal-day.has::after {
+  content: ""; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+}
+.cal-day.today { box-shadow: inset 0 0 0 1.5px var(--accent-ring); color: var(--accent-ink); font-weight: 600; }
+.cal-day.today.has::after { background: var(--accent-strong); }
+
+/* 年视图：12 个月 */
+.cal-months { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+.cal-mo {
+  appearance: none; border: 1px solid transparent; background: var(--bg-2);
+  border-radius: var(--r-md); padding: 10px 4px 9px; cursor: default;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-family: var(--font-serif); font-size: 14px; color: var(--ink-4);
+}
+.cal-mo .n { font-size: 11px; font-family: var(--font-sans); color: var(--ink-4); }
+.cal-mo.has { color: var(--ink); cursor: pointer; }
+.cal-mo.has .n { color: var(--accent-ink); }
+.cal-mo.has:hover { border-color: var(--accent-soft-2); background: var(--accent-soft); }
+.cal-mo.cur { border-color: var(--accent); }
+
+/* 面板底栏：回到今天 */
+.cal-foot { margin-top: var(--sp-3); display: flex; justify-content: center; }
+.cal-today-btn {
+  appearance: none; border: none; background: none; cursor: pointer;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--accent-ink);
+  padding: 7px 14px; border-radius: var(--r-full);
+}
+.cal-today-btn:hover { background: var(--accent-soft); }

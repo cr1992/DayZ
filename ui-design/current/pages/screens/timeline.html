@@ -7,10 +7,11 @@
 <script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/tokens.css">
 <link rel="stylesheet" href="../assets/spec.css">
 <link rel="stylesheet" href="../assets/screen.css">
+<link rel="stylesheet" href="../assets/timeline.css">
 </head>
 <body>
 <div class="pg drawer-stage">
@@ -34,7 +35,7 @@
   <div class="app-scroll">
     <!-- 默认 / 抽屉打开：有内容 -->
     <div data-when="default drawer">
-      <div class="tl-month"><span class="y">5月</span><span class="c">2026 · 12 篇</span></div>
+      <button class="tl-month" data-cal-open data-ym="2026-5" aria-expanded="false"><span class="y">5月</span><span class="c">2026 · 12 篇</span><svg class="tl-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg></button>
       <div class="timeline">
         <div class="entry">
           <div class="date"><div class="d">29</div><div class="m">MAY</div><div class="w">周五</div></div>
@@ -54,7 +55,7 @@
           <div class="date"><div class="d">28</div><div class="m">MAY</div><div class="w">周四</div></div>
           <div class="card" data-nav="reader" style="cursor:pointer">
             <div class="body">
-              <div class="head"><h4>关于「慢」这件事</h4><span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.4l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.5l1-5.8L3.5 9.6l5.9-.9z"/></svg></span></div>
+              <div class="head"><h4>关于「慢」这件事</h4><span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg></span></div>
               <p class="excerpt">越来越确信，慢不是效率的反义词。把一件事做到底，比同时开五个头更让人安心。今天只写了三百字，却很完整。</p>
               <div class="foot">
                 <span class="tag"># 随想</span>
@@ -78,7 +79,7 @@
           </div>
         </div>
       </div>
-      <div class="tl-month"><span class="y">4月</span><span class="c">2026 · 9 篇</span></div>
+      <button class="tl-month" data-cal-open data-ym="2026-4" aria-expanded="false"><span class="y">4月</span><span class="c">2026 · 9 篇</span><svg class="tl-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg></button>
       <div class="timeline">
         <div class="entry">
           <div class="date"><div class="d">30</div><div class="m">APR</div><div class="w">周三</div></div>
@@ -117,7 +118,7 @@
     <div class="dw-section">
       <div class="dw-label">浏览</div>
       <div class="dw-item" data-nav="onthisday"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.6v3.7h3.7" stroke="currentColor"/><path d="M4.3 8.3A8.2 8.2 0 1 1 3.9 12.6" stroke="currentColor"/><path d="M12 7.8v4.4l3.1 1.8" stroke="currentColor"/></svg><span class="name">往年今日</span></div>
-      <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L4.5 10.2l5.9-.9z"/></svg><span class="name">收藏</span><span class="count">19</span></div>
+      <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg><span class="name">收藏</span><span class="count">19</span></div>
       <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg><span class="name">日历</span></div>
       <div class="dw-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg><span class="name">回收站</span></div>
     </div>
@@ -139,5 +140,6 @@
   </div>
 </div>
 <script src="../assets/screen.js"></script>
+<script src="../assets/timeline.js"></script>
 </body>
 </html>

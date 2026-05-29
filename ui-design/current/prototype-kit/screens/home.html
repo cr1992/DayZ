@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit · 首页</title>
+<script>(function(){var p=new URLSearchParams(location.search),r=document.documentElement;r.setAttribute("data-theme",p.get("theme")||"purple");r.setAttribute("data-mode",p.get("mode")||"light");r.setAttribute("data-state",p.get("state")||"default");})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/spec.css">
+<link rel="stylesheet" href="../assets/screen.css">
+<style>
+  /* 屏内专属样式：示例列表（真实项目请用设计规范里的组件类）*/
+  .demo-list { padding: var(--sp-3) var(--sp-4) 0; display: flex; flex-direction: column; }
+  .demo-row {
+    appearance: none; -webkit-appearance: none; text-align: left; cursor: pointer;
+    font-family: inherit; background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: var(--r-md); padding: var(--sp-4); margin-bottom: var(--sp-3);
+    display: flex; align-items: center; gap: var(--sp-3); box-shadow: var(--shadow-sm);
+    transition: background var(--dur) var(--ease);
+  }
+  .demo-row:active { background: var(--bg-2); }
+  .demo-row .dot { width: 34px; height: 34px; border-radius: var(--r-full); flex-shrink: 0; background: var(--accent-soft); display: grid; place-items: center; color: var(--accent-ink); }
+  .demo-row .dot svg { width: 17px; height: 17px; }
+  .demo-row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .demo-row .tx b { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .demo-row .tx span { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .demo-row .chev { color: var(--ink-3); flex-shrink: 0; }
+  .demo-row .chev svg { width: 18px; height: 18px; display: block; }
+  .list-head { padding: var(--sp-2) var(--sp-4) var(--sp-1); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="pg">
+  <div class="app-top">
+    <div class="title">首页</div>
+    <div class="acts">
+      <button class="ico" data-nav="detail" aria-label="新建">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="app-scroll">
+    <!-- 默认态：列表（点任意行 → 详情）-->
+    <div data-when="default">
+      <div class="list-head">示例列表 · 点行进详情</div>
+      <div class="demo-list">
+        <button class="demo-row" data-nav="detail">
+          <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span class="tx"><b>第一个条目</b><span>副标题 · 说明文字</span></span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+        </button>
+        <button class="demo-row" data-nav="detail">
+          <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+          <span class="tx"><b>第二个条目</b><span>副标题 · 说明文字</span></span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+        </button>
+        <button class="demo-row" data-nav="detail">
+          <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/></svg></span>
+          <span class="tx"><b>第三个条目</b><span>副标题 · 说明文字</span></span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+        </button>
+        <button class="demo-row" data-nav="detail">
+          <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12h6M12 9v6"/></svg></span>
+          <span class="tx"><b>第四个条目</b><span>副标题 · 说明文字</span></span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 空状态：?state=empty -->
+    <div class="empty" data-when="empty">
+      <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink-4)"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 9h17M8 3.5v3M16 3.5v3"/></svg>
+      <div style="color:var(--ink-2);font-size:15px;line-height:1.7">还没有内容<br><span style="color:var(--ink-3);font-size:13px">点右上角 + 新建第一个</span></div>
+    </div>
+  </div>
+</div>
+<script src="../assets/screen.js"></script>
+</body>
+</html>

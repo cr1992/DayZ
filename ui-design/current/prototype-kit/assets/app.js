@@ -1,11 +1,12 @@
 /* ============================================================
-   DayZ · 外壳脚本（viewer）
-   主题/明暗(下发各 iframe) · 原型 iframe 路由栈 · 静态画布 · 左侧索引
+   Prototype Kit · 外壳脚本（viewer）—— 与业务解耦的通用外壳
+   主题/明暗(下发各 iframe) · 原型 iframe 路由栈 · 无限画布浏览 · 左侧索引
+   ★ 复用时：只改下方 SCREENS[]，并替换 tokens.css + 写 screens/*.html
    ============================================================ */
 (function () {
   "use strict";
   var root = document.documentElement;
-  var KEY = "dayz-pages-pref";
+  var KEY = "protokit-pages-pref";
   var load = function () { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
   var save = function (p) { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch (e) {} };
 
@@ -14,19 +15,12 @@
   var mode = pref.mode || "light";
   var present = pref.present === "canvas" ? "canvas" : "proto";
 
-  /* 屏幕清单 + 状态 */
+  /* 屏幕清单 + 状态 —— ★ 唯一的业务耦合点。每屏一项：
+     {id:文件名, idx:序号, name:中文名, label:副标题, proto:原型默认态, states:[{k,n}…]} */
   var SCREENS = [
-    { id: "timeline", idx: "01", name: "时间线", label: "Timeline · 首页", proto: "default",
-      states: [{ k: "default", n: "默认" }, { k: "drawer", n: "抽屉打开" }, { k: "empty", n: "空状态" }] },
-    { id: "reader", idx: "02", name: "阅读页", label: "Entry · 全文", proto: "default",
-      states: [{ k: "default", n: "含封面" }, { k: "text", n: "纯文字" }] },
-    { id: "editor", idx: "03", name: "编辑页", label: "Compose · AppFlowy", proto: "writing",
-      states: [{ k: "empty", n: "空白新建" }, { k: "writing", n: "书写中" }, { k: "rich", n: "富格式" }] },
-    { id: "onthisday", idx: "04", name: "往年今日", label: "On This Day", proto: "default",
-      states: [{ k: "default", n: "有内容" }, { k: "empty", n: "空" }] },
-    { id: "search", idx: "05", name: "搜索", label: "Search", proto: "results",
-      states: [{ k: "typing", n: "输入中" }, { k: "results", n: "有结果" }, { k: "empty", n: "无结果" }] },
-    { id: "settings", idx: "06", name: "设置", label: "Settings", proto: "default",
+    { id: "home", idx: "01", name: "首页", label: "Home · 列表", proto: "default",
+      states: [{ k: "default", n: "默认" }, { k: "empty", n: "空状态" }] },
+    { id: "detail", idx: "02", name: "详情", label: "Detail", proto: "default",
       states: [{ k: "default", n: "默认" }] }
   ];
   var byId = {}; SCREENS.forEach(function (s) { byId[s.id] = s; });

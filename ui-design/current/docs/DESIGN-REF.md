@@ -1,6 +1,6 @@
 # DayZ 设计规范 · AI 速查手册（DESIGN-REF）
 
-> 本文件是**给 AI / 开发快速复用的索引**，不是给人看的展示文档（展示见 `DayZ 设计规范/DayZ 设计规范.html`）。
+> 本文件是**给 AI / 开发快速复用的索引**，不是给人看的展示文档（展示见 `design-system/design-system.html`）。
 > **复用任何组件前先读本文件**：直接抄类名与最小 HTML 片段，不必重读 CSS。
 > 黄金规则：**只引用 `var(--*)`，绝不写死颜色 / 字号 / 间距**；改完若定档，按 `CHANGELOG.md` 规矩记录。
 
@@ -11,15 +11,15 @@
 ├── docs/
 │   ├── DESIGN-REF.md     # 本文件 · AI 速查
 │   └── CHANGELOG.md      # 更新日志（按天 + 模块标签）
-├── DayZ 设计规范/
-│   ├── DayZ 设计规范.html # 人看的展示文档（含实时主题/明暗切换）
+├── design-system/
+│   ├── design-system.html # 人看的展示文档（含实时主题/明暗切换）
 │   └── assets/
 │       ├── tokens.css    # 所有设计变量（唯一真源）
 │       ├── spec.css      # 布局 + 组件样式（含页面级组件）
 │       ├── spec.js       # 主题/明暗切换、交互演示、FAB 长按
 │       └── demo_image.png
 └── pages/                # 产品页面设计（交付物）
-    ├── DayZ 页面设计.html # 外壳：原型路由 + 静态多状态画布（双模式 viewer）
+    ├── index.html # 外壳：原型路由 + 静态多状态画布（双模式 viewer）
     ├── screens/          # 每屏一个独立可单开文件，状态用 ?state= 区分
     │   ├── timeline.html  reader.html  editor.html
     │   └── onthisday.html  search.html  settings.html
@@ -85,6 +85,8 @@
 | 圆角 | `--r-xs`6 `--r-sm`10 `--r-md`14 `--r-lg`20 `--r-xl`28 `--r-full`999 |
 | 字体 | `--font-sans`(UI) `--font-serif`(标题/日记) `--font-diary`(=serif) `--font-mono` |
 | 动效 | `--ease` `--dur`(220ms) |
+
+> **字体加载（克制 · 偏原生）**：仅联网加载两套**小体积 Latin 品牌字**——`Newsreader`(衬线) + `Hanken Grotesk`(无衬线)；**中文不加载 Web 字体**，一律走系统原生（衬线 `Songti SC`/`SimSun`，无衬线 `PingFang SC` 等）。字体栈即「Latin 品牌字优先 → 原生 CJK」，按字符自动回退。已**移除 `Noto Serif/Sans SC`** 这两套 MB 级 CJK Web 字体。产品(Flutter)端两套 Latin 以打包资源引入。
 
 ### 2.4 排版类（直接套用）
 `.t-display` `.t-h1` `.t-h2`（衬线）· `.t-h3`（无衬线粗）· `.t-body`（UI 正文 1.7）· `.t-diary`（日记衬线 1.85）· `.t-caption` · `.t-overline`
@@ -176,13 +178,16 @@
 ---
 
 ## 3b. 页面级组件（产品页面复用）
-> 用于实际页面（见交付物 `pages/DayZ 页面设计.html`）。沿用 token，禁止写死值。
-> **真源分两处**：跨端共享的组件在 `DayZ 设计规范/assets/spec.css`（改后须复制到 `pages/assets/`）；**仅原型用的屏内组件/骨架**在 `pages/assets/screen.css`（不回流设计规范）。本节(3b)= spec.css；下一节(3c)= screen.css。
+> 用于实际页面（见交付物 `pages/index.html`）。沿用 token，禁止写死值。
+> **真源分两处**：跨端共享的组件在 `design-system/assets/spec.css`（改后须复制到 `pages/assets/`）；**仅原型用的屏内组件/骨架**在 `pages/assets/screen.css`（不回流设计规范）。本节(3b)= spec.css；下一节(3c)= screen.css。
 
 ### 时间线年月吸顶头 `.tl-month`
-`position:sticky; top:0`，置于滚动容器顶部。
+`position:sticky; top:var(--top-h)`，停靠在覆盖式顶栏正下方（`--top-h` 见 §3c 骨架）。**现为可点击触发器**（`<button>`）：点它打开日期跳转日历（见 §3c「时间线日期跳转」）。带 `data-cal-open` + `data-ym="YYYY-M"` + 末尾下拉 `.tl-caret`（展开态 `aria-expanded="true"` 时旋转）。
 ```html
-<div class="tl-month"><span class="y">5月</span><span class="c">2026 · 12 篇</span></div>
+<button class="tl-month" data-cal-open data-ym="2026-5" aria-expanded="false">
+  <span class="y">5月</span><span class="c">2026 · 12 篇</span>
+  <svg class="tl-caret" viewBox="0 0 24 24" …><path d="m6 9 6 6 6-6"/></svg>
+</button>
 ```
 
 ### 单篇阅读版式 `.reader`
@@ -207,8 +212,19 @@
 ## 3c. 屏内专属组件（真源 `pages/assets/screen.css` · 仅原型）
 > 这些只服务 `pages/screens/*.html` 的呈现与原型交互，**不属于跨端设计系统**，故不进 spec.css。
 
-### 屏幕骨架 `.pg`（固定头 + 可滚动区）
-`.pg`(flex 列) > `.app-top`(或 `.search-head`，固定、让出 54px 状态栏) + `.app-scroll`(唯一滚动区)。可选修饰：`.pg.drawer-stage`(挂抽屉)、`.pg.has-dock`(底部停靠工具栏留白)。详见 `docs/PROTOTYPE-ARCH.md` §3。
+### 屏幕骨架 `.pg`（覆盖式固定头 + 在其下穿行的滚动区）
+`.pg`(flex 列) > `.app-top`(或 `.search-head`) + `.app-scroll`(唯一滚动区)。可选修饰：`.pg.drawer-stage`(挂抽屉)、`.pg.has-dock`(底部停靠工具栏留白)。详见 `docs/PROTOTYPE-ARCH.md` §3。
+- **顶栏改为悬浮覆盖层**：`.app-top` / `.search-head` 用 `position:absolute; top:0`，内容（含状态栏区）从其下方穿行。静止时是干净实底（`--bg`）；滚动后 `.pg.scrolled` 上身 → 毛玻璃浮起（半透 `--bg` 80% + `blur(20px)`）**覆盖到状态栏**，并加 0.5px 底分割。
+- **`--top-h`**：`screen.js` 实测顶栏高度写到 `.pg` 上；`.app-scroll` 用 `padding-top:var(--top-h)` 让首屏内容让位。**吸顶子头（如 `.tl-month`）用 `top:0`**——因 `padding-top` 已把内容盒顶推到顶栏之下，sticky 的 `top` 相对内容盒计算，再写 `var(--top-h)` 会叠加两次留出整段空隙（见 kit「易踩的坑」）。
+- 抽屉/遮罩层级（`.scrim` 24 / `.drawer` 26）已抬到覆盖式顶栏(20)之上、状态栏(30)之下。
+
+### 时间线日期跳转 `.cal-*` + `.tl-loader`（真源 `pages/assets/timeline.{css,js}` · 仅时间线）
+点月份头 `.tl-month` → 日历面板从顶栏下方落下，快速跳到某月/某日。
+- **触发**：`[data-cal-open]`（即 `.tl-month`，读其 `data-ym`）；`.cal-scrim` 点击关闭；`.pg.cal-open` 控制显隐。
+- **月视图**：`.cal-head`(‹ `.cal-nav` · `.cal-title[data-toyear]` 月份 · `.cal-nav` ›) + `.cal-wd`(周一起始) + `.cal-grid > .cal-day`。日格态：`.has`(有条目，可点，底部 accent 圆点) / `.today`(今日 accent 环) / `.pad`(占位)。底部 `.cal-today-btn`「回到今天」。
+- **年视图**：`.cal-title[data-tomonth]` 切回；`.cal-months > .cal-mo`（12 个月，`.has` 有条目 + 篇数，`.cur` 当前月）。
+- **无限滚动**：`.tl-loader`（底部「载入更早」转圈，到底加 `.done` 文案）。最新在最上，滚到底按需追加更早月份。
+- **数据模型**：JS 内 `MONTHS` 轻量月份索引（哪些月/日有条目 + 篇数）→ 对应 Flutter 一条按月计数查询；正文仍走游标分页。日历跳转用 `scrollTo(header.offsetTop - --top-h)`，未渲染的更早月份先补渲染再滚。
 
 ### 空状态 `.empty`
 居中插画徽 + 标题 + 说明，用 `data-when` 控制显隐。
@@ -271,6 +287,8 @@
 - 尺寸由容器的 `svg { width/height }` 控制，勿在 svg 上写死颜色。
 - **对齐**：放在 `display:flex; align-items:center` 容器里，svg 设 `display:block; flex-shrink:0`（spec.css 已统一）。
 - **几何对称**：齿轮等装饰齿要轴对齐（正上下左右 + 四角），别用倾斜的 Feather 默认齿轮。
+- **收藏星（唯一规范路径）**：以中心 (12,12) 数学求点的对称五角星，外半径 9.5 / 内半径 4.2、顶点正上。填充态 `fill="currentColor"`、描边态 `fill="none" stroke="currentColor"`，**只换 fill/stroke，path 不变**——勿再手绘以免歪斜：
+  `<path d="M12 2.5L14.47 8.6 21.04 9.06 16 13.3 17.58 19.69 12 16.2 6.42 19.69 8.01 13.3 2.97 9.06 9.53 8.6Z"/>`
 - **能用 SVG 就用 SVG**：心情表情也用手绘 SVG 笑脸，不用 emoji 当功能图标；emoji 仅作纯文本提示内容（如 toast）。
 
 ---

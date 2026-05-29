@@ -43,7 +43,7 @@ body {
 /* ---------- 页面骨架：覆盖式固定头 + 在其下穿行的滚动内容 ----------
    固定头从「占位的 flex 行」改为「悬浮覆盖层」：内容（含状态栏区）从它
    下方穿行；静止时是干净实底，滚动后浮起为毛玻璃，透出底下的内容。
-   --top-h 由 screen.js 实测固定头高度后写到 .pg 上，供滚动留白 / 月份吸顶用。 */
+   --top-h 由 screen.js 实测固定头高度后写到 .pg 上，供滚动留白用。 */
 .pg { position: absolute; inset: 0; display: flex; flex-direction: column; }
 .pg > .app-top, .pg > .search-head {
   position: absolute; top: 0; left: 0; right: 0; z-index: 20;
@@ -74,12 +74,6 @@ body {
 .pg.drawer-stage.open .scrim { opacity: 1; pointer-events: auto; }
 .pg .scrim { z-index: 24; }            /* 盖过覆盖式顶栏(20) */
 .pg .drawer { z-index: 26; padding-top: 46px; }
-
-/* ---------- 时间线月份吸顶：紧贴覆盖式顶栏底缘 ----------
-   sticky 的 top 是相对滚动容器「内容盒」量的，而 .app-scroll 已用
-   padding-top:var(--top-h) 把内容盒顶推到顶栏之下；故这里用 top:0
-   即正好停在顶栏底缘（用 var(--top-h) 会再叠加一次，留出整段空隙）。 */
-.tl-month { top: 0; }
 
 /* ---------- 照片 ---------- */
 .photo img, .read-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }

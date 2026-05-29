@@ -264,14 +264,20 @@ def _curl_text(url):
 
 
 def _curl_bin(url):
-    if url in _DL_CACHE:
+    if _DL_CACHE.get(url):           # 仅缓存成功结果，失败可重试(空 bytes 不入缓存)
         return _DL_CACHE[url]
-    try:
-        r = subprocess.run(["curl", "-fsSL", "-A", UA, url], capture_output=True, timeout=40)
-        out = r.stdout if r.returncode == 0 else b""
-    except Exception:
-        out = b""
-    _DL_CACHE[url] = out
+    out = b""
+    for attempt in range(3):         # 重试 3 次,应对网络抖动导致的个别字体下载失败
+        try:
+            r = subprocess.run(["curl", "-fsSL", "--retry", "2", "--retry-delay", "1",
+                                 "-A", UA, url], capture_output=True, timeout=60)
+            if r.returncode == 0 and r.stdout:
+                out = r.stdout
+                break
+        except Exception:
+            pass
+    if out:
+        _DL_CACHE[url] = out
     return out
 
 
@@ -413,6 +419,12 @@ def main():
         print("提醒: %d 处相对引用未内联: %s" % (len(left), ", ".join(left[:15])), file=sys.stderr)
     else:
         print("自检: 无残留相对引用 ✓")
+    # 字体降级为在线 link = 没达成「完全离线」目标:非零退出,避免自动流程把它当成功放过。
+    # (用 DZ_ALLOW_ONLINE_FONTS=1 显式放行——比如确实无外网、只想要能跑的产物。)
+    if ext > 0 and not os.environ.get("DZ_ALLOW_ONLINE_FONTS"):
+        print("失败: 字体未能全部内联,产物仍依赖联网。重跑即可(已带重试);"
+              "确无外网时设 DZ_ALLOW_ONLINE_FONTS=1 放行。", file=sys.stderr)
+        sys.exit(3)
 
 
 if __name__ == "__main__":

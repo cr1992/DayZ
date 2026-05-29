@@ -7,8 +7,8 @@
 
 :root {
   /* ---- 字体 ---- */
-  --font-sans: "Hanken Grotesk", "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-serif: "Newsreader", "Noto Serif SC", Georgia, "Songti SC", serif;
+  --font-sans: "Hanken Grotesk", -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Songti SC", "SimSun", "Noto Serif SC", Georgia, serif;
   --font-diary: var(--font-serif);
   --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
 
