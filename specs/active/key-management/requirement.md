@@ -50,6 +50,12 @@ rekey 操作 MUST 后台执行（isolate）+ 进度提示；MUST 事务安全，
 - 操作：调用 `deriveBackupKey(P, salt)`
 - 结果：返回备份加密用的对称密钥；相同输入必得相同输出
 
+### R6 · 设备媒体密钥派生入口
+系统 SHALL 暴露 `getDeviceMediaKey() -> bytes`（32 字节），由设备随机密钥经 HKDF-SHA256（info=`dayz/media/v1`）派生，作为 KeyProvider 的统一媒体密钥入口供 media-storage / thumbnail-cache 消费。该密钥 MUST 只从设备随机密钥派生、MUST NOT 跟随主密码、MUST NOT 参与 rekey（设主密码不重加密媒体，与 `docs/design/06` §9.4/9.7 一致）。
+- 前提：设备随机密钥已就绪（R1）
+- 操作：调用 `getDeviceMediaKey()`
+- 结果：返回 32 字节媒体密钥，与 `getAppDbKey()` 输出不同；同一设备根密钥下确定；切换主密码模式前后再次调用结果不变
+
 ## 非功能需求
 
 ### NF1 · 密钥不落明文

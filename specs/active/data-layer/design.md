@@ -107,6 +107,10 @@ graph TD
 ## 文件变更
 
 - `pubspec.yaml`                                    修改（添加 drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner、drift_dev）
+- `pubspec.lock`                                    修改（pub get 后锁定版本）
+- `build.yaml`                                      新建（drift_dev codegen 配置；与 assets-management 共享 build_runner 基建——builder 不同、输出目录隔离；本行声明 `build.yaml` 由 data-layer 创建、assets-management 复用，避免两 spec 抢归属或双漏登）
+- `ios/Podfile`                                     修改（若 iOS 需 SQLCipher Pod 配置，T1）
+- `android/app/build.gradle.kts`                    修改（若 Android 需 NDK ABI 配置，T1；仓库用 Kotlin DSL，文件名为 .kts）
 - `lib/data/database.dart`                          新建（AppDatabase + 表 + DAO）
 - `lib/data/tables/journals.dart`                   新建
 - `lib/data/tables/entries.dart`                    新建

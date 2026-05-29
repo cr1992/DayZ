@@ -8,11 +8,13 @@
 # 任务列表：media-storage
 
 ## 任务依赖图
-> 整体依赖 **M0 完成** + **M1 T6 KeyProvider 可用** + **M2 T9 MediaRepo 可用**。
+> M# ↔ spec 映射（仅列本 spec 用到的别名）：M0=app-scaffold，M1=key-management，M2=data-layer。
+>
+> 整体依赖 **M0（app-scaffold）完成** + **M1（key-management）T10 getDeviceMediaKey 可用** + **M2（data-layer）T9 MediaRepo 可用**。
 ```mermaid
 graph LR
   M0[M0] --> T1
-  M1T6[M1 T6] --> T2
+  M1T10[M1 T10 getDeviceMediaKey] --> T2
   M2T9[M2 T9 MediaRepo] --> T5
   T1 --> T3
   T1 --> T4
@@ -35,7 +37,7 @@ graph LR
 
 - [ ] T1 · 添加 AEAD 加密依赖
 
-**依赖：** M0 已完成 ｜ **关联需求：** R2, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R2, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`
 
 ### 背景
 添加 `cryptography` 包（或等价 AEAD 实现，要求支持 AES-256-GCM + HKDF-SHA256）。
@@ -64,29 +66,27 @@ graph LR
 
 -----
 
-- [ ] T2 · 扩展 KeyProvider：getDeviceMediaKey()
+- [ ] T2 · 对接 M1 设备媒体密钥 getDeviceMediaKey（消费契约）
 
-**依赖：** M1 T6 ｜ **关联需求：** R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/security/key_provider.dart`, `lib/security/hkdf.dart`（若新建）, `test/security/key_provider_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** key-management（getDeviceMediaKey，对应其 T10） ｜ **关联需求：** R5 ｜ **依据设计：** D3 ｜ **可改文件：** `test/media/device_media_key_test.dart`
 
 ### 背景
-本里程碑需要的设备媒体密钥不是直接复用 db 密钥，而是 **HKDF(deviceRootKey, info="dayz/media/v1") → 32 字节**。M1 当时未要求这块；本任务为跨 spec 协作改动，需在本任务背景中明确说明并提示 M1 spec 同步状态。
+按 D7（@Ray 拍板：实现归 M1），设备媒体密钥 `getDeviceMediaKey()` 与 `lib/security/hkdf.dart` 由 key-management（T10）实现并暴露。本任务**只消费** `KeyProvider.getDeviceMediaKey()`，**不**在 `lib/security/` 下新建 / 改动任何文件——消除原先「M3 跨模块写 M1 文件」的归属冲突。写一个消费侧契约测试，确认本里程碑能正确取得 32 字节媒体密钥供后续 codec（T4/T5）使用。
 
 ### 实施
-1. 在 KeyProvider 新增 `Future<Uint8List> getDeviceMediaKey()`：从设备根密钥 HKDF 派生
-2. 实现或复用 HKDF-SHA256
-3. 单测：相同根密钥派生稳定 / 不同 info 不同输出 / 输出 32 字节
-4. 在本任务验收记录中标注「M1 spec 已通过 PR 同步追加 getDeviceMediaKey 接口」
+1. 经 `KeyProvider.getDeviceMediaKey()` 取媒体密钥（不自实现 HKDF）
+2. 消费侧契约测试：用已知设备根密钥（或 mock KeyProvider），断言取到的媒体密钥长度 32、且与 `getAppDbKey()` 派生不同
 
 ### 验收标准（做完即止）
-- 接口存在且单测通过（自动）
-- 派生**确实使用** info=`dayz/media/v1` 与设备根密钥：测试用已知根密钥 + HKDF-SHA256 标准向量（同一 salt/info/length）**独立算出期望 32 字节**，断言 `getDeviceMediaKey()` 返回值逐字节等于该期望；并断言把 info 换成别的字符串（如 `dayz/media/v2`）时派生结果**不同**——即 info 常量真正进入派生、而非仅作为字面量出现在源码里（自动，断言派生输出值而非源码文本）
+- 本里程碑经 `KeyProvider.getDeviceMediaKey()` 取得 32 字节媒体密钥（自动，消费侧契约，断言返回值长度）
+- 该媒体密钥与 `getAppDbKey()` 不同（自动，证明确为设备媒体派生而非 db 密钥）
 
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/key_provider_test.dart
+  flutter test test/media/device_media_key_test.dart
   ```
-  （测试断言：① `getDeviceMediaKey()` 输出 == 用 `dayz/media/v1` 独立重算的 HKDF 期望值且长度 32；② 设备根密钥变 → 输出变；③ info 字符串变 → 输出变。三条均断言**派生值**，不 grep 源码字面量）
+  （断言：① `getDeviceMediaKey()` 返回 32 字节；② 与 db 密钥不同。均断言运行时取值，不 grep 源码）
 
 ### 验收记录
 ```
@@ -99,7 +99,7 @@ graph LR
 
 - [ ] T3 · 媒体路径工具 + relativize
 
-**依赖：** T1 ｜ **关联需求：** R1, NF5 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/media/paths.dart`, `test/media/paths_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF5 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/media/paths.dart`, `test/media/paths_test.dart`
 
 ### 背景
 统一管理 `<app_documents>/media/` 根目录获取与「绝对路径 ↔ 相对路径」转换。
@@ -131,7 +131,7 @@ graph LR
 
 - [ ] T4 · 媒体 codec（文件格式 + 流式加解密）
 
-**依赖：** T1 ｜ **关联需求：** R2, NF1, NF2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/media/media_codec.dart`, `lib/media/exceptions.dart`, `test/media/media_codec_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF1, NF2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/media/media_codec.dart`, `lib/media/exceptions.dart`, `test/media/media_codec_test.dart`
 
 ### 背景
 按 D2 文件格式实现加解密：
@@ -174,7 +174,7 @@ graph LR
 
 - [ ] T5 · MediaStore：put / openRead + 元数据集成
 
-**依赖：** T2, T3, T4, M2 T9 ｜ **关联需求：** R1, R3, R4, R7 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/media/media_store.dart`, `test/media/media_store_test.dart`
+**同 spec 依赖：** T2, T3, T4 ｜ **跨 spec 依赖：** data-layer（MediaRepo，对应其 T9） ｜ **关联需求：** R1, R3, R4, R7 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/media/media_store.dart`, `test/media/media_store_test.dart`
 
 ### 背景
 对外暴露的核心 API：
@@ -217,7 +217,7 @@ graph LR
 
 - [ ] T6 · 备份导出流式中转 API
 
-**依赖：** T5 ｜ **关联需求：** R6 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/media/media_store.dart`（追加方法）, `test/media/backup_stream_test.dart`
+**同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/media/media_store.dart`（追加方法）, `test/media/backup_stream_test.dart`
 
 ### 背景
 为 M6 提供：
@@ -256,7 +256,7 @@ graph LR
 
 - [ ] T7 · 性能基线测试
 
-**依赖：** T5 ｜ **关联需求：** NF4 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/media/throughput_test.dart`
+**同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF4 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/media/throughput_test.dart`
 
 ### 背景
 NF4 要求中端真机写 ≥ 30 MiB/s、读 ≥ 50 MiB/s。本任务在真机上跑基准并记录数据；模拟器/CI 不强求达标。
@@ -294,7 +294,7 @@ Android 读吞吐：— MiB/s
 
 - [ ] T8 · 接入 Debug Home：Media demo
 
-**依赖：** T6 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/active/assets-management` R4，本任务**只读引用、不新增/改动该资产**）
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/active/assets-management` R4，本任务**只读引用、不新增/改动该资产**）
 
 ### 背景
 做一个真机可演示入口：

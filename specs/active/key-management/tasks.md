@@ -8,7 +8,9 @@
 # 任务列表：key-management
 
 ## 任务依赖图
-> 由各任务 inline「依赖」字段汇总，以 inline 为准。本里程碑整体依赖 **M0 app-scaffold 完成**（pubspec / 平台配置 / Debug Home 框架就绪）。
+> 由各任务 inline「依赖」字段汇总，以 inline 为准。本里程碑整体依赖 **M0（app-scaffold）完成**（pubspec / 平台配置 / Debug Home 框架就绪）。
+>
+> **M# ↔ spec 映射（本 spec 用到的别名）：** M0 = app-scaffold（壳/pubspec/平台配置/Debug Home 框架就绪，已归档/已完成）；M1 = key-management（本 spec）。
 ```mermaid
 graph LR
   M0[M0 done] --> T1
@@ -21,21 +23,22 @@ graph LR
   T6 --> T7
   T6 --> T8
   T6 --> T9
+  T6 --> T10
 ```
 
 并行组：
 - Group A：T2, T3
 - Group B：T4, T5
-- Group C：T7, T8, T9
+- Group C：T7, T8, T9, T10
 
 里程碑：
-- **M1-done**：T1-T9 全部完成；Debug Home 上的「Security demo」入口可在真机演示密钥状态与 Argon2 派生耗时。
+- **M1-done**：T1-T10 全部完成；Debug Home 上的「Security demo」入口可在真机演示密钥状态与 Argon2 派生耗时。
 
 -----
 
 - [ ] T1 · 添加依赖与构建打通
 
-**依赖：** M0 已完成 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `ios/Podfile`（若需要）, `android/app/build.gradle`（若需要）
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `ios/Podfile`（若需要）, `android/app/build.gradle.kts`（若需要）
 
 ### 背景
 为本里程碑添加 flutter_secure_storage、Argon2 FFI 库（候选 dargon2_flutter）、sqlcipher_flutter_libs。SQLCipher 此处只是预装包，真正使用在 data-layer 里程碑。需确保 iOS / Android 双端构建均通过。
@@ -70,7 +73,7 @@ graph LR
 
 - [ ] T2 · secure_storage 薄封装
 
-**依赖：** T1 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/secure_storage.dart`, `test/security/secure_storage_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/secure_storage.dart`, `test/security/secure_storage_test.dart`
 
 ### 背景
 flutter_secure_storage 抛出的异常因平台而异（Android BadPaddingException、iOS errSecItemNotFound 等），上层不应直接面对。本任务封装为统一 API + 统一异常。
@@ -101,7 +104,7 @@ flutter_secure_storage 抛出的异常因平台而异（Android BadPaddingExcept
 
 - [ ] T3 · Argon2 库可用性预研 + 选定 v0 参数
 
-**依赖：** T1 ｜ **关联需求：** R2, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/security/argon2_probe.dart`（预研用，T5 完成后可删）
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/security/argon2_probe.dart`（预研用，T5 完成后可删）
 
 ### 背景
 D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研，验证可用 + 选定 v0 参数。预研用例放 argon2_probe.dart，跑完记录数据后清理。
@@ -136,7 +139,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 - [ ] T4 · 设备随机密钥生成与读取
 
-**依赖：** T2 ｜ **关联需求：** R1, NF1, NF3 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/device_key.dart`, `test/security/device_key_test.dart`
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF1, NF3 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/device_key.dart`, `test/security/device_key_test.dart`
 
 ### 背景
 首次启动生成 32 字节 CSPRNG 随机密钥，存 secure_storage key=`device_db_key`。后续启动读取；若读取失败必须给出明确错误而非生成新密钥（避免覆盖旧密钥）。
@@ -172,7 +175,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 - [ ] T5 · Argon2id 派生模块
 
-**依赖：** T3 ｜ **关联需求：** R2, NF4 ｜ **依据设计：** D2, D3, D4 ｜ **可改文件：** `lib/security/argon2_kdf.dart`, `test/security/argon2_kdf_test.dart`
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF4 ｜ **依据设计：** D2, D3, D4 ｜ **可改文件：** `lib/security/argon2_kdf.dart`, `test/security/argon2_kdf_test.dart`, `test/security/kdf_version_persistence_test.dart`
 
 ### 背景
 封装 Argon2id 派生为 `Argon2Kdf.deriveKey(password, salt, params)`；`KdfParams` 含 `mCostKiB`、`tCost`、`parallelism`、`outputLen`、`version`。version=1 对应 D3 选定参数。
@@ -183,17 +186,20 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 3. 实现 `Argon2Kdf.deriveKey(Uint8List password, Uint8List salt, KdfParams params)`
 4. 加 RFC 9106 已知向量测试（A.2 节 Argon2id 测试向量）
 5. password 与中间变量在使用后尝试 zero-fill（best-effort，Dart 无强保证）
+6. 版本往返（NF4）：`KdfParams` 可把 `version` 序列化写出并读回，据存储的 version 反查参数，确保旧密钥派生路径仍可工作
 
 ### 验收标准（做完即止）
 - 已知向量测试通过（自动）
 - 相同输入输出确定（自动）
 - 不同 salt 输出不同（自动）
 - 调用前后 password 引用持有的字节区被清零（自动）
+- `KdfParams.version` 经序列化写出后可原样读回、并据其重建出逐字段相等的参数（自动，满足 NF4，断言往返值；该测试同时被 verification NF4 节执行）
 
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/argon2_kdf_test.dart
+  flutter test test/security/argon2_kdf_test.dart \
+    && flutter test test/security/kdf_version_persistence_test.dart
   ```
 
 ### 验收记录
@@ -207,7 +213,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 - [ ] T6 · KeyProvider 统一入口
 
-**依赖：** T4, T5 ｜ **关联需求：** R1, R3, R5 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/security/key_provider.dart`, `test/security/key_provider_test.dart`
+**同 spec 依赖：** T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R3, R5 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/security/key_provider.dart`, `test/security/key_provider_test.dart`
 
 ### 背景
 对 data-layer / backup 等上层只暴露语义化 API，隐藏底层实现：
@@ -246,7 +252,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 - [ ] T7 · rekey 流程 + 失败兜底
 
-**依赖：** T6 ｜ **关联需求：** R3, R4, NF3 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/security/rekey_service.dart`, `test/security/rekey_service_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, NF3 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/security/rekey_service.dart`, `test/security/rekey_service_test.dart`
 
 ### 背景
 实现 D5 的「拷 .bak → PRAGMA rekey → 删 .bak / 回滚」三步法。运行在 isolate 中。需注意：rekey 入参是新密钥；当前库密钥来自 `KeyProvider.getAppDbKey()`。
@@ -291,7 +297,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 - [ ] T8 · 备份口令派生接口暴露
 
-**依赖：** T6 ｜ **关联需求：** R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/key_provider.dart`（追加方法）, `test/security/key_provider_test.dart`（追加用例）
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/key_provider.dart`（追加方法）, `test/security/key_provider_test.dart`（追加用例）
 
 ### 背景
 T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本任务专门补全备份口令派生的契约测试，确保 backup-full-snapshot 里程碑可以直接对接。
@@ -322,7 +328,7 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 
 - [ ] T9 · 接入 Debug Home：Security demo
 
-**依赖：** T6 ｜ **关联需求：** R1, R2, R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
 
 ### 背景
 按 AGENTS.md「基础层必带 demo 入口」约束，把本里程碑的关键能力做成一个 Debug Home 入口，便于真机调测：
@@ -358,4 +364,37 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 日期：—
 自动：—
 人工：—（无；真机耗时 <1.5s 门槛见 verification.md 性能节，数据源 T3）
+```
+
+-----
+
+- [ ] T10 · 设备媒体密钥派生入口 getDeviceMediaKey（HKDF）
+
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6 ｜ **依据设计：** D4, D7 ｜ **可改文件：** `lib/security/hkdf.dart`, `lib/security/key_provider.dart`（追加方法）, `test/security/key_provider_test.dart`（追加用例）
+
+### 背景
+按 D7（2026-05-29 @Ray 拍板：实现收进 M1）实现 HKDF-SHA256 与 `KeyProvider.getDeviceMediaKey()`，使 KeyProvider 成为所有密钥派生的唯一自洽入口（呼应 D4）。`media-storage`(M3) / `thumbnail-cache`(M5) 仅消费本入口、不再跨模块写 `lib/security/`。媒体密钥**只从设备随机密钥派生，永不跟随主密码、不参与 rekey**（与 `docs/design/06` §9.4/9.7 一致）。
+
+### 实施
+1. 新建 `lib/security/hkdf.dart`：实现或封装 HKDF-SHA256（extract + expand），含 RFC 5869 测试向量
+2. `KeyProvider` 追加 `Future<Uint8List> getDeviceMediaKey()`：以设备根密钥为 IKM、info=`dayz/media/v1`、L=32 派生
+3. 单测：① 用已知 IKM 按 RFC 5869 独立重算 HKDF 期望值，断言返回值逐字节相等且长度 32；② info 改成别的字符串 → 输出不同（证明 info 真进入派生）；③ 与 `getAppDbKey()` 输出不同；④ mode=password 解锁前后调用结果不变
+
+### 验收标准（做完即止）
+- `getDeviceMediaKey()` 输出 == 用 info=`dayz/media/v1` 独立重算的 HKDF 期望值且长度 32（自动，断言派生值，满足 R6）
+- info 常量变化 → 输出变化（自动，证明 info 真进入派生而非仅作字面量）
+- 媒体密钥与 `getAppDbKey()` 不同、且切换主密码模式前后再调结果不变（自动，满足 R6「不跟随主密码」）
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/security/key_provider_test.dart
+  ```
+  （断言：① 输出 == 独立重算 HKDF(info=`dayz/media/v1`) 期望值且长 32；② info 变→输出变；③ 与 db 密钥不同、跨主密码模式不变——均断言派生值/行为，不 grep 源码字面量）
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：—（无）
 ```

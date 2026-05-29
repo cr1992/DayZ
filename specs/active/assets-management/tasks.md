@@ -6,14 +6,14 @@
 # 任务列表：assets-management
 
 ## 依赖速览
-> 以各任务 inline「依赖」字段为准。
+> 以各任务 inline「同 spec 依赖」字段为准；跨 spec 依赖以 README「依赖」列为准（本 spec 跨 spec 依赖＝无）。
 T1 → T2
 
 -----
 
 - [ ] T1 · 添加 flutter_gen 依赖 + assets 目录 + 生成配置
 
-**依赖：** 无 ｜ **关联需求：** R1, R2, R3, R4 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `pubspec.yaml`, `flutter_gen.yaml`, `assets/images/.gitkeep`, `assets/icons/.gitkeep`, `assets/fonts/.gitkeep`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R4 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `pubspec.yaml`, `flutter_gen.yaml`, `assets/images/.gitkeep`, `assets/icons/.gitkeep`, `assets/fonts/.gitkeep`
 
 ### 背景
 搭建类型安全静态资源引用的基础设施，依据 `docs/design/07`。原 data-layer 的 T15 即此，剥离至本 spec。仓库已存在 `assets/editor/`（含共享 demo 图 `assets/editor/demo_image.png`，已被 git 跟踪、`pubspec.yaml` 已声明），本任务在其上扩充 `images/`、`icons/`、`fonts/` 基线分类，并落锚 R4 的共享 demo 图规范路径。
@@ -56,7 +56,7 @@ T1 → T2
 
 - [ ] T2 · 跑通生成，产出 assets.gen.dart
 
-**依赖：** T1 ｜ **关联需求：** R1, R3, R4 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/gen/assets.gen.dart`（生成产物）, `assets/images/`（必要时放一张占位图供生成）｜ **验收基建：** `test/assets/assets_gen_compile_test.dart`（import 生成产物的编译/行为测试，预批）
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R3, R4 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/gen/assets.gen.dart`（生成产物）, `assets/images/`（必要时放一张占位图供生成）｜ **验收基建：** `test/assets/assets_gen_compile_test.dart`（import 生成产物的编译/行为测试，预批）
 
 ### 背景
 执行代码生成，确认 `flutter_gen` 工具链可用、产物可复现且可编译。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（builder = `flutter_gen_runner`），与 data-layer 的 drift builder 并存、输出目录隔离（assets 在 `lib/gen/`），互不冲突。仓库已存在 `assets/editor/demo_image.png` 等实际资产，生成器有可扫内容。

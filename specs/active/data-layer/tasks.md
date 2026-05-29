@@ -8,7 +8,12 @@
 # 任务列表：data-layer
 
 ## 任务依赖图
-> 由各任务 inline「依赖」字段汇总，以 inline 为准。整体依赖 **M0 完成** 与 **M1 KeyProvider 可用（T6）**。
+> 由各任务 inline「依赖」字段汇总，以 inline 为准。整体依赖 **M0（app-scaffold）完成** 与 **M1（key-management）KeyProvider 可用（getAppDbKey，对应其 T6）**。
+>
+> M# ↔ spec 映射（只列本 spec 用到的别名）：
+> - M0 = app-scaffold（已归档/已完成）：壳 / pubspec / 平台配置 / Debug Home 框架就绪
+> - M1 = key-management：KeyProvider（getAppDbKey←T6）、RekeyService←T7
+> - M2 = data-layer（本 spec）
 ```mermaid
 graph LR
   M0[M0 done] --> T1
@@ -45,7 +50,7 @@ graph LR
 
 - [ ] T1 · 添加 Drift / SQLCipher / UUID / timezone 依赖
 
-**依赖：** M0 已完成 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle`（如需）
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle.kts`（如需）
 
 ### 背景
 添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（drift_dev builder），与 assets-management 的 `flutter_gen_runner` builder 并存——builder 不同、输出目录隔离、互不冲突；本 spec **不**声称自己是「首个/唯一」codegen 工作流。静态资源生成（flutter_gen）已剥离至 `specs/active/assets-management`，本里程碑不涉及。
@@ -81,7 +86,7 @@ graph LR
 
 - [ ] T2 · Drift 表定义（含索引 + FTS5 虚拟表）
 
-**依赖：** T1 ｜ **关联需求：** R1 ｜ **依据设计：** D1, D7, D8 ｜ **可改文件：** `lib/data/database.dart`, `lib/data/tables/*.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1, D7, D8 ｜ **可改文件：** `lib/data/database.dart`, `lib/data/tables/*.dart`
 
 ### 背景
 按 v6 第 5 节落地全部表 + 索引 + FTS5 虚拟表。schema_version = 1。FTS5 用默认 tokenizer（D8）。
@@ -116,7 +121,7 @@ graph LR
 
 - [ ] T3 · SQLCipher 加密集成（用 KeyProvider 的密钥打开 db）
 
-**依赖：** T2, M1 T6 ｜ **关联需求：** R2, NF3, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/data/database.dart`（追加 open 方法）, `test/data/encryption_test.dart`
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** key-management（KeyProvider.getAppDbKey，对应其 T6） ｜ **关联需求：** R2, NF3, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/data/database.dart`（追加 open 方法）, `test/data/encryption_test.dart`
 
 ### 背景
 db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_flutter_libs` + `PRAGMA key` 注入密钥；打开后验证 `PRAGMA cipher_version` 非空。错误密钥应抛 `WrongKeyException`。
@@ -155,7 +160,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T4 · UUID v7 工具
 
-**依赖：** T1 ｜ **关联需求：** R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/data/ids.dart`, `test/data/ids_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/data/ids.dart`, `test/data/ids_test.dart`
 
 ### 背景
 统一 ID 生成入口；优先用 `uuid` 包 v7；不可用时按 RFC draft 自实现。
@@ -187,7 +192,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T5 · 时区三件套工具
 
-**依赖：** T1 ｜ **关联需求：** R4 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/data/time_zone_triple.dart`, `test/data/time_zone_triple_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/data/time_zone_triple.dart`, `test/data/time_zone_triple_test.dart`
 
 ### 背景
 给定 `entry_dt_utc`（DateTime UTC）+ `entry_tz`（IANA 字符串），算出 `local_year / local_month / local_day`。`timezone` 包需要在 App 启动时初始化时区数据库；本任务负责工具 + 初始化函数（在 main 中调用）。
@@ -219,7 +224,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T6 · DAO + 共享辅助（CRUD 基础块）
 
-**依赖：** T2, T3 ｜ **关联需求：** R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/database.dart`（追加 DAO mixin）
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/database.dart`（追加 DAO mixin）
 
 ### 背景
 在 AppDatabase 内定义 DAO（Drift `DriftAccessor`），供 Repository 内部使用。Repo 不向上暴露 DAO。同时实现「默认查询过滤 deleted_at IS NULL」的辅助方法。
@@ -250,7 +255,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T7 · JournalRepo
 
-**依赖：** T6 ｜ **关联需求：** R5, R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/journal_repo.dart`, `test/data/journal_repo_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/journal_repo.dart`, `test/data/journal_repo_test.dart`
 
 ### 背景
 日记本 CRUD（list / create / rename / reorder / softDelete / hardDelete）。
@@ -280,7 +285,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T8 · EntryRepo（时间线 + 往年今日 + CRUD + 时区重算）
 
-**依赖：** T6 ｜ **关联需求：** R3, R4, R5, R6, NF1, NF2, NF5 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/data/repositories/entry_repo.dart`, `test/data/entry_repo_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R5, R6, NF1, NF2, NF5 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/data/repositories/entry_repo.dart`, `test/data/entry_repo_test.dart`
 
 ### 背景
 本里程碑最重的 Repo：
@@ -328,7 +333,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 - [ ] T9 · MediaRepo（仅元数据）
 
-**依赖：** T6 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/media_repo.dart`, `test/data/media_repo_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/media_repo.dart`, `test/data/media_repo_test.dart`
 
 ### 背景
 本期只管 media 表元数据 CRUD（rel_path、宽高、缩略图字段占位等）；文件读写本体归 M3。
@@ -359,7 +364,7 @@ media 主键 media_id 的契约：media_id 由 MediaStore.put（M3）调用 data
 
 - [ ] T10 · TagRepo + 关联管理
 
-**依赖：** T6 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/tag_repo.dart`, `test/data/tag_repo_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/tag_repo.dart`, `test/data/tag_repo_test.dart`
 
 ### 背景
 标签 CRUD + 与 entries 的多对多。
@@ -390,7 +395,7 @@ media 主键 media_id 的契约：media_id 由 MediaStore.put（M3）调用 data
 
 - [ ] T11 · EditingSessionRepo（只暴露 CRUD）
 
-**依赖：** T6 ｜ **关联需求：** R5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/editing_session_repo.dart`, `test/data/editing_session_repo_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/editing_session_repo.dart`, `test/data/editing_session_repo_test.dart`
 
 ### 背景
 M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑只提供数据层 CRUD（upsert 单行、读取、清空）。
@@ -423,7 +428,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 - [ ] T12 · Migration 框架占位
 
-**依赖：** T2 ｜ **关联需求：** R7 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/data/database.dart`（追加 MigrationStrategy）, `test/data/migration_test.dart`
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/data/database.dart`（追加 MigrationStrategy）, `test/data/migration_test.dart`
 
 ### 背景
 启用 Drift `MigrationStrategy`；`onCreate` 默认；`onUpgrade` 空实现 + TODO。
@@ -454,7 +459,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 - [ ] T13 · 对接 M1 rekey stub
 
-**依赖：** T3 ｜ **关联需求：** R8 ｜ **依据设计：** D10 ｜ **可改文件：** `lib/data/database.dart`（追加 rekey 方法）, `lib/security/rekey_service.dart`（替换 TODO 桩）
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** key-management（RekeyService 的 `TODO(data-layer-integration)` 桩，对应其 T7） ｜ **关联需求：** R8 ｜ **依据设计：** D10 ｜ **可改文件：** `lib/data/database.dart`（追加 rekey 方法）, `lib/security/rekey_service.dart`（替换 TODO 桩）
 
 ### 背景
 补全 M1 T7 留下的 `TODO(data-layer-integration)`：`AppDatabase.rekey(Uint8List newKey) async`，调 `PRAGMA rekey`；RekeyService 拿到 db 句柄后调用。
@@ -487,7 +492,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 - [ ] T14 · 接入 Debug Home：Data demo
 
-**依赖：** T7, T8, T9, T10, T11 ｜ **关联需求：** R5, R6 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
+**同 spec 依赖：** T7, T8, T9, T10, T11 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
 
 ### 背景
 做一个 Debug Home 入口，演示：

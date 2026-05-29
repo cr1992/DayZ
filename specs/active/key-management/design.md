@@ -55,9 +55,9 @@
 - **背景：** media-storage(M3) 与 thumbnail-cache(M5) 需要一个**独立于主密码**的媒体加密密钥，其设备根来源是本里程碑掌管的设备随机密钥。此前 KeyProvider 表面只列 `getAppDbKey/deriveBackupKey/currentMode`，缺这一入口，导致 M3 只能「日后 PR 补进 `key_provider.dart`」，接口不自洽。本决策把**接口契约**正式补在 M1，使 KeyProvider 表面完整。
 - **接口：** `KeyProvider.getDeviceMediaKey() -> Uint8List`（32B）。派生式 = `HKDF-SHA256(ikm = 设备随机密钥, info = "dayz/media/v1", L = 32)`；HKDF salt 取空/固定常量即可（媒体无需 per-file salt，per-file 随机性由媒体 AEAD 的 nonce 提供）。
 - **关键性质（务必保持）：** 媒体密钥**只从设备密钥派生，永不跟随主密码、不参与 rekey**——设主密码不会重加密照片（与 `docs/design/06` §9.4/9.7「主密码不保护照片」一致）。这是有意为之的产品行为，UI 须解释。
-- **实现归属（待 @Ray 拍板）：** 当前 `media-storage` T2 计划新建 `lib/security/hkdf.dart` 并往 `lib/security/key_provider.dart` 追加本方法（M3 跨模块写 M1 文件）。**建议**把 `hkdf.dart` + `getDeviceMediaKey` 的**实现**也收进本里程碑（M1，挂 T6 之后或新增 T10），M3 仅消费——避免跨模块写。二选一请定；无论哪种，接口契约以本 D7 为准。
-- **理由：** 让 KeyProvider 成为所有密钥派生的唯一、自洽入口（呼应 D4）；消除 M1↔M3 接口悬空。
-- **代价：** 若实现收进 M1，`media-storage` T2 的「可改文件」需相应去掉 `key_provider.dart`（改为依赖既有方法）——一次跨 spec 同步编辑。
+- **实现归属（已拍板 2026-05-29 @Ray：收进 M1）：** `hkdf.dart` + `getDeviceMediaKey` 的**实现**收进本里程碑（**新增 T10**，挂 T6 之后），由 `key-management` **独占** `lib/security/hkdf.dart` 与 `lib/security/key_provider.dart` 的写权。`media-storage`(M3) / `thumbnail-cache`(M5) 仅**消费** `KeyProvider.getDeviceMediaKey()`，不再新建 / 改动这两个 `lib/security/` 文件——`media-storage` T2 已相应改为「消费契约对接」。接口契约以本 D7 为准。
+- **理由：** 让 KeyProvider 成为所有密钥派生的唯一、自洽入口（呼应 D4）；消除 M1↔M3 接口悬空与「同一 `lib/security/` 文件被两个 spec 同时认领」的归属冲突。
+- **代价：** key-management 任务数 +1（T10）；换来媒体密钥派生集中于最底层 security 模块、零跨模块写，符合 CLAUDE.md「security 是最底层、谁都依赖它、它不依赖任何业务」。
 
 ## D2 / D3 锁定待填清单（T3 实测后回填，回填即"可定稿"信号）
 
@@ -99,12 +99,12 @@ graph TD
 - `pubspec.yaml`                              修改（添加 flutter_secure_storage、dargon2_flutter、sqlcipher_flutter_libs）
 - `pubspec.lock`                              修改（pub get 后锁定版本）
 - `ios/Podfile`                               修改（若 iOS 构建需要，T1）
-- `android/app/build.gradle`                  修改（若 Android 需 NDK ABI 配置，T1）
+- `android/app/build.gradle.kts`              修改（若 Android 需 NDK ABI 配置，T1；仓库用 Kotlin DSL，文件名为 .kts）
 - `lib/security/secure_storage.dart`          新建（薄封装）
 - `lib/security/argon2_kdf.dart`              新建（KDF 模块 + KdfParams）
 - `lib/security/device_key.dart`              新建（设备随机密钥生成 / 读取）
-- `lib/security/key_provider.dart`            新建（统一密钥入口）
-- `lib/security/hkdf.dart`                    新建（HKDF-SHA256，供 getDeviceMediaKey 派生媒体密钥；见 D7，实现归属待拍板，若收进 M1 则挂 T10）
+- `lib/security/key_provider.dart`            新建（统一密钥入口；T6 主体、T8 追加 deriveBackupKey/generateBackupSalt、T10 追加 getDeviceMediaKey）
+- `lib/security/hkdf.dart`                    新建（HKDF-SHA256，供 getDeviceMediaKey 派生媒体密钥；见 D7，T10 产出）
 - `lib/security/rekey_service.dart`           新建（rekey 流程 + 备份兜底）
 - `lib/security/argon2_probe.dart`            新建（T3 预研用，可后续删除）
 - `lib/security/demo.dart`                    新建（T9 Debug Home Security demo）

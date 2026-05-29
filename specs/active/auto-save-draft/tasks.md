@@ -8,7 +8,9 @@
 # 任务列表：auto-save-draft
 
 ## 任务依赖图
-> 整体依赖 **M0 完成** + **M2 T11 EditingSessionRepo 可用**。
+> M# ↔ spec 映射（只列本 spec 用到的别名）：M0 = app-scaffold，M2 = data-layer。
+>
+> 整体依赖 **M0（app-scaffold）完成** + **M2（data-layer）T11 EditingSessionRepo 可用**。
 ```mermaid
 graph LR
   M0[M0] --> T1
@@ -33,7 +35,7 @@ graph LR
 
 - [ ] T1 · Debouncer 工具
 
-**依赖：** M0 已完成 ｜ **关联需求：** R1, NF2 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/drafts/debouncer.dart`, `test/drafts/debouncer_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, NF2 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/drafts/debouncer.dart`, `test/drafts/debouncer_test.dart`
 
 ### 背景
 轻量 Debouncer，含 `fire(payload)`、`flushNow()`、`cancel()`。
@@ -66,7 +68,7 @@ graph LR
 
 - [ ] T2 · DraftRecoveryStatus 数据类 + Saver 接口（编辑器中立）
 
-**依赖：** T1 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）, `test/drafts/draft_contract_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）, `test/drafts/draft_contract_test.dart`
 
 ### 背景
 先把外露接口与数据类钉死，后续 T3 填实现。本任务承接 R8「编辑器中立接口」：`onChanged` 只接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，**签名中不出现任何编辑器类型**（AppFlowy / TipTap / TextField）；来源无关——AppFlowy onChanged 与任意其他来源（含 R9 远期 WebView 桥）一视同仁。R9 在方案 A 下不适用，其「来源无关」实质已被本接口覆盖，无需额外接口。
@@ -100,7 +102,7 @@ graph LR
 
 - [ ] T3 · DraftCoordinator 实现（防抖 + 串行队列 + hash + 重试）
 
-**依赖：** T1, T2, M2 T11 ｜ **关联需求：** R1, R3, R4, R5, R6, NF1 ｜ **依据设计：** D3, D4, D5, D6 ｜ **可改文件：** `lib/drafts/draft_coordinator.dart`, `test/drafts/draft_coordinator_test.dart`
+**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer（EditingSessionRepo，对应其 T11） ｜ **关联需求：** R1, R3, R4, R5, R6, NF1 ｜ **依据设计：** D3, D4, D5, D6 ｜ **可改文件：** `lib/drafts/draft_coordinator.dart`, `test/drafts/draft_coordinator_test.dart`
 
 ### 背景
 核心实现：
@@ -143,7 +145,7 @@ graph LR
 
 - [ ] T4 · LifecycleBridge
 
-**依赖：** T1 ｜ **关联需求：** R2, NF3 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/drafts/lifecycle_bridge.dart`, `test/drafts/lifecycle_bridge_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF3 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/drafts/lifecycle_bridge.dart`, `test/drafts/lifecycle_bridge_test.dart`
 
 ### 背景
 封装 `AppLifecycleListener` 监听 paused / inactive；持有 DraftCoordinator 引用，在事件中 `await coordinator.forceFlush()`。
@@ -175,7 +177,7 @@ graph LR
 
 - [ ] T5 · main / app.dart 集成 startupCheck
 
-**依赖：** T3 ｜ **关联需求：** R7, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/app.dart`, `lib/main.dart`, `test/drafts/startup_check_test.dart`
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/app.dart`, `lib/main.dart`, `test/drafts/startup_check_test.dart`
 
 ### 背景
 启动时调用 `DraftCoordinator.startupCheck`，状态保存到全局可访问位置（不引入状态库，先存 `static late final` 或 service locator）。UI 提示条由后续 spec 消费。NF4 的 50ms 性能落点亦由本任务承接（startupCheck 同步段计时断言）。
@@ -209,7 +211,7 @@ graph LR
 
 - [ ] T6 · 集成测试：崩溃恢复路径
 
-**依赖：** T3, T4 ｜ **关联需求：** R2, R4, R7, NF1 ｜ **依据设计：** D3, D4 ｜ **可改文件：** `test/drafts/crash_recovery_test.dart`
+**同 spec 依赖：** T3, T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R4, R7, NF1 ｜ **依据设计：** D3, D4 ｜ **可改文件：** `test/drafts/crash_recovery_test.dart`
 
 ### 背景
 模拟「写到一半 kill」与「paused 后 kill」两种场景；验证：
@@ -244,7 +246,7 @@ graph LR
 
 - [ ] T7 · 接入 Debug Home：Drafts demo
 
-**依赖：** T6 ｜ **关联需求：** R1, R2, R3, R7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/demo.dart`, `lib/demo/demo_entry.dart`
 
 ### 背景
 做一个简陋编辑模拟（不接真编辑器，用 Flutter `TextField` 作 onChanged 来源）演示自动保存与恢复：

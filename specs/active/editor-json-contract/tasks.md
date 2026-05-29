@@ -8,7 +8,7 @@
 # 任务列表：editor-json-contract（编辑器文档 JSON 契约）
 
 ## 任务依赖图
-> 由各任务 inline「依赖」字段汇总，仅供速览；以 inline 为准。
+> 由各任务 inline「同 spec 依赖」字段汇总，仅供速览；以 inline 为准（本 spec 无跨 spec 依赖）。
 ```mermaid
 graph LR
   T1 --> T2
@@ -37,7 +37,7 @@ graph LR
 
 - [ ] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
 
-**依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`test/editor/contract/block_types_test.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`test/editor/contract/block_types_test.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
 
 ### 背景
 契约的事实地基。先读 `packages/appflowy-editor/lib/appflowy_editor.dart` 及 `Document`/`Node`/各 `*BlockKeys`/`image_block_component.dart`/`block_component_service.dart`，确认：① D2 图片落点二选一（自定义 `data.media_id` vs 自定义 url scheme）；② 代码块 `code` 是否内置、是否需插件；③ 自定义 `data` 字段随 `Node.toJson` 透传无损。把结论代码化为块类型/字段常量，并回填 design 的【实现时补全】与块清单表注。
@@ -74,7 +74,7 @@ graph LR
 
 - [ ] T2 · EditorDocCodec 薄封装（encode/decode + docVersion）
 
-**依赖：** T1 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/editor/contract/editor_doc_codec.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/editor/contract/editor_doc_codec.dart`
 
 ### 背景
 实现 D1 薄封装层：入库结构 `{'docVersion': 1, 'document': {...}}`，`document` 复用 AppFlowy `Document.toJson/fromJson`。提供统一 encode/decode 入口与版本路由（当前仅 v1，迁移表占位）。
@@ -106,7 +106,7 @@ graph LR
 
 - [ ] T3 · content_plain 抽取器（表驱动降级 + 标题取首行）
 
-**依赖：** T1 ｜ **关联需求：** R4, R5, NF1 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/plain_text_extractor.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4, R5, NF1 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/plain_text_extractor.dart`
 
 ### 背景
 实现 D4 `extractPlainText(Document) -> String`：DFS 遍历，按块清单「content_plain 降级表现」列逐块映射，块间 `\n` 连接；标题取首行；未知块降级取 delta 或跳过；纯同步无 I/O（NF1）。自定义块降级（`📍`/`🌤`）逻辑归本任务（与 T4 自定义块定义解耦：本任务只读 data 产文本，不渲染）。
@@ -142,7 +142,7 @@ graph LR
 
 - [ ] T4 · 位置块 / 天气块自定义节点定义 + BlockComponentBuilder
 
-**依赖：** T1 ｜ **关联需求：** R3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/editor/contract/blocks/location_block.dart`、`lib/editor/contract/blocks/weather_block.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/editor/contract/blocks/location_block.dart`、`lib/editor/contract/blocks/weather_block.dart`
 
 ### 背景
 实现 D3 两个自定义块：`location`(`place_name/lat/lng`) 与 `weather`(`weather_code/weather_temp`)，各配编辑态与只读态 BlockComponentBuilder，data 随 `Node.toJson` 无损往返。
@@ -175,7 +175,7 @@ graph LR
 
 - [ ] T5 · 图片节点 media.id 引用解析（ImageUrlResolver）
 
-**依赖：** T2 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/image_url_resolver.dart`、`test/editor/contract/image_url_resolver_test.dart`、`test/editor/contract/media_ref_integrity_test.dart`（承接 verification「media.id 引用完整性」的全文路径扫描用例）
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/image_url_resolver.dart`、`test/editor/contract/image_url_resolver_test.dart`、`test/editor/contract/media_ref_integrity_test.dart`（承接 verification「media.id 引用完整性」的全文路径扫描用例）
 
 ### 背景
 实现 D2 选定落点：图片节点以 `media.id` 为权威引用键，运行时经 `media.id → media.rel_path → 当前媒体目录` 解析为可读文件（解密流接 media-storage）。`content_json` 中不出现真实路径。
@@ -208,7 +208,7 @@ graph LR
 
 - [ ] T6 · 只读渲染器 + 编辑器接线（共用块清单与解析层）
 
-**依赖：** T3, T4, T5 ｜ **关联需求：** R5, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/readonly_renderer.dart`、`lib/editor/contract/editor_block_registry.dart`、`test/editor/contract/readonly_renderer_test.dart`、`test/editor/contract/render_consistency_test.dart`（承接 verification NF2 一致性）、`test/editor/contract/block_inventory_consistency_test.dart`（承接 verification 块清单单一来源）
+**同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/readonly_renderer.dart`、`lib/editor/contract/editor_block_registry.dart`、`test/editor/contract/readonly_renderer_test.dart`、`test/editor/contract/render_consistency_test.dart`（承接 verification NF2 一致性）、`test/editor/contract/block_inventory_consistency_test.dart`（承接 verification 块清单单一来源）
 
 ### 背景
 把封闭块清单（标准块 + location/weather + image resolver）注册成编辑器与只读渲染器共用的一套 BlockComponentBuilder 集合，确保两端对同一 `content_json` 渲染一致（NF2 的实现侧）。未知块两端均安全降级（R5）。
@@ -242,7 +242,7 @@ graph LR
 
 - [ ] T7 · 导出降级规则（复用抽取器降级表）
 
-**依赖：** T6 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/export_fallback.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/export_fallback.dart`
 
 ### 背景
 把块清单「降级表现」沉淀为导出器可复用的「块 → 文本行」映射，供下游 PDF/HTML 导出 spec 消费；自定义块降级为 `📍`/`🌤` 文本行（与 T3 抽取器同源，不另起一套）。

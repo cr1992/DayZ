@@ -129,6 +129,9 @@ graph TD
 - `lib/editor/contract/blocks/location_block.dart`   新建（D3 自定义块定义 + 编辑/只读 BlockComponentBuilder）
 - `lib/editor/contract/blocks/weather_block.dart`    新建（D3 自定义块定义 + 编辑/只读 BlockComponentBuilder）
 - `lib/editor/contract/image_url_resolver.dart`      新建（D2 media.id → 真实文件解析；接 media-storage）
+- `lib/editor/contract/readonly_renderer.dart`       新建（D2/D3/NF2 只读渲染器，T6）
+- `lib/editor/contract/editor_block_registry.dart`   新建（D3 编辑/只读共用的统一 BlockComponentBuilder 注册表，T6）
+- `lib/editor/contract/export_fallback.dart`         新建（D4 导出降级映射，复用抽取器降级表，T7）
 - `test/editor/contract/...`                         新建（往返/抽取/一致性测试）
 
 ## 已知风险

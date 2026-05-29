@@ -87,6 +87,7 @@ graph TD
 ## 文件变更
 
 - `pubspec.yaml`                                修改（添加 `image` 包）
+- `pubspec.lock`                                修改（pub get 后锁定版本）
 - `lib/thumbnails/thumbnail_cache.dart`         新建（公共 API）
 - `lib/thumbnails/thumbnail_handle.dart`        新建
 - `lib/thumbnails/priority_queue.dart`          新建（最小实现）

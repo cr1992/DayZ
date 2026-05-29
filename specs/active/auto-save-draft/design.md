@@ -86,6 +86,7 @@ graph TD
 - `lib/drafts/lifecycle_bridge.dart`     新建（AppLifecycleListener → forceFlush 桥接）
 - `lib/drafts/demo.dart`                 新建（Debug Home demo）
 - `lib/app.dart`                         修改（在根 Widget 挂 LifecycleBridge + startupCheck）
+- `lib/main.dart`                        修改（启动时 await startupCheck，落 NF4 50ms 计时；T5）
 - `lib/demo/demo_entry.dart`             修改（追加注册）
 - `test/drafts/`                         新建
 

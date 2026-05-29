@@ -8,7 +8,8 @@
 # 任务列表：thumbnail-cache
 
 ## 任务依赖图
-> 整体依赖 **M0**、**M1 设备媒体密钥**、**M2 MediaRepo.updateThumb**、**M3 MediaCodec**。
+> M# ↔ spec 映射（只列本 spec 用到的别名）：M0 = app-scaffold，M1 = key-management，M2 = data-layer，M3 = media-storage。
+> 整体依赖 **M0（app-scaffold）完成**、**M1（key-management）T10 getDeviceMediaKey**、**M2（data-layer）T9 MediaRepo.updateThumb**、**M3（media-storage）T4 MediaCodec**。
 ```mermaid
 graph LR
   M0[M0] --> T1
@@ -37,7 +38,7 @@ graph LR
 
 - [ ] T1 · 添加 image 依赖
 
-**依赖：** M0 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock` ｜ **验收基建：** `test/thumbnails/image_dep_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock` ｜ **验收基建：** `test/thumbnails/image_dep_test.dart`
 
 ### 实施
 1. 添加 `image` 包（活跃维护版本），锁版本
@@ -66,7 +67,7 @@ graph LR
 
 - [ ] T2 · CancelToken + PriorityQueue
 
-**依赖：** T1 ｜ **关联需求：** R5, NF3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/cancel_token.dart`, `lib/thumbnails/priority_queue.dart`, `test/thumbnails/queue_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/cancel_token.dart`, `lib/thumbnails/priority_queue.dart`, `test/thumbnails/queue_test.dart`
 
 ### 实施
 1. `CancelToken { bool isCancelled; void cancel(); Future<void> get whenCancelled; }`
@@ -93,7 +94,7 @@ graph LR
 
 - [ ] T3 · Generator（isolate 内 decode/resize/encode + 加密落盘 + db 更新）
 
-**依赖：** T1, M1, M2, M3 ｜ **关联需求：** R1, R2, R8, NF1, NF4 ｜ **依据设计：** D1, D2, D5 ｜ **可改文件：** `lib/thumbnails/generator.dart`, `test/thumbnails/generator_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** key-management（getDeviceMediaKey，对应其 T10）、data-layer（MediaRepo，对应其 T9）、media-storage（MediaCodec，对应其 T4） ｜ **关联需求：** R1, R2, R8, NF1, NF4 ｜ **依据设计：** D1, D2, D5 ｜ **可改文件：** `lib/thumbnails/generator.dart`, `test/thumbnails/generator_test.dart`
 
 ### 背景
 isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤：MediaCodec 解密原图 → image 解码 → resize（长边 384）→ JPEG quality 85 编码 → MediaCodec 加密 → 写 `<thumbs>/<id>.bin.tmp` → rename → 调 MediaRepo.updateThumb。补偿式一致性见 R8 / D5 / `docs/design/09`：先文件后 db，db 事务失败则删除已写的缩略图文件。
@@ -128,7 +129,7 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 - [ ] T4 · WorkerPool（≤2 并发 + cancel 检查点）
 
-**依赖：** T1 ｜ **关联需求：** R5, R6, NF2, NF3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/thumbnails/worker_pool.dart`, `test/thumbnails/worker_pool_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6, NF2, NF3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/thumbnails/worker_pool.dart`, `test/thumbnails/worker_pool_test.dart`
 
 ### 实施
 1. `WorkerPool` 持有一个并发上限（默认 2）
@@ -155,7 +156,7 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 - [ ] T5 · ThumbnailHandle 数据类
 
-**依赖：** T1 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/thumbnail_handle.dart`, `test/thumbnails/thumbnail_handle_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/thumbnail_handle.dart`, `test/thumbnails/thumbnail_handle_test.dart`
 
 ### 实施
 1. `enum ThumbnailState { pending, ready, failed, cancelled }`
@@ -186,7 +187,7 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 - [ ] T6 · ThumbnailCache 主入口（request / warmup / 失效判断）
 
-**依赖：** T2, T3, T4, T5 ｜ **关联需求：** R3, R4, R6, R7, R8 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/thumbnails/thumbnail_cache.dart`, `test/thumbnails/thumbnail_cache_test.dart`
+**同 spec 依赖：** T2, T3, T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R6, R7, R8 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/thumbnails/thumbnail_cache.dart`, `test/thumbnails/thumbnail_cache_test.dart`
 
 ### 实施
 1. `request(mediaId, {ThumbnailPriority priority = ThumbnailPriority.normal}) -> ThumbnailHandle`（R3 唯一入口；**不**另加 `requestWithPriority`）
@@ -227,7 +228,7 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 - [ ] T7 · 性能基线
 
-**依赖：** T6 ｜ **关联需求：** NF1, NF2 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/thumbnails/perf_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF1, NF2 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/thumbnails/perf_test.dart`
 
 ### 实施
 1. benchmark：连续 10 张 1500×1000 原图 → request normal → 测平均耗时
@@ -257,7 +258,7 @@ RSS 峰值：—
 
 - [ ] T8 · 接入 Debug Home：Thumbnails demo
 
-**依赖：** T6 ｜ **关联需求：** R3, R4, R5, R6 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/thumbnails/demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R5, R6 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/thumbnails/demo.dart`, `lib/demo/demo_entry.dart`
 
 ### 背景
 做一个 Debug Home 入口演示：

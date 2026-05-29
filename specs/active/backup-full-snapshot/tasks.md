@@ -8,7 +8,9 @@
 # 任务列表：backup-full-snapshot
 
 ## 任务依赖图
-> 整体依赖 **M0**、**M1（备份口令派生）**、**M2（db / Repo）**、**M3（MediaStore + streamForBackup）**、**M5（ThumbnailCache.warmup）**。
+> **M# ↔ spec 映射**（仅列本 spec 用到的别名）：M0=app-scaffold，M1=key-management，M2=data-layer，M3=media-storage，M5=thumbnail-cache。
+>
+> 整体依赖 **M0（app-scaffold）**、**M1（key-management，备份口令派生 deriveBackupKey / generateBackupSalt）**、**M2（data-layer，db / Repo）**、**M3（media-storage，MediaStore + streamForBackup）**、**M5（thumbnail-cache，ThumbnailCache.warmup）**。
 ```mermaid
 graph LR
   M0[M0] --> T1
@@ -40,7 +42,7 @@ graph LR
 
 - [ ] T1 · 添加 archive 依赖 + 路径定义
 
-**依赖：** M0 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `lib/backup/paths.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳 / pubspec / 平台配置 / Debug Home 框架就绪） ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `lib/backup/paths.dart`
 
 ### 实施
 1. 添加 `archive` 包；验证 stream entry API 是否够用，不够则记入 T3 自实现 TAR
@@ -65,7 +67,7 @@ graph LR
 
 - [ ] T2 · BackupFormat（外层 header 读写）
 
-**依赖：** T1 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/backup/backup_format.dart`, `test/backup/backup_format_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/backup/backup_format.dart`, `test/backup/backup_format_test.dart`
 
 ### 实施
 1. `BackupHeader { magic, version, salt }`
@@ -92,7 +94,7 @@ graph LR
 
 - [ ] T3 · TAR 流式封装 + Manifest 数据类
 
-**依赖：** T1 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/backup/tar_stream.dart`, `lib/backup/manifest.dart`, `test/backup/tar_stream_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/backup/tar_stream.dart`, `lib/backup/manifest.dart`, `test/backup/tar_stream_test.dart`
 
 ### 实施
 1. `TarStreamWriter` / `TarStreamReader`：基于 `archive` 包或自实现；接 stream entry
@@ -117,7 +119,7 @@ graph LR
 
 - [ ] T4 · BackupExporter（核心导出）
 
-**依赖：** T2, T3, M1, M2, M3 ｜ **关联需求：** R3, R4, R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** key-management（deriveBackupKey / generateBackupSalt，对应其 T8）、data-layer（AppDatabase，对应其 T2 定义 / T3 加密开库）、media-storage（streamForBackup / encryptForBackup，对应其 T6） ｜ **关联需求：** R3, R4, R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
 
 ### 实施
 1. `export({password, outputPath, onProgress, onCancel})`（签名与 R3 一致）
@@ -152,7 +154,7 @@ graph LR
 
 - [ ] T5 · BackupRestorer 解析 + manifest 校验 + 确认回调
 
-**依赖：** T4 ｜ **关联需求：** R5（前 4 步）, R7, R10, R11 ｜ **依据设计：** D5, D8 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（骨架）, `test/backup/restorer_parse_test.dart`
+**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5（前 4 步）, R7, R10, R11 ｜ **依据设计：** D5, D8 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（骨架）, `test/backup/restorer_parse_test.dart`
 
 ### 背景
 本任务覆盖 restore 流程的「读 + 校验 + 确认」部分（R5 步骤 1-4）；T6 做剩余的整库替换 + media 重加密 + FTS 重建 + warmup 步骤。这样把高复杂度任务拆开降低单测复杂度。
@@ -193,7 +195,7 @@ graph LR
 
 - [ ] T6 · BackupRestorer 整库替换 + media 重加密
 
-**依赖：** T5 ｜ **关联需求：** R5（步骤 5-9）, R8, R9 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加）, `test/backup/restorer_apply_test.dart`
+**同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5（步骤 5-9）, R8, R9 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加）, `test/backup/restorer_apply_test.dart`
 
 ### 实施
 > 遵守 `docs/design/09`「约定二·覆盖式还原」：新产物全部先写临时位置，全成功后才原子切换；任一步失败只删临时产物，旧 db + 旧 media 原样不动。**严禁先清空旧 media 再写回**（会造成「db 在、图全丢」）。
@@ -234,7 +236,7 @@ graph LR
 
 - [ ] T7 · 重建 FTS + 启动 warmup
 
-**依赖：** T6, M5 ｜ **关联需求：** R5（步骤 10-11）, R6 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加方法）, `test/backup/restorer_fts_test.dart`
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** thumbnail-cache（ThumbnailCache.warmup，对应其 T6） ｜ **关联需求：** R5（步骤 10-11）, R6 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加方法）, `test/backup/restorer_fts_test.dart`
 
 ### 实施
 1. `rebuildFts()`：在 db 上跑 `DELETE FROM entries_fts; INSERT INTO entries_fts SELECT id, content_plain FROM entries WHERE deleted_at IS NULL;` —— 同步等待完成
@@ -266,7 +268,7 @@ graph LR
 
 - [ ] T8 · 端到端往返集成测试
 
-**依赖：** T4, T7 ｜ **关联需求：** R3, R5, R8, NF1, NF2, NF3, NF4 ｜ **依据设计：** D1-D7 ｜ **可改文件：** `test/backup/roundtrip_test.dart`
+**同 spec 依赖：** T4, T7 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5, R8, NF1, NF2, NF3, NF4 ｜ **依据设计：** D1-D7 ｜ **可改文件：** `test/backup/roundtrip_test.dart`
 
 ### 实施
 1. 准备测试库：N entries + M media（小尺寸方便 CI 跑）
@@ -296,7 +298,7 @@ graph LR
 
 - [ ] T9 · 中间产物清理保证
 
-**依赖：** T4 ｜ **关联需求：** NF5 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/backup/backup_exporter.dart` / `backup_restorer.dart`（finally 块完善）, `test/backup/cleanup_test.dart`
+**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF5 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/backup/backup_exporter.dart` / `backup_restorer.dart`（finally 块完善）, `test/backup/cleanup_test.dart`
 
 ### 实施
 1. exporter 与 restorer 顶层 try/finally 中清理：`<tmp>/full_*.db`、`<output>.tmp`、`<db>/main.sqlite.restoring`、`<documents>/media/.restoring/`、`<documents>/media/.old/`、`<documents>/media/.tmp` 残留
@@ -324,7 +326,7 @@ graph LR
 
 - [ ] T10 · 接入 Debug Home：Backup demo
 
-**依赖：** T8 ｜ **关联需求：** R3, R5, R10 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/backup/demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T8 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5, R10 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/backup/demo.dart`, `lib/demo/demo_entry.dart`
 
 ### 背景
 做一个 Debug Home 入口演示完整往返：

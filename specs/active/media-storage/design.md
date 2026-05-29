@@ -28,7 +28,7 @@
 - **选项：** 复用 db 密钥 / 单独再生成一把媒体密钥 / 用 db 密钥派生（HKDF）。
 - **选择：** **从 db 设备密钥 HKDF 派生一把媒体专用密钥**（info=`"dayz/media/v1"`）。
 - **理由：** 一把根密钥派生多用途，密钥管理简单；HKDF 廉价；当未来引入第三种用途（如附件加密）时复用模式。
-- **代价：** 多走一次 HKDF；可接受。M1 KeyProvider 需补 `getDeviceMediaKey()`（在本里程碑 T2 推动 M1 PR）。
+- **代价：** 多走一次 HKDF；可接受。`getDeviceMediaKey()` 的实现归 M1（key-management T10，D7 拍板）；本里程碑仅**消费** `KeyProvider.getDeviceMediaKey()`、不写 `lib/security/`。
 
 ### D4 · 流式 API 形态
 - **背景：** 大文件不应一次性入内存；备份导出需要重加密链路。
@@ -92,8 +92,6 @@ graph TD
 ## 文件变更
 
 - `pubspec.yaml`                              修改（添加 `cryptography` 或等价 AEAD 包）
-- `lib/security/key_provider.dart`            修改（补 `getDeviceMediaKey()`；返回 HKDF 派生）
-- `lib/security/hkdf.dart`                    新建（简易 HKDF-SHA256；若 `cryptography` 包已含可不新建）
 - `lib/media/media_store.dart`                新建（核心 MediaStore 类）
 - `lib/media/media_codec.dart`                新建（文件格式 + 加解密块逻辑）
 - `lib/media/paths.dart`                      新建（路径工具：根目录、relativize）
@@ -104,7 +102,7 @@ graph TD
 
 ## 已知风险
 
-- **KeyProvider.getDeviceMediaKey 实际改动 M1 文件**：跨里程碑改动，需在 M1 spec 中作回滚标注（如需要由 M1 spec 增补任务，或通过 M3 T2 的「跨 spec 改动」明确说明）。本里程碑 tasks 在 T2 明确这一点。
+- **设备媒体密钥归属（D7 已拍板）**：`getDeviceMediaKey` + `lib/security/hkdf.dart` 的实现归 key-management（M1 T10）；本里程碑只**消费** `KeyProvider.getDeviceMediaKey()`、不在 `lib/security/` 下写任何文件，无跨模块写归属冲突。本里程碑 T2 为该接口的消费契约对接（仅测试文件）。
 - **AES-GCM 单 nonce 处理大文件**：GCM 限制 2^39 - 256 bits（约 64 GiB）；MVP 单文件远小于此，但 100 MiB+ 视频需注意未来约束（v6 范围本就是图为主）。
 - **HKDF 包选择**：`cryptography` 包有现成实现；自实现需测试向量。
 - **Dart Stream 链式加密**：实现时注意 backpressure 与 isolate 边界；T4 单测覆盖。
