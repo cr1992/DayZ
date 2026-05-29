@@ -18,10 +18,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code 个人配置（launch/tasks/本地设置等）不入库
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -73,4 +71,8 @@ app.*.map.json
 
 # Claude Code —— settings.json（共享，含 spec-kit 闸）入库；个人/本地设置放 settings.local.json，不入库
 .claude/settings.local.json
+
+# Gemini CLI —— install.sh 写入的写时白名单 hook 命令是本机绝对路径（非可移植），故 settings.json 本机化、不入库；
+# 换机器/clone 后重跑 `bash spec-kit/install.sh --with-gemini` 重新生成（与 pre-commit hook 同属本机产物）
+.gemini/settings.json
 
