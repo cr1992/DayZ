@@ -42,6 +42,10 @@ graph LR
 1. 添加 `image` 包（活跃维护版本），锁版本
 2. `flutter pub get`
 
+### 验收标准（做完即止）
+- `pubspec.yaml` 含锁定版本的 `image` 依赖（自动）
+- `flutter pub get` 成功解析、无冲突（自动）
+
 ### 验收方式
 - 自动：`flutter pub get && grep -q '^  image:' pubspec.yaml`
 
@@ -61,8 +65,13 @@ graph LR
 ### 实施
 1. `CancelToken { bool isCancelled; void cancel(); Future<void> get whenCancelled; }`
 2. `class PriorityQueue<T> { add(T, priority); T? pop(); remove(T); int get length; }`
-3. 三种优先级：`high / normal / low`（low 给 warmup，normal 默认，high 预留 UI 视口热区）
+3. 两种优先级：`normal / low`（normal 默认，low 给 warmup）
 4. 测试：优先级排序、移除、cancel 触发
+
+### 验收标准（做完即止）
+- `pop()` 按 normal 先于 low 出队（自动）
+- `remove(T)` 后 `length` 递减、该元素不再 `pop` 出（自动）
+- `CancelToken.cancel()` 后 `isCancelled == true` 且 `whenCancelled` 完成（自动）
 
 ### 验收方式
 - 自动：`flutter test test/thumbnails/queue_test.dart`
@@ -93,6 +102,12 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
    - 生成成功后 media.thumb_path 与 thumb_src_updated_at 都写入
    - 注入 db 更新失败 → 已写的 `<thumbs>/<id>.bin` 被删除（无孤儿）、任务报失败
 
+### 验收标准（做完即止）
+- 1500×1000 原图生成的缩略图长边 = 384、短边按比例（自动，满足 R1）
+- 生成成功后 media 表 `thumb_path` / `thumb_w` / `thumb_h` / `thumb_src_updated_at` 均写入（自动，满足 R2）
+- 损坏原图抛 `ThumbnailGenerationException`（自动）
+- 注入 db 事务失败 → 已 rename 的 `<thumbs>/<id>.bin` 被删除、无孤儿、任务报失败（自动，满足 R8/D5）
+
 ### 验收方式
 - 自动：`flutter test test/thumbnails/generator_test.dart`
 
@@ -113,7 +128,12 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 1. `WorkerPool` 持有一个并发上限（默认 2）
 2. `submit(task, cancelToken)`：等待空闲 slot → 执行
 3. 任务执行前 / 关键边界（解码后 / 编码后）check cancelToken.isCancelled → 抛 CancelledException
-4. 测试：并发 10 个任务最多 2 同时跑；cancel 立即停
+4. 测试：并发 10 个任务最多 2 同时跑；cancel 后任务在下一个检查点（解码后 / 编码后）抛 CancelledException 停止——从 `cancel()` 到任务停止占用 slot MUST < 100ms（用 Stopwatch 断言，满足 NF3 的块边界粒度）
+
+### 验收标准（做完即止）
+- 提交 10 个任务时，任意时刻并发执行数 ≤ 2（自动，满足 NF2）
+- 任务执行前及关键边界（解码后 / 编码后）check `cancelToken.isCancelled`，已取消则抛 CancelledException（自动）
+- cancel 到任务释放 slot 的间隔 < 100ms（自动，满足 NF3）
 
 ### 验收方式
 - 自动：`flutter test test/thumbnails/worker_pool_test.dart`
@@ -135,6 +155,11 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 1. `enum ThumbnailState { pending, ready, failed, cancelled }`
 2. `class ThumbnailHandle { Future<ThumbnailResult> get future; void cancel(); ThumbnailState get state; }`
 3. `class ThumbnailResult { String relPath; int w; int h; }`
+
+### 验收标准（做完即止）
+- 定义 `enum ThumbnailState { pending, ready, failed, cancelled }`（自动，与 R3 契约一致）
+- `ThumbnailHandle` 暴露 `future` / `cancel()` / `state` 三个成员（自动）
+- `ThumbnailResult` 含 `relPath` / `w` / `h` 字段（自动）
 
 ### 验收方式
 - 自动：`grep -q 'enum ThumbnailState' lib/thumbnails/thumbnail_handle.dart`
@@ -162,8 +187,16 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
    - 时间戳不一致 → 重建
    - 重复 request 复用 handle
    - cancel 后 handle.state = cancelled
+   - **取消响应（NF3）**：pending 状态 cancel → 从 `cancel()` 调用到 `handle.state == cancelled` 的间隔 MUST < 100ms（用 Stopwatch 断言耗时上界）
    - warmup 不阻塞调用者
    - 还原模拟场景：一次 warmup 10 张图 → 后台逐张完成
+
+### 验收标准（做完即止）
+- thumb_path 存在且时间戳一致时直接 ready、无新生成（自动，满足 R3/R4）
+- `thumb_src_updated_at != media.updated_at` 时重建并更新时间戳（自动，满足 R4）
+- 同一 mediaId 重复 request 复用同一 handle、仅一次生成（自动，满足 R5）
+- pending 状态 cancel 后 `handle.state == cancelled`，间隔 < 100ms（自动，满足 R5/NF3）
+- `warmup(List)` 立即返回不阻塞调用者，后台以 low 优先级逐张完成（自动，满足 R6/R7）
 
 ### 验收方式
 - 自动：`flutter test test/thumbnails/thumbnail_cache_test.dart`
@@ -213,7 +246,7 @@ RSS 峰值：—
 
 ### 背景
 做一个 Debug Home 入口演示：
-- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（与 editor-research 共用 assets/demo_image.png）
+- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（与 `specs/archive/2026-05-29-editor-research` 共用 `assets/editor/demo_image.png`）
 - 「生成缩略图」按钮：request → 显示 handle 状态变化
 - 「显示缩略图」按钮：openRead `<thumbs>/<id>.bin` → 解密 → 渲染到 Image widget
 - 「篡改原图 updated_at」按钮：手动 bump → 再次 request → 看是否重建

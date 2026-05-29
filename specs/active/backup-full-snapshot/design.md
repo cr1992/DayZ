@@ -115,6 +115,7 @@ graph TD
 ## 文件变更
 
 - `pubspec.yaml`                                  修改（添加 `archive` 包提供 TAR 流式支持，或自实现 TAR）
+- `lib/backup/paths.dart`                          新建（临时目录 / 备份输出目录路径工具）
 - `lib/backup/backup_format.dart`                 新建（外层 header 解析/写入）
 - `lib/backup/manifest.dart`                      新建（manifest 数据类 + JSON 序列化）
 - `lib/backup/tar_stream.dart`                    新建（流式 TAR 读写薄封装，如 archive 包不够用则自实现）

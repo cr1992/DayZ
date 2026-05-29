@@ -186,9 +186,10 @@ graph LR
 
 ### 实施
 1. 实现上述四个 API
-2. put 内部生成 id = `Ids.next()`；rename 成功后调 MediaRepo
-3. hardDelete：先 unlink 文件再删 db 行；任一步失败不进入「db 已删但文件还在」的反向状态
-4. 测试：
+2. media_id 契约：媒体主键 `media_id` 由 `MediaStore.put` 调用 data-layer 的 `Ids.next()` **生成一次**，同时用于加密文件名 `<media_id>.bin` 与显式传入 `MediaRepo.addMeta(id, ...)`；`MediaRepo.addMeta` MUST 接受调用方传入的 id、**禁止自行再生成**，确保文件名与 db 行 id 严格一致。rename 成功后调 `MediaRepo.addMeta(id, ...)`
+3. softDelete：调 `MediaRepo.softDelete(id)` 标 db 行 `deleted_at`，文件保留
+4. hardDelete：先 unlink 文件再调 `MediaRepo.hardDelete(id)` 删 db 行；任一步失败不进入「db 已删但文件还在」的反向状态
+5. 测试：
    - 正常 put 后能 openRead 还原同样字节
    - put 中模拟 db 失败 → 文件不存在
    - hardDelete 成功后文件与 db 行都消失
@@ -293,7 +294,7 @@ Android 读吞吐：— MiB/s
 
 - [ ] T8 · 接入 Debug Home：Media demo
 
-**依赖：** T6 ｜ **关联需求：** R1, R2, R3 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）, `assets/media/demo_image.png`（可与 editor-research 共用）
+**依赖：** T6 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）, `assets/editor/demo_image.png`（共用源见 archive/2026-05-29-editor-research）
 
 ### 背景
 做一个真机可演示入口：

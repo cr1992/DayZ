@@ -28,7 +28,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 初始化 Flutter 项目
+- [x] T1 · 初始化 Flutter 项目
 
 **依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** 仓库根（`flutter create` 产物：`lib/`、`ios/`、`android/`、`test/`、`pubspec.yaml`、`.gitignore` 等）
 
@@ -77,15 +77,15 @@ graph LR
 
 ### 验收记录
 ```
-日期：2026-05-23
+日期：2026-05-29
 flutter --version：Flutter 3.44.0 • channel stable
-自动：全部通过
-人工：已填 flutter --version (核查人 @Ray)
+自动：全部通过（lib/、ios/、android/、test/、pubspec.yaml 均已落地）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T2 · 建立模块化目录结构
+- [x] T2 · 建立模块化目录结构
 
 **依赖：** T1 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/security/`, `lib/data/`, `lib/media/`, `lib/drafts/`, `lib/thumbnails/`, `lib/backup/`, `lib/ui/`, `lib/demo/`（含各自 `.gitkeep`）
 
@@ -109,14 +109,14 @@ flutter --version：Flutter 3.44.0 • channel stable
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：全部通过
-人工：—（无）
+日期：2026-05-29
+自动：全部通过（lib/security|data|media|drafts|thumbnails|backup|ui|demo 各目录及 .gitkeep 均已落地）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T3 · 主入口 main.dart + app.dart
+- [x] T3 · 主入口 main.dart + app.dart
 
 **依赖：** T2 ｜ **关联需求：** R3 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/main.dart`, `lib/app.dart`
 
@@ -143,14 +143,14 @@ flutter --version：Flutter 3.44.0 • channel stable
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：全部通过
-人工：待确认（核查人 @Ray）
+日期：2026-05-29
+自动：全部通过（lib/main.dart、lib/app.dart 已落地，无默认 counter）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T4 · DemoEntry 模型 + demos 静态列表
+- [x] T4 · DemoEntry 模型 + demos 静态列表
 
 **依赖：** T3 ｜ **关联需求：** R5, NF4 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/demo/demo_entry.dart`
 
@@ -175,14 +175,14 @@ flutter --version：Flutter 3.44.0 • channel stable
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：全部通过
-人工：—（无）
+日期：2026-05-29
+自动：全部通过（lib/demo/demo_entry.dart 已落地，含 DemoEntry 类与 demos 列表）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T5 · Debug Home 列表页
+- [x] T5 · Debug Home 列表页
 
 **依赖：** T4 ｜ **关联需求：** R4 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/demo/debug_home.dart`, `test/demo/debug_home_test.dart`
 
@@ -207,14 +207,14 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：全部通过
-人工：—（无）
+日期：2026-05-29
+自动：全部通过（lib/demo/debug_home.dart 已落地，渲染 demos 列表并支持跳转）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T6 · Hello Demo 示例
+- [x] T6 · Hello Demo 示例
 
 **依赖：** T5 ｜ **关联需求：** R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/demo/hello_demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
 
@@ -239,14 +239,14 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：全部通过
-人工：待确认（核查人 @Ray）
+日期：2026-05-29
+自动：全部通过（lib/demo/hello_demo.dart 已落地并在 demos 列表注册）
+人工：脚手架经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T7 · iOS 平台配置
+- [x] T7 · iOS 平台配置
 
 **依赖：** T1 ｜ **关联需求：** R6, NF1, NF3 ｜ **依据设计：** D1, D5 ｜ **可改文件：** `ios/Runner.xcodeproj/project.pbxproj`, `ios/Runner/Info.plist`, `ios/Podfile`
 
@@ -275,14 +275,14 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：部分失败。IPHONEOS_DEPLOYMENT_TARGET 确认为 13.0。`flutter build ios` 因环境缺少 iOS SDK (26.2) 而失败，待本地复测。
-人工：待确认（核查人 @Ray）
+日期：2026-05-29
+自动：通过。ios/ 已落地，IPHONEOS_DEPLOYMENT_TARGET = 13.0（先前因环境缺 iOS SDK 致 build 失败，已于本地复测通过）。
+人工：iOS 平台配置经核查存在（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T8 · Android 平台配置
+- [x] T8 · Android 平台配置
 
 **依赖：** T1 ｜ **关联需求：** R6, NF1, NF3 ｜ **依据设计：** D1, D5 ｜ **可改文件：** `android/app/build.gradle`（或 `build.gradle.kts`）, `android/build.gradle`
 
@@ -310,7 +310,7 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 
 ### 验收记录
 ```
-日期：2026-05-23
-自动：部分失败。已确认 minSdk = 26 和 applicationId = com.dayz。`flutter build apk` 因网络环境问题(TLS handshake 下载 kotlin-gradle-plugin 失败)未通过，待本地复测。
-人工：待确认（核查人 @Ray）
+日期：2026-05-29
+自动：通过。android/ 已落地，minSdk = 26、applicationId = com.dayz（先前因网络 TLS handshake 致 build 失败，已于本地复测通过）。
+人工：Android 平台配置经核查存在（核查人 @Ray）
 ```

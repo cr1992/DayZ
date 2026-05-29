@@ -16,7 +16,7 @@ v6 第 7.1 / 9.4 节明确：时间线只解密加密**缩略图**（几十 KB �
 ## 范围外
 
 - 时间线 / 列表的滚动节流触发逻辑（依赖 UI 设计稿）。
-- 未就绪占位 UI（灰块 / blurhash 渲染）—— 待设计稿；本期接口只暴露状态（`pending / ready / failed`）。
+- 未就绪占位 UI（灰块 / blurhash 渲染）—— 待设计稿；本期接口只暴露状态（`pending / ready / failed / cancelled`，见 R3）。
 - 缩略图加密向备份的对接 ——**不进备份**（v6 9.4），本里程碑不需提供任何备份相关 API。
 - 视频帧抽取缩略图 —— MVP 不做（只 image）。
 
@@ -32,12 +32,14 @@ v6 第 7.1 / 9.4 节明确：时间线只解密加密**缩略图**（几十 KB �
 缩略图 MUST 加密落盘到 `<app_documents>/thumbs/<media_id>.bin`，**使用设备媒体密钥**（与原图同一把，复用 M3 MediaCodec 文件格式）；MUST 在 media 表写入 `thumb_path = "thumbs/<media_id>.bin"`、`thumb_w`、`thumb_h`、`thumb_src_updated_at = media.updated_at` 当时值。
 
 ### R3 · 按需生成 API
-系统 MUST 提供 `ThumbnailCache.request(mediaId) -> Future<ThumbnailHandle>`：
-- 若 media 表已有 thumb_path 且 `thumb_src_updated_at == media.updated_at`：直接返回 ready
-- 否则入队生成任务 → 完成后返回 ready
-- 错误（原图损坏 / 解码失败）返回 failed + 原因
+系统 MUST 提供 `ThumbnailCache.request(mediaId) -> ThumbnailHandle`（同步返回 handle；生成结果经 `handle.future` 异步交付）：
+- 若 media 表已有 thumb_path 且 `thumb_src_updated_at == media.updated_at`：handle 直接进入 ready
+- 否则入队生成任务 → 完成后 handle 进入 ready
+- 错误（原图损坏 / 解码失败）handle 进入 failed + 原因
 
-`ThumbnailHandle { state: pending|ready|failed, relPath?, w?, h?, error? }`
+`ThumbnailHandle { ThumbnailState state; Future<ThumbnailResult> future; void cancel(); }`
+`enum ThumbnailState { pending, ready, failed, cancelled }`（`cancelled` 由 R5 取消路径产生）
+`ThumbnailResult { String relPath; int w; int h; }`；失败时 `future` 携带原因（如 `ThumbnailGenerationException`）。
 
 ### R4 · 失效判断（脏比较）
 判断缩略图是否需重建：**对比 `media.thumb_src_updated_at` 与 `media.updated_at`**；不一致即过期。

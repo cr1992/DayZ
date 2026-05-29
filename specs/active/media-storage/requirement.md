@@ -42,9 +42,17 @@ v6 第 3.2 / 5 / 9.4 节明确：媒体不进 SQLite blob，存文件系统；�
 - 结果：media 表多一行；查询能拿到准确的 width/height
 
 ### R4 · 软删除与硬删除
-删除媒体走两种语义：
-- `softDelete(id)`：仅写 `media.deleted_at`，文件保留（用于「撤销删除」未来需求与备份归档）。
-- `hardDelete(id)`：删除文件 + 删除 media 行（备份合并后清理 / 备份瘦身的支撑能力）。
+删除媒体走两种语义，均委托 M2 MediaRepo 操作 db 行：
+
+`softDelete(id)`：仅写 `media.deleted_at`，文件保留（用于「撤销删除」未来需求与备份归档）。
+- 前提：media 表存在该 id 的行
+- 操作：调用 `MediaStore.softDelete(id)`
+- 结果：经 `MediaRepo.softDelete(id)` 写入 `media.deleted_at`；磁盘文件保留不动
+
+`hardDelete(id)`：删除文件 + 删除 media 行（备份合并后清理 / 备份瘦身的支撑能力）。
+- 前提：media 表存在该 id 的行
+- 操作：调用 `MediaStore.hardDelete(id)`
+- 结果：先 unlink 文件，再经 `MediaRepo.hardDelete(id)` 删除 db 行；任一步失败标记为可重试，**不允许 db 已删但文件还在的孤儿状态**（孤儿可由 backup 瘦身扫描捕获）
 
 硬删除 MUST 先删文件再删 db 行；任一步失败标记为可重试，**不允许 db 已删但文件还在的孤儿状态**（孤儿可由 backup 瘦身扫描捕获）。
 

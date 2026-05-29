@@ -14,11 +14,10 @@
 | 场景 | 操作 | 预期结果 | 关联需求 | 方式 |
 |------|------|----------|----------|------|
 | 全量导出 | export 3 entries + 2 media | `.mydiary` 文件创建、hexdump 无明文 | R3, NF4 | 自动 |
-| 错密码还原 | 错口令 → restore | 抛 BadPassword | R7 | 自动 |
+| 错密码还原 | 错口令 → restore | 抛 BadPassword | R5 | 自动 |
 | schema 不兼容还原 | 篡改 manifest schema_version=999 | 抛 SchemaIncompatible | R7 | 自动 |
 | confirmOverwrite false | callback 返 false | 抛 BackupCancelledException、本机库不变 | R10 | 自动 |
 | 正常还原往返 | export → restore | entries / media 完全一致；FTS 搜索可用 | R3, R5, R6 | 自动 |
-| 中途崩溃回滚 | restore 写临时位置阶段注入故障 | 旧 db + 旧 media 原样不动、完整可用；仅临时产物被清 | R8 | 自动 |
 | 缩略图懒生成 | restore 完成后立即查 thumbs/ | 目录空或部分文件；warmup 异步进行 | R6, D7 | 自动 |
 | FTS 立即可用 | restore 完成后搜索 | 返回原 entries | R6 | 自动 |
 

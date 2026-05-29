@@ -2,7 +2,7 @@
 
 记录 `packages/` 目录下本地包的修改历史。
 
-> **改动留痕约定**（详见 [`specs/active/appflowy-patch-tracking/`](../specs/active/appflowy-patch-tracking/)）：
+> **改动留痕约定**（详见 [`specs/archive/2026-05-29-appflowy-patch-tracking/`](../specs/archive/2026-05-29-appflowy-patch-tracking/)）：
 > 对 vendored 包源码的每一处本地改动都分配一个稳定的 patch ID（`Pxxx`），
 > 在源码处打成对标记 `// >>> DAYZ-PATCH[Pxxx]: 原因` … `// <<< DAYZ-PATCH[Pxxx]`，
 > 并在本文件按下方「Patch 台账」格式登记（ID + 文件定位 + 原因 + 关联 + upstream）。
@@ -18,7 +18,7 @@
 ### P001 · 图片插入后聚焦下方空段落
 - **文件定位：** `packages/appflowy-editor/lib/src/editor/block_component/image_block_component/image_upload_widget.dart` → `extension InsertImage on EditorState` 的 `insertImageNode`（`isParagraphEmpty` 分支起至 `transaction.afterSelection`）。
 - **原因：** 方案 A（AppFlowy）图片交互弱项补足。原实现插入图片后光标未定位到图片下方段落；本改动在空段落场景直接替换为图片节点并在其后追加空段落，非空段落场景在下一行插入图片再追加空段落，并将光标聚焦到新空段落首部。
-- **关联：** 方案 A 编辑器选型（[`specs/active/editor-research/`](../specs/active/editor-research/)）图片交互弱项。
+- **关联：** 方案 A 编辑器选型（[`specs/archive/2026-05-29-editor-research/`](../specs/archive/2026-05-29-editor-research/)）图片交互弱项。
 - **upstream issue：** 暂无（待评估提 PR）。
 - **引入提交：** `ab8eb40`（2026-05-27）。
 

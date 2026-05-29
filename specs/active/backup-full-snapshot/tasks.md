@@ -46,6 +46,11 @@ graph LR
 1. 添加 `archive` 包；验证 stream entry API 是否够用，不够则记入 T3 自实现 TAR
 2. 定义临时目录、备份输出目录路径工具
 
+### 验收标准（做完即止）
+- `flutter pub get` 成功拉到 `archive` 包（自动）
+- `lib/backup/paths.dart` 暴露临时目录与备份输出目录路径工具（自动）
+- `flutter analyze` 无错误（自动）
+
 ### 验收方式
 - 自动：`flutter pub get && flutter analyze`
 
@@ -68,6 +73,11 @@ graph LR
 3. magic 校验、version 校验
 4. 单测：写后读相同、坏 magic 抛错、版本不匹配抛错
 
+### 验收标准（做完即止）
+- 写后读 header 字段（magic / version / salt）一致（自动）
+- 坏 magic 抛错（自动）
+- version 不匹配抛错（自动）
+
 ### 验收方式
 - 自动：`flutter test test/backup/backup_format_test.dart`
 
@@ -88,6 +98,10 @@ graph LR
 1. `TarStreamWriter` / `TarStreamReader`：基于 `archive` 包或自实现；接 stream entry
 2. `Manifest` 类 + JSON 序列化（按 R2 字段）
 3. 测试：往返一个 Manifest 字节级一致；TAR 写入 3 个 entry + 读出来一致
+
+### 验收标准（做完即止）
+- `Manifest` 含 R2 全部字段，序列化往返字节级一致（自动）
+- `TarStreamWriter` 写入 3 个 stream entry，`TarStreamReader` 读回内容与原一致（自动）
 
 ### 验收方式
 - 自动：`flutter test test/backup/tar_stream_test.dart`
@@ -138,7 +152,7 @@ graph LR
 
 - [ ] T5 · BackupRestorer 解析 + manifest 校验 + 确认回调
 
-**依赖：** T4 ｜ **关联需求：** R5（前 4 步）, R7, R10 ｜ **依据设计：** D5, D8 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（骨架）, `test/backup/restorer_parse_test.dart`
+**依赖：** T4 ｜ **关联需求：** R5（前 4 步）, R7, R10, R11 ｜ **依据设计：** D5, D8 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（骨架）, `test/backup/restorer_parse_test.dart`
 
 ### 背景
 本任务覆盖 restore 流程的「读 + 校验 + 确认」部分（R5 步骤 1-4）；T6 做剩余的整库替换 + media 重加密 + FTS 重建 + warmup 步骤。这样把高复杂度任务拆开降低单测复杂度。
@@ -155,7 +169,15 @@ graph LR
    - 错密码：抛 BadPassword
    - schema 太高：抛 SchemaIncompatible（不兼容）
    - schema 较低：返回需要 migration 的标记
+   - manifest 损坏：抛 ManifestCorrupted
    - confirmOverwrite false：抛 BackupCancelledException
+
+### 验收标准（做完即止）
+- 错密码抛 BadPassword（自动）
+- schema_version 高于当前 App 抛 SchemaIncompatible（自动）
+- schema_version 低于当前 App 返回需要 migration 的标记（自动）
+- manifest 损坏抛 ManifestCorrupted（自动，满足 R11）
+- confirmOverwrite 返 false 抛 BackupCancelledException（自动）
 
 ### 验收方式
 - 自动：`flutter test test/backup/restorer_parse_test.dart`
@@ -193,6 +215,11 @@ graph LR
    - 写临时位置阶段注入故障（解密 db / 重加密 media 失败）→ 旧 db + 旧 media **完整可用**，旧 db 引用的每个 media 仍存在且可解密；仅临时产物被清（验证无数据丢失、满足「全旧或全新」不变式）
    - 媒体重加密管道无临时 plain 文件
 
+### 验收标准（做完即止）
+- 正常 apply 后新 db 与全部 media 就位、`thumbs/` 已删（自动）
+- 写临时位置阶段注入故障后旧 db + 旧 media 完整可用，旧 db 引用的每个 media 仍可解密，仅临时产物被清（自动，满足 R8）
+- 媒体重加密全程磁盘无明文临时文件（自动，满足 R9）
+
 ### 验收方式
 - 自动：`flutter test test/backup/restorer_apply_test.dart`
 
@@ -216,6 +243,11 @@ graph LR
    - restore 完成后 FTS 表行数 = 存活 entries 数
    - warmup 调用立即返回（< 50ms）
    - 不存在「restore 流程内同步生成缩略图」的代码路径（grep 检查）
+
+### 验收标准（做完即止）
+- restore 完成后 `entries_fts` 行数 = 存活 entries 数（自动，满足 R6）
+- `kickoffThumbnailWarmup()` 不 await，调用立即返回（< 50ms）（自动）
+- restore 代码路径不含「同步全量生成缩略图」调用（自动 grep）
 
 ### 禁止
 - restore 不得调用任何「同步全量生成缩略图」函数（grep `await.*Thumbnail.*for` 或类似）
@@ -272,6 +304,11 @@ graph LR
    - 正常路径完成后临时目录干净
    - 异常路径完成后临时目录干净
    - cancel 路径完成后干净
+
+### 验收标准（做完即止）
+- 正常路径结束后无 `<tmp>/full_*.db` / `<output>.tmp` / `.restoring` / `media/.old` 残留（自动，满足 NF5）
+- 异常路径结束后同样无上述残留（自动）
+- cancel 路径结束后同样无上述残留（自动）
 
 ### 验收方式
 - 自动：`flutter test test/backup/cleanup_test.dart`

@@ -24,7 +24,7 @@
 > 对应 requirement 的 NF 编号。
 
 ### 抽取性能（NF1）
-- [ ] 50 块典型文档抽取 < 5ms（中端真机基线） — 自动：`flutter test test/editor/contract/plain_text_extractor_bench_test.dart`
+- [ ] 50 块典型文档抽取 < 5ms（主机 Dart VM bench；阈值源自中端真机预算，见 NF1 度量口径） — 自动：`flutter test test/editor/contract/plain_text_extractor_bench_test.dart`
 - [ ] 1000 块极端文档抽取 < 50ms — 自动：同上
 - [ ] 抽取过程无任何文件/DB I/O — 自动：mock 断言无 I/O 调用
 

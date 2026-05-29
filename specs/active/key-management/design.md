@@ -51,6 +51,30 @@
 - **理由：** 标记只是模式提示，不影响开库密钥来源——开库密钥应由「尝试旧密钥失败→尝试新密钥」二段式判定，标记仅作 UI 显示。
 - **代价：** 启动时密钥试错增加一次开库尝试；可接受。
 
+### D7 · 设备媒体密钥派生入口（getDeviceMediaKey）— 跨 spec 接口补全
+- **背景：** media-storage(M3) 与 thumbnail-cache(M5) 需要一个**独立于主密码**的媒体加密密钥，其设备根来源是本里程碑掌管的设备随机密钥。此前 KeyProvider 表面只列 `getAppDbKey/deriveBackupKey/currentMode`，缺这一入口，导致 M3 只能「日后 PR 补进 `key_provider.dart`」，接口不自洽。本决策把**接口契约**正式补在 M1，使 KeyProvider 表面完整。
+- **接口：** `KeyProvider.getDeviceMediaKey() -> Uint8List`（32B）。派生式 = `HKDF-SHA256(ikm = 设备随机密钥, info = "dayz/media/v1", L = 32)`；HKDF salt 取空/固定常量即可（媒体无需 per-file salt，per-file 随机性由媒体 AEAD 的 nonce 提供）。
+- **关键性质（务必保持）：** 媒体密钥**只从设备密钥派生，永不跟随主密码、不参与 rekey**——设主密码不会重加密照片（与 `docs/design/06` §9.4/9.7「主密码不保护照片」一致）。这是有意为之的产品行为，UI 须解释。
+- **实现归属（待 @Ray 拍板）：** 当前 `media-storage` T2 计划新建 `lib/security/hkdf.dart` 并往 `lib/security/key_provider.dart` 追加本方法（M3 跨模块写 M1 文件）。**建议**把 `hkdf.dart` + `getDeviceMediaKey` 的**实现**也收进本里程碑（M1，挂 T6 之后或新增 T10），M3 仅消费——避免跨模块写。二选一请定；无论哪种，接口契约以本 D7 为准。
+- **理由：** 让 KeyProvider 成为所有密钥派生的唯一、自洽入口（呼应 D4）；消除 M1↔M3 接口悬空。
+- **代价：** 若实现收进 M1，`media-storage` T2 的「可改文件」需相应去掉 `key_provider.dart`（改为依赖既有方法）——一次跨 spec 同步编辑。
+
+## D2 / D3 锁定待填清单（T3 实测后回填，回填即"可定稿"信号）
+
+> T3（真机预研）跑完后把下表 `【__】` 填满，据此把 D2/D3 的"候选/可更新"措辞改为"已锁定"，再将本 spec 四个文件头 `文档状态` 草稿→定稿、README 行同步。**未填满前本里程碑不进入编码。** 数据来源 = T3 验收记录。
+
+**D2 · Argon2 FFI 库（选定 + ≥2 备选）**
+- [ ] 选定库 =【__】（候选 `dargon2_flutter`）
+- [ ] 最近 release 日期 =【__】｜未关闭 issue 数 =【__】｜license =【__】
+- [ ] iOS 构建通过 =【是/否】｜Android 构建通过 =【是/否】
+- [ ] 备选库 1 =【__】（活跃度一句话）｜备选库 2 =【__】
+
+**D3 · Argon2id v0 参数（实测锁定）**
+- [ ] 最终参数 = m_cost【__】MiB / t_cost【__】 / p【__】 / len 32
+- [ ] iOS（机型【__】）：中位耗时【__】ms、RSS 峰值【__】MiB
+- [ ] Android（机型【__】）：中位耗时【__】ms、RSS 峰值【__】MiB
+- [ ] 是否 OOM 或 >1.5s =【是/否】；若是 → 已下调至 m=32MiB 并上调 t_cost =【__】
+
 ## 架构
 
 ```mermaid
@@ -73,13 +97,18 @@ graph TD
 ## 文件变更
 
 - `pubspec.yaml`                              修改（添加 flutter_secure_storage、dargon2_flutter、sqlcipher_flutter_libs）
+- `pubspec.lock`                              修改（pub get 后锁定版本）
+- `ios/Podfile`                               修改（若 iOS 构建需要，T1）
+- `android/app/build.gradle`                  修改（若 Android 需 NDK ABI 配置，T1）
 - `lib/security/secure_storage.dart`          新建（薄封装）
 - `lib/security/argon2_kdf.dart`              新建（KDF 模块 + KdfParams）
 - `lib/security/device_key.dart`              新建（设备随机密钥生成 / 读取）
 - `lib/security/key_provider.dart`            新建（统一密钥入口）
 - `lib/security/rekey_service.dart`           新建（rekey 流程 + 备份兜底）
 - `lib/security/argon2_probe.dart`            新建（T3 预研用，可后续删除）
-- `test/security/`                            新建（单元测试目录）
+- `lib/security/demo.dart`                    新建（T9 Debug Home Security demo）
+- `lib/demo/demo_entry.dart`                  修改（T9 注册 demo 入口）
+- `test/security/`                            新建（单元测试目录，含各任务 `*_test.dart`）
 
 ## 已知风险
 

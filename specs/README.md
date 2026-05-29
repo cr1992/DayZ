@@ -6,24 +6,24 @@
 
 ## 进行中
 
-| 功能 | 优先级 | 状态 | 负责人 | 创建 |
-|------|--------|------|--------|------|
-| [key-management](active/key-management/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [data-layer](active/data-layer/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [media-storage](active/media-storage/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [thumbnail-cache](active/thumbnail-cache/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | @Ray | 2026-05-23 |
-| [editor-json-contract](active/editor-json-contract/) | P1 | 草稿 | @Ray | 2026-05-29 |
-| [appflowy-patch-tracking](active/appflowy-patch-tracking/) | P1 | 草稿 | @Ray | 2026-05-29 |
-| [assets-management](active/assets-management/) | P2 | 草稿 | @Ray | 2026-05-29 |
+| 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
+|------|--------|------|------|--------|------|
+| [key-management](active/key-management/) | P1 | 草稿 | app-scaffold | @Ray | 2026-05-23 |
+| [data-layer](active/data-layer/) | P1 | 草稿 | app-scaffold, key-management | @Ray | 2026-05-23 |
+| [media-storage](active/media-storage/) | P1 | 草稿 | app-scaffold, key-management, data-layer | @Ray | 2026-05-23 |
+| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
+| [thumbnail-cache](active/thumbnail-cache/) | P1 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P1 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-23 |
+| [editor-json-contract](active/editor-json-contract/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
+| [assets-management](active/assets-management/) | P2 | 草稿 | 无 | @Ray | 2026-05-29 |
 
 ## 已归档
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
 | [app-scaffold](archive/2026-05-23-app-scaffold/) | 已完成 | 2026-05-23 |
-| [editor-research](archive/2026-05-29-editor-research/) | 已完成（选型=A，三件事实测数据待补录） | 2026-05-29 |
+| [editor-research](archive/2026-05-29-editor-research/) | 已完成（选型=A，经 @Ray 拍板替代正式实测） | 2026-05-29 |
+| [appflowy-patch-tracking](archive/2026-05-29-appflowy-patch-tracking/) | 已完成 | 2026-05-29 |
 
 ## 待 UI 设计稿后再立 spec
 

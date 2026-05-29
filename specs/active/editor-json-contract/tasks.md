@@ -31,7 +31,7 @@ graph LR
 里程碑：
 - M1 · 契约可往返（T1–T2）：`content_json` 能 encode/decode、带 docVersion、块类型常量定稿，可供下游引用。
 - M2 · 抽取器就绪（T3）：`content_plain` 可生成、标题可取，搜索/预览/标题可对接。
-- M3 · 渲染一致（T4–T6）：自定义块 + 图片引用 + 编辑/只读两端一致渲染。
+- M3 · 渲染一致（T4, T5, T6）：自定义块（T4）+ 图片引用解析（T5）+ 编辑/只读两端一致渲染（T6）。T6 inline 依赖 T3, T4, T5，其中 T3 已在 M2 交付，T4/T5 同属本里程碑，故三者齐备 M3 方成立。
 
 -----
 
@@ -174,7 +174,7 @@ graph LR
 
 - [ ] T5 · 图片节点 media.id 引用解析（ImageUrlResolver）
 
-**依赖：** T2 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/image_url_resolver.dart`
+**依赖：** T2 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/image_url_resolver.dart`、`test/editor/contract/image_url_resolver_test.dart`、`test/editor/contract/media_ref_integrity_test.dart`（承接 verification「media.id 引用完整性」的全文路径扫描用例）
 
 ### 背景
 实现 D2 选定落点：图片节点以 `media.id` 为权威引用键，运行时经 `media.id → media.rel_path → 当前媒体目录` 解析为可读文件（解密流接 media-storage）。`content_json` 中不出现真实路径。
@@ -184,6 +184,7 @@ graph LR
 1. 按 T1 定稿的 D2 落点实现解析（自定义 image BlockComponentBuilder 或 url scheme 拦截）。
 2. 解析失败（media 不存在）降级占位，不崩溃。
 3. 断言序列化后的图片节点 data 不含真实路径。
+4. 落 `media_ref_integrity_test.dart`：全文扫描 encode 产物无真实路径串（供 verification「media.id 引用完整性」执行；本任务作者其用例，跨任务断言归 verification）。
 
 ### 验收标准（做完即止）
 - 图片节点 encode 后不含绝对/相对真实路径，仅含 media.id（自动）
@@ -206,16 +207,17 @@ graph LR
 
 - [ ] T6 · 只读渲染器 + 编辑器接线（共用块清单与解析层）
 
-**依赖：** T3, T4, T5 ｜ **关联需求：** R5, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/readonly_renderer.dart`、`lib/editor/contract/editor_block_registry.dart`
+**依赖：** T3, T4, T5 ｜ **关联需求：** R5, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/readonly_renderer.dart`、`lib/editor/contract/editor_block_registry.dart`、`test/editor/contract/readonly_renderer_test.dart`、`test/editor/contract/render_consistency_test.dart`（承接 verification NF2 一致性）、`test/editor/contract/block_inventory_consistency_test.dart`（承接 verification 块清单单一来源）
 
 ### 背景
 把封闭块清单（标准块 + location/weather + image resolver）注册成编辑器与只读渲染器共用的一套 BlockComponentBuilder 集合，确保两端对同一 `content_json` 渲染一致（NF2 的实现侧）。未知块两端均安全降级（R5）。
-注：两端「逐块语义一致」的端到端校验属跨任务，归 verification，不在本任务单测内闭环。
+注：两端「逐块语义一致」与「块清单单一来源」的端到端校验属跨任务，归 verification。本任务作为集成点**作者** `render_consistency_test.dart` / `block_inventory_consistency_test.dart` 的用例骨架（T3–T5 齐备后方可写全），但其作为完成门槛的跨任务断言在 verification 执行，不在本任务验收标准内重复闭环。
 
 ### 实施
 1. 统一 builder 注册表（标准块 + 两自定义块 + image resolver）。
 2. 只读渲染器（editorState 只读模式或等价非编辑组件树）。
 3. 未知块降级（跳过/降级段落）。
+4. 作者 `render_consistency_test.dart`（编辑/只读两端逐块语义一致）与 `block_inventory_consistency_test.dart`（`block_types.dart` == design 块清单 == 实际识别集合）的用例骨架，供 verification NF2 / 块清单单一来源检查执行。
 
 ### 验收标准（做完即止）
 - 同一 builder 注册表被编辑器与只读渲染器共同引用（自动，静态断言/单一来源）

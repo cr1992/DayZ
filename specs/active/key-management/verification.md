@@ -43,7 +43,7 @@
 
 - [ ] Debug Home 看到「Security」入口 — 人工（@Ray）
 - [ ] 入口内显示「设备密钥已生成」状态正确 — 人工（@Ray）
-- [ ] 派生按钮点击后显示耗时数字（中端真机 < 1.5s）— 人工（@Ray），与 T3 实测一致
+- [ ] 派生按钮点击后显示耗时数字 — 人工（@Ray）（耗时 < 1.5s 的门槛见上文「性能（NF2）」节，此处不重复判定）
 - [ ] demo 页面不显示任何密钥原文字节 — 人工（@Ray），目视审计
 
 ## 回归检查
@@ -51,7 +51,7 @@
 > data-layer 尚未落地，无 db 集成回归。此处仅做模块内回归：
 
 - [ ] 全模块单元测试通过 — 自动：`flutter test test/security/`
-- [ ] 全 App 构建无破坏 — 自动：`flutter analyze && flutter build apk --debug`
+- [ ] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`flutter analyze && flutter build apk --debug && flutter build ios --debug --no-codesign`
 
 ## 验证命令（汇总自动项）
 

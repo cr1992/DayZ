@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -63,7 +63,7 @@ EditingSessionRepo.upsert MUST 是原子的（Drift 事务）；写盘失败 MUS
 - 结果：实际不写 db；防抖窗内 fire 次数不变
 
 ### R7 · 启动检测残留
-系统 MUST 在 `DraftCoordinator.startupCheck` 中读 editing_session 那一行：存在则 `hasResidual = true`；不存在则 false。检测 MUST 不阻塞主线程超过 50ms（一次 db 查询）。
+系统 MUST 在 `DraftCoordinator.startupCheck` 中读 editing_session 那一行：存在则 `hasResidual = true`；不存在则 false（性能约束见 NF4）。
 
 ### R8 · 编辑器中立接口
 DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJson, isNew, cursorPos)` 入参；不预设 AppFlowy / TipTap / TextField。MR 出结论后由后续 spec 把编辑器 onChanged 接到 DraftCoordinator.onChanged。
@@ -85,3 +85,6 @@ DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJ
 
 ### NF3 · 性能 - paused 同步保存
 paused 钩子到 EditingSessionRepo.upsert 完成 MUST < 100ms（中端真机，单条 draft < 100 KiB）。
+
+### NF4 · 性能 - 启动检测不阻塞主线程
+`DraftCoordinator.startupCheck`（一次 db 查询）MUST 不阻塞主线程超过 50ms。本 NF 约束 R7 的启动检测，在 verification 中以性能检查覆盖。

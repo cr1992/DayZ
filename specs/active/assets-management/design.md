@@ -10,24 +10,30 @@
 ### D1 · 资源引用生成方案 - flutter_gen
 - **背景：** 避免硬编码字符串资源路径（拼写错、重构静态分析查不到）；依据 `docs/design/07` 第 1 节。
 - **选择：** 用 **`flutter_gen`**（`flutter_gen_runner` dev 依赖 + `build_runner`）自动生成 `lib/gen/assets.gen.dart`，代码用 `Assets.images.xxx` 强类型引用。
-- **理由：** 与项目已有的 `build_runner` 工作流（data-layer 的 drift codegen）集成好，无需引入额外工具链；编译期类型检查 + IDE 补全。
-- **代价：** 需配置 `flutter_gen.yaml` 并运行代码生成；与 drift codegen 共用 `build_runner`，注意生成顺序无冲突（输出文件路径不同，互不干扰）。
+- **理由：** `flutter_gen` 是 Flutter 生态主流的类型安全资源方案，编译期类型检查 + IDE 补全；走 `build_runner` 代码生成机制，是项目首个引入的 codegen 工作流（现 `pubspec.yaml` 尚未配置 `build_runner`/`drift`，本 spec 同时引入 `build_runner` 与 `flutter_gen_runner` dev 依赖）。后续 data-layer 引入 drift codegen 时可复用同一 `build_runner`，输出路径不同（assets 在 `lib/gen/`），互不干扰。
+- **代价：** 需新增 `build_runner` 与 `flutter_gen_runner` dev 依赖、配置 `flutter_gen.yaml` 并运行代码生成；作为项目首个 codegen 工作流落地，后续其它 codegen（如 drift）共用 `build_runner` 时须确认输出目录隔离、`--delete-conflicting-outputs` 不误删对方产物。
 
 ### D2 · 目录结构规范
-- **背景：** `docs/design/07` 第 2 节规定统一 `assets/` 分类目录。
-- **选择：** 建立 `assets/images/`、`assets/icons/`、`assets/fonts/` 作为基线分类；`editor/`、`lotties/` 等按需扩展。多倍率图（`2.0x/`、`3.0x/`）仅大型背景图/插画使用，普通图标走矢量（SVG / Icon Font），避免多套位图膨胀包体积。
-- **理由：** 与 design 07 一致，结构清晰、便于 `flutter_gen` 按目录归类生成。
-- **代价：** 需在 `pubspec.yaml` 的 `flutter.assets` 段声明目录；新增子目录类别时同步声明。
+- **背景：** `docs/design/07` 第 2 节规定统一 `assets/` 分类目录。仓库已存在 `assets/editor/`（`demo_image.png`、`editor.html`、`editor.js`，已被 git 跟踪，`pubspec.yaml` 已声明 `assets/editor/`），本 spec 在其上扩充基线分类目录约定，而非从零搭建。
+- **选择：** 新建 `assets/images/`、`assets/icons/`、`assets/fonts/` 作为基线分类（各放 `.gitkeep` 占位入库）；已有的 `assets/editor/` 保持不动并纳入约定，`lotties/` 等其余类别按需扩展。多倍率图（`2.0x/`、`3.0x/`）仅大型背景图/插画使用，普通图标走矢量（SVG / Icon Font），避免多套位图膨胀包体积。
+- **理由：** 与 design 07 一致，结构清晰、便于 `flutter_gen` 按目录归类生成；沿用已存在的 `assets/editor/`，避免重复造目录或迁移既有资产。
+- **代价：** 需在 `pubspec.yaml` 的 `flutter.assets` 段补声明新增子目录（`assets/editor/` 已声明）；新增子目录类别时同步声明。
+
+### D3 · 共享 demo 图规范路径（单一来源）
+- **背景：** 多个 spec 引用同一张 demo 图，历史上出现三处路径写法不一致；需一处定锚。
+- **选择：** 规范化共享 demo 图路径为 `assets/editor/demo_image.png`（已存在并被 git 跟踪，`pubspec.yaml` 已声明 `assets/editor/`），本 spec 作为该路径的单一来源，其它 spec 引用一律指向此路径。
+- **理由：** 该文件已实际存在于 `assets/editor/`，就地定锚成本最低、不产生迁移；集中一处声明可消除跨 spec 路径漂移。
+- **代价：** demo 图归属于 `editor/` 类别而非 `images/`，与「业务图片入 images/」的直觉略有出入；但其确为编辑器演示资产，归 `editor/` 合理，可接受。
 
 ## 文件变更
-- `pubspec.yaml`            修改（添加 `flutter_gen_runner` dev 依赖；`flutter.assets` 声明 `assets/` 子目录）
+- `pubspec.yaml`            修改（添加 `build_runner` + `flutter_gen_runner` dev 依赖；`flutter.assets` 补声明 `assets/` 子目录，`assets/editor/` 已声明）
 - `flutter_gen.yaml`        新建（flutter_gen 生成配置：output 指向 `lib/gen/`）
-- `assets/images/`          新建（目录，含 `.gitkeep` 占位）
-- `assets/icons/`           新建（目录，含 `.gitkeep` 占位）
-- `assets/fonts/`           新建（目录，含 `.gitkeep` 占位）
-- `lib/gen/assets.gen.dart` 生成产物（由 build_runner 产出，纳入版本库）
+- `assets/images/.gitkeep`  新建（占位，保证空目录入库、被 git 跟踪）
+- `assets/icons/.gitkeep`   新建（占位，保证空目录入库、被 git 跟踪）
+- `assets/fonts/.gitkeep`   新建（占位，保证空目录入库、被 git 跟踪）
+- `lib/gen/assets.gen.dart` 生成产物（由 build_runner 产出，纳入版本库，MUST NOT gitignore）
 
 ## 已知风险
-- **空目录不被 git 跟踪**：`assets/*` 初期无资产，需放 `.gitkeep` 占位，否则目录在干净检出时丢失，`flutter_gen` 无目录可扫。
-- **flutter_gen 对空目录的处理**：部分版本对完全空的 assets 目录会生成空类或告警；放一个占位资源或确保至少声明目录即可，T1 验证生成命令可跑通。
-- **与 drift build_runner 共存**：两者都用 `build_runner`，`--delete-conflicting-outputs` 时确认互不删除对方产物（输出目录不同：drift 在 `lib/data/`，assets 在 `lib/gen/`）。
+- **空目录不被 git 跟踪**：`assets/images|icons|fonts` 初期无资产，需放 `.gitkeep` 占位并入库，否则目录在干净检出时丢失、`flutter_gen` 无目录可扫；验收须核对 `.gitkeep` 已被 git 跟踪（`git ls-files`），仅本地存在不够。
+- **flutter_gen 对空目录的处理**：部分版本对完全空的 assets 目录会生成空类或告警；放一个占位资源或确保至少声明目录即可，T2 验证生成命令可跑通（仓库已有 `assets/editor/demo_image.png` 等实际资产，生成器有可扫内容）。
+- **build_runner 为项目首次引入**：现 `pubspec.yaml` 尚无 `build_runner`/`drift`，本 spec 引入后即成为首个 codegen 工作流；后续 data-layer 引入 drift codegen 共用 `build_runner` 时，须确认输出目录隔离（assets 在 `lib/gen/`）、`--delete-conflicting-outputs` 不误删对方产物。

@@ -26,13 +26,19 @@
 - 结果：`lib/gen/assets.gen.dart` 生成，含对应强类型引用类，IDE 可补全、编译期可类型检查
 
 ### R2 · assets 目录规范
-内置资源 MUST 统一放在根目录 `assets/` 下，并按类别分子目录，至少建立 design 07 第 2 节规定的分类：`assets/images/`、`assets/icons/`、`assets/fonts/`（`editor/`、`lotties/` 按需扩展）。
+内置资源 MUST 统一放在根目录 `assets/` 下，并按类别分子目录，至少建立 design 07 第 2 节规定的分类：`assets/images/`、`assets/icons/`、`assets/fonts/`。仓库已存在 `assets/editor/`（已被 git 跟踪、`pubspec.yaml` 已声明），本 spec 在其上扩充上述基线分类目录约定；`lotties/` 等其余类别按需扩展。空分类目录 MUST 放 `.gitkeep` 占位并随 spec 一并入库，使目录被 git 跟踪、干净检出后仍在，资源不散落根目录。
 - 前提：项目根目录
-- 操作：检视 `assets/` 结构
-- 结果：存在 `images/`、`icons/`、`fonts/` 子目录；新增资源按类别归位，不散落根目录
+- 操作：检视 `assets/` 结构并核对 git 跟踪状态
+- 结果：存在 `images/`、`icons/`、`fonts/` 子目录且其 `.gitkeep` 已被 git 跟踪（已进版本库）；新增资源按类别归位，不散落根目录
 
 ### R3 · 生成工作流可复现
-系统 MUST 把 `flutter_gen` 配置（`pubspec.yaml` 的 `flutter_gen`/`flutter.assets` 段 + `flutter_gen.yaml`）纳入版本库，使任意开发者 / CI 执行同一条生成命令 MUST 产出一致的 `lib/gen/assets.gen.dart`。
+系统 MUST 把 `flutter_gen` 配置（`pubspec.yaml` 的 `flutter_gen`/`flutter.assets` 段 + `flutter_gen.yaml`）与生成产物 `lib/gen/assets.gen.dart` 一并纳入版本库（产物 MUST NOT 被 gitignore，须被 git 跟踪），使任意开发者 / CI 执行同一条生成命令 MUST 产出一致的 `lib/gen/assets.gen.dart`。
 - 前提：干净检出
 - 操作：`dart run build_runner build`
-- 结果：生成文件就位，无需手工编辑；可重复执行结果幂等
+- 结果：生成文件就位且已被 git 跟踪（未被 gitignore），无需手工编辑；可重复执行结果幂等
+
+### R4 · 共享 demo 图规范路径
+本 spec 作为 assets 目录约定的单一来源，规范化共享 demo 图路径为 `assets/editor/demo_image.png`（已存在并被 git 跟踪、`pubspec.yaml` 已声明 `assets/editor/`）。其它 spec 引用该 demo 图 MUST 统一指向此路径，不得另起别名或自造副本。
+- 前提：仓库已存在 `assets/editor/demo_image.png`
+- 操作：其它 spec 需引用共享 demo 图
+- 结果：引用路径统一为 `assets/editor/demo_image.png`，消除路径不一致

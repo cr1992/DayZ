@@ -120,6 +120,12 @@ manifest.json MUST 含：
 ### R10 · 高危确认 callback
 `restore` MUST 通过 `confirmOverwrite` 异步回调让调用方（未来 UI）显式确认；callback 返回 false 必须中止。
 
+### R11 · manifest 损坏处理
+还原读取 manifest 时，若 `manifest.json` 缺失、非合法 JSON、或缺少 R2 必需字段，系统 MUST 抛 `ManifestCorrupted` 并中止还原。
+- 前提：备份包 payload 解密成功，但内含 manifest 不可解析
+- 操作：restore 读取并解析 manifest
+- 结果：抛 `ManifestCorrupted`，不进入确认与切换流程，本机数据原样不动
+
 ## 非功能需求
 
 ### NF1 · 性能 - 导出吞吐

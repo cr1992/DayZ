@@ -18,7 +18,6 @@ graph LR
   T1 --> T5
   T2 --> T3
   T3 --> T6
-  T2 --> T7
   T6 --> T7
   T6 --> T8
   T6 --> T9
@@ -87,14 +86,15 @@ graph LR
 按 v6 第 5 节落地全部表 + 索引 + FTS5 虚拟表。schema_version = 1。FTS5 用默认 tokenizer（D8）。
 
 ### 实施
-1. 创建 7 个表类（journals / entries / media / tags / entry_tags / editing_session + 不用类的 entries_fts 虚拟表 raw SQL）
+1. 创建 6 个常规表类（journals / entries / media / tags / entry_tags / editing_session）+ 不用类的 entries_fts FTS5 虚拟表（raw SQL）
 2. 字段类型严格按 v6 第 5 节 SQL
 3. `database.dart` 定义 `AppDatabase extends _$AppDatabase`，`schemaVersion = 1`，`onCreate` 建所有表 + 索引 + FTS 虚拟表，`onUpgrade` 空实现 + TODO
-4. `dart run build_runner build` 产出生成代码
+4. tags 表按 `name` 加 UNIQUE 索引 `idx_tags_name`（同名标签去重的唯一约束归本任务建在 schema 上；T10 仅依赖它做 upsert）
+5. `dart run build_runner build` 产出生成代码
 
 ### 验收标准（做完即止）
-- 7 个表 + entries_fts 虚拟表都存在（自动：打开 db 后 `sqlite_master` 查询）
-- 索引 `idx_entries_timeline / idx_entries_monthday / idx_entries_updated / idx_entries_sync / idx_media_entry / idx_entrytags_tag` 全部存在（自动）
+- 6 张常规表 + entries_fts 虚拟表都存在（自动：打开 db 后 `sqlite_master` 查询）
+- 索引 `idx_entries_timeline / idx_entries_monthday / idx_entries_updated / idx_entries_sync / idx_media_entry / idx_entrytags_tag / idx_tags_name` 全部存在（自动）
 - schemaVersion = 1（自动 grep）
 
 ### 验收方式
@@ -130,9 +130,8 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收标准（做完即止）
 - 正确密钥能开库（自动）
-- 错误密钥抛 `WrongKeyException`（自动）
-- db 文件首 16 字节 ≠ SQLite 明文 magic `SQLite format 3\0`（自动 hexdump）
 - `PRAGMA cipher_version` 返回非空（自动）
+- 「db 首 16 字节不含明文 magic」与「错误密钥抛 `WrongKeyException`」属加密专项校验，归 verification.md「专项检查 - 加密」，本任务不重复
 
 ### 禁止
 - 不在日志输出密钥字节
@@ -300,13 +299,13 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 2. 测试覆盖：
    - 时间线游标分页正确不漏不重
    - 同时刻不同 id 顺序确定
-   - 往年今日命中索引（EXPLAIN QUERY PLAN）
    - update 修改 entry_tz → 三冗余字段重算成功
+   - （时间线 / 往年今日 EXPLAIN QUERY PLAN 命中索引归 verification.md「专项检查 - 性能」，本任务不重复）
 
 ### 验收标准（做完即止）
 - 所有 API 单测通过（自动）
-- 时间线 + 往年今日 EXPLAIN QUERY PLAN 命中对应索引（自动）
 - update 时区重算路径有专项测试（自动）
+- 时间线 / 往年今日的 EXPLAIN QUERY PLAN 命中索引属跨任务性能校验，归 verification.md「专项检查 - 性能」，本任务不重复
 
 ### 禁止
 - 不暴露任何让调用方直接写 local_year/month/day 的入口
@@ -332,13 +331,15 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 背景
 本期只管 media 表元数据 CRUD（rel_path、宽高、缩略图字段占位等）；文件读写本体归 M3。
+media 主键 media_id 的契约：media_id 由 MediaStore.put（M3）调用 data-layer 的 `Ids.next()` **生成一次**，同时用于加密文件名 `<media_id>.bin` 与显式传入 `MediaRepo.addMeta(id, ...)`；`addMeta` MUST 接受调用方传入的 id、**禁止自行再生成**，确保文件名与 db 行 id 严格一致。
 
 ### 实施
-1. API：`addMeta(entryId, kind, relPath, width, height, ...)`、`listByEntry(entryId)`、`updateThumb(id, thumbPath, w, h, srcUpdatedAt)`、`softDelete(id)`、`hardDelete(id)`
-2. `addMeta` 自动设 `id = Ids.next()`、created_at / updated_at
+1. API：`addMeta(id, entryId, kind, relPath, width, height, ...)`、`listByEntry(entryId)`、`updateThumb(id, thumbPath, w, h, srcUpdatedAt)`、`softDelete(id)`、`hardDelete(id)`
+2. `addMeta` 使用调用方传入的 `id`（不调用 `Ids.next()`、不自行生成主键），仅自动设 created_at / updated_at
 
 ### 验收标准（做完即止）
 - 全部 API 单测通过（自动）
+- `addMeta` 写入行的 id 等于调用方传入的 id（不自行生成），有专项测试（自动）
 
 ### 验收方式
 - 自动：
@@ -365,7 +366,7 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 ### 实施
 1. `Tags.create(name) / list() / softDelete(id)`
 2. `attach(entryId, tagId)` / `detach(entryId, tagId)` / `listForEntry(entryId)` / `listEntriesForTag(tagId)`
-3. 同名标签去重（按 name 唯一约束在表上加 UNIQUE 索引，T2 也要补）
+3. 同名标签去重：依赖 T2 已在 schema 上建好的 `idx_tags_name`（按 name 的 UNIQUE 索引），本任务仅基于该约束做 ON CONFLICT upsert，不建索引
 
 ### 验收标准（做完即止）
 - 全部 API 单测通过（自动）

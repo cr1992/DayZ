@@ -114,8 +114,8 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 5. 同步记录候选库的最近 release 日期、未关闭 issue 数量、license
 
 ### 验收标准（做完即止）
-- 真机实测数据已记录（人工）
-- v0 参数已确定并更新到 design.md D3 节（人工）
+- 真机实测数据（耗时、内存峰值）已记录在 design.md D3 决策备注或本任务验收记录中（二选一，与 NF2 口径一致）（人工）
+- v0 参数已确定（人工）
 - 候选库活跃度评估已记录（人工）
 
 ### 禁止
@@ -338,7 +338,9 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 ### 验收标准（做完即止）
 - Debug Home 出现「Security」入口（自动 widget test）
 - 进入后渲染设备密钥状态、模式（自动 widget test）
-- 派生按钮点击后显示耗时（人工 @Ray）
+- 派生按钮点击后能显示一个耗时数字（自动 widget test 断言有数字渲染）
+
+> 注：耗时是否 < 1.5s 的真机性能门槛属跨任务校验（NF2），归 verification.md「性能」节，本任务不重复断言阈值。
 
 ### 禁止
 - 不在 demo 中展示密钥原文字节（NF1 安全约束）；只展示「已生成 / 未生成」状态
@@ -348,13 +350,10 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
   ```bash
   flutter test test/security/demo_test.dart
   ```
-- 人工（@Ray）：iOS + Android 真机各跑一次，把测得的中位耗时填入验收记录
 
 ### 验收记录
 ```
 日期：—
 自动：—
-人工耗时（iOS）：—
-人工耗时（Android）：—
-核查人：@Ray
+人工：—（无；真机耗时 <1.5s 门槛见 verification.md 性能节，数据源 T3）
 ```
