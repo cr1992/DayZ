@@ -80,6 +80,7 @@ graph TD
 - `pubspec.yaml`                           修改（`fonts:` 声明 + `csslib` dev_dependency + 字体资源）
 - `assets/fonts/`                          新增（Newsreader / Hanken Grotesk 静态字重 ttf）
 - `scripts/check_tokens_sync.sh`           新建（三份 tokens.css 同源校验）
+- `test/ui/theme/contrast_xfail.yaml`      新建（对比度 expected-fail 机器真源；contrast_test 与 design-sync 共读、单一来源）
 - `CLAUDE.md`                              修改（「常用命令」段补 `dart run bin/gen_tokens.dart` + `bash scripts/check_tokens_sync.sh`，与 T1 同 commit——CLAUDE.md 维护契约要求慢变量级新命令同 commit 落档，活先例 `check_patches.sh`）
 
 - **对比度三处 expected-fail（NF1，预登记，验证遇到时阻塞放行、停下报 @Ray 调 token，本 spec 不擅自改 `tokens.css`）**：

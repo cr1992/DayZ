@@ -230,7 +230,7 @@ graph LR
 
 - [ ] T7 · 主题画廊 demo + 挂 Debug Home
 
-**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/demo/theme_gallery_demo.dart`、`lib/demo/demo_entry.dart`
+**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/demo/theme_gallery_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/ui/theme/contrast_xfail.yaml`（对比度 expected-fail 机器真源，录入三条）、`test/ui/theme/contrast_test.dart`（读 xfail）
 
 ### 背景
 Debug Home 入口：遍历六套主题 × DESIGN-REF 关键色板/排版，逐项对照人工核查（真 UI 外壳未就绪前，这是主题层在真机被看见的唯一入口）。

@@ -29,6 +29,7 @@
 - [ ] `--accent` 当有意义 UI（聚焦/选中边/图标）贴 bg ≥ 3.0:1 — 自动：同上（**已知 amber 2.43 expected-fail → 阻塞、报 @Ray**）
 - [ ] `--ink-3` 作真实辅助文本 ≥ 4.5:1（纯 placeholder 豁免）— 自动：同上（**已知 2.77 expected-fail → 阻塞、报 @Ray 或改用 ink-2**）
 > 三条 expected-fail 已在 design `## 已知风险` 预登记；测试遇到须**显形并阻塞放行**（不静默通过），待 @Ray 调 token 后转通过。`--accent` 当正文/链接（purple 4.32 / sage 3.71）设计未走此路径，不验。
+> **机器真源** = `test/ui/theme/contrast_xfail.yaml`（machine-readable；`contrast_test` 读它 xfail、allowlist 外 block；`design-sync` Phase 2 同读此文件做 advisory 分流——单一真源，不另开第二处）。
 
 ### 多端兼容（NF2）
 - [ ] iOS 13+ 真机/模拟器：Latin 品牌字 + CJK（PingFang/Songti）回退正常 — 人工（@Ray）

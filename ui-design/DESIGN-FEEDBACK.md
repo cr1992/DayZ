@@ -2,6 +2,7 @@
 
 > 本文件是 **Flutter 端验收 → 设计侧待调** 的回馈渠道，放在 `ui-design/` 根（**不在 `current/` 内**）——`dayz-design-sync` 同步时以 `rsync --delete` 整体替换 `current/`，写进 `current/docs/BACKLOG.md` 会被下次同步覆盖；根级文件不受影响。
 > 这里只记 todo，**不擅自改 `tokens.css`**（设计稿真源）。调色请在设计稿 `tokens.css` 落实后回这里勾掉；理想终点是同步进设计工具自身的 BACKLOG。
+> **机器真源**：CI / design-sync 读的 xfail allowlist 在仓内 `test/ui/theme/contrast_xfail.yaml`（机器可读，单一来源）；本文件是给人看的设计侧 todo，二者勿各写一份数值——调色后两处同步勾掉。
 
 ## 待调：强调色 / 辅助色对比度未达 WCAG（来自 `specs/active/design-tokens-theme` NF1，2026-05-29）
 
