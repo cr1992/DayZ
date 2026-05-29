@@ -17,6 +17,7 @@
 | [editor-json-contract](active/editor-json-contract/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
 | [assets-management](active/assets-management/) | P2 | 草稿 | 无 | @Ray | 2026-05-29 |
 | [design-tokens-theme](active/design-tokens-theme/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
+| [design-sync-automation](active/design-sync-automation/) | P1 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 
 ## 已归档
 
