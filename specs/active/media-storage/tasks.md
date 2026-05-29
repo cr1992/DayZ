@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -79,14 +79,14 @@ graph LR
 
 ### 验收标准（做完即止）
 - 接口存在且单测通过（自动）
-- info 字符串严格为 `dayz/media/v1`（自动 grep）
+- 派生**确实使用** info=`dayz/media/v1` 与设备根密钥：测试用已知根密钥 + HKDF-SHA256 标准向量（同一 salt/info/length）**独立算出期望 32 字节**，断言 `getDeviceMediaKey()` 返回值逐字节等于该期望；并断言把 info 换成别的字符串（如 `dayz/media/v2`）时派生结果**不同**——即 info 常量真正进入派生、而非仅作为字面量出现在源码里（自动，断言派生输出值而非源码文本）
 
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/key_provider_test.dart \
-    && grep -q 'dayz/media/v1' lib/security/key_provider.dart
+  flutter test test/security/key_provider_test.dart
   ```
+  （测试断言：① `getDeviceMediaKey()` 输出 == 用 `dayz/media/v1` 独立重算的 HKDF 期望值且长度 32；② 设备根密钥变 → 输出变；③ info 字符串变 → 输出变。三条均断言**派生值**，不 grep 源码字面量）
 
 ### 验收记录
 ```
@@ -294,7 +294,7 @@ Android 读吞吐：— MiB/s
 
 - [ ] T8 · 接入 Debug Home：Media demo
 
-**依赖：** T6 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）, `assets/editor/demo_image.png`（共用源见 archive/2026-05-29-editor-research）
+**依赖：** T6 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/active/assets-management` R4，本任务**只读引用、不新增/改动该资产**）
 
 ### 背景
 做一个真机可演示入口：
@@ -309,9 +309,9 @@ Android 读吞吐：— MiB/s
 3. iOS + Android 真机各跑一次
 
 ### 验收标准（做完即止）
-- demo 入口在 Debug Home 可见（自动）
-- 「写入 → 读取校验」往返字节一致（人工 @Ray）
-- 「重加密为备份」演示首 16 字节符合 D2 magic 头（人工目视 / 自动断言）
+- demo 入口在 Debug Home 可见：widget test `pumpWidget` 后 `find` 命中「Media demo」条目（自动，断言 widget 树存在该入口而非源码文本）
+- 「重加密为备份」产物首部符合 D2 头：widget test 触发该按钮、读回 demo 写出的密文头 16 字节，断言 `magic == 'DMED'`、`version == 1`、`algo == 1`（自动，断言 codec 实际产出的字节值，非源码字面量）
+- 「写入 → 读取校验」往返字节一致（人工 @Ray，真机目视 sha256 比对结果）
 
 ### 禁止
 - 不展示密钥原文字节
@@ -322,7 +322,8 @@ Android 读吞吐：— MiB/s
   ```bash
   flutter test test/media/demo_test.dart
   ```
-- 人工（@Ray）：iOS + Android 真机各跑一次
+  （断言：① demo 入口在 widget 树可被 `find`；② 「重加密为备份」产物前 16 字节 == D2 头 `magic/version/algo` 期望值）
+- 人工（@Ray）：iOS + Android 真机各跑一次（往返一致性目视、UI 不展示绝对路径目视）
 
 ### 验收记录
 ```

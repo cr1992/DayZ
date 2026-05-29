@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -17,6 +17,7 @@ graph LR
   T1 --> T4
   T1 --> T5
   T2 --> T3
+  T2 --> T6
   T3 --> T6
   T6 --> T7
   T6 --> T8
@@ -47,7 +48,7 @@ graph LR
 **依赖：** M0 已完成 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle`（如需）
 
 ### 背景
-添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。配置 build_runner（drift_dev codegen）。静态资源生成（flutter_gen）已剥离至 `specs/active/assets-management`，本里程碑不涉及。
+添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（drift_dev builder），与 assets-management 的 `flutter_gen_runner` builder 并存——builder 不同、输出目录隔离、互不冲突；本 spec **不**声称自己是「首个/唯一」codegen 工作流。静态资源生成（flutter_gen）已剥离至 `specs/active/assets-management`，本里程碑不涉及。
 
 ### 实施
 1. pubspec.yaml 添加上述依赖（锁版本）
@@ -95,7 +96,7 @@ graph LR
 ### 验收标准（做完即止）
 - 6 张常规表 + entries_fts 虚拟表都存在（自动：打开 db 后 `sqlite_master` 查询）
 - 索引 `idx_entries_timeline / idx_entries_monthday / idx_entries_updated / idx_entries_sync / idx_media_entry / idx_entrytags_tag / idx_tags_name` 全部存在（自动）
-- schemaVersion = 1（自动 grep）
+- schemaVersion = 1（自动：测试断言 `db.schemaVersion == 1`，并查 `PRAGMA user_version` 返回 1，**不** grep 源文件）
 
 ### 验收方式
 - 自动：
@@ -422,7 +423,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 - [ ] T12 · Migration 框架占位
 
-**依赖：** T2 ｜ **关联需求：** R7 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/data/database.dart`（追加 MigrationStrategy）
+**依赖：** T2 ｜ **关联需求：** R7 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/data/database.dart`（追加 MigrationStrategy）, `test/data/migration_test.dart`
 
 ### 背景
 启用 Drift `MigrationStrategy`；`onCreate` 默认；`onUpgrade` 空实现 + TODO。
@@ -432,15 +433,15 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 2. 文档化 migration 编写约束（注释）
 
 ### 验收标准（做完即止）
-- `MigrationStrategy` 已配置（自动 grep）
-- `onUpgrade` 含 TODO 注释（自动 grep）
+- `MigrationStrategy` 实际生效：对全新内存库，`onCreate` 自动建出全部表（断言 `sqlite_master` 含全部表名），即 migration 框架在开库路径上被调用（自动：行为断言，非 grep 源文件）
+- 迁移版本路由可达：`db.schemaVersion` 返回声明值（本期 = 1）且 > 0；用一个 `schemaVersion` 更低的旧库打开时 `onUpgrade` 被调用（断言 `onUpgrade` 收到的 `from < to`、不抛错），即版本递增能正确路由到 migration 步骤（自动：行为断言）
 
 ### 验收方式
 - 自动：
   ```bash
-  grep -n 'MigrationStrategy' lib/data/database.dart \
-    && grep -n 'TODO(migration)' lib/data/database.dart
+  flutter test test/data/migration_test.dart
   ```
+  （测试断言：① 全新库经 `MigrationStrategy.onCreate` 建出全部表；② `db.schemaVersion` 为声明值且 > 0；③ 用更低版本旧库打开触发 `onUpgrade(m, from, to)` 且 `from < to`、空实现不抛错。全部为可观测行为/值，**不** grep 源文件。）
 
 ### 验收记录
 ```
@@ -464,8 +465,8 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 3. 集成测试：rekey 后重新打开 db 用新密钥成功、旧密钥失败
 
 ### 验收标准（做完即止）
-- 集成测试通过（自动）
-- M1 verification 命令 `grep TODO(data-layer-integration)` 应**无匹配**（自动）
+- 集成测试通过：rekey 后以新密钥重开 db 成功、以旧密钥重开抛 `WrongKeyException`（自动：行为断言，对应 R8 的「结果」行）
+- M1 留下的 `TODO(data-layer-integration)` 桩已被替换为真实 `await db.rekey(...)` 调用，`lib/security/` 下不再出现该 TODO 标记（自动：`! grep` **缺失/协调守卫** —— 跨 spec 协调标记检查，非行为断言；rekey 的真实行为已由上一条集成测试断言）
 
 ### 验收方式
 - 自动：
@@ -473,6 +474,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
   flutter test test/data/rekey_integration_test.dart \
     && ! grep -RIn 'TODO(data-layer-integration)' lib/security/
   ```
+  （第一条为行为断言：rekey 后新/旧密钥重开的成功/失败；第二条 `! grep` 为跨 spec 协调守卫，确认 M1 桩已替换、`lib/security/` 下无该 TODO 残留。）
 
 ### 验收记录
 ```

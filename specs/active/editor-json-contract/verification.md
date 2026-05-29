@@ -36,10 +36,10 @@
 
 ## 契约一致性交叉检查
 
-- [ ] **块清单单一来源**：`block_types.dart` 的块 type 常量集合 == design 块清单表 == 抽取器/渲染器/导出器实际识别集合，无第五种私自新增 — 自动：`flutter test test/editor/contract/block_inventory_consistency_test.dart`
-- [ ] **降级表同源**：抽取器与导出器引用同一份「降级表现」映射，无重复定义 — 自动：静态断言（同一常量来源）
-- [ ] **media.id 引用完整性**：任意 encode 后的 `content_json` 中，图片节点不含真实路径，仅含 media.id；扫描全文无 `/var/mobile`、`/data/data`、`media/*.bin` 等路径串 — 自动：`flutter test test/editor/contract/media_ref_integrity_test.dart`
-- [ ] **docVersion 存在性**：所有 encode 产物顶层含 `docVersion` 整数 — 自动：同 codec 测试
+- [ ] **块清单单一来源**：抽取器/渲染器/导出器实际识别的 type 集合 == `block_types.dart` 暴露的支持 type 集合（== design 块清单表枚举），无第五种私自新增 — 自动：`flutter test test/editor/contract/block_inventory_consistency_test.dart`（断言四方实际识别集合的 `Set` 相等，是运行时取值断言而非字面量存在）
+- [ ] **降级表同源**：对块清单每一种块，导出器 `exportFallbackLine(node)` 的返回值 == 抽取器对同一 node 的产出行（逐块逐字节相等 → 证明二者共用同一份「降级表现」映射、不存在两套文本） — 自动：`flutter test test/editor/contract/export_fallback_test.dart`（断言两路返回值相等，非「同一常量来源」式静态字面量检查）
+- [ ] **media.id 引用完整性**：任意 encode 后的 `content_json` 中，图片节点不含真实路径，仅含 media.id；扫描全文无 `/var/mobile`、`/data/data`、`media/*.bin` 等路径串 — 自动：`flutter test test/editor/contract/media_ref_integrity_test.dart`（**此为「缺失守卫」**——断言 encode 产物中**不出现**真实路径串，属对运行时产物的缺失性断言，非正向存在性 grep；扫描对象是独立于被改源码的 encode 输出，符合 P3）
+- [ ] **docVersion 存在性**：所有 encode 产物顶层含 `docVersion` 整数 — 自动：`flutter test test/editor/contract/editor_doc_codec_test.dart`（断言 decode 出的 version==1 / 顶层字段为 int，是对 encode 产物取值的断言）
 
 ## 回归检查
 - [ ] `content_plain` 第一行作为标题与 data-layer/搜索消费方约定一致（取值方式未漂移） — 人工复核（@Ray）

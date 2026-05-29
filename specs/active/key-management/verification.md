@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -23,7 +23,8 @@
 ## 专项检查
 
 ### 安全（NF1）
-- [ ] 派生密钥 / 设备密钥不出现在任何日志输出 — 自动：`grep -RIn 'print\|log' lib/security` 校验无原始密钥变量直接打印
+- [ ] 派生密钥 / 设备密钥不出现在任何日志输出 — 自动：`! grep -RInE '(print|debugPrint|log[A-Za-z]*)\([^)]*(key\|Key\|password\|secret\|derived)' lib/security`（**缺失/解耦守卫**：断言 `lib/security` 中无「日志调用直接打印 key/password/secret/derived 等敏感变量」，命中即 fail；NF1 的正向行为「明文使用后清零」由下条行为测试断言）
+- [ ] 派生路径明文使用后清零（best-effort）— 自动：`flutter test test/security/argon2_kdf_test.dart`（断言调用前后 password 引用持有的字节区被清零，对应 R2/NF1 的可观测结果）
 - [ ] 派生密钥 / 设备密钥不写入任何文件（除 secure_storage 的密文存储）— 人工（@Ray）：审计 `lib/security/` 所有 File / IOSink 使用
 
 ### 性能（NF2）
@@ -36,8 +37,8 @@
 - [ ] secure_storage 不可用时（模拟 / root 设备）抛 `SecureStoreException(unavailable)`，不静默兜底 — 自动 + 人工（@Ray）
 
 ### 可演进（NF4）
-- [ ] `KdfParams` 包含 `version` 字段且持久化路径已写入 — 自动：`grep -n 'version' lib/security/argon2_kdf.dart`
-- [ ] 读取 v1 params 的派生路径有单元测试 — 自动：`flutter test test/security/argon2_kdf_test.dart`
+- [ ] `KdfParams` 含 `version` 字段，且该 version 经持久化路径写出后可原样读回（即据存储的 version 反查参数，旧密钥派生路径仍可工作）— 自动：`flutter test test/security/kdf_version_persistence_test.dart`（断言 `KdfParams.v1().version == 1`；构造 params → 序列化/写入存储 → 读回，断言读回的 `version` 与写入相等、并据其重建出与原 `KdfParams` 逐字段相等的参数；断言**值/往返**而非源码字面量）
+- [ ] 读取 v1 params 的派生路径有单元测试 — 自动：`flutter test test/security/argon2_kdf_test.dart`（断言以 v1 params 派生输出与 RFC 9106 已知向量一致）
 
 ## Demo 验证（接 Debug Home，对应 T9）
 
@@ -54,6 +55,8 @@
 - [ ] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`flutter analyze && flutter build apk --debug && flutter build ios --debug --no-codesign`
 
 ## 验证命令（汇总自动项）
+
+> 末行 `grep ... TODO(data-layer-integration)` **为跨 spec 协调标记守卫，非行为断言**：确认 rekey 真正调用部分仍留有待 data-layer 对接的占位标记（见 T7），data-layer 落地后此守卫随对接任务移除。其余命令均验行为/构建产物。
 
 ```bash
 flutter pub get

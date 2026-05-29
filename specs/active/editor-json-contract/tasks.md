@@ -37,7 +37,7 @@ graph LR
 
 - [ ] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
 
-**依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
+**依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`test/editor/contract/block_types_test.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
 
 ### 背景
 契约的事实地基。先读 `packages/appflowy-editor/lib/appflowy_editor.dart` 及 `Document`/`Node`/各 `*BlockKeys`/`image_block_component.dart`/`block_component_service.dart`，确认：① D2 图片落点二选一（自定义 `data.media_id` vs 自定义 url scheme）；② 代码块 `code` 是否内置、是否需插件；③ 自定义 `data` 字段随 `Node.toJson` 透传无损。把结论代码化为块类型/字段常量，并回填 design 的【实现时补全】与块清单表注。
@@ -50,15 +50,16 @@ graph LR
 4. 在 `block_types.dart` 定义所有块 type 常量 + 自定义块 location/weather 的 data key 常量（封闭清单 R5 的代码化）。
 
 ### 验收标准（做完即止）
-- `block_types.dart` 覆盖块清单表每一种块的 type 常量（自动）
+- 块类型常量集合（`block_types.dart` 暴露的「已支持 type」集合）**取值等于**块清单表枚举的那组 `type` 字符串：测试断言该集合与期望集合逐元素相等（既不缺、也不私自多出第五种），且标准块常量的字符串值与 AppFlowy `*BlockKeys.type`（如 `paragraph`/`heading`/`image`）实际取值相等——断言的是常量**解析出的值**，不是源码里有无某行字面量（自动）
 - design 中与 D2/代码块相关的【实现时补全】已回填为确定值（人工核查）
 
 ### 验收方式
 - 自动：
   ```bash
   flutter analyze lib/editor/contract/block_types.dart
-  # 断言每种块 type 常量存在（实现时补全断言清单）
+  flutter test test/editor/contract/block_types_test.dart
   ```
+  （`block_types_test.dart` 断言：① 常量暴露的支持 type 集合 == 块清单期望集合（`Set` 相等，含数量）；② 标准块常量值 == 对应 AppFlowy `*BlockKeys.type` 取值；③ location/weather 自定义块 type 与 data key 常量取到约定字符串。断言的是**值**而非字面量存在，满足 P3 抗规避）
 - 人工（@Ray）：
   - 核对 D2 落点结论与原生 image builder 行为一致；代码块归属合理；块清单表注无遗留「待定」
 
@@ -220,14 +221,15 @@ graph LR
 4. 作者 `render_consistency_test.dart`（编辑/只读两端逐块语义一致）与 `block_inventory_consistency_test.dart`（`block_types.dart` == design 块清单 == 实际识别集合）的用例骨架，供 verification NF2 / 块清单单一来源检查执行。
 
 ### 验收标准（做完即止）
-- 同一 builder 注册表被编辑器与只读渲染器共同引用（自动，静态断言/单一来源）
-- 含未知块的文档只读渲染不崩溃、其余块正常（自动 widget test）
+- 编辑器与只读渲染器各自暴露的「已注册 builder 的 type 集合」**取值相等**：测试取两端注册表的 key 集合断言 `Set` 相等（同一来源派生 → 不可能漂移），证明两端识别同一封闭清单（自动，断言两个集合的取值相等而非源码有无某行）
+- 含未知块的文档只读渲染不崩溃、其余块正常渲染（自动 widget test：pump 含未知 type 块的文档，断言不抛异常且其余块对应 widget 被找到）
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/editor/contract/readonly_renderer_test.dart
   ```
+  （断言：① 编辑器注册表 type 集合 == 只读渲染器注册表 type 集合；② 注入未知块后 pumpWidget 不抛异常、其余块 widget 仍可 `find.byType` 命中。两条均断言运行时**值/行为**，满足 P3 抗规避）
 
 ### 验收记录
 ```
@@ -252,14 +254,14 @@ graph LR
 3. 一致性测试：同一自定义块，抽取与导出产出同一文本行。
 
 ### 验收标准（做完即止）
-- 位置/天气块的抽取文本行与导出文本行完全一致（自动）
-- 降级映射为单一来源、无重复定义（自动，静态断言）
+- 对块清单中**每一种**块，`exportFallbackLine(node)` 与抽取器对同一 node 产出的文本行**逐字节相等**：测试遍历样例块逐一断言两路输出值相等（位置块同得 `📍 上海`、天气块同得 `🌤 18°C`，其余块同得各自降级文本），证明导出与抽取共用同一份降级表、不存在两套文本（自动，断言两路返回值相等而非源码字面量）
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/editor/contract/export_fallback_test.dart
   ```
+  （断言：对样例块集合，`exportFallbackLine` 的返回值 == 抽取器对同一块的产出行；两路取值漂移即 fail）
 
 ### 验收记录
 ```

@@ -11,12 +11,12 @@
 
 v6 第 7.3 节定调：自动保存与草稿恢复**共用同一张表（editing_session 单行模型）**——保存到表 = 草稿恢复的免费副产品。本里程碑落地保存机制、生命周期钩子、启动检测与协调器；UI 部分（顶部非阻断提示条、设置项「恢复未完成的编辑」）待设计稿，**仅在协调器中预留 status 输出供 UI 消费**。
 
-整体依赖 **M0**（项目壳）、**M2 T11**（EditingSessionRepo 已暴露 CRUD）、**M2 T8**（EntryRepo 已有 update API 写入 content_json）。编辑器集成（接入 onChanged 钩子）依赖 MR 结论，**本里程碑提供编辑器中立接口**，待 MR 拿到选型后另立 spec 完成接入。
+整体依赖 **M0**（项目壳）、**M2 T11**（EditingSessionRepo 已暴露 CRUD）、**M2 T8**（EntryRepo 已有 update API 写入 content_json）。编辑器选型**已定 = 方案 A（AppFlowy Editor）**（@Ray 2026-05-29 拍板，见 `specs/README.md` 顶部 / `archive/2026-05-29-editor-research`）；**本里程碑提供编辑器中立接口**，把 AppFlowy 编辑器 onChanged 接到 DraftCoordinator.onChanged 的编辑页集成归后续 spec（待 UI 设计稿）。
 
 ## 范围外
 
 - 顶部「未保存草稿」提示条 UI / 设置项 UI —— 待设计稿。
-- 真正的富文本编辑器接入（A AppFlowy / B WebView+TipTap）—— 依赖 MR 结论；接入归后续 spec。
+- 真正的富文本编辑器接入（已定 = 方案 A AppFlowy Editor）—— 编辑页/工具栏与本协调器对接归后续 spec（待 UI 设计稿）。
 - 多草稿并行（v6 4.7 已定调为非目标）。
 - 撤销 / 重做（v6 7.4 复用编辑器内置 history，与本里程碑解耦）。
 
@@ -66,7 +66,7 @@ EditingSessionRepo.upsert MUST 是原子的（Drift 事务）；写盘失败 MUS
 系统 MUST 在 `DraftCoordinator.startupCheck` 中读 editing_session 那一行：存在则 `hasResidual = true`；不存在则 false（性能约束见 NF4）。
 
 ### R8 · 编辑器中立接口
-DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJson, isNew, cursorPos)` 入参；不预设 AppFlowy / TipTap / TextField。MR 出结论后由后续 spec 把编辑器 onChanged 接到 DraftCoordinator.onChanged。
+DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJson, isNew, cursorPos)` 入参；不预设 AppFlowy / TipTap / TextField。选型已定 A（AppFlowy Editor），由后续编辑页集成 spec 把 AppFlowy 编辑器 onChanged 接到 DraftCoordinator.onChanged。
 
 ### R9 · WebView 方案预留通道（方案 A 下不适用，保留为远期 B 兜底）
 > **选型已定（v0.7）**：MR 结论选 **方案 A（AppFlowy Editor，纯 Dart，无 WebView）**——见 `docs/design/03` 第 4 节末「选型补丁」与 `specs/active/editor-json-contract`。本项目无 WebView 桥，本需求**当前不适用**。
@@ -88,3 +88,15 @@ paused 钩子到 EditingSessionRepo.upsert 完成 MUST < 100ms（中端真机，
 
 ### NF4 · 性能 - 启动检测不阻塞主线程
 `DraftCoordinator.startupCheck`（一次 db 查询）MUST 不阻塞主线程超过 50ms。本 NF 约束 R7 的启动检测，在 verification 中以性能检查覆盖。
+
+## 专项维度逐维表态
+
+> §0 选档：本表「性能」命中 → 升标准档（已含 NF / verification.md / 文件头 / README 索引）。
+
+| 专项维度 | 命中？ | 依据（一句话） |
+|---|---|---|
+| 安全 | 否 | 草稿写入复用 data-layer 既有加密 db，本 spec 不引入新的口令/密钥/敏感数据处理。 |
+| 权限 | 否 | 不访问相册/相机/通知等系统权限，仅读写应用内 editing_session 表。 |
+| 无障碍 | 否 | 本里程碑无 UI（提示条/设置项归后续 UI spec），无可聚焦/朗读控件可约束。 |
+| 性能 | 是 | NF2 防抖窗口准确性、NF3 paused 同步保存 < 100ms、NF4 startupCheck 不阻塞主线程 > 50ms 均为可度量性能硬约束。 |
+| 多端兼容 | 否 | 纯 Dart 逻辑层（Debouncer / 协调器 / 生命周期桥），无平台分叉代码；T7 真机跑测属验证手段非兼容性需求。 |

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -25,9 +25,10 @@
 ## 专项检查
 
 ### 加密强度（NF1）
-- [ ] 每次 put 的 nonce 不重复 — 自动：批量 put 1000 文件，nonce 哈希集大小 = 1000
-- [ ] auth tag 校验不能被绕过（不存在「跳过验证」分支）— 自动：源码 grep + 篡改测试
-- [ ] HKDF info = `dayz/media/v1` 一致 — 自动 grep
+- [ ] 每次 put 的 nonce 不重复 — 自动：`flutter test test/media/nonce_uniqueness_test.dart`（批量 put 1000 文件，断言收集到的 nonce 去重集 size == 1000）
+- [ ] auth tag 校验不能被绕过 — 自动：`flutter test test/media/media_codec_test.dart`（断言：篡改 ciphertext / 篡改 tag / 错误密钥三种输入下 `decrypt` **均抛 `MediaCorruptedException`**、且不返回任何字节——以「无论如何都抛」的行为证明不存在「跳过验证」旁路）
+- [ ] **缺失守卫**：codec 不存在「不验证 tag 仍返回数据」的旁路分支 — 自动：`! grep -RIn 'skipTagVerification\|ignoreTag\|noVerify' lib/media/`（**为缺失/解耦守卫，非行为断言**：断言禁用符号不出现，兜底上一条行为测试覆盖不到的死代码旁路）
+- [ ] HKDF 设备媒体密钥确实用 info=`dayz/media/v1` 派生 — 自动：`flutter test test/security/key_provider_test.dart`（断言 `getDeviceMediaKey()` 输出 == 用 `dayz/media/v1` 独立重算的 HKDF 期望值，且换 info / 换根密钥则输出变——断言派生值而非源码字面量，与 T2 同源）
 
 ### 性能（NF2, NF4）
 - [ ] 100 MiB 流式 put 不爆内存（RSS 增量 < 200 MiB）— 人工（@Ray），可借 OS profiler
@@ -40,21 +41,29 @@
 - [ ] Android 同上 — 人工（@Ray）
 
 ### 路径安全（NF5）
-- [ ] MediaStore 公开 API / 异常 message 不含绝对路径 — 自动：grep `/var/` / `/data/` 在 `lib/media/`
+- [ ] MediaStore 公开 API 返回值与异常 message 不含绝对路径 — 自动：`flutter test test/media/path_safety_test.dart`（断言：① `put` 返回的 rel_path 形如 `media/<id>.bin`、不以 `/` 开头；② 制造 MediaNotFound/MediaCorrupted/KeyMissing 三类异常，断言其 `message` 不包含 documents 根绝对前缀、且 `relativize` 对越界绝对路径抛 ArgumentError——断言运行期产出的字符串值而非源码文本）
+- [ ] **缺失守卫**：`lib/media/` 源码不硬编码平台绝对路径前缀 — 自动：`! grep -RIn '/var/mobile\|/data/data' lib/media/`（**为缺失/解耦守卫，非行为断言**：兜底防止字面量绝对路径混入，与上一条行为测试互补）
 - [ ] demo 页 UI 不展示绝对路径 — 人工（@Ray）目视
 
 ## 回归检查
 
 - [ ] M1 / M2 模块单测仍全过 — 自动：`flutter test test/security/ test/data/`
-- [ ] M1 KeyProvider 新增 `getDeviceMediaKey()` 后老的 `getAppDbKey()` 路径不受影响 — 自动 单测
+- [ ] M1 KeyProvider 新增 `getDeviceMediaKey()` 后老的 `getAppDbKey()` 路径不受影响 — 自动：`flutter test test/security/key_provider_test.dart`（断言 `getAppDbKey()` 返回值与新增接口前一致、且与 `getDeviceMediaKey()` 输出**不相等**，证明两把密钥未串）
 - [ ] Debug Home 中 Security / Data demo 仍可演示，Media demo 新增 — 人工（@Ray）
+
+## 需求↔验证覆盖核验（双向闭环）
+> 闭环检查，确保无遗漏。任一项不通过则 verification 未定稿。
+- [ ] 正向：R1/R2（put→openRead 往返、元数据写入）、R3（元数据 + 写盘原子化）、R4（soft/hardDelete）、R5/NF1（HKDF 派生 + 加密强度）、R6（重加密为备份）、R7（篡改/错误密钥异常）、NF2/NF4（性能专项）、NF3（多端一致专项）、NF5（路径安全专项）均至少被一个场景或专项检查覆盖，无孤儿需求。
+- [ ] 反向：各验证项「关联需求」均指向真实 R/NF；「缺失/解耦守卫」「回归检查」已显式标注，不冒充行为断言、不作孤儿测试计入需求覆盖。
 
 ## 验证命令（汇总自动项）
 
 ```bash
 flutter analyze
-flutter test
+flutter test                                       # 含加密强度 / 路径安全 / 密钥派生等行为断言
 flutter build apk --debug
 flutter build ios --debug --no-codesign
-grep -RIn '/var/\|/data/' lib/media/ || true
+# 缺失/解耦守卫（违规即 fail，非 informational）：
+! grep -RIn 'skipTagVerification\|ignoreTag\|noVerify' lib/media/   # 无「跳过验证」旁路
+! grep -RIn '/var/mobile\|/data/data' lib/media/                    # 无硬编码平台绝对路径
 ```

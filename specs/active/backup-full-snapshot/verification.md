@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -16,6 +16,7 @@
 | 全量导出 | export 3 entries + 2 media | `.mydiary` 文件创建、hexdump 无明文 | R3, NF4 | 自动 |
 | 错密码还原 | 错口令 → restore | 抛 BadPassword | R5 | 自动 |
 | schema 不兼容还原 | 篡改 manifest schema_version=999 | 抛 SchemaIncompatible | R7 | 自动 |
+| manifest 损坏还原 | payload 内 manifest.json 删除/置非法 JSON/缺 R2 必需字段 → restore | 抛 ManifestCorrupted、不进入确认与切换、本机库不变 | R11 | 自动 |
 | confirmOverwrite false | callback 返 false | 抛 BackupCancelledException、本机库不变 | R10 | 自动 |
 | 正常还原往返 | export → restore | entries / media 完全一致；FTS 搜索可用 | R3, R5, R6 | 自动 |
 | 缩略图懒生成 | restore 完成后立即查 thumbs/ | 目录空或部分文件；warmup 异步进行 | R6, D7 | 自动 |
@@ -40,20 +41,26 @@
 - [ ] 还原失败后本机状态满足不变式：**全旧或全新**，不出现「db 在、media 被清空」的半成品（断言旧 db 引用的每个 media 文件仍存在且可解密）— 自动
 
 ### 与 M5 协作约束（R6, D7）
-- [ ] restore 调用栈中不出现「同步全量重建缩略图」函数 — 自动 grep
-- [ ] warmup 调用立即返回（不 await）— 自动
-- [ ] grep `await ThumbnailCache.warmup` 应**无匹配** — 自动
+- [ ] restore 不在自身流程内同步（await）生成缩略图 — 自动：`flutter test test/backup/restorer_fts_test.dart`（注入「warmup 永不完成」spy，断言 restore 返回 future 仍 < 50ms complete；若 restore await 了缩略图生成则此断言失败/超时）
+- [ ] warmup 被调用恰好 1 次、入参 = 全部存活 media id、优先级 low、restore 返回时 `thumbs/` 未被全量填满 — 自动：`flutter test test/backup/restorer_fts_test.dart`（spy 记录调用参数 + 检查 thumbs/ 目录文件数 < media 总数）
+- [ ] **解耦守卫（为缺失/解耦守卫，非行为断言）：** `lib/backup/` 下不出现 `await ... ThumbnailCache.warmup`——防止后续改动悄悄把异步 warmup 改回 await。此项是上面 behavior test 的低成本纵深防御，behavior test 才是主验收（永不完成 spy 能抓住任何形式的「await 缩略图生成」，grep 只抓字面 await warmup）。— 自动：`! grep -RInE 'await[^;]*ThumbnailCache\.warmup' lib/backup/`
 
 ## 回归检查
 
-- [ ] M1 / M2 / M3 / M5 模块单测仍全过 — 自动
-- [ ] Debug Home 中其他 demo 仍可演示，Backup demo 新增 — 人工（@Ray）
+- [ ] M1 / M2 / M3 / M5 模块单测仍全过 — 自动（回归）
+- [ ] Debug Home 中其他 demo 仍可演示，Backup demo 新增 — 人工（@Ray）（回归）
+
+## 需求↔验证覆盖核验（双向闭环）
+> 闭环检查，确保无遗漏。任一项不通过则 verification 未定稿。
+- [ ] 正向：R3, NF4（全量导出 + 加密/安全专项）、R5（错密码/正常往返）、R6（FTS 立即可用 + 与 M5 协作）、R7（schema 不兼容）、R8（还原原子性专项）、R10（confirmOverwrite false）、**R11（manifest 损坏 → ManifestCorrupted，功能验证表）**、NF1/NF2/NF3（性能专项）、NF5（残留清理专项）均有验证，无孤儿需求。R1/R2/R4/R9 在 tasks 单任务内验（T2/T3 格式与 manifest、T4 进度回调与明文不落临时文件），不重复列入跨任务 verification。
+- [ ] 反向：各验证项「关联需求」均指向真实存在的 R/NF；回归检查已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）
 
 ```bash
 flutter analyze
-flutter test test/backup/
+flutter test test/backup/   # 含 restorer_fts_test：注入「warmup 永不完成」spy，断言 restore 不 await 缩略图生成（主验收）
 flutter test
-! grep -RIn 'await\s\+ThumbnailCache.warmup' lib/backup/
+# 下面 grep 为缺失/解耦守卫（非行为断言），是上面 behavior test 的低成本纵深防御：
+! grep -RInE 'await[^;]*ThumbnailCache\.warmup' lib/backup/
 ```

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -262,10 +262,10 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 3. 磁盘空间预检：剩余空间 < db 大小 × 1.2 时直接拒绝
 
 ### 验收标准（做完即止）
-- 文件备份/回滚路径有单元测试（自动）
-- 磁盘空间不足时拒绝执行（自动）
-- 进度回调四阶段都触发（自动）
-- rekey 真正调用部分留 TODO 标记，待 data-layer 对接（自动 grep）
+- 文件备份/回滚路径有单元测试：备份后注入 rekey 失败，断言 `.bak` 回滚后 db 文件与备份前逐字节一致（自动，断言行为）
+- 磁盘空间不足（剩余 < db × 1.2）时 `rekey` 抛错拒绝执行（自动，断言抛错行为）
+- 进度回调按 `copying → rekeying → cleaning → done` 顺序触发四阶段（自动，断言回调序列）
+- rekey 真正调用部分留 `TODO(data-layer-integration)` 标记，待 data-layer 对接（自动 grep；**为跨 spec 协调标记守卫，非行为断言**）
 
 ### 禁止
 - 不在主 isolate 调 rekey
@@ -274,6 +274,8 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 ### 验收方式
 - 自动：
   ```bash
+  # 第一条 flutter test 断言备份/回滚逐字节一致、磁盘不足拒绝、进度回调序列（行为）；
+  # 第二条 grep 为跨 spec 协调标记守卫（非行为断言），确认对接占位标记尚在。
   flutter test test/security/rekey_service_test.dart \
     && grep -n 'TODO(data-layer-integration)' lib/security/rekey_service.dart
   ```

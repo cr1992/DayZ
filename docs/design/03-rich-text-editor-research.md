@@ -1,6 +1,6 @@
-## 4. 富文本编辑器选型（待定）
+## 4. 富文本编辑器选型（已定：方案 A，见 5.1）
 
-Flutter 自接管渲染、无 DOM/`contenteditable`，图文混排与图片拖拽缩放需”重写排版引擎”级工作量。以下方案并列，**建议一两天预研后再定**。
+Flutter 自接管渲染、无 DOM/`contenteditable`，图文混排与图片拖拽缩放需”重写排版引擎”级工作量。**选型已于 v0.7 定为方案 A（AppFlowy Editor，见 5.1）**；以下方案并列对比保留作预研背景。
 
 ### 方案 A：纯 Flutter — AppFlowy Editor
 
@@ -65,14 +65,14 @@ Flutter 自接管渲染、无 DOM/`contenteditable`，图文混排与图片拖�
 
 -----
 
-## 6. 文档 JSON 契约（待与编辑器选型一并定稿）
+## 6. 文档 JSON 契约（选型已定 A；正式契约见 specs/active/editor-json-contract）
 
 文档序列化为 JSON 存入 `content_json`，需在 **Flutter 只读渲染器** 与 **编辑器** 间约定同一套结构，核心两条：
 
 1. **图片节点引用 `media.id` 而非写死路径**——路径变化不影响文档完整性。
 1. **预留自定义节点**：「位置块」「天气块」，导出时降级为文本行（`📍 上海` / `🌤 18°C`）。
 
-> 字段结构待编辑器选型确定后补充（A 与 B 节点格式不同）。
+> 选型已定 A；正式字段结构见 `specs/active/editor-json-contract`（基于 AppFlowy 节点格式）。
 
 -----
 

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -14,7 +14,7 @@
 - **选项：** Drift / Floor / sqflite 原生 / Isar / Hive。
 - **选择：** Drift（已在 v6 第 3 节定稿）。
 - **理由：** 类型安全 + Dart 风格查询 API + 迁移机制完善 + 与 SQLCipher 集成成熟（`sqlcipher_flutter_libs`）+ 远期与 PowerSync 配合可平滑同步。
-- **代价：** 引入 codegen（build_runner），首次构建慢。
+- **代价：** 引入 codegen（drift_dev）。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（drift_dev builder），与 assets-management 的 `flutter_gen_runner` builder 并存——两者 builder 不同、输出目录隔离（drift 产物在 `lib/data/`，assets 在 `lib/gen/`）、互不冲突；本 spec **不**声称自己是「首个/唯一」codegen 工作流。首次构建慢。
 
 ### D2 · SQLCipher 集成方式
 - **背景：** 需以 KeyProvider 提供的密钥打开加密数据库。
@@ -128,7 +128,7 @@ graph TD
 
 ## 已知风险
 
-- **build_runner 首次构建慢**：开发者第一次跑可能等数分钟，文档化即可。
+- **build_runner 首次构建慢**：开发者第一次跑可能等数分钟，文档化即可。`build_runner` 为共享构建基建，与 assets-management 的 builder 并存（builder 不同、输出目录隔离），跑 `--delete-conflicting-outputs` 时各自只清自己输出目录的产物。
 - **SQLCipher 链接失败**：iOS Pod 或 Android NDK ABI 缺失会导致打开 db 时崩溃；T3 做最小冒烟测试。
 - **UUID v7 自实现风险**：若选择自实现，需 RFC 测试向量覆盖；优先用维护包。
 - **时区数据**：`timezone` 包需要在 main 中初始化时区数据库；T5 处理初始化。

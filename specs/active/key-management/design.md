@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -104,6 +104,7 @@ graph TD
 - `lib/security/argon2_kdf.dart`              新建（KDF 模块 + KdfParams）
 - `lib/security/device_key.dart`              新建（设备随机密钥生成 / 读取）
 - `lib/security/key_provider.dart`            新建（统一密钥入口）
+- `lib/security/hkdf.dart`                    新建（HKDF-SHA256，供 getDeviceMediaKey 派生媒体密钥；见 D7，实现归属待拍板，若收进 M1 则挂 T10）
 - `lib/security/rekey_service.dart`           新建（rekey 流程 + 备份兜底）
 - `lib/security/argon2_probe.dart`            新建（T3 预研用，可后续删除）
 - `lib/security/demo.dart`                    新建（T9 Debug Home Security demo）

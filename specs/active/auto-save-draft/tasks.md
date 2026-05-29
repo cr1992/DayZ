@@ -66,7 +66,7 @@ graph LR
 
 - [ ] T2 · DraftRecoveryStatus 数据类 + Saver 接口（编辑器中立）
 
-**依赖：** T1 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）
+**依赖：** T1 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）, `test/drafts/draft_contract_test.dart`
 
 ### 背景
 先把外露接口与数据类钉死，后续 T3 填实现。本任务承接 R8「编辑器中立接口」：`onChanged` 只接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，**签名中不出现任何编辑器类型**（AppFlowy / TipTap / TextField）；来源无关——AppFlowy onChanged 与任意其他来源（含 R9 远期 WebView 桥）一视同仁。R9 在方案 A 下不适用，其「来源无关」实质已被本接口覆盖，无需额外接口。
@@ -77,18 +77,17 @@ graph LR
 3. 接口注释覆盖语义边界（单行模型、串行队列、失败静默重试、编辑器中立/来源无关）
 
 ### 验收标准（做完即止）
-- 接口签名锁定（自动 grep）
-- `onChanged` 入参为 plain payload，签名中不含编辑器类型名（AppFlowy / TipTap / WebView），满足 R8 编辑器中立（自动 grep）
-- 文档注释含语义说明（含「编辑器中立 / 来源无关」关键词）（自动 grep）
+- `DraftRecoveryStatus` 可构造，四字段 `hasResidual / targetId / isNew / lastUpdated` 取值如实回读（断言行为：用具名实参构造一个实例，`expect` 各字段等于传入值），满足 R3/R7 的状态契约（自动 · 测试）
+- `DraftCoordinator.onChanged` 以 plain payload `(targetId, draftJson, isNew, cursorPos)` 调用可编译通过且接受任意来源构造的实参（断言行为：测试直接用具名实参调用 onChanged 骨架不抛 ArgumentError / 编译错），满足 R8 编辑器中立（自动 · 测试）
+- 签名与实现中不出现编辑器类型名（AppFlowy / TipTap / WebView）—— **解耦守卫，非行为断言**（自动 grep）
 
 ### 验收方式
 - 自动：
   ```bash
-  grep -q 'class DraftCoordinator' lib/drafts/draft_coordinator.dart \
-    && grep -q 'class DraftRecoveryStatus' lib/drafts/draft_recovery_status.dart \
-    && grep -q 'draftJson' lib/drafts/draft_coordinator.dart \
+  flutter test test/drafts/draft_contract_test.dart \
     && ! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart
   ```
+  （前半 `flutter test` 断言 DraftRecoveryStatus 字段回读与 onChanged 接受 plain payload 的**行为/值**；后半 `! grep` 是 R8 解耦不变式守卫——断言协调器文件里**不出现**编辑器类型名，属缺失守卫而非正向存在性 grep，故保留）
 
 ### 验收记录
 ```
@@ -176,27 +175,28 @@ graph LR
 
 - [ ] T5 · main / app.dart 集成 startupCheck
 
-**依赖：** T3 ｜ **关联需求：** R7, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/app.dart`, `lib/main.dart`
+**依赖：** T3 ｜ **关联需求：** R7, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/app.dart`, `lib/main.dart`, `test/drafts/startup_check_test.dart`
 
 ### 背景
-启动时调用 `DraftCoordinator.startupCheck`，状态保存到全局可访问位置（不引入状态库，先存 `static late final` 或 service locator）。UI 提示条由后续 spec 消费。
+启动时调用 `DraftCoordinator.startupCheck`，状态保存到全局可访问位置（不引入状态库，先存 `static late final` 或 service locator）。UI 提示条由后续 spec 消费。NF4 的 50ms 性能落点亦由本任务承接（startupCheck 同步段计时断言）。
 
 ### 实施
 1. main 中 await `coordinator.startupCheck()`，结果存入 `DraftRecoveryHolder.lastStatus`（简单单例）
 2. app.dart 起 LifecycleBridge.start
-3. 单测：mock EditingSessionRepo 返回有残留行，验证 startupCheck 返回 hasResidual=true
+3. 单测：mock EditingSessionRepo 返回有残留行，验证 startupCheck 返回 hasResidual=true，且 `DraftRecoveryHolder.lastStatus` 被写入该结果
+4. 性能单测（NF4）：mock 残留单行场景，用 `Stopwatch` 包裹 startupCheck 同步段，断言 `elapsedMilliseconds < 50`
 
 ### 验收标准（做完即止）
-- startupCheck 在 main 中被调用（自动 grep）
-- LifecycleBridge.start 在根 widget initState 中调（自动 grep）
+- 启动流程跑过后 `DraftRecoveryHolder.lastStatus` 等于 startupCheck 的返回值，且残留场景下 `hasResidual == true`（断言行为：mock repo 返回残留行，pump 启动后读 holder 值，`expect(holder.lastStatus.hasResidual, isTrue)`）（自动 · 测试，覆盖 R7）
+- LifecycleBridge 在根 widget 挂载后处于「已启动」状态（断言行为：pump 根 widget 后触发 paused 生命周期事件，`expect` 协调器 forceFlush 被调用一次，证明桥已 start）（自动 · 测试）
+- startupCheck 同步段 `Stopwatch.elapsedMilliseconds < 50`（断言 NF4 度量值）（自动 · 测试）
 
 ### 验收方式
 - 自动：
   ```bash
-  grep -q 'startupCheck' lib/main.dart \
-    && grep -q 'LifecycleBridge' lib/app.dart \
-    && flutter test test/drafts/startup_check_test.dart
+  flutter test test/drafts/startup_check_test.dart
   ```
+  （测试断言：① 残留场景 holder.lastStatus.hasResidual==true 即 startupCheck 已在启动流程被调用并落地，覆盖 R7；② pump 后触发 paused 致 forceFlush 被调用，证明 LifecycleBridge 已 start；③ startupCheck 同步段 Stopwatch elapsed < 50ms，覆盖 NF4——全部断言**行为/值**，不 grep 被改文件自身）
 
 ### 验收记录
 ```

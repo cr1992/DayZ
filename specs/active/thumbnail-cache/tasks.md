@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -16,12 +16,13 @@ graph LR
   M2[M2 MediaRepo] --> T3
   M3[M3 MediaCodec] --> T3
   T1 --> T2
+  T1 --> T3
   T1 --> T4
   T1 --> T5
-  T2 --> T3
+  T2 --> T6
+  T3 --> T6
   T4 --> T6
   T5 --> T6
-  T3 --> T6
   T6 --> T7
   T6 --> T8
 ```
@@ -36,18 +37,23 @@ graph LR
 
 - [ ] T1 · 添加 image 依赖
 
-**依赖：** M0 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`
+**依赖：** M0 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock` ｜ **验收基建：** `test/thumbnails/image_dep_test.dart`
 
 ### 实施
 1. 添加 `image` 包（活跃维护版本），锁版本
 2. `flutter pub get`
 
 ### 验收标准（做完即止）
-- `pubspec.yaml` 含锁定版本的 `image` 依赖（自动）
-- `flutter pub get` 成功解析、无冲突（自动）
+- `flutter pub get` 成功解析、无版本冲突（自动）
+- `image` 包真正进入已解析依赖图、且其 API 可被编译/调用（自动；断言「依赖确实可用」而非「pubspec 文本里有这行字」）
 
 ### 验收方式
-- 自动：`flutter pub get && grep -q '^  image:' pubspec.yaml`
+- 自动：
+  ```bash
+  flutter pub get
+  flutter test test/thumbnails/image_dep_test.dart
+  ```
+  解释：`image_dep_test.dart` 直接 `import 'package:image/image.dart';`，构造一张 2×2 `Image`、`encodeJpg` 再 `decodeJpg`，断言解码回来的 `width == 2 && height == 2`。该测试只有在 `image` 包被成功解析并可调用时才能编译通过，断言的是**包的可观测行为**（编解码往返结果），而非 pubspec.yaml 的字面文本——故不可被「写一行字」糊弄。`flutter pub get` 解析失败或包缺失时测试编译即失败。
 
 ### 验收记录
 ```
@@ -149,20 +155,25 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 - [ ] T5 · ThumbnailHandle 数据类
 
-**依赖：** T1 ｜ **关联需求：** R3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/thumbnail_handle.dart`
+**依赖：** T1 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/thumbnail_handle.dart`, `test/thumbnails/thumbnail_handle_test.dart`
 
 ### 实施
 1. `enum ThumbnailState { pending, ready, failed, cancelled }`
-2. `class ThumbnailHandle { Future<ThumbnailResult> get future; void cancel(); ThumbnailState get state; }`
-3. `class ThumbnailResult { String relPath; int w; int h; }`
+2. `enum ThumbnailPriority { normal, low }`（与 R3/R5 唯一契约一致，仅两档，无 high）
+3. `class ThumbnailHandle { Future<ThumbnailResult> get future; void cancel(); ThumbnailState get state; }`
+4. `class ThumbnailResult { final String relPath; final int w; final int h; }`
 
 ### 验收标准（做完即止）
-- 定义 `enum ThumbnailState { pending, ready, failed, cancelled }`（自动，与 R3 契约一致）
-- `ThumbnailHandle` 暴露 `future` / `cancel()` / `state` 三个成员（自动）
-- `ThumbnailResult` 含 `relPath` / `w` / `h` 字段（自动）
+- `ThumbnailState` 的取值集合恰为 `{pending, ready, failed, cancelled}`（自动，断言 `ThumbnailState.values` 长度与成员，与 R3 契约一致）
+- `ThumbnailPriority` 的取值集合恰为 `{normal, low}`（自动，断言无 high 档，与 R5 自洽）
+- `ThumbnailHandle` 实例可读 `state`、可读 `future`、可调 `cancel()`；`ThumbnailResult(relPath, w, h)` 三字段构造后可正确读回（自动）
 
 ### 验收方式
-- 自动：`grep -q 'enum ThumbnailState' lib/thumbnails/thumbnail_handle.dart`
+- 自动：
+  ```bash
+  flutter test test/thumbnails/thumbnail_handle_test.dart
+  ```
+  解释：测试断言 `ThumbnailState.values` 与 `ThumbnailPriority.values` 的**枚举成员集合**（含「不含 high」），并构造一个 `ThumbnailResult(relPath:'thumbs/x.bin', w:384, h:256)` 断言三字段读回相等——验的是契约的**可观测取值/结构**，而非源文件里是否出现 `enum ThumbnailState` 字面量。
 
 ### 验收记录
 ```
@@ -178,10 +189,10 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 **依赖：** T2, T3, T4, T5 ｜ **关联需求：** R3, R4, R6, R7, R8 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/thumbnails/thumbnail_cache.dart`, `test/thumbnails/thumbnail_cache_test.dart`
 
 ### 实施
-1. `request(mediaId, {priority = normal}) -> ThumbnailHandle`
+1. `request(mediaId, {ThumbnailPriority priority = ThumbnailPriority.normal}) -> ThumbnailHandle`（R3 唯一入口；**不**另加 `requestWithPriority`）
 2. 内部检查 media 表：thumb_path 存在且 thumb_src_updated_at == media.updated_at → 直接 ready
 3. 否则入队 + 创建 handle；同 mediaId 复用第一个任务
-4. `warmup(List<mediaId>)`：批量入队 low 优先级（接口异步入队，立即返回）
+4. `warmup(List<mediaId>)`：内部对每个 id 调 `request(id, priority: ThumbnailPriority.low)` 批量入队（接口异步入队，立即返回）
 5. 测试：
    - cache hit 命中（已 ready 且时间戳一致）
    - 时间戳不一致 → 重建
@@ -199,7 +210,11 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 - `warmup(List)` 立即返回不阻塞调用者，后台以 low 优先级逐张完成（自动，满足 R6/R7）
 
 ### 验收方式
-- 自动：`flutter test test/thumbnails/thumbnail_cache_test.dart`
+- 自动：
+  ```bash
+  flutter test test/thumbnails/thumbnail_cache_test.dart
+  ```
+  解释：测试以内存 db + 假 Generator 驱动 `ThumbnailCache`，断言**可观测状态/计数**：① 时间戳一致时 `handle.state == ready` 且 Generator 调用次数 == 0（cache hit）；② bump `media.updated_at` 后再 request，Generator 被调用一次且 `thumb_src_updated_at` 更新为最新值；③ 同 mediaId 连续 request 两次，返回**同一** handle 实例且 Generator 仅触发一次；④ pending 态 `cancel()` 后用 Stopwatch 断言到 `state == cancelled` 的耗时 < 100ms；⑤ `warmup(10 ids)` 调用点同步返回（断言调用未阻塞，返回后立即可执行下一行），随后泵任务断言 10 张以 low 优先级逐张完成。断言的是行为与值，非源码文本。
 
 ### 验收记录
 ```
@@ -246,7 +261,7 @@ RSS 峰值：—
 
 ### 背景
 做一个 Debug Home 入口演示：
-- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（与 `specs/archive/2026-05-29-editor-research` 共用 `assets/editor/demo_image.png`）
+- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（共用唯一规范资产 `assets/editor/demo_image.png`，单一来源见 `specs/active/assets-management`）
 - 「生成缩略图」按钮：request → 显示 handle 状态变化
 - 「显示缩略图」按钮：openRead `<thumbs>/<id>.bin` → 解密 → 渲染到 Image widget
 - 「篡改原图 updated_at」按钮：手动 bump → 再次 request → 看是否重建

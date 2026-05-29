@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -31,15 +31,28 @@ v6 第 7.1 / 9.4 节明确：时间线只解密加密**缩略图**（几十 KB �
 ### R2 · 加密落盘
 缩略图 MUST 加密落盘到 `<app_documents>/thumbs/<media_id>.bin`，**使用设备媒体密钥**（与原图同一把，复用 M3 MediaCodec 文件格式）；MUST 在 media 表写入 `thumb_path = "thumbs/<media_id>.bin"`、`thumb_w`、`thumb_h`、`thumb_src_updated_at = media.updated_at` 当时值。
 
-### R3 · 按需生成 API
-系统 MUST 提供 `ThumbnailCache.request(mediaId) -> ThumbnailHandle`（同步返回 handle；生成结果经 `handle.future` 异步交付）：
+### R3 · 按需生成 API（唯一契约）
+系统 MUST 提供**唯一一个请求入口** `ThumbnailCache.request(mediaId, {ThumbnailPriority priority = ThumbnailPriority.normal}) -> ThumbnailHandle`（同步返回 handle；生成结果经 `handle.future` 异步交付）。R5（优先级）、R6（warmup）均复用此入口，不另立 `requestWithPriority` 等并行签名。
 - 若 media 表已有 thumb_path 且 `thumb_src_updated_at == media.updated_at`：handle 直接进入 ready
 - 否则入队生成任务 → 完成后 handle 进入 ready
 - 错误（原图损坏 / 解码失败）handle 进入 failed + 原因
 
-`ThumbnailHandle { ThumbnailState state; Future<ThumbnailResult> future; void cancel(); }`
-`enum ThumbnailState { pending, ready, failed, cancelled }`（`cancelled` 由 R5 取消路径产生）
-`ThumbnailResult { String relPath; int w; int h; }`；失败时 `future` 携带原因（如 `ThumbnailGenerationException`）。
+```dart
+enum ThumbnailPriority { normal, low }          // 仅两档，见 R5；normal 默认，low 给 warmup
+enum ThumbnailState { pending, ready, failed, cancelled }  // cancelled 由 R5 取消路径产生
+
+class ThumbnailHandle {
+  ThumbnailState get state;
+  Future<ThumbnailResult> get future;            // 失败时携带原因（如 ThumbnailGenerationException）
+  void cancel();
+}
+
+class ThumbnailResult {
+  final String relPath;
+  final int w;
+  final int h;
+}
+```
 
 ### R4 · 失效判断（脏比较）
 判断缩略图是否需重建：**对比 `media.thumb_src_updated_at` 与 `media.updated_at`**；不一致即过期。
@@ -53,9 +66,8 @@ v6 第 7.1 / 9.4 节明确：时间线只解密加密**缩略图**（几十 KB �
 请求队列 MUST 支持：
 - `request` 返回 handle 持有 `cancel()` 方法 → 任务未开始时直接弃；进行中时尝试中断（解码/编码块边界）
 - 同一 mediaId 重复 request 复用第一个任务（不重复入队）
-- 队列优先级：默认 normal；后台预热为 low
-
-API：`ThumbnailCache.requestWithPriority(mediaId, priority)`。
+- 队列优先级仅 **normal / low 两档**（`enum ThumbnailPriority { normal, low }`，见 R3）：`request` 默认 normal；warmup（R6）用 low。本里程碑**不引入** high 档——视口可见优先级提升属未就绪占位 UI（范围外），待 UI spec 接入时再评估是否扩档。
+- 优先级通过 R3 唯一入口的具名参数 `request(mediaId, priority: ...)` 传入，**不另设** `requestWithPriority` 等并行 API。
 
 ### R6 · 后台预热
 系统 MUST 提供 `ThumbnailCache.warmup(List<mediaId>)`：以 low 优先级批量预热；MUST 在独立 isolate 中执行解码/编码（CPU 重活），不阻塞主 isolate。
@@ -86,3 +98,15 @@ API：`ThumbnailCache.requestWithPriority(mediaId, priority)`。
 
 ### NF4 · 多端
 SHALL 在 iOS / Android 真机产生相同质量缩略图（JPEG quality / 长边一致）。
+
+## 专项维度逐维表态
+
+> §0 五个专项维度逐维显式表态，任一为「是」即升标准档。本 spec 已选**标准档**（性能、多端均「是」，且含 NF + verification.md）。
+
+| 专项维度 | 命中？ | 依据（一句话） |
+|---|---|---|
+| 安全 | 是 | 缩略图复用设备媒体密钥加密落盘（R2），属加密数据写入路径，须保证不退化为明文。 |
+| 权限 | 否 | 不读写系统相册 / 相机 / 网络，仅在 app 私有目录 `<thumbs>/` 内生成派生文件，无新增运行时权限。 |
+| 无障碍 | 否 | 本里程碑只暴露纯逻辑 API，不含任何 UI；未就绪占位、视口渲染均属范围外的 UI spec。 |
+| 性能 | 是 | NF1 单张 < 200ms、NF2 ≤ 2 isolate 且峰值 RSS < 250 MiB、NF3 取消 < 100ms，均为可度量硬约束。 |
+| 多端兼容 | 是 | NF4 要求 iOS / Android 真机产出相同质量缩略图（JPEG quality / 长边一致）。 |

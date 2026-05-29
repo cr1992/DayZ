@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -30,7 +30,7 @@ v6 第 3.2 / 5 / 9.4 节明确：媒体不进 SQLite blob，存文件系统；�
 - 结果：文件落到 `<app_documents>/media/<id>.bin`；media 表插入一行 rel_path=`media/<id>.bin`
 
 ### R2 · 加密读写（AES-256-GCM 流式）
-系统 MUST 用**设备密钥（M1 KeyProvider.deviceMediaKey）**对媒体原文件做对称加密；MUST 提供流式 `put(Stream<List<int>>) -> rel_path` 与 `openRead(rel_path) -> Stream<List<int>>` API；MUST 不在加解密中产生明文临时文件。
+系统 MUST 用**设备密钥（M1 `KeyProvider.getDeviceMediaKey()`）**对媒体原文件做对称加密；MUST 提供流式 `put(Stream<List<int>>) -> rel_path` 与 `openRead(rel_path) -> Stream<List<int>>` API；MUST 不在加解密中产生明文临时文件。
 - 前提：device media key 已就绪
 - 操作：写入 1MB 测试文件
 - 结果：磁盘上 `<id>.bin` 为密文（含 nonce 头 + ciphertext + auth tag）；读取流解密后字节完全一致
@@ -53,8 +53,6 @@ v6 第 3.2 / 5 / 9.4 节明确：媒体不进 SQLite blob，存文件系统；�
 - 前提：media 表存在该 id 的行
 - 操作：调用 `MediaStore.hardDelete(id)`
 - 结果：先 unlink 文件，再经 `MediaRepo.hardDelete(id)` 删除 db 行；任一步失败标记为可重试，**不允许 db 已删但文件还在的孤儿状态**（孤儿可由 backup 瘦身扫描捕获）
-
-硬删除 MUST 先删文件再删 db 行；任一步失败标记为可重试，**不允许 db 已删但文件还在的孤儿状态**（孤儿可由 backup 瘦身扫描捕获）。
 
 ### R5 · 设备密钥来源固定
 媒体加密用的密钥 MUST 来自 KeyProvider 暴露的「设备媒体密钥」（M1 T6 已暴露 `getAppDbKey()`；本里程碑要求 M1 补一个 `getDeviceMediaKey()` 接口或在 KeyProvider 中暴露统一访问）；**不得**接受由调用方传入的密钥（避免误用主密码派生密钥加媒体）。
@@ -87,3 +85,17 @@ SHALL 在 iOS 13+ 与 Android 8+ 上读写一致——某端写入的密文文�
 
 ### NF5 · 路径不外泄绝对路径
 任何对外暴露的 API（含异常 message / 日志） MUST 使用相对路径；MUST 不出现 `/var/mobile/...` / `/data/data/...` 等绝对路径。
+
+## 专项维度逐维表态
+
+> 选档锁定（棘轮，只升不降）：本 spec **标准档**。下表 5 个专项维度有多个「是」，加之 design `## 文件变更` 落在多个目录（仍属同一应用模块），任一专项维度命中即升标准档；故 requirement 即含 `## 非功能需求`、并配套 verification.md。
+
+| 专项维度 | 命中？ | 依据（一句话） |
+|---|---|---|
+| 安全 | 是 | 媒体本体 AES-256-GCM 加密、设备密钥 HKDF 派生、AEAD 防篡改（R2/R5/R7/NF1）。 |
+| 权限 | 否 | 不涉及账户/角色/授权判定；密钥来源固定、不由调用方传入（R5），属密钥管理而非访问控制。 |
+| 无障碍 | 否 | 本 spec 为底层文件/加密 API，无面向用户的 UI 控件（demo 仅 Debug Home 调试入口，非交付 UI）。 |
+| 性能 | 是 | 流式不爆内存（NF2，100 MiB < 200 MiB RSS 增量）与吞吐基线（NF4，写 ≥ 30 / 读 ≥ 50 MiB/s）有可度量阈值。 |
+| 多端兼容 | 是 | 密文文件须在 iOS 13+ / Android 8+ 同设备跨进程读写一致（NF3）。 |
+
+结论：标准档（≥1 个「是」自洽），与已选档位一致。

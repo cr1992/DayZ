@@ -26,7 +26,7 @@
 
 ### 数据完整性（NF1）
 - [ ] 任何崩溃场景下 editing_session JSON 都可 `jsonDecode` — 自动：T6 crash_recovery_test 集成
-- [ ] paused 钩子是 await 同步等待（不是 fire-and-forget） — 自动：`grep -q 'await coordinator.forceFlush' lib/drafts/lifecycle_bridge.dart`
+- [ ] paused 钩子是 await 同步等待（不是 fire-and-forget） — 自动：`flutter test test/drafts/lifecycle_bridge_test.dart`（断言行为：让 forceFlush 返回一个延迟完成的 Future，触发 paused 后断言生命周期回调在该 Future 完成**之前不返回**——即写盘完成才返回，证明同步等待而非 fire-and-forget；不 grep 源文件）
 
 ### 性能（NF2, NF3, NF4）
 - [ ] 防抖窗口测试中位耗时 1450-1700ms — 自动：fakeAsync + 真实 Timer 对比
@@ -38,8 +38,8 @@
 - [ ] 不存在多 targetId 并发未 flush — 自动：T3 串行队列测试覆盖
 
 ### 编辑器中立接口（R8；R9 在方案 A 下不适用，由本项覆盖其「来源无关」实质）
-- [ ] `DraftCoordinator.onChanged` 仅接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，签名与实现中不出现编辑器类型名 — 自动：`! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart`
-- [ ] 来源无关：以两种不同「来源」（demo 的 TextField onChanged 与直接构造的 payload）调用 onChanged，写入行为一致 — 自动：T3 / demo 测试覆盖
+- [ ] `DraftCoordinator.onChanged` 仅接受 plain payload `(targetId, draftJson, isNew, cursorPos)`，签名与实现中不出现编辑器类型名 — 自动：`! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart` ——**为缺失/解耦守卫，非行为断言**：断言协调器文件里不出现编辑器类型名（AppFlowy/TipTap/WebView），保证 R8 解耦不变式；接口接受 plain payload 的正向行为由下一项的来源无关测试断言
+- [ ] 来源无关：以两种不同「来源」（demo 的 TextField onChanged 与直接构造的 payload）调用 onChanged，相同 `(targetId, draftJson)` 产生相同写入结果 — 自动：`flutter test test/drafts/draft_coordinator_test.dart`（断言行为：两条来源各调一次 onChanged 后，editing_session 写入内容逐字节一致，证明协调器对来源无感）
 
 ## 回归检查
 

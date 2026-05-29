@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-29
 文档状态：草稿
 ---
 
@@ -13,7 +13,7 @@
 graph LR
   M0[M0] --> T1
   M1[M1 deriveBackupKey] --> T4
-  M2[M2 db] --> T3
+  M2[M2 db] --> T4
   M3[M3 MediaStore] --> T4
   M5[M5 warmup] --> T7
   T1 --> T2
@@ -25,7 +25,7 @@ graph LR
   T6 --> T7
   T4 --> T8
   T7 --> T8
-  T8 --> T9
+  T4 --> T9
   T8 --> T10
 ```
 
@@ -117,10 +117,10 @@ graph LR
 
 - [ ] T4 · BackupExporter（核心导出）
 
-**依赖：** T2, T3, M1, M3 ｜ **关联需求：** R3, R4, R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
+**依赖：** T2, T3, M1, M2, M3 ｜ **关联需求：** R3, R4, R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
 
 ### 实施
-1. `export({password, outputPath, onProgress, cancelToken})`
+1. `export({password, outputPath, onProgress, onCancel})`（签名与 R3 一致）
 2. 步骤按 R3 流程；isolate 内执行
 3. 进度回调四阶段（D9）
 4. 失败 / 取消清理 `.tmp` + 临时 db
@@ -239,21 +239,21 @@ graph LR
 ### 实施
 1. `rebuildFts()`：在 db 上跑 `DELETE FROM entries_fts; INSERT INTO entries_fts SELECT id, content_plain FROM entries WHERE deleted_at IS NULL;` —— 同步等待完成
 2. `kickoffThumbnailWarmup()`：`ThumbnailCache.warmup(allLivingMediaIds)`，**不 await**
-3. 测试：
+3. 测试（注入 spy `ThumbnailCache`，断言可观测行为而非扫源码文本）：
    - restore 完成后 FTS 表行数 = 存活 entries 数
-   - warmup 调用立即返回（< 50ms）
-   - 不存在「restore 流程内同步生成缩略图」的代码路径（grep 检查）
+   - 注入一个 `warmup` 内部故意挂起（永不完成的 `Completer`）的 spy：restore 的返回 future 仍能在 < 50ms 内 complete —— 证明 warmup 未被 await（若被 await，restore 将永远挂起）
+   - spy 记录：`warmup` 被调用恰好 1 次、入参为全部存活 media id、优先级为 low；restore 返回时 `thumbs/` 目录为空或仅 warmup 已异步落的部分文件，**不出现「restore 返回前 thumbs/ 已被全量填满」**
 
 ### 验收标准（做完即止）
-- restore 完成后 `entries_fts` 行数 = 存活 entries 数（自动，满足 R6）
-- `kickoffThumbnailWarmup()` 不 await，调用立即返回（< 50ms）（自动）
-- restore 代码路径不含「同步全量生成缩略图」调用（自动 grep）
+- restore 完成后 `entries_fts` 行数 = 存活 entries 数（自动，满足 R6；断言 FTS 表实际行数 == 存活 entries 计数）
+- 注入「warmup 永不完成」spy 后，restore 返回 future 仍 < 50ms complete（自动，断言 restore 未 await 缩略图生成——这是「缩略图异步、不阻塞」的可观测证据，满足 R6 / D7）
+- spy 断言：`warmup` 恰好被调用 1 次、入参 = 全部存活 media id、优先级 low；restore 返回时 `thumbs/` 未被全量填满（自动，断言无「restore 流程内同步全量生成」的可观测后果）
 
 ### 禁止
-- restore 不得调用任何「同步全量生成缩略图」函数（grep `await.*Thumbnail.*for` 或类似）
+- restore 不得在自身流程内同步（await）全量生成缩略图——由上面「warmup 永不完成 spy 仍 < 50ms 返回」behavior test 把守，而非扫源码字符串
 
 ### 验收方式
-- 自动：`flutter test test/backup/restorer_fts_test.dart`
+- 自动：`flutter test test/backup/restorer_fts_test.dart`（注入 spy ThumbnailCache，断言 restore 不 await warmup、warmup 调用参数与优先级、thumbs/ 未被全量填满；**不** grep 源文件）
 
 ### 验收记录
 ```
