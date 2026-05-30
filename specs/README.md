@@ -14,7 +14,7 @@
 | [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
-| [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（T1–T3 已完成；T4 自动通过，待 @Ray 核 overlay 措辞） | design-tokens-theme | @Ray | 2026-05-29 |
+| [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏 + ui-shell） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 草稿 | design-tokens-theme, ui-kit-components, data-layer | @Ray | 2026-05-29 |
 | [timeline-screen](active/timeline-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
@@ -47,7 +47,7 @@
 
 ## 已交付·随设计维护
 
-> DayZ UI 屏幕级 spec 的维护态泳道：这是 `docs/spec-guide-ai.md` 对通用「终态→归档」不变式的 project-local override，且**仅限屏幕 spec**。交付 v1 的屏幕 spec 不移入 `archive/`，而在此保留维护入口；对齐锚点由 [`active/design-sync-automation/screens.yaml`](active/design-sync-automation/screens.yaml) 维护。
+> 通用规则仍是「spec 完成后归档，后续新需求另开 spec」。本泳道是唯一例外，且**仅限 UI 屏幕级 spec**：屏幕 v1 交付后不移入 `archive/`，而在此保留设计稿同步维护入口；这不代表未完成，也不参与普通 active spec 的优先级竞争。对齐锚点由 [`active/design-sync-automation/screens.yaml`](active/design-sync-automation/screens.yaml) 维护。
 
 | 功能 | 状态 | pinned | map | 备注 |
 |------|------|--------|-----|------|

@@ -128,7 +128,7 @@ graph LR
 
 -----
 
-- [-] T4 · 维护态泳道 override（DayZ-own）+ AGENTS 指针 + 三档/视觉默认（D8 修订）〔期一·M1〕
+- [x] T4 · 维护态泳道 override（DayZ-own）+ AGENTS 指针 + 三档/视觉默认（D8 修订）〔期一·M1〕
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7, R8 ｜ **依据设计：** D8 ｜ **可改文件：** `docs/spec-guide-ai.md`、`AGENTS.md`、`specs/README.md` ｜ **验收基建：** 无（走死链 hook + `git diff --quiet` + 人工核措辞）
 
@@ -160,7 +160,7 @@ D8（修订）：override 落 DayZ-own——overlay 定义「已交付·随设�
 ```
 日期：2026-05-30
 自动：`bash spec-kit/scripts/check_dead_links.sh && git diff --quiet spec-kit/spec-guide.md` 通过。
-人工：待确认（核查人 @Ray）
+人工：确认采用「通用归档规则不变，仅 UI 屏幕 spec 进入维护态」措辞（核查人 @Ray）。
 ```
 
 -----
