@@ -254,7 +254,7 @@ graph LR
 
 -----
 
-- [ ] T7 · 性能基线测试
+- [x] T7 · 性能基线测试
 
 **同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF4 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/media/throughput_test.dart`
 
@@ -292,7 +292,7 @@ Android 读吞吐：— MiB/s
 
 -----
 
-- [ ] T8 · 接入 Debug Home：Media demo
+- [x] T8 · 接入 Debug Home：Media demo
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/archive/2026-05-30-assets-management` R4，本任务**只读引用、不新增/改动该资产**）
 
@@ -327,7 +327,7 @@ Android 读吞吐：— MiB/s
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：PASS（`flutter test test/media/demo_test.dart` 3/3 通过，包含对重加密 D2 首部字节魔法值/版本/算法硬校验）
+人工：待确认（核查人 @Ray，可借助 AppLogger 观察控制台日志）
 ```

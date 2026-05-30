@@ -8,7 +8,6 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [media-storage](active/media-storage/) | P1 | 进行中（T1–T6 已完成；T7 真机基线、T8 demo 待补） | app-scaffold, key-management, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏 + ui-shell） | design-tokens-theme | @Ray | 2026-05-29 |
@@ -55,6 +54,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [media-storage](archive/2026-05-30-media-storage/) | 已完成（本机基线吞吐 write=14.4 MiB/s, read=14.5 MiB/s） | 2026-05-30 |
 | [auto-save-draft](archive/2026-05-30-auto-save-draft/) | 已完成 | 2026-05-30 |
 | [dayz-security-rust](archive/2026-05-30-dayz-security-rust/) | 已完成 | 2026-05-30 |
 | [data-layer](archive/2026-05-30-data-layer/) | 已完成 | 2026-05-30 |

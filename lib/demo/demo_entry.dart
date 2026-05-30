@@ -9,6 +9,7 @@ import 'package:dayz/data/demo.dart';
 import 'package:dayz/demo/observability_demo.dart';
 import 'package:dayz/demo/i18n_demo.dart';
 import 'package:dayz/drafts/demo.dart';
+import 'package:dayz/media/demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -64,6 +65,11 @@ final List<DemoEntry> demos = [
     title: 'Drafts demo',
     subtitle: '自动保存草稿与恢复状态演示',
     builder: (context) => const DraftsDemo(),
+  ),
+  DemoEntry(
+    title: 'Media demo',
+    subtitle: '媒体加密写入 / 读取 / 备份重加密',
+    builder: (context) => const MediaDemo(),
   ),
   // 各模块 demo 在此追加
 ];
