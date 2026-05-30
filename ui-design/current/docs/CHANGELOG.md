@@ -103,3 +103,6 @@
 - [原型套件] **底部弹层 sheet 回灌 kit**：`DZ.sheet` 引擎与样式业务无关，已同步进 `prototype-kit/assets/sheet.js` + `spec.css`，并在示例屏 detail 接一个 ⋯ 动作菜单演示；README 组件清单补一条。DayZ 的菜单文案/新建日记本/回忆卡片属业务，不回灌。
 - [弹层/原型套件] **`DZ.confirm()` 便捷封装 + settheme/setmode 外壳协议回灌**：① 给 sheet 引擎加 `DZ.confirm({title,desc,confirmLabel,icon,danger,onConfirm})`——"确认再执行"是最高频特化，DayZ 删除/彻底删/清空回收站改用它；同步进 kit。② 把"设置屏请求换肤"的 `settheme`/`setmode`（含`跟随系统`→`matchMedia`）从 DayZ `app.js` 回灌到 `prototype-kit/assets/app.js`——纯外壳机制，任何带设置页的原型可用；kit PROTOTYPE-ARCH §4/§6 同步。
 - [页面] **回忆卡片改版（定档）**：① 修底栏溢出——画幅/风格选择器 + 保存/分享改为**固定底栏**（始终可见，卡片更高时上方预览区滚动），修掉「`.btn` 内 SVG 无尺寸约束被撑爆」。② 新增**长图**画幅——把往年今日"这一天"的多段回忆（含年份分隔 + 配图 + 摘录）竖排成一张可分享长图（纸感款，长图固定纸感、风格行置灰）；满足"往年今日分享一个长图"。画幅三选：竖版 9:16 / 方形 1:1 / 长图。
+
+## 2026-05-30
+- [图标] **App 图标导出（定档）**：基于已定方案 **B · 暖纸底 · 雾紫 Lavender**（暖纸渐变 + `#786CAD` 描边书签本），输出 iOS / Android 全套启动图标到独立目录 `app-icons/exports/`。iOS `AppIcon.appiconset`（含 `Contents.json`，覆盖 iPhone/iPad/1024 满版方形）；Android 自适应图标（`mipmap-anydpi-v26` + 各密度 fg/bg/legacy/round）+ Play 512；附 `Icon Export Preview.html` 明暗 + 遮罩预览与 `README.md` 落地说明。所有尺寸由同一矢量光栅化，未二次缩放。
