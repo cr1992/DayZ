@@ -1,22 +1,35 @@
 PODS:
+  - Argon2Swift (1.0.4)
+  - dargon2_flutter_mobile (1.2.0):
+    - Argon2Swift
+    - Flutter
   - Flutter (1.0.0)
   - keyboard_height_plugin (0.0.1):
     - Flutter
 
 DEPENDENCIES:
+  - dargon2_flutter_mobile (from `/Users/xiaji/.pub-cache/hosted/pub.dev/dargon2_flutter_mobile-3.3.0/ios`)
   - Flutter (from `Flutter`)
   - keyboard_height_plugin (from `.symlinks/plugins/keyboard_height_plugin/ios`)
 
+SPEC REPOS:
+  trunk:
+    - Argon2Swift
+
 EXTERNAL SOURCES:
+  dargon2_flutter_mobile:
+    :path: "/Users/xiaji/.pub-cache/hosted/pub.dev/dargon2_flutter_mobile-3.3.0/ios"
   Flutter:
     :path: Flutter
   keyboard_height_plugin:
     :path: ".symlinks/plugins/keyboard_height_plugin/ios"
 
 SPEC CHECKSUMS:
+  Argon2Swift: 295b8bde7ba61434f227f5610b8813c42e866f74
+  dargon2_flutter_mobile: 569a48bc2f6d082bb5228bac56913b31c2eaecb9
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   keyboard_height_plugin: ef70a8181b29f27670e9e2450814ca6b6dc05b05
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 3a910f0640e40e6b7d5a0d567407ec54d71c4654
 
 COCOAPODS: 1.16.2

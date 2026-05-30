@@ -31,6 +31,18 @@ target 'Runner' do
   use_frameworks!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  # Force load dargon2_flutter_mobile pod since its pubspec.yaml incorrectly sets native_build to false on iOS
+  require 'json'
+  plugins_file = File.join(File.dirname(__FILE__), '..', '.flutter-plugins-dependencies')
+  if File.exist?(plugins_file)
+    plugins_config = JSON.parse(File.read(plugins_file))
+    dargon2 = plugins_config['plugins']['ios']&.find { |p| p['name'] == 'dargon2_flutter_mobile' }
+    if dargon2
+      pod 'dargon2_flutter_mobile', :path => File.join(dargon2['path'], 'ios')
+    end
+  end
+
   target 'RunnerTests' do
     inherit! :search_paths
   end

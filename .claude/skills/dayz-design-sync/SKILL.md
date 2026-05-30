@@ -21,6 +21,7 @@ description: DayZ 项目专用——把 UI 设计稿同步进仓库 `ui-design/`
 | `ui-design/dayz-prototype.html` | 成品:交互原型,独立单文件,双击即开、完全离线 |
 | `ui-design/dayz-design-spec.html` | 成品:设计规范页(色板/字体/token),独立单文件 |
 | `ui-design/current/` | 原始多文件源(整体替换的落点) |
+| `ui-design/current/docs/screenshots/` | 设计师交付的展示截图 + `shots.json` 镜头清单;被 `current/README.md` 与**仓库根 `README.md`** 引用。**是交付物,sync 时要保留**——别和顶层过程截图 `scraps/` 混淆 |
 | `ui-design/build-standalone.py` | 内联构建器 |
 | `ui-design/OPEN.md` | 给人看的「怎么打开」说明 |
 
@@ -37,7 +38,7 @@ description: DayZ 项目专用——把 UI 设计稿同步进仓库 `ui-design/`
 ### 1. 下载 + 解压(禁沙箱)
 
 ```bash
-curl -fsS -L -o /tmp/dayz-design.bin \
+curl -fsS -L --http1.1 -o /tmp/dayz-design.bin \
   "https://api.anthropic.com/v1/design/h/<handle>" \
   -w "HTTP=%{http_code} type=%{content_type} size=%{size_download}\n"
 file /tmp/dayz-design.bin                      # 期望 gzip compressed data
@@ -46,7 +47,9 @@ mkdir -p /tmp/dz-src && tar -xzf /tmp/dayz-design.bin -C /tmp/dz-src
 ```
 
 - 真源在 **`/tmp/dz-src/dayz/project/`**(tar 顶层是 `dayz/`,业务在 `project/`)。
-- 过程产物**不同步**:`scraps/`(设计过程截图,旧名 `screenshots/`)、`.thumbnail`、`dayz/chats/`。
+- 过程产物**不同步**:**项目根**的 `scraps/`(设计过程截图,旧名顶层 `project/screenshots/`)、`.thumbnail`、`dayz/chats/`。
+- 交付物**要同步**:`docs/screenshots/`(设计师展示截图 + `shots.json` + `README.md`,喂给 `current/README.md` 与仓库根 README)。**它和顶层过程截图同名但不是一回事**——见第 2 步,exclude 必须**锚定根**,否则会把它一起删掉。
+- `HTTP=000 / curl:(16) HTTP2 framing layer` → HTTP/2 协商抖动,加 `--http1.1` 重试(命令里已带)。`HTTP=000` 也可能是没禁沙箱。
 - `HTTP=404` → handle 失效/未发布/私有/拷错,**停下找用户**确认。
 - `file` 不是 gzip(变 JSON/文本)→ 端点格式变了,先 `head -c 500` 摸清再调脚本。
 - **源 B(本地导出)**:源根就是用户给的目录,跳过 curl。
@@ -55,13 +58,14 @@ mkdir -p /tmp/dz-src && tar -xzf /tmp/dayz-design.bin -C /tmp/dz-src
 
 ```bash
 cd <repo-root>
-rsync -a --delete \
-  --exclude='scraps/' --exclude='screenshots/' --exclude='.thumbnail' --exclude='.DS_Store' \
+rsync -ai --delete \
+  --exclude='/scraps/' --exclude='/screenshots/' --exclude='.thumbnail' --exclude='.DS_Store' \
   /tmp/dz-src/dayz/project/ ui-design/current/
 ```
 
-`--delete` 让 `current/` 严格镜像最新设计(改名/删除的旧文件一并清掉,不留残留、不归档)。
-**新增 exclude 时同步更新这里**——`scraps/` 就是新版改名后漏排过一次的坑。
+`--delete` 让 `current/` 严格镜像最新设计(改名/删除的旧文件一并清掉,不留残留、不归档)。`-i` 出 itemize 清单(`+++++++` 全新 / `..t` 仅时间戳即内容未变 / `*deleting` 删),RTK 会截短,**重定向到 `/tmp/dz-rsync.txt` 再 Read** 看真清单。
+
+**过程截图的 exclude 必须用根锚定 `/`**(`/scraps/`、`/screenshots/`)——它们只在**项目根**:`scraps/` 是过程图(旧名顶层 `screenshots/`),要排掉;而 `docs/screenshots/` 是**交付物**,要留。**不锚定的 `--exclude='screenshots/'` 会匹配任意层级、把 `docs/screenshots/` 一起删——踩过,丢的就是设计师交付的展示截图。** `.thumbnail`/`.DS_Store` 保持不锚定(到处都排)。**新增 exclude 时同步更新这里,并先想清楚要不要锚定。**
 
 ### 3. 构建独立 HTML(禁沙箱——字体子集化要联网)
 
@@ -74,6 +78,7 @@ python3 build-standalone.py current/design-system/design-system.html dayz-design
 > 入口路径以**实际源**为准:跳转壳 `current/index.html` → 真入口(现为 `current/pages/index.html`);规范页现为 `current/design-system/design-system.html`。结构变了就改这两条命令。
 
 每条须打印 `外部字体请求残留: 0 (完全离线 ✓)` + `自检: 无残留相对引用 ✓`,退出码 0。
+- **build 输入字节没变就别白重建**:若第 2 步 itemize 显示改的全是 `..t`(仅时间戳)、真正新增的只有 `docs/screenshots/`(它**不参与** build),则独立 HTML 是同一产物。抽查 `shasum` 确认 `current/` 关键源(`index.html`、`pages/index.html`、`design-system/design-system.html`、`pages/screens/*`、`app.js`)与解压源一致后,**跳过重建,只跑第 4 步验证既有产物健康**——重建要联网做字体子集化,无谓重跑是浪费。
 - **退出码 3 + 「回退在线 link」**:字体没全内联(个别 woff2 网络抖动,常见)。脚本已带重试,**直接重跑一次**通常即成。确无外网、只要能跑的产物时设 `DZ_ALLOW_ONLINE_FONTS=1` 放行。
 - **「N 处相对引用未内联」**:有新资源加载方式没覆盖,见「构建器要点」。
 

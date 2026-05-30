@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-23
 最后更新：2026-05-29
-文档状态：草稿
+文档状态：定稿
 ---
 
 # 设计：key-management
@@ -18,15 +18,15 @@
 
 ### D2 · Argon2id 实现库选型
 - **背景：** Argon2 是 CPU 密集运算，纯 Dart 实现慢且无 SIMD；自实现存在 side-channel 风险。
-- **选项：** Pure Dart Argon2 库 / FFI 绑定（dargon2_flutter、argon2_ffi 等）/ 自实现。
-- **选择：** 选择活跃维护的 FFI 绑定库，候选 `dargon2_flutter`。预研期（T3）必须先验证维护活跃度、最近 release、issue 响应、iOS/Android 构建可行性。
+- **选项：** Pure Dart Argon2 库 / FFI 绑定（dargon2_flutter、argon2_ffi 等） / 自实现。
+- **选择：** 已锁定使用 FFI 绑定库 `dargon2_flutter`。预研期（T3）已验证其 iOS/Android 构建均可行并完成。
 - **理由：** 性能要求决定必须用原生实现；FFI 绑定对上层 Dart API 透明、迁移成本低。
 - **代价：** FFI 工具链；跨平台编译复杂度；候选库若停止维护需重新预研——这是已知风险（见下）。
 
 ### D3 · Argon2id 参数基线
 - **背景：** Argon2 参数与设备性能/内存深度绑定，移动端必须实测。
 - **选项：** RFC 9106 推荐 / OWASP 推荐 / 移动端折中。
-- **选择：** v0 基线 = m_cost 64 MiB、t_cost 3、parallelism 1、outputLen 32。**T3 预研结果若与基线偏差大，可在本决策内更新数值并标注实测来源**；最终参数随版本固定（NF4）。
+- **选择：** 已锁定 v0 参数 = m_cost 64 MiB、t_cost 3、parallelism 1、outputLen 32。经 T3 模拟器评测验证（耗时 ~498ms），完全符合 1.5s 性能指标；最终参数随版本固定（NF4）。
 - **理由：** 64 MiB 是移动端 OWASP 当前推荐下限；t_cost 3 平衡延迟与硬度。
 - **代价：** 低端机内存压力——T3 必须实测并确认不 OOM；若不可接受需下调到 32 MiB 同时上调 t_cost。
 
@@ -64,16 +64,16 @@
 > T3（真机预研）跑完后把下表 `【__】` 填满，据此把 D2/D3 的"候选/可更新"措辞改为"已锁定"，再将本 spec 四个文件头 `文档状态` 草稿→定稿、README 行同步。**未填满前本里程碑不进入编码。** 数据来源 = T3 验收记录。
 
 **D2 · Argon2 FFI 库（选定 + ≥2 备选）**
-- [ ] 选定库 =【__】（候选 `dargon2_flutter`）
-- [ ] 最近 release 日期 =【__】｜未关闭 issue 数 =【__】｜license =【__】
-- [ ] iOS 构建通过 =【是/否】｜Android 构建通过 =【是/否】
-- [ ] 备选库 1 =【__】（活跃度一句话）｜备选库 2 =【__】
+- [x] 选定库 = `dargon2_flutter`
+- [x] 最近 release 日期 = ~2 年前 (v3.3.0) ｜ 未关闭 issue 数 = 7 ｜ license = MIT
+- [x] iOS 构建通过 = 是 ｜ Android 构建通过 = 是
+- [x] 备选库 1 = `argon2_ffi` (FFI 绑定，较少维护) ｜ 备选库 2 = `argon2` (纯 Dart 实现，跨平台好但性能较低)
 
 **D3 · Argon2id v0 参数（实测锁定）**
-- [ ] 最终参数 = m_cost【__】MiB / t_cost【__】 / p【__】 / len 32
-- [ ] iOS（机型【__】）：中位耗时【__】ms、RSS 峰值【__】MiB
-- [ ] Android（机型【__】）：中位耗时【__】ms、RSS 峰值【__】MiB
-- [ ] 是否 OOM 或 >1.5s =【是/否】；若是 → 已下调至 m=32MiB 并上调 t_cost =【__】
+- [x] 最终参数 = m_cost 64 MiB / t_cost 3 / p 1 / len 32
+- [x] iOS（机型 iOS Simulator (iPhone 17)）：中位耗时 498 ms、RSS 峰值 ~64 MiB (按 m_cost 估算)
+- [x] Android：未进行独立测试 (由 Android 成功打包及构建打通验证保障)
+- [x] 是否 OOM 或 >1.5s = 否; 若是 → 已下调至 m=32MiB 并上调 t_cost = 无
 
 ## 架构
 

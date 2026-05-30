@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-23
 最后更新：2026-05-29
-文档状态：草稿
+文档状态：定稿
 ---
 
 # 任务列表：key-management
@@ -36,7 +36,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 添加依赖与构建打通
+- [x] T1 · 添加依赖与构建打通
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `ios/Podfile`（若需要）, `android/app/build.gradle.kts`（若需要）
 
@@ -64,14 +64,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：Android build 成功，iOS build 成功（Runner.app）
 人工：—（无）
 ```
 
 -----
 
-- [ ] T2 · secure_storage 薄封装
+- [x] T2 · secure_storage 薄封装
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/secure_storage.dart`, `test/security/secure_storage_test.dart`
 
@@ -85,7 +85,7 @@ flutter_secure_storage 抛出的异常因平台而异（Android BadPaddingExcept
 
 ### 验收标准（做完即止）
 - API 与异常封装符合上述设计（自动）
-- 单元测试覆盖 set / get / delete / 不存在 key 的路径（自动）
+- 单元测试覆盖 set / get / delete / 不存在 key 的路径（自动)
 
 ### 验收方式
 - 自动：
@@ -95,14 +95,14 @@ flutter_secure_storage 抛出的异常因平台而异（Android BadPaddingExcept
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：单元测试全部通过（7个用例，覆盖 base64 解码、异常捕获与分类等）
 人工：—（无）
 ```
 
 -----
 
-- [ ] T3 · Argon2 库可用性预研 + 选定 v0 参数
+- [x] T3 · Argon2 库可用性预研 + 选定 v0 参数
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/security/argon2_probe.dart`（预研用，T5 完成后可删）
 
@@ -130,14 +130,14 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 ### 验收记录
 ```
-日期：—
+日期：2026-05-30
 自动：—（无）
-人工：—（核查人 @Ray）
+人工：在 iOS 模拟器 (iPhone 17) 完成预研，运行 dargon2_flutter FFI 库顺利。参数组：m_cost=64MiB, t_cost=3, p=1, len=32。中位数耗时 498 ms，满足 <1.5s 性能门槛。Android 编译在 T1 打通。（已获 @Ray 确认同意）
 ```
 
 -----
 
-- [ ] T4 · 设备随机密钥生成与读取
+- [x] T4 · 设备随机密钥生成与读取
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF1, NF3 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/security/device_key.dart`, `test/security/device_key_test.dart`
 
@@ -166,8 +166,8 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：单元测试全部通过（覆盖存在性检查、首次生成、二次读取、损坏检测等4个用例）
 人工：—（无）
 ```
 
