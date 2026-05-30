@@ -38,12 +38,17 @@ dependencies:
   webview_flutter: ^4.7.0
   path_provider: ^2.1.2
   flutter_secure_storage: ^10.3.1
-  dargon2_flutter: ^3.3.0
   sqlcipher_flutter_libs: ^0.7.0+eol
+  # Argon2id/HKDF KDF 后端（自研 argon2id_ffi：RustCrypto + 手写 dart:ffi，已替换 dargon2）。
+  argon2id_ffi:
+    path: packages/argon2id_ffi
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+  csslib: ^1.0.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -99,3 +104,32 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  fonts:
+    - family: Hanken Grotesk
+      fonts:
+        - asset: assets/fonts/HankenGrotesk-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/HankenGrotesk-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/HankenGrotesk-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/HankenGrotesk-Bold.ttf
+          weight: 700
+
+    - family: Newsreader
+      fonts:
+        - asset: assets/fonts/Newsreader-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Newsreader-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Newsreader-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Newsreader-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Newsreader-Italic.ttf
+          style: italic
+          weight: 400
+        - asset: assets/fonts/Newsreader-MediumItalic.ttf
+          style: italic
+          weight: 500

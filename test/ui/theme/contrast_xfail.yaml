@@ -1,0 +1,75 @@
+# Expected-fail contrast cases registry.
+# This serves as the machine truth for expected failures to prevent regressions.
+# Author: @Ray
+
+- theme: sageLight
+  foreground: onAccent
+  background: accent
+  reason: "sage 按钮 white on accent = 3.97 (< 4.5)"
+
+- theme: amberLight
+  foreground: accent
+  background: bg
+  reason: "amber accent focus border on bg = 2.43 (< 3.0)"
+
+# ink3 on bg/surface under light mode (purple, amber, sage are identical)
+- theme: purpleLight
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 2.77 (< 4.5)"
+
+- theme: purpleLight
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 2.97 (< 4.5)"
+
+- theme: amberLight
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 2.77 (< 4.5)"
+
+- theme: amberLight
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 2.97 (< 4.5)"
+
+- theme: sageLight
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 2.77 (< 4.5)"
+
+- theme: sageLight
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 2.97 (< 4.5)"
+
+# ink3 on bg/surface under dark mode (purple, amber, sage are identical)
+- theme: purpleDark
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 3.87 (< 4.5)"
+
+- theme: purpleDark
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 3.19 (< 4.5)"
+
+- theme: amberDark
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 3.87 (< 4.5)"
+
+- theme: amberDark
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 3.19 (< 4.5)"
+
+- theme: sageDark
+  foreground: ink3
+  background: bg
+  reason: "ink-3 on bg = 3.87 (< 4.5)"
+
+- theme: sageDark
+  foreground: ink3
+  background: surface
+  reason: "ink-3 on surface = 3.19 (< 4.5)"

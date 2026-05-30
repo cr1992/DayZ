@@ -23,6 +23,8 @@ flutter test test/demo/debug_home_test.dart       # 跑单个测试文件
 flutter test --name "描述子串"                     # 按用例名跑单个测试（可附文件路径限定范围）
 flutter analyze                                   # 静态分析 / lint（flutter_lints，配置见 analysis_options.yaml）
 dart format .                                      # 格式化
+dart run bin/gen_tokens.dart                      # 生成 design tokens (dayz_tokens.g.dart)
+bash scripts/check_tokens_sync.sh                 # tokens.css 同源校验
 ```
 
 非显然的两条管线：

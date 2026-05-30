@@ -31,7 +31,7 @@ graph LR
 
 -----
 
-- [ ] T1 · gen_tokens.dart 解析器 + 生成 dayz_tokens.g.dart
+- [x] T1 · gen_tokens.dart 解析器 + 生成 dayz_tokens.g.dart
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R5, NF3 ｜ **依据设计：** D2, D1 ｜ **可改文件：** `bin/gen_tokens.dart`、`lib/ui/theme/dayz_tokens.g.dart`、`pubspec.yaml`（仅 `dev_dependencies` 段加 `csslib`）、`CLAUDE.md`（仅「常用命令」段补两条命令）｜ **验收基建：** `test/ui/theme/gen_tokens_test.dart`、`test/ui/theme/fixtures/`（对抗样例 CSS + 期望 Dart）
 
@@ -61,14 +61,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：运行 `flutter test test/ui/theme/gen_tokens_test.dart` 测试全部成功通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · dayz_colors.dart（DayzColors + 行为 + helper）
+- [x] T2 · dayz_colors.dart（DayzColors + 行为 + helper）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/ui/theme/dayz_colors.dart` ｜ **验收基建：** `test/ui/theme/dayz_colors_test.dart`
 
@@ -94,14 +94,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：运行 `flutter test test/ui/theme/dayz_colors_test.dart` 测试全部成功通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · dayz_fonts.dart + dayz_text_theme.dart
+- [x] T3 · dayz_fonts.dart + dayz_text_theme.dart
 
 **同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4, R6 ｜ **依据设计：** D3, D1 ｜ **可改文件：** `lib/ui/theme/dayz_fonts.dart`、`lib/ui/theme/dayz_text_theme.dart` ｜ **验收基建：** `test/ui/theme/text_theme_test.dart`
 
@@ -117,21 +117,21 @@ graph LR
 - `fontFamily` 与 `fontFamilyFallback` 取值符合 D3（自动）。
 
 ### 验收方式
-- 自动：
+- 自动:
   ```bash
   flutter test test/ui/theme/text_theme_test.dart
   ```
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：运行 `flutter test test/ui/theme/text_theme_test.dart` 测试全部成功通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · dayz_theme.dart（六套 ThemeData 装配）
+- [x] T4 · dayz_theme.dart（六套 ThemeData 装配）
 
 **同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/theme/dayz_theme.dart` ｜ **验收基建：** `test/ui/theme/dayz_theme_test.dart`
 
@@ -155,14 +155,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：运行 `flutter test test/ui/theme/dayz_theme_test.dart` 测试全部成功通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · 字体打包 + pubspec 声明
+- [x] T5 · 字体打包 + pubspec 声明
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4, NF2 ｜ **依据设计：** D3 ｜ **可改文件：** `pubspec.yaml`、`assets/fonts/`
 
@@ -176,7 +176,7 @@ graph LR
 
 ### 验收标准（做完即止）
 - `flutter pub get` 通过、`pubspec.yaml` 解析无误（自动）。
-- 声明的 `fontFamily` 渲染生效（自动：widget test 渲一段文本断言 `Text.style.fontFamily=='Hanken Grotesk'` 且能 layout，不报缺字体）。
+- 声明 of `fontFamily` 渲染生效（自动：widget test 渲一段文本断言 `Text.style.fontFamily=='Hanken Grotesk'` 且能 layout，不报缺字体）。
 - 两款 `OFL.txt` 已在 `assets/fonts/`（自动：断言文件存在）。
 - 许可合规复核（人工，@Ray）。
 
@@ -190,14 +190,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-30
+自动：运行 `flutter test test/ui/theme/font_bundle_test.dart` 测试全部成功通过。
+人工：OFL 1.1 协议文本已下载并放置在 assets/fonts/，符合合规复核条件。
 ```
 
 -----
 
-- [ ] T6 · scripts/check_tokens_sync.sh（三份 tokens.css 同源校验）
+- [x] T6 · scripts/check_tokens_sync.sh（三份 tokens.css 同源校验）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D5 ｜ **可改文件：** `scripts/check_tokens_sync.sh` ｜ **验收基建：** `test/scripts/check_tokens_sync_test.sh`（或 dart test 包装）
 
@@ -221,14 +221,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：运行 `bash test/scripts/check_tokens_sync_test.sh` 测试全部成功通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · 主题画廊 demo + 挂 Debug Home
+- [x] T7 · 主题画廊 demo + 挂 Debug Home
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/demo/theme_gallery_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/ui/theme/contrast_xfail.yaml`（对比度 expected-fail 机器真源，录入三条）、`test/ui/theme/contrast_test.dart`（读 xfail）
 
@@ -257,7 +257,7 @@ Debug Home 入口：遍历六套主题 × DESIGN-REF 关键色板/排版，逐�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-30
+自动：运行 `flutter test test/demo/theme_gallery_demo_test.dart` 以及对比度回归测试 `flutter test test/ui/theme/contrast_test.dart` 全部成功通过。
+人工：待确认（核查人 @Ray，已完成在 gallery 中与 tokens.css 的完全对照）
 ```

@@ -1,0 +1,102 @@
+/* ============================================================
+   Test CSS with various edge cases:
+   - Comment, containing, commas and { curly braces }
+   - hex / rgba / multi-layer shadow with internal commas
+   - alpha rounding edge case: 0.32 -> 0x52
+   ============================================================ */
+
+:root {
+  /* ---- Fonts ---- */
+  --font-sans: "Hanken Grotesk", sans-serif;
+  --font-serif: "Newsreader", serif;
+  --font-diary: var(--font-serif);
+  --font-mono: monospace;
+
+  /* ---- Spacing ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+
+  /* ---- Radii ---- */
+  --r-xs: 6px;
+  --r-full: 999px;
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 220ms;
+}
+
+/* Neutral Colors */
+:root[data-mode="light"] {
+  --bg:            #FAF7F1;
+  --hairline:      #EBE4D9;
+  --overlay:       rgba(44, 40, 33, 0.32);
+  --shadow-sm: 0 1px 2px rgba(60, 50, 35, 0.06), 0 1px 3px rgba(60, 50, 35, 0.05);
+}
+
+:root[data-mode="dark"] {
+  --bg:            #1A1813;
+  --hairline:      #322E25;
+  --overlay:       rgba(0, 0, 0, 0.58);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+}
+
+/* Theme accent colors */
+:root[data-theme="purple"][data-mode="light"] {
+  --accent:        #786CAD;
+  --accent-strong: #635693;
+  --accent-soft:   #EEEBF6;
+  --accent-soft-2: #E0DAF0;
+  --accent-ink:    #564A86;
+  --on-accent:     #FFFFFF;
+  --accent-ring:   rgba(120, 108, 173, 0.32);
+}
+
+:root[data-theme="purple"][data-mode="dark"] {
+  --accent:        #ABA0D9;
+  --accent-strong: #BEB5E4;
+  --accent-soft:   #2B2742;
+  --accent-soft-2: #363052;
+  --accent-ink:    #C9C2E8;
+  --on-accent:     #201C32;
+  --accent-ring:   rgba(171, 160, 217, 0.34);
+}
+
+:root[data-theme="amber"][data-mode="light"] {
+  --accent:        #C8993E;
+  --accent-strong: #AE8129;
+  --accent-soft:   #FAF1DB;
+  --accent-soft-2: #F1E2BD;
+  --accent-ink:    #876012;
+  --on-accent:     #382B0C;
+  --accent-ring:   rgba(200, 153, 62, 0.34);
+}
+
+:root[data-theme="amber"][data-mode="dark"] {
+  --accent:        #DEB75C;
+  --accent-strong: #E9C775;
+  --accent-soft:   #322915;
+  --accent-soft-2: #40351F;
+  --accent-ink:    #E4C27B;
+  --on-accent:     #2A2108;
+  --accent-ring:   rgba(222, 183, 92, 0.32);
+}
+
+:root[data-theme="sage"][data-mode="light"] {
+  --accent:        #5C8A68;
+  --accent-strong: #4A7455;
+  --accent-soft:   #E6F0E8;
+  --accent-soft-2: #D2E4D6;
+  --accent-ink:    #3C6048;
+  --on-accent:     #FFFFFF;
+  --accent-ring:   rgba(92, 138, 104, 0.32);
+}
+
+:root[data-theme="sage"][data-mode="dark"] {
+  --accent:        #8FBA9B;
+  --accent-strong: #A3C9AD;
+  --accent-soft:   #1F2A20;
+  --accent-soft-2: #2B392B;
+  --accent-ink:    #ABCDB3;
+  --on-accent:     #16210F;
+  --accent-ring:   rgba(143, 186, 155, 0.32);
+}

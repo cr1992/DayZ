@@ -70,7 +70,7 @@ While 月聚合计数或当日条目正在异步加载，the 系统 SHALL 显示
 - 度量：六套主题（purple/amber/sage × light/dark）下，日格圆点/环/实底取色等于该 theme×mode 的 `accent`/`accent-ink`/`on-accent` 真值；屏内不出现裸 `Color(0x..)` / 裸字号。
 
 ### NF2 · 对比度（WCAG AA）
-本屏文本与有意义 UI 的对比度 MUST 满足 [`design-tokens-theme`](../design-tokens-theme/requirement.md) NF1 的分族标准：
+本屏文本与有意义 UI 的对比度 MUST 满足 [`design-tokens-theme`](../../archive/2026-05-30-design-tokens-theme/requirement.md) NF1 的分族标准：
 - 选中日实底文字（`--on-accent` 落 `--accent`）MUST ≥ 4.5:1；
 - 日期头/篇数/空态等真实辅助文本 MUST ≥ 4.5:1（用 `--ink-2`，不用纯 placeholder 的 `--ink-3`）；
 - 今日环 / 选中圆点等有意义 UI（accent 贴 bg）MUST ≥ 3.0:1。
