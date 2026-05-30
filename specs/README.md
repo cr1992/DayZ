@@ -8,11 +8,11 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 已预审 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏 + ui-shell） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，待 @Ray 画廊目检） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 草稿 | design-tokens-theme, ui-kit-components, data-layer | @Ray | 2026-05-29 |
-| [timeline-screen](active/timeline-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
+| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
+| [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 已交付 | design-tokens-theme, ui-kit-components(T1–T7), data-layer | @Ray | 2026-05-29 |
+| [timeline-screen](active/timeline-screen/) | P2 | 已预审 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [reader-screen](active/reader-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [editor-integration-screen](active/editor-integration-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-05-29 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
@@ -36,24 +36,14 @@
 ## 执行顺序（派生快照）
 
 > **选取规则**（同 spec-guide）：在「未开始 / 进行中」**且就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
-> 下表是当前快照（`app-scaffold` / `key-management` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
+> 下表是当前快照（`app-scaffold` / `key-management` / `data-layer` / `media-storage` / `thumbnail-cache` / `auto-save-draft` / `observability` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：★`media-storage`(P1) ‖ ★`auto-save-draft`(P1) ‖ `design-sync-automation`(P2，期一)
-2. **`ui-kit-components` 完成后**：`ui-shell-navigation`(P1)（ui-kit 当前仅余 @Ray 画廊目检）
-3. **`media-storage` 完成后**：`thumbnail-cache`(P2)
-4. **`thumbnail-cache` 完成后**：`backup-full-snapshot`(P2)
+1. **现在就绪**：`ui-shell-navigation`(P1) ‖ ★`backup-full-snapshot`(P2) ‖ `design-sync-automation`(P2，期二 blocked：待首屏 + `ui-shell-navigation`)
+2. **`ui-shell-navigation` 完成后**：W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）
 
-> ★＝数据/加密主干剩余链（`media-storage → thumbnail-cache → backup-full-snapshot`，依赖强制串行；`auto-save-draft` 已随 data-layer 解锁，可并行）；`key-management` / `data-layer` 已归档完成。
+> ★＝数据/加密主干剩余链当前只余 `backup-full-snapshot`；`media-storage` / `thumbnail-cache` / `auto-save-draft` / `key-management` / `data-layer` 均已归档完成。
 >
-> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation`(期一) 已就绪 → W1 `ui-kit-components` 已进入收尾（自动验收通过，待 @Ray 画廊目检），`ui-shell-navigation` 等 `ui-kit-components`（data-layer 已完成）→ W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故仍按各自底层依赖解锁）+ `design-sync-automation`(期二，等首屏+shell 落后补)。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
-
-## 已交付·随设计维护
-
-> 通用规则仍是「spec 完成后归档，后续新需求另开 spec」。本泳道是唯一例外，且**仅限 UI 屏幕级 spec**：屏幕 v1 交付后不移入 `archive/`，而在此保留设计稿同步维护入口；这不代表未完成，也不参与普通 active spec 的优先级竞争。对齐锚点由 [`active/design-sync-automation/screens.yaml`](active/design-sync-automation/screens.yaml) 维护。
-
-| 功能 | 状态 | pinned | map | 备注 |
-|------|------|--------|-----|------|
-| 暂无 | — | — | — | 首个屏幕 v1 交付后移入本泳道 |
+> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation` 期一 M1 已完成 → W1 `ui-kit-components` 已交付可被外壳复用的 T1–T7，T8 画廊目检作为收尾项保留、不阻塞 `ui-shell-navigation` → W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故仍按各自底层依赖解锁）+ `design-sync-automation` 期二（等首屏+shell 落后补）。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
 
 ## 已归档
 

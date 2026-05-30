@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：已预审
 ---
 
 # 设计：timeline-screen
@@ -34,13 +34,12 @@
 - **理由：** 与 shell `theme_controller`（`ChangeNotifier`）一致，低频列表态用 `ChangeNotifier` 足够；注入 Repo 让 demo/widget test 喂假数据（满足 R8 与独立验证）；按月分组逻辑集中一处、可单测。`infinite_scroll_pagination` 的分页模型与「按月分组 + 跳月补载」耦合度低，自管更可控。
 - **代价：** 自管分页/分组比用包多写状态转移；换来注入可测 + 边界清晰 + 跳月补载可控，值。
 
-### D4 · 月份篇数与日历「有条目日」= 按月计数查询（**data-layer 缺口，标待确认**）
-- **状态：** 采纳（接口形态采纳；交付物归属待确认）
-- **背景：** 月份头显示「N 篇」、日历面板月视图显示每月篇数、月视图日格需知「哪些日有条目」（`.has`）。`timeline.js` 用内存 `MONTHS` 索引模拟，PROTOTYPE-ARCH §6 注明「月份索引 = Drift 一条 `GROUP BY ym` 计数查询，正文走游标分页」。**但 `data-layer` 现有 `EntryRepo` 交付物（`timeline`/`onThisDay`/`byId`/CRUD）中并无按月计数 / 有条目日查询**（见 `data-layer/tasks.md` T8）。
-- **选项：** (A) 本屏自己 `GROUP BY` 查 Drift —— **违反 NF1，否决**；(B) 由已加载分页结果**就地累计**月份篇数与有条目日（只对已加载月份准确，未加载月份篇数留空/占位）；(C) 依赖 `data-layer` 新增 `EntryRepo.monthCounts(journalId)`（按月计数）与 `EntryRepo.entryDaysInMonth(journalId, year, month)`（有条目日集合）交付物。
-- **选择：** C 为目标、B 为就绪前降级。本屏按 `EntryRepo.monthCounts(...)` / `entryDaysInMonth(...)` 的**交付物名**编码取数；这两个方法当前不在 data-layer 交付清单 → **作为对 `data-layer` 的新增依赖项登记到 README 依赖列，并标待确认**（见已知风险）。在其就绪前，月份头篇数与日历有条目日用 B（已加载分页就地累计）降级，未加载月份篇数显示「—」或不显示，日历仅对已知月给 `.has`。
-- **理由：** 计数查询天然属 Repository 职责（NF1 不允许屏内 `GROUP BY`）；按交付物名编码 + 降级，既不违边界又不阻塞本屏在 data-layer 补齐前可跑。
-- **代价：** data-layer 未补齐前日历对远期未加载月的「有条目」标记不完整；属分层必然，记已知风险。**这是本 spec 最需要 @Ray / data-layer owner 拍板的悬而未决依赖。**
+### D4 · 月份篇数与日历「有条目日」= 按月计数查询
+- **状态：** 采纳
+- **背景：** 月份头显示「N 篇」、日历面板月视图显示每月篇数、月视图日格需知「哪些日有条目」（`.has`）。`timeline.js` 用内存 `MONTHS` 索引模拟，PROTOTYPE-ARCH §6 注明「月份索引 = Drift 一条 `GROUP BY ym` 计数查询，正文走游标分页」。
+- **选择：** C。依赖并直接在 `EntryRepo` 中实现 `EntryRepo.monthCounts(journalId)`（按月计数）与 `EntryRepo.entryDaysInMonth(journalId, year, month)`（有条目日集合）。
+- **理由：** 计数查询天然属 Repository 职责（NF1 不允许屏内 `GROUP BY`），就地累计会导致日历对远期未加载月的「有条目」标记不完整，故决定在 `EntryRepo` 补齐此二方法，作为首屏开发的前置工作。
+- **代价：** 需要在 `lib/data/` 处做少量代码追加和对齐测试，但这能保障首屏和日历跳转的完整功能体验，十分必要。
 
 ### D5 · 日期跳转日历面板：`OverlayEntry`/`PopupRoute` 落下 + 月级定位
 - **状态：** 采纳
