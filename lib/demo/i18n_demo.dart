@@ -7,31 +7,21 @@ import 'package:intl/intl.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/l10n/locale_controller.dart';
 
+enum _LocaleChoice { system, zh, en }
+
 /// i18n demo 页：语言切换 + 文案取值示范。
 ///
 /// 可选注入 [LocaleController]，默认从 widget 树上找。
-class I18nDemo extends StatefulWidget {
+class I18nDemo extends StatelessWidget {
   final LocaleController? localeController;
 
   const I18nDemo({super.key, this.localeController});
 
   @override
-  State<I18nDemo> createState() => _I18nDemoState();
-}
-
-class _I18nDemoState extends State<I18nDemo> {
-  late final LocaleController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = widget.localeController ?? LocaleController();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final localeName = Localizations.localeOf(context).languageCode;
+    final controller = localeController ?? LocaleControllerScope.of(context);
     final now = DateTime.now();
 
     return Scaffold(
@@ -51,9 +41,22 @@ class _I18nDemoState extends State<I18nDemo> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
-                  _buildLocaleOption(l10n.followSystem, null),
-                  _buildLocaleOption(l10n.locale_zh, const Locale('zh')),
-                  _buildLocaleOption(l10n.locale_en, const Locale('en')),
+                  RadioGroup<_LocaleChoice>(
+                    groupValue: _choiceOf(controller.locale),
+                    onChanged: (choice) {
+                      _setChoice(controller, choice ?? _LocaleChoice.system);
+                    },
+                    child: Column(
+                      children: [
+                        _buildLocaleOption(
+                          l10n.followSystem,
+                          _LocaleChoice.system,
+                        ),
+                        _buildLocaleOption(l10n.locale_zh, _LocaleChoice.zh),
+                        _buildLocaleOption(l10n.locale_en, _LocaleChoice.en),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -97,19 +100,26 @@ class _I18nDemoState extends State<I18nDemo> {
     );
   }
 
-  Widget _buildLocaleOption(String label, Locale? locale) {
-    final isSelected = _controller.locale == locale;
-    return RadioListTile<Locale?>(
-      title: Text(label),
-      value: locale,
-      groupValue: _controller.locale,
-      onChanged: (value) {
-        if (value == null) {
-          _controller.followSystem();
-        } else {
-          _controller.setLocale(value);
-        }
-      },
-    );
+  _LocaleChoice _choiceOf(Locale? locale) {
+    return switch (locale?.languageCode) {
+      'zh' => _LocaleChoice.zh,
+      'en' => _LocaleChoice.en,
+      _ => _LocaleChoice.system,
+    };
+  }
+
+  void _setChoice(LocaleController controller, _LocaleChoice choice) {
+    switch (choice) {
+      case _LocaleChoice.system:
+        controller.followSystem();
+      case _LocaleChoice.zh:
+        controller.setLocale(const Locale('zh'));
+      case _LocaleChoice.en:
+        controller.setLocale(const Locale('en'));
+    }
+  }
+
+  Widget _buildLocaleOption(String label, _LocaleChoice choice) {
+    return RadioListTile<_LocaleChoice>(title: Text(label), value: choice);
   }
 }

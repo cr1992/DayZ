@@ -2,8 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import 'dart:ui';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 语言偏好控制器。
@@ -55,5 +54,31 @@ class LocaleController extends ChangeNotifier {
     } catch (_) {
       // 清除失败静默。
     }
+  }
+}
+
+/// 向应用子树暴露同一个 [LocaleController]。
+class LocaleControllerScope extends InheritedNotifier<LocaleController> {
+  const LocaleControllerScope({
+    super.key,
+    required LocaleController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static LocaleController? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<LocaleControllerScope>()
+        ?.notifier;
+  }
+
+  static LocaleController of(BuildContext context) {
+    final controller = maybeOf(context);
+    if (controller == null) {
+      throw FlutterError(
+        'LocaleControllerScope.of() called without a LocaleControllerScope. '
+        'Wrap the app in LocaleControllerScope or pass localeController.',
+      );
+    }
+    return controller;
   }
 }

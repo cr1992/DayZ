@@ -45,28 +45,30 @@ class _DayZAppState extends State<DayZApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'DayZ',
-      theme: ThemeData(
-        useMaterial3: true,
+    return LocaleControllerScope(
+      controller: _localeController,
+      child: MaterialApp(
+        title: 'DayZ',
+        theme: ThemeData(useMaterial3: true),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: _localeController.locale,
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (locale != null &&
+              supportedLocales.any(
+                (s) => s.languageCode == locale.languageCode,
+              )) {
+            return locale;
+          }
+          return const Locale('zh');
+        },
+        home: const DebugHome(),
       ),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: _localeController.locale,
-      localeResolutionCallback: (locale, supportedLocales) {
-        if (locale != null &&
-            supportedLocales
-                .any((s) => s.languageCode == locale.languageCode)) {
-          return locale;
-        }
-        return const Locale('zh');
-      },
-      home: const DebugHome(),
     );
   }
 }
