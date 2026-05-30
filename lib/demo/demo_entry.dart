@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:dayz/demo/hello_demo.dart';
 
 import 'package:dayz/demo/editor_appflowy_demo.dart';
-import 'package:dayz/demo/editor_webview_tiptap_demo.dart';
 import 'package:dayz/demo/argon2id_ffi_demo.dart';
 import 'package:dayz/demo/theme_gallery_demo.dart';
 import 'package:dayz/security/demo.dart';
@@ -28,11 +27,6 @@ final List<DemoEntry> demos = [
     title: 'AppFlowy 编辑器 demo',
     subtitle: 'A 方案：纯 Dart 编辑器预研',
     builder: (context) => const EditorAppflowyDemo(),
-  ),
-  DemoEntry(
-    title: 'WebView+TipTap 编辑器 demo',
-    subtitle: 'B 方案：WebView 离线打包预研',
-    builder: (context) => const EditorWebviewTiptapDemo(),
   ),
   DemoEntry(
     title: 'argon2id_ffi demo',

@@ -18,14 +18,8 @@ class $AssetsEditorGen {
   AssetGenImage get demoImage =>
       const AssetGenImage('assets/editor/demo_image.png');
 
-  /// File path: assets/editor/editor.html
-  String get editorHtml => 'assets/editor/editor.html';
-
-  /// File path: assets/editor/editor.js
-  String get editorJs => 'assets/editor/editor.js';
-
   /// List of all assets
-  List<dynamic> get values => [demoImage, editorHtml, editorJs];
+  List<AssetGenImage> get values => [demoImage];
 }
 
 class $AssetsFontsGen {
