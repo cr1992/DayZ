@@ -30,4 +30,5 @@
 - **vendored 包改动留痕**（三件套缺一不可）：① 成对标记 `// >>> DAYZ-PATCH[Pxxx]` … `// <<< DAYZ-PATCH[Pxxx]`；② `packages/CHANGELOG.md` 台账登记；③ 提交前 `bash scripts/check_patches.sh` 须退出 0。详见 `specs/active/appflowy-patch-tracking/`。
 - **静态资源 `flutter_gen`**：**禁止**硬编码资源路径，必须用 `Assets.images.xxx` 等强类型引用。新增/修改资源后运行 `dart run build_runner build`。
 - **国际化 `gen-l10n`**：用户可见文案经 `AppLocalizations.of(context)` 取用，**禁止**硬编码。新增文案 MUST 同时补 `app_zh.arb` 与 `app_en.arb`（key 一致）。详见 `docs/design/11-internationalization-and-localization.md`。
+- **屏幕 spec 维护态 override**：屏幕级 spec 交付 v1 后不按通用「终态→归档」处理，转入 `specs/README.md`「已交付·随设计维护」泳道；该 override 仅限屏幕 spec，见 `docs/spec-guide-ai.md`。
 - **UI 设计稿未到，基础层先行**：基础 spec 末尾挂 Debug Home 入口，真机调试走 demo 页。

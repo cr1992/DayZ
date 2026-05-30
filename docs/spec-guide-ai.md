@@ -27,6 +27,8 @@
 
 - **视觉验收的默认升级**：通用规则说「确实无法自动化的（视觉/真机/人因）走人工核查项，禁止用假装能测的 grep 凑数」。
   DayZ 在 UI 还原线把默认从 *default-人工* 升级为 *default-确定性闸（参数/几何断言）+ golden/SSIM 自动验，视觉模型/人眼仅标红终审、不阻断*——
-  详见 [`design/10-ui-restore-and-design-sync.md`](./design/10-ui-restore-and-design-sync.md)，随 `design-sync-automation` spec 定稿。**「禁止假装能测的 grep」红线不变**。
+  详见 [`design/10-ui-restore-and-design-sync.md`](./design/10-ui-restore-and-design-sync.md)。UI 还原默认走闸① token / 闸②样式参数 / 闸③布局几何的确定性硬闸，闸④ golden/SSIM 自动验为 advisory；人工或视觉模型只做标红终审，不作为阻塞闸。**「禁止假装能测的 grep」红线不变**。
+- **屏幕 spec 维护态泳道（override 终态→归档，仅限屏幕 spec）**：通用源 [`../spec-kit/spec-guide.md`](../spec-kit/spec-guide.md) 的生命周期不变式仍是「已完成 = 终态 → 归档」。DayZ UI 页面级 / 屏幕级 spec 交付 v1 后故意 override 这条不变式：不移入 `specs/archive/`，而转入 `specs/README.md` 的「已交付·随设计维护」泳道；对齐锚点留在 `specs/active/design-sync-automation/screens.yaml`，元素映射 / 参数 fixture / golden 留在各屏 `test/ui/<feature>/`。非屏幕 spec 不得借用此 override。
+- **设计同步三档分流**：设计稿 diff 的处理档位用语义名，不用编号。微调档 = 只 token 值 / 参数变、元素集和结构不变，自动同步且不碰 spec；实质档 = 未映射类 / 新 `data-when` / DOM 结构重排 / 新交互，追加维护态 sync 卡并补映射；大改档 = 信息架构或导航变，开新 active spec。分流判定必须由 `design-sync-automation` 的确定性检测器输出驱动，不交给 agent 主观判断。
 - **UI 页面级 spec 的优先级 = 页面层级 × 数据依赖就绪**：通用「排序维护纪律」（见 [`../spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)）落到 DayZ UI 线时再加一条——页面级 spec 之间的先后**按页面层级（导航树深度：外壳 → 入口 / landing 页 → 次级页 → 叶子页）细排**，并叠加「该页所依赖的底层数据 spec 是否就绪」这一硬门。三档拆分与波次（W0 基础层 → W1 ui-kit/shell → W2 页面级并行 → W3/W4 依附件）见 [`design/10-ui-restore-and-design-sync.md`](./design/10-ui-restore-and-design-sync.md) §9；**页面层级与屏清单一律以设计稿真源 `ui-design/current/` 为准，不在规范里写死屏数 / 屏清单**。
 - （后续 DayZ 专项约定追加于此；通用规则的改动一律去改 [`../spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)，不在本文重复。）

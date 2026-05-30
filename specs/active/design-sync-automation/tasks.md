@@ -32,7 +32,7 @@ graph LR
 
 -----
 
-- [ ] T1 · Phase 1 diff 路由 + 实质变更检测器（纯函数）〔期一·M1〕
+- [x] T1 · Phase 1 diff 路由 + 实质变更检测器（纯函数）〔期一·M1〕
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R5, NF2 ｜ **依据设计：** D2, D4 ｜ **可改文件：** `bin/sync/route.dart`、`bin/sync/detectors.dart`（路由 + R5 三检测器，Dart CLI）、`.claude/workflows/design-sync.js`（薄编排：agent 经 Bash 调上述 CLI）｜ **验收基建：** `test/sync/route_detect_test.dart`、`test/sync/fixtures/`（diff/DOM/类名样例）
 
@@ -58,14 +58,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/sync/route_detect_test.dart` 通过（9/9）；汇总 `flutter test test/sync/` 通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · Phase 2 token 重生集成 + 对比度 xfail 区分〔期一·M1〕
+- [x] T2 · Phase 2 token 重生集成 + 对比度 xfail 区分〔期一·M1〕
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme`：`bin/gen_tokens.dart` + `scripts/check_tokens_sync.sh` + `contrast_test.dart` + `test/ui/theme/contrast_xfail.yaml`（xfail allowlist 机器真源）｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `bin/sync/phase2_token.dart`（重生编排判定 + xfail 分流）、`.claude/workflows/design-sync.js`（薄编排）｜ **验收基建：** `test/sync/phase2_token_test.dart`、`test/sync/fixtures/`
 
@@ -90,14 +90,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/sync/phase2_token_test.dart` 通过（6/6）；汇总 `flutter test test/sync/` 通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · screens.yaml 登记 + check_ui_sync.sh 巡检〔期一·M1〕
+- [x] T3 · screens.yaml 登记 + check_ui_sync.sh 巡检〔期一·M1〕
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R8 ｜ **依据设计：** D5 ｜ **可改文件：** `specs/active/design-sync-automation/screens.yaml`、`scripts/check_ui_sync.sh` ｜ **验收基建：** `test/sync/check_ui_sync_test.sh`
 
@@ -121,14 +121,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`bash test/sync/check_ui_sync_test.sh` 通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 维护态泳道 override（DayZ-own）+ AGENTS 指针 + 三档/视觉默认（D8 修订）〔期一·M1〕
+- [-] T4 · 维护态泳道 override（DayZ-own）+ AGENTS 指针 + 三档/视觉默认（D8 修订）〔期一·M1〕
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7, R8 ｜ **依据设计：** D8 ｜ **可改文件：** `docs/spec-guide-ai.md`、`AGENTS.md`、`specs/README.md` ｜ **验收基建：** 无（走死链 hook + `git diff --quiet` + 人工核措辞）
 
@@ -158,8 +158,8 @@ D8（修订）：override 落 DayZ-own——overlay 定义「已交付·随设�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`bash spec-kit/scripts/check_dead_links.sh && git diff --quiet spec-kit/spec-guide.md` 通过。
 人工：待确认（核查人 @Ray）
 ```
 

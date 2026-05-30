@@ -1,0 +1,27 @@
+# Screen sync registry for design-sync-automation.
+# `pinned` is the ui-design commit used as the screen's latest alignment base.
+screens:
+  - id: timeline
+    pinned: HEAD
+    lane: active
+    map: test/ui/timeline/element-map.yaml
+  - id: reader
+    pinned: HEAD
+    lane: active
+    map: test/ui/reader/element-map.yaml
+  - id: editor
+    pinned: HEAD
+    lane: active
+    map: test/ui/editor/element-map.yaml
+  - id: onthisday
+    pinned: HEAD
+    lane: active
+    map: test/ui/onthisday/element-map.yaml
+  - id: search
+    pinned: HEAD
+    lane: active
+    map: test/ui/search/element-map.yaml
+  - id: settings
+    pinned: HEAD
+    lane: active
+    map: test/ui/settings/element-map.yaml
