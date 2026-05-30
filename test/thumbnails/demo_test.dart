@@ -3,8 +3,8 @@
 
 // Author: @Ray
 
-import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +13,6 @@ import 'package:dayz/data/database.dart';
 import 'package:dayz/demo/demo_entry.dart';
 import 'package:dayz/security/key_provider.dart';
 import 'package:dayz/thumbnails/demo.dart';
-
 import 'package:dayz/thumbnails/generator.dart';
 
 class MockKeyProvider extends KeyProvider {
@@ -41,18 +40,19 @@ void main() {
     await db.close();
   });
 
-  testWidgets('ThumbnailsDemo widget and interactions', (WidgetTester tester) async {
+  testWidgets('ThumbnailsDemo widget and interactions', (
+    WidgetTester tester,
+  ) async {
     // 1. 验证 demos 列表中已注册
     final demoEntry = demos.firstWhere((d) => d.title == '缩略图缓存 demo');
     expect(demoEntry, isNotNull);
 
     // 2. 渲染 Demo 页面
-    await tester.pumpWidget(MaterialApp(
-      home: ThumbnailsDemo(
-        database: db,
-        keyProvider: keyProvider,
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ThumbnailsDemo(database: db, keyProvider: keyProvider),
       ),
-    ));
+    );
 
     // 3. 验证按钮是否渲染
     expect(find.text('插入 demo 大图'), findsOneWidget);

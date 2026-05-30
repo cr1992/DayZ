@@ -1,7 +1,10 @@
 @Timeout(Duration(seconds: 120))
+library;
+
 import 'dart:io';
-import 'dart:typed_data';
+
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -107,10 +110,10 @@ void main() {
     final totalMs = stopwatch.elapsedMilliseconds;
     final averageMs = totalMs / count;
 
-    print('================== BENCHMARK ==================');
-    print('Total time for $count images: ${totalMs}ms');
-    print('Average time per image: ${averageMs}ms');
-    print('===============================================');
+    debugPrint('================== BENCHMARK ==================');
+    debugPrint('Total time for $count images: ${totalMs}ms');
+    debugPrint('Average time per image: ${averageMs}ms');
+    debugPrint('===============================================');
 
     // 性能基线测试：平均生成时间必须小于 200ms
     // 在中端真机及单元测试的 CI 机器上都应快速通过

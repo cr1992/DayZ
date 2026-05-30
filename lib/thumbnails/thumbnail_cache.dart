@@ -2,6 +2,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // Author: @Ray
+// ignore_for_file: prefer_initializing_formals
 
 import 'dart:async';
 import 'dart:io';
@@ -33,10 +34,10 @@ class ThumbnailCache {
     required KeyProvider keyProvider,
     required AppDatabase db,
     DocumentsDirectoryProvider? documentsDirectoryProvider,
-  })  : _mediaRepo = mediaRepo,
-        _keyProvider = keyProvider,
-        _db = db,
-        _documentsDirectoryProvider = documentsDirectoryProvider;
+  }) : _mediaRepo = mediaRepo,
+       _keyProvider = keyProvider,
+       _db = db,
+       _documentsDirectoryProvider = documentsDirectoryProvider;
 
   ThumbnailHandle request(
     String mediaId, {
@@ -75,7 +76,9 @@ class ThumbnailCache {
       final media = await _db.mediaDao.byId(mediaId);
       if (media == null) {
         _pendingHandles.remove(mediaId);
-        handle.completeError(ThumbnailGenerationException('Media row not found: $mediaId'));
+        handle.completeError(
+          ThumbnailGenerationException('Media row not found: $mediaId'),
+        );
         return;
       }
 
@@ -83,11 +86,13 @@ class ThumbnailCache {
           media.thumbSrcUpdatedAt != null &&
           media.thumbSrcUpdatedAt == media.updatedAt) {
         _pendingHandles.remove(mediaId);
-        handle.complete(ThumbnailResult(
-          relPath: media.thumbPath!,
-          w: media.thumbW ?? 0,
-          h: media.thumbH ?? 0,
-        ));
+        handle.complete(
+          ThumbnailResult(
+            relPath: media.thumbPath!,
+            w: media.thumbW ?? 0,
+            h: media.thumbH ?? 0,
+          ),
+        );
         return;
       }
 
@@ -121,65 +126,71 @@ class ThumbnailCache {
       return;
     }
 
-    _workerPool.submit(() async {
-      try {
-        final media = await _db.mediaDao.byId(mediaId);
-        if (media == null) {
-          throw ThumbnailGenerationException('Media row not found: $mediaId');
-        }
+    _workerPool
+        .submit(() async {
+          try {
+            final media = await _db.mediaDao.byId(mediaId);
+            if (media == null) {
+              throw ThumbnailGenerationException(
+                'Media row not found: $mediaId',
+              );
+            }
 
-        final documentsDir = _documentsDirectoryProvider != null
-            ? await _documentsDirectoryProvider!()
-            : await applicationDocumentsDir();
-        final srcFile = resolveRelPathWithDocumentsDir(
-          media.relPath,
-          documentsPath: documentsDir.path,
-        );
+            final documentsDir = _documentsDirectoryProvider != null
+                ? await _documentsDirectoryProvider()
+                : await applicationDocumentsDir();
+            final srcFile = resolveRelPathWithDocumentsDir(
+              media.relPath,
+              documentsPath: documentsDir.path,
+            );
 
-        if (!await srcFile.exists()) {
-          throw ThumbnailGenerationException('Source media file not found: ${srcFile.path}');
-        }
+            if (!await srcFile.exists()) {
+              throw ThumbnailGenerationException(
+                'Source media file not found: ${srcFile.path}',
+              );
+            }
 
-        final encryptedSrcBytes = await srcFile.readAsBytes();
-        final deviceMediaKey = await _keyProvider.getDeviceMediaKey();
+            final encryptedSrcBytes = await srcFile.readAsBytes();
+            final deviceMediaKey = await _keyProvider.getDeviceMediaKey();
 
-        final targetFile = resolveRelPathWithDocumentsDir(
-          'thumbs/$mediaId.bin',
-          documentsPath: documentsDir.path,
-        );
+            final targetFile = resolveRelPathWithDocumentsDir(
+              'thumbs/$mediaId.bin',
+              documentsPath: documentsDir.path,
+            );
 
-        final result = await generateThumbnail(
-          mediaId: mediaId,
-          encryptedSrcBytes: encryptedSrcBytes,
-          deviceMediaKey: deviceMediaKey,
-          targetFile: targetFile,
-          mediaRepo: _mediaRepo,
-          originalMedia: media,
-          db: _db,
-        );
+            final result = await generateThumbnail(
+              mediaId: mediaId,
+              encryptedSrcBytes: encryptedSrcBytes,
+              deviceMediaKey: deviceMediaKey,
+              targetFile: targetFile,
+              mediaRepo: _mediaRepo,
+              originalMedia: media,
+              db: _db,
+            );
 
-        handle.complete(result);
-      } catch (e, st) {
-        if (e is CancelledException) {
-          handle.markCancelled();
-        } else {
-          handle.completeError(e, st);
-        }
-      } finally {
-        _pendingHandles.remove(mediaId);
-      }
-    }, handle.cancelToken).catchError((e) {
-      if (e is CancelledException) {
-        handle.markCancelled();
-      } else {
-        handle.completeError(e);
-      }
-      _pendingHandles.remove(mediaId);
-    }).whenComplete(() {
-      _scheduleNext();
-    });
+            handle.complete(result);
+          } catch (e, st) {
+            if (e is CancelledException) {
+              handle.markCancelled();
+            } else {
+              handle.completeError(e, st);
+            }
+          } finally {
+            _pendingHandles.remove(mediaId);
+          }
+        }, handle.cancelToken)
+        .catchError((e) {
+          if (e is CancelledException) {
+            handle.markCancelled();
+          } else {
+            handle.completeError(e);
+          }
+          _pendingHandles.remove(mediaId);
+        })
+        .whenComplete(() {
+          _scheduleNext();
+        });
 
     _scheduleNext();
   }
 }
-

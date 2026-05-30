@@ -3,11 +3,9 @@
 
 // Author: @Ray
 
-import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -17,7 +15,6 @@ import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/data/repositories/media_repo.dart';
 import 'package:dayz/data/time_zone_triple.dart';
 import 'package:dayz/security/key_provider.dart';
-import 'package:dayz/thumbnails/cancel_token.dart';
 import 'package:dayz/thumbnails/generator.dart';
 import 'package:dayz/thumbnails/thumbnail_cache.dart';
 import 'package:dayz/thumbnails/thumbnail_handle.dart';
@@ -104,47 +101,52 @@ void main() {
     return media;
   }
 
-  test('ThumbnailCache - cache hit and rebuild on out-of-sync timestamp', () async {
-    final media = await createMockMedia('media_hit_test');
+  test(
+    'ThumbnailCache - cache hit and rebuild on out-of-sync timestamp',
+    () async {
+      await createMockMedia('media_hit_test');
 
-    // 1. 首次生成
-    final handle1 = cache.request('media_hit_test');
-    expect(handle1.state, equals(ThumbnailState.pending));
+      // 1. 首次生成
+      final handle1 = cache.request('media_hit_test');
+      expect(handle1.state, equals(ThumbnailState.pending));
 
-    final result1 = await handle1.future;
-    expect(result1.relPath, equals('thumbs/media_hit_test.bin'));
-    expect(handle1.state, equals(ThumbnailState.ready));
+      final result1 = await handle1.future;
+      expect(result1.relPath, equals('thumbs/media_hit_test.bin'));
+      expect(handle1.state, equals(ThumbnailState.ready));
 
-    // 验证 db 写入且一致
-    var dbMedia = await db.mediaDao.byId('media_hit_test');
-    expect(dbMedia!.thumbPath, isNotNull);
-    expect(dbMedia.thumbSrcUpdatedAt, equals(dbMedia.updatedAt));
+      // 验证 db 写入且一致
+      var dbMedia = await db.mediaDao.byId('media_hit_test');
+      expect(dbMedia!.thumbPath, isNotNull);
+      expect(dbMedia.thumbSrcUpdatedAt, equals(dbMedia.updatedAt));
 
-    // 2. 第二次请求 - 缓存命中 (删除物理原图文件以验证没有重新生成)
-    final srcFile = File('${tempDir.path}/media/media_hit_test.bin');
-    await srcFile.delete();
+      // 2. 第二次请求 - 缓存命中 (删除物理原图文件以验证没有重新生成)
+      final srcFile = File('${tempDir.path}/media/media_hit_test.bin');
+      await srcFile.delete();
 
-    final handle2 = cache.request('media_hit_test');
-    final result2 = await handle2.future;
-    expect(handle2.state, equals(ThumbnailState.ready));
-    expect(result2.relPath, equals('thumbs/media_hit_test.bin'));
+      final handle2 = cache.request('media_hit_test');
+      final result2 = await handle2.future;
+      expect(handle2.state, equals(ThumbnailState.ready));
+      expect(result2.relPath, equals('thumbs/media_hit_test.bin'));
 
-    // 3. 时间戳不一致 -> 触发重建 (先把原图恢复)
-    await srcFile.writeAsBytes(await encryptBytes(Uint8List(100), deviceMediaKey)); // 这里写个假原图，只是用于脏重建
-    // 手动 bump db 里的 updatedAt 使之不一致
-    final originalUpdatedAt = dbMedia.updatedAt;
-    final bumpedMedia = dbMedia.copyWith(
-      updatedAt: originalUpdatedAt.add(const Duration(seconds: 5)),
-    );
-    await db.mediaDao.updateMedia(bumpedMedia.toCompanion(false));
+      // 3. 时间戳不一致 -> 触发重建 (先把原图恢复)
+      await srcFile.writeAsBytes(
+        await encryptBytes(Uint8List(100), deviceMediaKey),
+      ); // 这里写个假原图，只是用于脏重建
+      // 手动 bump db 里的 updatedAt 使之不一致
+      final originalUpdatedAt = dbMedia.updatedAt;
+      final bumpedMedia = dbMedia.copyWith(
+        updatedAt: originalUpdatedAt.add(const Duration(seconds: 5)),
+      );
+      await db.mediaDao.updateMedia(bumpedMedia.toCompanion(false));
 
-    // 再次 request，应该判定为脏并重建（由于我们写了假原图，重建会因为解码失败报错）
-    final handle3 = cache.request('media_hit_test');
-    expect(
-      () => handle3.future,
-      throwsA(isA<ThumbnailGenerationException>()),
-    );
-  });
+      // 再次 request，应该判定为脏并重建（由于我们写了假原图，重建会因为解码失败报错）
+      final handle3 = cache.request('media_hit_test');
+      expect(
+        () => handle3.future,
+        throwsA(isA<ThumbnailGenerationException>()),
+      );
+    },
+  );
 
   test('ThumbnailCache - duplicate request reuses handle', () async {
     await createMockMedia('media_dup_test');
@@ -192,33 +194,36 @@ void main() {
     await h2.future.catchError((_) => ThumbnailResult(relPath: '', w: 0, h: 0));
   });
 
-  test('ThumbnailCache - warmup returns immediately and completes in background', () async {
-    final mediaIds = ['w1', 'w2', 'w3'];
-    for (final id in mediaIds) {
-      await createMockMedia(id);
-    }
+  test(
+    'ThumbnailCache - warmup returns immediately and completes in background',
+    () async {
+      final mediaIds = ['w1', 'w2', 'w3'];
+      for (final id in mediaIds) {
+        await createMockMedia(id);
+      }
 
-    final stopwatch = Stopwatch()..start();
-    // warmup 应该同步返回，不阻塞
-    cache.warmup(mediaIds);
-    stopwatch.stop();
-    expect(stopwatch.elapsedMilliseconds, lessThan(50));
+      final stopwatch = Stopwatch()..start();
+      // warmup 应该同步返回，不阻塞
+      cache.warmup(mediaIds);
+      stopwatch.stop();
+      expect(stopwatch.elapsedMilliseconds, lessThan(50));
 
-    // 获取对应的 handles 并等待其完成，从而暴露任何后台错误
-    final h1 = cache.request('w1');
-    final h2 = cache.request('w2');
-    final h3 = cache.request('w3');
+      // 获取对应的 handles 并等待其完成，从而暴露任何后台错误
+      final h1 = cache.request('w1');
+      final h2 = cache.request('w2');
+      final h3 = cache.request('w3');
 
-    await h1.future;
-    await h2.future;
-    await h3.future;
+      await h1.future;
+      await h2.future;
+      await h3.future;
 
-    // 检查所有缩略图都成功生成了
-    for (final id in mediaIds) {
-      final dbMedia = await db.mediaDao.byId(id);
-      expect(dbMedia!.thumbPath, isNotNull);
-    }
-  });
+      // 检查所有缩略图都成功生成了
+      for (final id in mediaIds) {
+        final dbMedia = await db.mediaDao.byId(id);
+        expect(dbMedia!.thumbPath, isNotNull);
+      }
+    },
+  );
 
   test('ThumbnailCache - API interface strict rule check (R7)', () {
     // 自动扫描守卫：确认 ThumbnailCache 未暴露 rebuildAll / regenerateAllSync / buildAllNow 等接口

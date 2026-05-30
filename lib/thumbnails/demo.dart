@@ -3,9 +3,6 @@
 
 // Author: @Ray
 
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,11 +21,7 @@ class ThumbnailsDemo extends StatefulWidget {
   final AppDatabase? database;
   final KeyProvider? keyProvider;
 
-  const ThumbnailsDemo({
-    super.key,
-    this.database,
-    this.keyProvider,
-  });
+  const ThumbnailsDemo({super.key, this.database, this.keyProvider});
 
   @override
   State<ThumbnailsDemo> createState() => _ThumbnailsDemoState();
@@ -43,7 +36,6 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
   late final ThumbnailCache _thumbnailCache;
   late final bool _ownsDatabase;
 
-  String? _entryId;
   String? _mediaId;
   String _statusText = '未开始';
   ThumbnailHandle? _currentHandle;
@@ -57,10 +49,7 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
     _keyProvider = widget.keyProvider ?? KeyProvider();
     _mediaRepo = MediaRepo(_db);
     _entryRepo = EntryRepo(_db);
-    _mediaStore = MediaStore(
-      keyProvider: _keyProvider,
-      mediaRepo: _mediaRepo,
-    );
+    _mediaStore = MediaStore(keyProvider: _keyProvider, mediaRepo: _mediaRepo);
     _thumbnailCache = ThumbnailCache(
       mediaRepo: _mediaRepo,
       keyProvider: _keyProvider,
@@ -87,8 +76,6 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
         entryDtUtc: DateTime.now().toUtc(),
         entryTz: 'Etc/UTC',
       );
-      _entryId = entry.id;
-
       final data = await rootBundle.load('assets/editor/demo_image.png');
       final bytes = data.buffer.asUint8List();
 
@@ -138,17 +125,19 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
 
     checkState();
 
-    handle.future.then((result) {
-      checkState();
-      setState(() {
-        _statusText = '生成成功！宽高: ${result.w}x${result.h}';
-      });
-    }).catchError((err) {
-      checkState();
-      setState(() {
-        _statusText = '生成失败: $err';
-      });
-    });
+    handle.future
+        .then((result) {
+          checkState();
+          setState(() {
+            _statusText = '生成成功！宽高: ${result.w}x${result.h}';
+          });
+        })
+        .catchError((err) {
+          checkState();
+          setState(() {
+            _statusText = '生成失败: $err';
+          });
+        });
   }
 
   Future<void> _showThumbnail() async {
@@ -283,9 +272,7 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thumbnails Demo'),
-      ),
+      appBar: AppBar(title: const Text('Thumbnails Demo')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -297,11 +284,17 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('状态板', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      '状态板',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     Text('当前 mediaId: ${_mediaId ?? "无"}'),
                     const SizedBox(height: 4),
-                    Text('系统消息: $_statusText', style: const TextStyle(color: Colors.blue)),
+                    Text(
+                      '系统消息: $_statusText',
+                      style: const TextStyle(color: Colors.blue),
+                    ),
                   ],
                 ),
               ),
@@ -336,9 +329,7 @@ class _ThumbnailsDemoState extends State<ThumbnailsDemo> {
             const SizedBox(height: 8),
             Container(
               height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-              ),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
               child: _thumbImageBytes != null
                   ? Image.memory(_thumbImageBytes!)
                   : const Center(child: Text('无图片')),
