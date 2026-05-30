@@ -1,0 +1,4 @@
+module argon2id_ffi_native {
+    umbrella header "argon2id_ffi.h"
+    export *
+}

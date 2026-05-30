@@ -6,3 +6,5 @@
 - Async API runs in an `Isolate`; native library is ~0.3 MB per architecture (2 symbols).
 - Verified byte-for-byte against the C reference (`argon2-cffi` / P-H-C `libargon2`).
 - Platforms: iOS, Android, macOS, Linux, Windows.
+- iOS includes a Swift Package Manager manifest backed by a Rust static-library XCFramework,
+  so Flutter can build with SPM enabled without falling back to the CocoaPods script phase.

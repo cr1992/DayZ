@@ -33,11 +33,10 @@ dependencies:
   argon2id_ffi: ^0.1.0
 ```
 
-> **Build requirement:** native code is compiled from Rust via
-> [cargokit](https://github.com/irondash/cargokit) at app build time, so a
-> [Rust toolchain](https://rustup.rs) (`rustup` + the relevant targets) must be installed on
-> the build machine / CI. (Precompiled-binary distribution is planned so consumers won't need
-> Rust — see the repo issues.)
+> **Build requirement:** iOS Swift Package Manager builds use the bundled XCFramework. Other
+> native paths are compiled from Rust via [cargokit](https://github.com/irondash/cargokit) at app
+> build time, so a [Rust toolchain](https://rustup.rs) (`rustup` + the relevant targets) must be
+> installed on the build machine / CI.
 
 ## Usage
 
