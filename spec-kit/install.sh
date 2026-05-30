@@ -3,8 +3,8 @@ set -euo pipefail
 #
 # spec-kit · install.sh
 #
-# 用途：在目标 git 仓库根运行，安装 spec-kit 的两个集成入口（pre-commit 执行点承载死链/验收/关键词三道 lint）：
-#         ① pre-commit hook  -> .git/hooks/pre-commit（spec markdown 三道 lint）
+# 用途：在目标 git 仓库根运行，安装 spec-kit 的两个集成入口（pre-commit 执行点承载 spec 文档硬闸）：
+#         ① pre-commit hook  -> .git/hooks/pre-commit（spec markdown 文档闸）
 #         ② --with-claude    -> .claude/settings.json 注册 PreToolUse 白名单 hook
 # 用法：在你的仓库根执行 `bash spec-kit/install.sh [--with-claude]`
 # 退出码：0=安装成功；2=环境错误（非 git 仓库 / 找不到 kit 文件）。
@@ -15,7 +15,7 @@ WITH_CLAUDE=0; WITH_GEMINI=0; WITH_CODEX=0; WITH_KIRO=0; WITH_BACKSTOP=0
 print_usage() {
   cat <<'USAGE'
 用法: bash spec-kit/install.sh [选项...]
-  （无选项）         只装 git pre-commit 三道闸（死链/验收/关键词，与 agent 无关）
+  （无选项）         只装 git pre-commit 文档闸（死链/索引一致性/验收/关键词，与 agent 无关）
   --with-claude     注册 Claude Code PreToolUse 写时白名单 hook
   --with-gemini     注册 Gemini CLI BeforeTool 写时白名单 hook (.gemini/settings.json)
   --with-codex      注册 Codex CLI PreToolUse 写时白名单 hook (项目级 .codex/config.toml)
@@ -145,7 +145,7 @@ install_precommit() {
     echo "  追加 bash 会损坏它，spec-kit 已停手（原文件保持不变，备份在 ${backup}）。" >&2
     echo "  请二选一手工接入 spec-kit 闸：" >&2
     echo "    A) 在该 hook 内用其语言调用：bash \"$SCRIPTS_REF/../hooks/pre-commit\"" >&2
-    echo "    B) pre-commit 不装，改在 CI 跑三道 lint（见 README「接 CI」）。" >&2
+    echo "    B) pre-commit 不装，改在 CI 跑 spec 文档闸（见 README「接 CI」）。" >&2
     return
   fi
 
@@ -353,7 +353,7 @@ echo "------------------------------------------------------------------"
 if [ "$PRECOMMIT_INSTALLED" -eq 1 ]; then
   echo "已安装："
   echo "  • pre-commit 闸 -> $HOOK_DST"
-  echo "    提交 specs/**/*.md 时自动跑 死链/验收命令/RFC2119 三道 lint。"
+  echo "    提交 specs/**/*.md 时自动跑 死链/索引一致性/验收命令/RFC2119 文档闸。"
 else
   echo "⚠ 未安装 pre-commit 闸：既有 hook 非 shell，已停手（见上方提示）。请改走 CI 或手工接入。"
 fi

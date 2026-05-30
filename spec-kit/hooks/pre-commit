@@ -3,13 +3,13 @@ set -euo pipefail
 #
 # spec-kit · pre-commit 闸
 #
-# 用途：提交前对暂存区里的 specs/**/*.md 跑三道 lint，任一非 0 → 拒绝提交。荣誉制对人/LLM 都不可靠，故设硬闸。
+# 用途：提交前对暂存区里的 specs/**/*.md 跑 spec lint，任一非 0 → 拒绝提交。荣誉制对人/LLM 都不可靠，故设硬闸。
 #       · 关键词 / 验收闸校验**暂存内容**（物化暂存 blob 到临时镜像），不受未暂存改动影响；
 #       · 死链闸在**工作树**全量解析（链接目标常在未改动文件或 specs 外，镜像里没有）。
 # 用法：作为 git pre-commit hook 自动触发；也可手动 `bash spec-kit/hooks/pre-commit`。
 #       跳过(应急)：`SKIP_SPEC_LINT=1 git commit ...`。
 # 退出码：0=全部通过或无 spec 改动或被跳过；1=任一闸报违规；2=找不到 kit 脚本(环境错)。
-# 强制规范：spec 文档的链接完整性(P-死链)、验收命令抗规避(P3)、RFC2119 关键词大小写(P-关键词)。
+# 强制规范：spec 文档的链接完整性(P-死链)、验收命令抗规避(P3)、RFC2119 关键词大小写(P-关键词)、README 索引一致性。
 # 注意：本脚本可能被 install.sh 追加进既有 .git/hooks/pre-commit；它只负责 spec lint，
 #       不触碰其它 hook 逻辑，且通过相对自身定位 kit 脚本，安装位置无关。
 
@@ -108,6 +108,7 @@ fi
 # 死链：必须在工作树全量解析——链接目标可能是未改动的邻居，或 specs 外的 ../docs/… 文件，
 # 临时镜像里没有这些，只有真实工作树能正确判定可达性。
 run_gate check_dead_links.sh "死链检查" "specs" "$ROOT"
+run_gate check_specs_index.sh "Specs 索引一致性检查" "specs" "$ROOT"
 
 if [ "$fail" -ne 0 ]; then
   echo "" >&2

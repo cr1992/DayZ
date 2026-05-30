@@ -450,13 +450,16 @@ graph LR
 |----|------|-----------|
 | `archive_spec.sh <功能名>` | 脚本 | 归档三步原子完成 + 校验无死链（治「最易漏第 3 步」） |
 | `check_dead_links.sh` 死链检查 | pre-commit / CI | `specs/`（及引用 specs 的文件）内所有相对链接可解析 |
+| `check_specs_index.sh` 索引一致性检查 | pre-commit / CI | README 生命周期表、active/archive/contracts 目录、依赖列、归档复验台账与执行顺序派生快照保持一致 |
 | `lint_acceptance_commands.sh` | pre-commit / CI | 验收命令不得 `grep` 被改文件自身（治「可糊弄命令」） |
 | `lint_keywords.sh` 关键词 lint | pre-commit / CI | requirement 内 RFC2119 关键词的**存在性/拼写/大小写**（**仅此**；SHALL↔SHOULD 分级是否正确属语义，lint 判不了，仍须人审） |
 | 文件白名单 hook | PreToolUse | 任务把「可改文件 + 预批例外」写到 `.spec-task-whitelist`，hook 对越界写入**默认 deny 阻断**并把原因反馈模型（matcher 覆盖 Edit/MultiEdit/Write/NotebookEdit；无白名单文件则关闭） |
 
-**安装与用法：** 在目标 repo 根运行 `./spec-kit/install.sh` 安装四闸（pre-commit hook + 可选 `--with-claude` 注册 PreToolUse hook）。脚本可独立调用：`spec-kit/scripts/check_dead_links.sh [SPECS_DIR]`、`spec-kit/scripts/lint_acceptance_commands.sh [SPECS_DIR]`、`spec-kit/scripts/lint_keywords.sh [SPECS_DIR]`（默认作用于当前工作目录的 `specs/`，可由 `$1` 或 `SPECS_DIR` 覆盖；退出码 0=通过、1=有违规、2=用法/环境错误）。归档用 `spec-kit/scripts/archive_spec.sh <功能名> [--cancelled]`。pre-commit 紧急放行用 `SKIP_SPEC_LINT=1`。接 CI 时在流水线里直接调上述脚本即可。
+**安装与用法：** 在目标 repo 根运行 `./spec-kit/install.sh` 安装文档闸（pre-commit hook + 可选 `--with-claude` 注册 PreToolUse hook）。脚本可独立调用：`spec-kit/scripts/check_dead_links.sh [SPECS_DIR]`、`spec-kit/scripts/check_specs_index.sh [SPECS_DIR]`、`spec-kit/scripts/lint_acceptance_commands.sh [SPECS_DIR]`、`spec-kit/scripts/lint_keywords.sh [SPECS_DIR]`（默认作用于当前工作目录的 `specs/`，可由 `$1` 或 `SPECS_DIR` 覆盖；退出码 0=通过、1=有违规、2=用法/环境错误）。归档用 `spec-kit/scripts/archive_spec.sh <功能名> [--cancelled]`。pre-commit 紧急放行用 `SKIP_SPEC_LINT=1`。接 CI 时在流水线里直接调上述脚本即可。
 
-> 文件白名单 hook 依赖「当前任务上下文」：任务执行时把白名单写到 `.spec-task-whitelist`（无此文件＝功能关闭、零打扰）。**默认 deny**——实测（Claude Code 官方文档）PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，warn 模式拦不住模型跑偏；只有 `permissionDecision=deny` 的 `permissionDecisionReason`/`additionalContext` 才进**模型**上下文，模型据此停手/改道/请示。**要让模型「不跑偏」，必须 deny。** 其余四闸（死链/验收/关键词/归档）与栈无关、可 100% 自动化。
+**归档复验覆盖闸：** 若仓库采用 `specs/archive/acceptance-review.md` 作为终局复验台账，则 `check_specs_index.sh` 要求其结论表覆盖每个已归档稳定 spec ID；若未采用该台账，则归档 spec 内不得残留 `[ ]` / `[-]` / `待确认` / `人工：—` / `自动：—` 等未完成验收痕迹。脚本配套故障夹具测试：`bash test/scripts/check_specs_index_test.sh`。规则目标是把「归档了但没 review」从口头纪律变成可失败的硬闸。
+
+> 文件白名单 hook 依赖「当前任务上下文」：任务执行时把白名单写到 `.spec-task-whitelist`（无此文件＝功能关闭、零打扰）。**默认 deny**——实测（Claude Code 官方文档）PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，warn 模式拦不住模型跑偏；只有 `permissionDecision=deny` 的 `permissionDecisionReason`/`additionalContext` 才进**模型**上下文，模型据此停手/改道/请示。**要让模型「不跑偏」，必须 deny。** 其余文档闸（死链/索引一致性/验收/关键词/归档）与栈无关、可 100% 自动化。
 >
 > **闸只认白名单、不认设计**：白名单本身正确（⊆ design `## 文件变更`，见 P2）是前提——deny 只能保证「不写白名单外」，保证不了「白名单没越出设计」。后者靠 P2 硬规则 + 人审（可另加一道 lint 校验 `可改文件 ⊆ 文件变更`）。
 
