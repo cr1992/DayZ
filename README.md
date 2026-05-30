@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="ui-design/current/pages/assets/img/sea.png" width="100%" alt="">
-</p>
-
 <h1 align="center">DayZ</h1>
 <p align="center">一本放在手边的日记。文字只留在你自己手里。</p>
 
