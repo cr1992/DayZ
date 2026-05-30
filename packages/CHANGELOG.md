@@ -47,7 +47,32 @@
 
 ---
 
+## 自研包（self-authored · 无 upstream · 不进 Patch 台账）
+
+> 这些是**仓库自研、非 fork 上游**的本地包：没有上游基线、没有 patch 可言，故
+> **不分配 `Pxxx`、不打 DAYZ-PATCH 标记、不归 `check_patches.sh` 扫描**（该脚本只治
+> vendored fork 漂移）。它们仍受 AGENTS.md「本地包独立 commit」纪律约束：包内
+> 源码 / Cargo / 生成绑定 / pubspec / 本 CHANGELOG 作为独立 commit，不与 `lib/` 业务混提。
+
+### argon2id_ffi（自研 Argon2id / HKDF 库）
+- 全新自研 native 库：Argon2id + HKDF-SHA256（RustCrypto）+ 手写 `dart:ffi`（无 FRB），
+  cargokit 做交叉编译。面向可发布到 pub。spec 见 `specs/active/dayz-security-rust/`，
+  对比数据见 `packages/argon2id_ffi/BENCHMARK.md`。
+- **DayZ 生产接入待真机闸门**（不删 dargon2、不碰 `lib/security/`、不动 `ios/Podfile`）。
+
+---
+
 ## 变更历史（按日期）
+
+## [2026-05-30]
+
+### argon2id_ffi（self-authored）
+- **新建 native 库**（手写 `dart:ffi`，无 FRB；cargokit 交叉编译；`com.dayz` 命名空间）：
+  - `rust/src/api/crypto.rs`（纯算法）+ `rust/src/api/ffi.rs`（`extern "C"` C-ABI，catch_unwind + 错误码 + `#[used]`）。
+  - Dart `lib/src/ffi/`（bindings/errors + `Isolate.run` 异步 API）；依赖仅 `ffi`。
+  - 依赖 argon2 0.5.3 / hkdf 0.12.4 / sha2 0.10.9 / zeroize 1.8.2（共 87 crate，无 FRB/tokio）。
+  - 验证：Rust `cargo test` 7/7（argon2 对 argon2-cffi C 的 KAT + RFC 5869 HKDF）；Dart 手写 ffi 端到端 `flutter test` 6/6。
+  - 数据：同机 aarch64 v0 参数 Rust 59.9ms vs C 77.2ms；单架构 cdylib iOS 0.317MB / Android 0.333MB（详见 BENCHMARK.md）。
 
 ## [2026-05-27]
 

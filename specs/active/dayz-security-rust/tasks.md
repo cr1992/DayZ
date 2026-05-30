@@ -5,191 +5,172 @@
 文档状态：草稿
 ---
 
-# 任务列表：dayz-security-rust
+# 任务列表：dayz-security-rust（argon2id_ffi）
+
+> 本里程碑只交付独立库 `packages/argon2id_ffi` + 实测数据，**不碰主工程 `lib/security/`、
+> 不删 dargon2、不动 `ios/Podfile`**（DayZ 接入待真机闸门，见 design D6）。
+> 算法正确性的权威断言下沉到 Rust `cargo test`（CI 友好、无需 Flutter）；Dart 层验 ffi 绑定透传。
 
 ## 任务依赖图
 
 ```mermaid
 graph TD
-  T1[T1: 初始化包结构] --> T2[T2: Rust 接口实现]
-  T1 --> T3[T3: FRB 绑定生成]
-  T2 --> T4[T4: Android NDK集成]
-  T3 --> T4
-  T2 --> T5[T5: iOS CocoaPods集成]
-  T3 --> T5
-  T4 --> T6[T6: 单元测试编写]
-  T5 --> T6
-  T6 --> T7[T7: 接入主工程替换C FFI]
+  T1[T1 初始化 FFI 插件包] --> T2[T2 Rust crypto.rs]
+  T2 --> T2b[T2b Rust ffi.rs C-ABI]
+  T2b --> T3[T3 手写 dart:ffi 绑定]
+  T2b --> T4[T4 Android 交叉编译]
+  T2b --> T5[T5 iOS 交叉编译]
+  T2 --> T6[T6 Rust cargo test]
+  T3 --> T6b[T6b Dart ffi 端到端 test]
+  T4 --> T7[T7 体积/性能 benchmark]
+  T5 --> T7
+  T6 --> T7
 ```
 
 -----
 
-- [ ] T1 · 初始化 dayz_security_rust 本地包结构与 Cargo 依赖
+- [x] T1 · 初始化 FFI 插件包结构与 Cargo 依赖
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1 ｜ **可改文件：** `packages/dayz_security_rust/pubspec.yaml`, `packages/dayz_security_rust/Cargo.toml`, `packages/CHANGELOG.md`
-
-### 背景
-创建本地包 `packages/dayz_security_rust`，并在其中配置好 Rust Cargo 项目及核心依赖。
+**关联需求：** R1, R2 ｜ **依据设计：** D1, D5 ｜ **可改文件：** `packages/argon2id_ffi/`、`rust/Cargo.toml`、`packages/CHANGELOG.md`
 
 ### 实施
-1. 创建目录 `packages/dayz_security_rust`。
-2. 编写 `pubspec.yaml` 声明本地包，依赖 `flutter_rust_bridge: ^2.0.0`。
-3. 创建 `Cargo.toml`，配置 `[dependencies]` 引入 `argon2`、`hkdf`、`sha2`、`zeroize` 与 `flutter_rust_bridge`。
-4. 在 `packages/CHANGELOG.md` 中增加变更台账记录。
-
-### 验收标准
-- 本地包 `pubspec.yaml` 存在且格式正确（自动）
-- Cargo.toml 依赖解析正常且编译配置正确（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  cd packages/dayz_security_rust && flutter pub get && cargo check
-  ```
-
----
-
-- [ ] T2 · 实现 Rust 侧密码学接口 (api.rs)
-
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R4 ｜ **依据设计：** D3, D4 ｜ **可改文件：** `packages/dayz_security_rust/rust/src/api.rs`
-
-### 背景
-在 Rust 侧实现核心的哈希和密钥派生接口，提供安全的内存清理支持。
-
-### 实施
-1. 在 `packages/dayz_security_rust/rust/src/api.rs` 暴露：
-   * `pub fn argon2id_derive_key(password: Vec<u8>, salt: Vec<u8>, m_cost: u32, t_cost: u32, parallelism: u32, output_len: u32) -> Result<Vec<u8>, String>`
-   * `pub fn hkdf_sha256_derive_key(ikm: Vec<u8>, salt: Option<Vec<u8>>, info: Vec<u8>, output_len: u32) -> Result<Vec<u8>, String>`
-2. 内部使用 RustCrypto 库进行算法计算，并通过 `zeroize` 对敏感的 password/ikm 内存进行主动清除。
-
-### 验收标准
-- Rust 接口编译成功无警告（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  cd packages/dayz_security_rust/rust && cargo check
-  ```
-
----
-
-- [ ] T3 · 运行 flutter_rust_bridge_codegen 生成 Dart 绑定
-
-**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D2 ｜ **可改文件：** `packages/dayz_security_rust/lib/`（生成文件）
-
-### 背景
-运行 FRB 代码生成器，产生 Dart 端的胶水绑定文件。
-
-### 实施
-1. 全局或本地安装 `flutter_rust_bridge_codegen`。
-2. 运行 `flutter_rust_bridge_codegen generate` 产生 Dart 胶水绑定层。
-
-### 验收标准
-- Dart 胶水文件成功生成，包含 `argon2idDeriveKey` 等绑定接口（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  test -f packages/dayz_security_rust/lib/src/rust/api.dart
-  ```
-
----
-
-- [ ] T4 · 配置 Android NDK 与 Gradle 编译集成
-
-**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D2 ｜ **可改文件：** `packages/dayz_security_rust/android/build.gradle`
-
-### 背景
-配置 Android 端构建链，使其能在执行 `flutter build` 时自动交叉编译 Rust 代码。
-
-### 实施
-1. 配置 `packages/dayz_security_rust/android/build.gradle`，引入 `cargo-ndk` 编译支持。
-2. 确保在 Android 构建时能自动生成对应 ABI (arm64-v8a, armeabi-v7a, x86_64) 的 `.so`。
-
-### 验收标准
-- Android 端 native library 编译成功（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  flutter build apk --debug
-  ```
-
----
-
-- [ ] T5 · 配置 iOS Xcode 与 CocoaPods 编译集成
-
-**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D2 ｜ **可改文件：** `packages/dayz_security_rust/ios/dayz_security_rust.podspec`, `packages/dayz_security_rust/ios/Classes/`
-
-### 背景
-配置 iOS 构建链，把 Rust 静态库正确注入 Cocoapods，解决符号剥离和架构链接问题。
-
-### 实施
-1. 配置 `dayz_security_rust.podspec`，在构建时自动通过 `cargo lipo` 或直接通过 rustup 编译 iOS 的 universal 静态二进制库，并配置其链接参数。
-
-### 验收标准
-- iOS 构建打通且链接无报错（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  flutter build ios --debug --no-codesign
-  ```
-
----
-
-- [ ] T6 · 编写单元测试与验证
-
-**同 spec 依赖：** T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R4 ｜ **依据设计：** D3 ｜ **可改文件：** `packages/dayz_security_rust/test/dayz_security_rust_test.dart`
-
-### 背景
-测试我们的 Rust 算法绑定层。
-
-### 实施
-1. 编写 Dart 单元测试验证：
-   * 传入已知 RFC 9106 测试向量，断言 Rust 返回的 Argon2id 派生密钥逐字节一致。
-   * 测试 HKDF-SHA256 测试向量一致性。
-   * 测试极常值及边界条件输入。
-
-### 验收标准
-- 单元测试全部通过（自动）
-
-### 验收方式
-- 自动：
-  ```bash
-  cd packages/dayz_security_rust && flutter test
-  ```
-
----
-
-- [ ] T7 · 接入主工程并替换 C FFI
-
-**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `lib/security/argon2_kdf.dart`
-
-### 背景
-把我们的 C 语言的 `dargon2_flutter` 替换为自研的 `dayz_security_rust`，并在 Kdf 模块中完成接口重写。
-
-### 实施
-1. 修改主工程 `pubspec.yaml`：移除 `dargon2_flutter`，引入对 `dayz_security_rust` 的本地引用。
-2. 重写 `lib/security/argon2_kdf.dart`，调用 `Argon2SecurityRust.argon2idDeriveKey(...)` 来实现 KDF 逻辑。
-3. 清理 [ios/Podfile](file:///Users/xiaji/dev/DayZ/ios/Podfile) 中的 C FFI 临时修补，重新执行构建测试。
-4. 执行打包体积与运行性能的实测对比，并将数据记录到最终的验证记录或 walkthrough.md 中。
-
-### 验收标准
-- 主工程编译和原 `key-management` 测试顺利跑通（自动）
-- 完成自研 Rust 方案与原 C FFI 方案在包体积和运算耗时上的双向对比并留痕（人工）
-
-### 验收方式
-- 自动：
-  ```bash
-  flutter test test/security/
-  ```
-- 人工（核查人 @Ray）：
-  - 验收记录中需要包含对比数据：原 C 方案 vs 新 Rust 方案的 APK/IPA 增量体积、相同参数下的中位数耗时。
+1. 生成 Flutter FFI 插件骨架（cargokit + 五平台接线），组织 `com.dayz`。
+2. `rust/Cargo.toml` 加 `argon2/hkdf/sha2/zeroize` + `ffi`(Dart 侧)，`crate-type=["cdylib","staticlib","lib"]`，
+   release `opt-level=3,lto,strip,codegen-units=1,panic=unwind`，`release-min`(opt-z+abort) 仅供体积测量。
+3. `packages/CHANGELOG.md` 自研包另起一节（不进 Patch 台账，见 D5）。
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+2026-05-30 自动：flutter pub get 退出 0；cargo metadata 解析正常（87 crate，无 FRB/tokio）。
 ```
+
+---
+
+- [x] T2 · Rust 纯算法层 crypto.rs
+
+**同 spec 依赖：** T1 ｜ **关联需求：** R1, R2, R4 ｜ **依据设计：** D3 ｜ **可改文件：** `rust/src/api/crypto.rs`、`rust/src/api/mod.rs`、`rust/src/lib.rs`
+
+### 实施
+1. `argon2id_derive_key` / `hkdf_sha256_derive_key`（`Result<Vec<u8>, String>`，收 `Vec` 所有权）。
+2. 输入校验：salt≥8B、output_len∈[16,1024]（argon2）/[1,255*32]（hkdf）；非法即 `Err`。
+3. 对入参 `password/ikm` **显式** `zeroize`；argon2 开 `zeroize` feature 擦内部块。
+
+### 验收记录
+```
+2026-05-30 自动：cargo build/clippy --lib 无警告。
+```
+
+---
+
+- [x] T2b · Rust C-ABI 包装 ffi.rs
+
+**同 spec 依赖：** T2 ｜ **关联需求：** R1, R2, R4 ｜ **依据设计：** D4 ｜ **可改文件：** `rust/src/api/ffi.rs`、`rust/src/api/mod.rs`
+
+### 实施
+1. `#[no_mangle] extern "C"` 的 `argon2id_ffi_derive` / `hkdf_sha256_ffi_derive`，返回 i32 错误码。
+2. 内存契约：调用方分配 out、传 ptr+len，Rust 只写入不分配；入参 `*const u8` 只读借用。
+3. 整体 `std::panic::catch_unwind` 收口（panic→-100，绝不跨 FFI）；`#[used]` 锚点防 dead-strip。
+
+### 验收记录
+```
+2026-05-30 自动：cargo build --release 后 nm -gU 仅 2 导出符号（argon2id_ffi_derive / hkdf_sha256_ffi_derive）。
+```
+
+---
+
+- [x] T3 · 手写 dart:ffi 绑定 + 异步 API
+
+**同 spec 依赖：** T2b ｜ **关联需求：** R1, R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/src/ffi/{bindings,errors,crypto_ffi}.dart`、`lib/argon2id_ffi.dart`、`pubspec.yaml`
+
+### 实施
+1. `bindings.dart`：typedef + `openLib`(平台分流 + `ARGON2ID_FFI_LIB` host 逃生通道) + `lookupFunction`。
+2. `errors.dart`：错误码 → `Argon2idFfiException`。
+3. `crypto_ffi.dart`：公开异步 `argon2idDeriveKey` / `hkdfSha256DeriveKey`，`Isolate.run` 内 open+调用+marshalling+free。
+
+### 验收记录
+```
+2026-05-30 自动：dart analyze lib 无问题；签名为 Future<Uint8List>。行为正确性见 T6b。
+```
+
+---
+
+- [x] T4 · Android arm64 交叉编译（产物级断言）
+
+**同 spec 依赖：** T2b ｜ **关联需求：** R3, NF2 ｜ **依据设计：** D2 ｜ **可改文件：** `android/`、`rust/`
+
+### 实施 / 验收
+- NDK 链接器 + `CC_aarch64_linux_android` 交叉编译 cdylib，断言 `.so` 存在、记录字节（NF2）。
+
+### 验收记录
+```
+2026-05-30 自动：Android arm64 .so 0.333MB（349,528B），见 BENCHMARK.md §3。
+```
+
+---
+
+- [x] T5 · iOS arm64 交叉编译（产物级断言）
+
+**同 spec 依赖：** T2b ｜ **关联需求：** R3, NF2 ｜ **依据设计：** D2 ｜ **可改文件：** `ios/`（cargokit 的 `argon2id_ffi.podspec` `-force_load` + `Classes/dummy_file.c`）、`rust/`
+
+### 实施 / 验收
+- 交叉编译 `aarch64-apple-ios`(真机) + `aarch64-apple-ios-sim`(模拟器)，记录 cdylib 字节。
+- release/archive 符号留存属真机集成项（debug 假绿），移到 verification 兼容性专项。
+
+### 验收记录
+```
+2026-05-30 自动：iOS arm64 + sim 构建成功；arm64 cdylib 0.317MB（332,552B），见 BENCHMARK.md §3。
+```
+
+---
+
+- [x] T6 · Rust cargo test（算法正确性，CI 友好）
+
+**同 spec 依赖：** T2 ｜ **关联需求：** R1, R2, R4 ｜ **依据设计：** D3 ｜ **可改文件：** `rust/src/api/crypto.rs`（`#[cfg(test)]`）
+
+### 实施
+1. Argon2id KAT：4 组对 argon2-cffi（P-H-C C）逐字节（含空口令、len64、p2）。
+2. HKDF：RFC 5869 §A Case 1/2/3（含 salt=None）。3. 确定性 + 输入校验拒绝。
+
+### 验收记录
+```
+2026-05-30 自动：7/7 通过（4 Argon2id KAT vs argon2-cffi 25.1.0 + 3 RFC5869 HKDF + 确定性 + 校验）。
+```
+
+---
+
+- [x] T6b · Dart 手写 ffi 端到端 test
+
+**同 spec 依赖：** T3 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D2 ｜ **可改文件：** `test/crypto_ffi_test.dart`
+
+### 实施 / 验收
+- host 经 `ARGON2ID_FFI_LIB` 加载 release dylib，断言 Dart→C-ABI→Rust 的 argon2 KAT、空口令边界、
+  错误码抛异常、确定性、HKDF Case1/Case3 逐字节一致。
+
+### 验收记录
+```
+2026-05-30 自动：6/6 通过（argon2 KAT/空口令/错误码/确定性 + HKDF Case1/Case3）。
+```
+
+---
+
+- [x] T7 · 体积 / 性能 / 正确性 benchmark
+
+**同 spec 依赖：** T4, T5, T6 ｜ **关联需求：** NF1, NF2 ｜ **依据设计：** D6 ｜ **可改文件：** `rust/benches/kdf_bench.rs`、`rust/examples/timing.rs`、`scripts/bench_compare.py`、`BENCHMARK.md`
+
+### 实施
+1. 性能：Rust `examples/timing.rs`（N=11 中位，release）+ C `scripts/bench_compare.py`（argon2-cffi 同机同参）。
+2. 体积：三端 cdylib（DCE+strip）字节。3. 汇总进 `BENCHMARK.md`（方法学 + 复现 + 待真机补测）。
+
+### 验收记录
+```
+2026-05-30 自动：v0 Rust 59.9ms vs C 77.2ms（快 1.29×）；cdylib iOS 0.317MB / Android 0.333MB。
+人工：BENCHMARK.md 已成文，待 @Ray 核。
+```
+
+---
+
+- [ ] T8 ·（待 @Ray，非本里程碑）真机闸门 + DayZ 接入 / 发布决策
+
+**关联需求：** NF1, NF2, R3 ｜ **说明：** ① 真机 release 耗时 + 整包增量 + iOS archive/TestFlight 符号留存 + 并发 OOM
+（见 verification 兼容性专项 + BENCHMARK §5）；② 闸门过后决定 DayZ 是否切换（切则改 key-management D2/argon2_kdf.dart、删 Podfile hack）
++ 是否发 pub（预编译二进制 + 填 repository）。**列此留指针。**

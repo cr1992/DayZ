@@ -1,0 +1,42 @@
+[package]
+name = "argon2id_ffi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# cdylib/staticlib 供移动端链接；lib(rlib) 让 tests/benches 能直接链本 crate。
+crate-type = ["cdylib", "staticlib", "lib"]
+
+[dependencies]
+# 暴露给 Flutter 走手写 dart:ffi（C-ABI，见 src/api/ffi.rs），不依赖 flutter_rust_bridge。
+# argon2 仅启用 alloc + zeroize：去掉 password-hash(PHC 字符串/base64) 以压体积，
+# zeroize feature 让 argon2 算完后擦除其内部内存块（注意：不含调用方入参，见 crypto.rs）。
+argon2 = { version = "0.5", default-features = false, features = ["alloc", "zeroize"] }
+hkdf = "0.12"
+sha2 = "0.10"
+zeroize = "1"
+
+[dev-dependencies]
+hex = "0.4"
+# 纯文本统计输出，不拉 gnuplot/plotters，保持 dev 依赖轻量。
+criterion = { version = "0.5", default-features = false }
+
+[[bench]]
+name = "kdf_bench"
+harness = false
+
+[profile.release]
+# NF1 是硬性能门槛、argon2 是 memory-hard 的核心，故 release 走 opt-level=3 保速度；
+# 体积仍由 lto + strip + codegen-units=1 压到远低于 NF2 的 3MB（实测见 benchmark）。
+# 不用 panic="abort"：FRB 依赖 unwind 把 Rust panic 转成 Dart 异常。
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+# 体积对照用：opt-level="z" + panic=abort 的极限压缩档（仅做体积测量，不用于发布）。
+[profile.release-min]
+inherits = "release"
+opt-level = "z"
+# 注意：release-min 仅供体积测量，发布禁用——panic="abort" 会使 ffi.rs 的 catch_unwind 失效。
+panic = "abort"
