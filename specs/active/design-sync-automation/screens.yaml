@@ -1,27 +1,27 @@
-# Screen sync registry for design-sync-automation.
-# `pinned` is the ui-design commit used as the screen's latest alignment base.
+# DayZ screen design-sync registry.
+# `pinned` is filled by Phase 5 after the screen's first Flutter alignment.
 screens:
   - id: timeline
-    pinned: HEAD
+    pinned: null
     lane: active
     map: test/ui/timeline/element-map.yaml
   - id: reader
-    pinned: HEAD
+    pinned: null
     lane: active
     map: test/ui/reader/element-map.yaml
   - id: editor
-    pinned: HEAD
+    pinned: null
     lane: active
-    map: test/ui/editor/element-map.yaml
+    map: test/ui/editor-integration/element-map.yaml
   - id: onthisday
-    pinned: HEAD
+    pinned: null
     lane: active
     map: test/ui/onthisday/element-map.yaml
   - id: search
-    pinned: HEAD
+    pinned: null
     lane: active
     map: test/ui/search/element-map.yaml
   - id: settings
-    pinned: HEAD
+    pinned: null
     lane: active
     map: test/ui/settings/element-map.yaml

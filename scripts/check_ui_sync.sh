@@ -5,96 +5,134 @@
 
 set -euo pipefail
 
-REPO="${DAYZ_UI_SYNC_REPO:-$(pwd)}"
-SCREENS_YAML="${DAYZ_UI_SYNC_SCREENS_YAML:-specs/active/design-sync-automation/screens.yaml}"
-DESIGN_ROOT="${DAYZ_UI_SYNC_DESIGN_ROOT:-ui-design/current}"
-HEAD_REF="${DAYZ_UI_SYNC_HEAD:-HEAD}"
+usage() {
+  cat <<'USAGE'
+Usage: scripts/check_ui_sync.sh [--registry PATH] [--repo PATH] [--head REF]
 
-if [ ! -f "$REPO/$SCREENS_YAML" ]; then
-  echo "Error: screens registry not found: $SCREENS_YAML" >&2
+Checks specs/active/design-sync-automation/screens.yaml for screens whose
+pinned design commit is behind HEAD and whose source screen changed.
+
+Exit codes:
+  0  all pinned screens are current, or only unpinned placeholders exist
+  1  one or more screens need sync
+  2  invalid input or git failure
+USAGE
+}
+
+REGISTRY="specs/active/design-sync-automation/screens.yaml"
+REPO="."
+HEAD_REF="HEAD"
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --registry)
+      REGISTRY="${2:-}"
+      shift 2
+      ;;
+    --repo)
+      REPO="${2:-}"
+      shift 2
+      ;;
+    --head)
+      HEAD_REF="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ ! -f "$REGISTRY" ]; then
+  echo "screens registry not found: $REGISTRY" >&2
   exit 2
 fi
 
-trim() {
-  local value="$1"
-  value="${value#"${value%%[![:space:]]*}"}"
-  value="${value%"${value##*[![:space:]]}"}"
-  printf '%s' "$value"
-}
+if ! git -C "$REPO" rev-parse --verify "$HEAD_REF^{commit}" >/dev/null 2>&1; then
+  echo "invalid head ref: $HEAD_REF" >&2
+  exit 2
+fi
 
-unquote() {
-  local value="$1"
-  value="$(trim "$value")"
-  value="${value%\"}"
-  value="${value#\"}"
-  value="${value%\'}"
-  value="${value#\'}"
-  printf '%s' "$value"
-}
+screen_ids=()
+pinned_refs=()
 
-pending=()
 current_id=""
 current_pinned=""
 
-check_screen() {
-  local id="$1"
-  local pinned="$2"
-
-  if [ -z "$id" ]; then
-    return
+flush_entry() {
+  if [ -n "$current_id" ]; then
+    screen_ids+=("$current_id")
+    pinned_refs+=("$current_pinned")
   fi
-
-  if [ -z "$pinned" ] || [ "$pinned" = "TODO" ] || [ "$pinned" = "null" ]; then
-    pending+=("$id (missing pinned)")
-    return
-  fi
-
-  local head_sha
-  head_sha="$(git -C "$REPO" rev-parse "$HEAD_REF")"
-  local pinned_sha="$pinned"
-  if [ "$pinned" = "HEAD" ]; then
-    pinned_sha="$head_sha"
-  else
-    if ! pinned_sha="$(git -C "$REPO" rev-parse "$pinned^{commit}" 2>/dev/null)"; then
-      pending+=("$id (invalid pinned: $pinned)")
-      return
-    fi
-  fi
-
-  if [ "$pinned_sha" = "$head_sha" ]; then
-    return
-  fi
-
-  local screen_path="$DESIGN_ROOT/pages/screens/$id.html"
-  if git -C "$REPO" diff --quiet "$pinned_sha..$HEAD_REF" -- "$screen_path"; then
-    return
-  fi
-
-  pending+=("$id ($screen_path)")
+  current_id=""
+  current_pinned=""
 }
 
-while IFS= read -r line || [ -n "$line" ]; do
-  stripped="$(trim "$line")"
-  case "$stripped" in
-    "- id:"*)
-      check_screen "$current_id" "$current_pinned"
-      current_id="$(unquote "${stripped#- id:}")"
-      current_pinned=""
-      ;;
-    "id:"*)
-      current_id="$(unquote "${stripped#id:}")"
-      ;;
-    "pinned:"*)
-      current_pinned="$(unquote "${stripped#pinned:}")"
-      ;;
-  esac
-done <"$REPO/$SCREENS_YAML"
-check_screen "$current_id" "$current_pinned"
+while IFS= read -r raw_line || [ -n "$raw_line" ]; do
+  line="${raw_line%%#*}"
+  line="${line%"${line##*[![:space:]]}"}"
+  trimmed="${line#"${line%%[![:space:]]*}"}"
 
-if [ "${#pending[@]}" -gt 0 ]; then
-  echo "待同步屏幕："
-  printf ' - %s\n' "${pending[@]}"
-  exit 1
+  if [[ "$trimmed" =~ ^-\ id:[[:space:]]*(.+)$ ]]; then
+    flush_entry
+    current_id="${BASH_REMATCH[1]}"
+    current_id="${current_id%\"}"
+    current_id="${current_id#\"}"
+  elif [[ "$trimmed" =~ ^id:[[:space:]]*(.+)$ ]]; then
+    current_id="${BASH_REMATCH[1]}"
+    current_id="${current_id%\"}"
+    current_id="${current_id#\"}"
+  elif [[ "$trimmed" =~ ^pinned:[[:space:]]*(.*)$ ]]; then
+    current_pinned="${BASH_REMATCH[1]}"
+    current_pinned="${current_pinned%\"}"
+    current_pinned="${current_pinned#\"}"
+  fi
+done < "$REGISTRY"
+flush_entry
+
+if [ "${#screen_ids[@]}" -eq 0 ]; then
+  echo "no screens found in registry: $REGISTRY" >&2
+  exit 2
 fi
 
-echo "UI sync registry is up to date."
+needs_sync=()
+
+for i in "${!screen_ids[@]}"; do
+  id="${screen_ids[$i]}"
+  pinned="${pinned_refs[$i]}"
+  source_path="ui-design/current/pages/screens/$id.html"
+
+  if [ -z "$pinned" ] || [ "$pinned" = "null" ] || [[ "$pinned" = TODO* ]]; then
+    continue
+  fi
+
+  if ! git -C "$REPO" rev-parse --verify "$pinned^{commit}" >/dev/null 2>&1; then
+    echo "invalid pinned ref for $id: $pinned" >&2
+    exit 2
+  fi
+
+  if [ "$(git -C "$REPO" rev-parse "$pinned^{commit}")" = "$(git -C "$REPO" rev-parse "$HEAD_REF^{commit}")" ]; then
+    continue
+  fi
+
+  if git -C "$REPO" diff --quiet "$pinned" "$HEAD_REF" -- "$source_path"; then
+    continue
+  fi
+
+  needs_sync+=("$id $pinned..$HEAD_REF $source_path")
+done
+
+if [ "${#needs_sync[@]}" -eq 0 ]; then
+  echo "UI design sync check passed."
+  exit 0
+fi
+
+echo "UI design screens pending sync:"
+printf '  %s\n' "${needs_sync[@]}"
+exit 1

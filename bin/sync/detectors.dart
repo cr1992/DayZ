@@ -1,235 +1,215 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import 'dart:convert';
-import 'dart:io';
+// Deterministic R5 detectors for design-sync automation.
 
-class ElementMapEntry {
-  const ElementMapEntry({required this.cssClass, this.key, this.geometry});
+enum GeometryKind {
+  fixed,
+  content;
 
-  final String cssClass;
-  final String? key;
-  final String? geometry;
-
-  String get normalizedClass => normalizeClassName(cssClass);
-
-  bool get hasValidGeometry => geometry == 'fixed' || geometry == 'content';
+  static GeometryKind? parse(String? value) {
+    switch (value?.trim()) {
+      case 'fixed':
+        return GeometryKind.fixed;
+      case 'content':
+        return GeometryKind.content;
+      default:
+        return null;
+    }
+  }
 }
 
-class SubstantialChangeResult {
-  const SubstantialChangeResult({
+class ElementRegistryEntry {
+  const ElementRegistryEntry({required this.className, this.geometry});
+
+  final String className;
+  final GeometryKind? geometry;
+}
+
+class ValueSetDiff {
+  const ValueSetDiff({required this.added, required this.removed});
+
+  final Set<String> added;
+  final Set<String> removed;
+
+  bool get isEmpty => added.isEmpty && removed.isEmpty;
+  bool get isNotEmpty => !isEmpty;
+}
+
+class DomSequenceDiff {
+  const DomSequenceDiff({required this.before, required this.after});
+
+  final List<String> before;
+  final List<String> after;
+
+  bool get isEmpty => _listEquals(before, after);
+  bool get isNotEmpty => !isEmpty;
+}
+
+class SubstantiveChangeResult {
+  const SubstantiveChangeResult({
     required this.unmappedClasses,
-    required this.missingGeometryClasses,
-    required this.newDataWhenValues,
-    required this.removedDataWhenValues,
-    required this.domOrderChanged,
+    required this.dataWhenDiff,
+    required this.domSequenceDiff,
   });
 
   final Set<String> unmappedClasses;
-  final Set<String> missingGeometryClasses;
-  final Set<String> newDataWhenValues;
-  final Set<String> removedDataWhenValues;
-  final bool domOrderChanged;
+  final ValueSetDiff dataWhenDiff;
+  final DomSequenceDiff domSequenceDiff;
 
-  bool get hasSubstantialChange =>
+  bool get hasSubstantiveChanges =>
       unmappedClasses.isNotEmpty ||
-      newDataWhenValues.isNotEmpty ||
-      removedDataWhenValues.isNotEmpty ||
-      domOrderChanged;
-
-  Map<String, Object> toJson() => <String, Object>{
-    'unmappedClasses': _sorted(unmappedClasses),
-    'missingGeometryClasses': _sorted(missingGeometryClasses),
-    'newDataWhenValues': _sorted(newDataWhenValues),
-    'removedDataWhenValues': _sorted(removedDataWhenValues),
-    'domOrderChanged': domOrderChanged,
-    'hasSubstantialChange': hasSubstantialChange,
-  };
+      dataWhenDiff.isNotEmpty ||
+      domSequenceDiff.isNotEmpty;
 }
 
-SubstantialChangeResult detectSubstantialChanges({
-  required Set<String> extractedClasses,
-  required Iterable<ElementMapEntry> registry,
-  Set<String> ignoredClasses = const <String>{},
-  Set<String> beforeDataWhenValues = const <String>{},
-  Set<String> afterDataWhenValues = const <String>{},
-  List<String> beforeDomSequence = const <String>[],
-  List<String> afterDomSequence = const <String>[],
-}) {
-  final normalizedExtracted = extractedClasses.map(normalizeClassName).toSet();
-  final normalizedIgnored = ignoredClasses.map(normalizeClassName).toSet();
-  final normalizedRegistry = <String>{};
-  final missingGeometry = <String>{};
-
-  for (final entry in registry) {
-    final className = entry.normalizedClass;
-    normalizedRegistry.add(className);
-    if (!entry.hasValidGeometry) {
-      missingGeometry.add(className);
-    }
-  }
-
-  final unmapped = normalizedExtracted
-      .difference(normalizedRegistry)
-      .difference(normalizedIgnored);
-  unmapped.addAll(missingGeometry);
-
-  final beforeStates = beforeDataWhenValues.toSet();
-  final afterStates = afterDataWhenValues.toSet();
-
-  return SubstantialChangeResult(
-    unmappedClasses: unmapped,
-    missingGeometryClasses: missingGeometry,
-    newDataWhenValues: afterStates.difference(beforeStates),
-    removedDataWhenValues: beforeStates.difference(afterStates),
-    domOrderChanged: !_listEquals(beforeDomSequence, afterDomSequence),
-  );
-}
-
-Set<String> extractClassesFromHtml(String html) {
+Set<String> extractClassNames(String html) {
   final classes = <String>{};
-  final attrPattern = RegExp(
-    r'''\bclass\s*=\s*(["'])(.*?)\1''',
-    multiLine: true,
-    dotAll: true,
-  );
-
-  for (final match in attrPattern.allMatches(html)) {
-    final value = match.group(2)!;
-    for (final className in value.split(RegExp(r'\s+'))) {
-      final normalized = normalizeClassName(className);
-      if (normalized.isNotEmpty) {
-        classes.add(normalized);
-      }
-    }
+  for (final match in _attributeMatches(html, 'class')) {
+    classes.addAll(
+      match
+          .split(RegExp(r'\s+'))
+          .map(normalizeClassName)
+          .where((className) => className.isNotEmpty),
+    );
   }
-
-  return classes;
+  return Set<String>.unmodifiable(_sorted(classes));
 }
 
 Set<String> extractDataWhenValues(String html) {
   final values = <String>{};
-  final attrPattern = RegExp(
-    r'''\bdata-when\s*=\s*(["'])(.*?)\1''',
-    multiLine: true,
-    dotAll: true,
-  );
+  for (final value in _attributeMatches(html, 'data-when')) {
+    final separator = value.contains(',') ? RegExp(r'\s*,\s*') : RegExp(r'\s+');
+    values.addAll(
+      value
+          .split(separator)
+          .map((part) => part.trim())
+          .where((part) => part.isNotEmpty),
+    );
+  }
+  return Set<String>.unmodifiable(_sorted(values));
+}
 
-  for (final match in attrPattern.allMatches(html)) {
-    final value = match.group(2)!.trim();
-    if (value.isNotEmpty) {
-      values.add(value);
+Set<String> detectUnmappedClasses({
+  required Set<String> extractedClasses,
+  required Iterable<ElementRegistryEntry> registry,
+  Set<String> ignoreClasses = const <String>{},
+}) {
+  final extracted = _normalizeClassSet(extractedClasses);
+  final ignored = _normalizeClassSet(ignoreClasses);
+  final mapped = <String>{};
+  final missingGeometry = <String>{};
+
+  for (final entry in registry) {
+    final className = normalizeClassName(entry.className);
+    if (className.isEmpty) continue;
+
+    if (entry.geometry == null) {
+      missingGeometry.add(className);
+    } else {
+      mapped.add(className);
     }
   }
 
-  return values;
-}
-
-List<String> normalizedDomChildSequence(String html) {
-  final sequence = <String>[];
-  final tagPattern = RegExp(r'''<([a-zA-Z][\w:-]*)(\s[^<>]*)?>''');
-  final classPattern = RegExp(r'''\bclass\s*=\s*(["'])(.*?)\1''');
-  final dataWhenPattern = RegExp(r'''\bdata-when\s*=\s*(["'])(.*?)\1''');
-  final idPattern = RegExp(r'''\bid\s*=\s*(["'])(.*?)\1''');
-  const ignoredTags = <String>{
-    'html',
-    'head',
-    'meta',
-    'link',
-    'script',
-    'style',
-    'title',
+  final unmapped = <String>{
+    ...extracted.difference(mapped).difference(ignored),
+    ...missingGeometry.intersection(extracted).difference(ignored),
   };
-
-  for (final tagMatch in tagPattern.allMatches(html)) {
-    final tag = tagMatch.group(1)!.toLowerCase();
-    if (ignoredTags.contains(tag)) {
-      continue;
-    }
-
-    final attrs = tagMatch.group(2) ?? '';
-    final classes = <String>[];
-    final classMatch = classPattern.firstMatch(attrs);
-    if (classMatch != null) {
-      classes.addAll(
-        classMatch
-            .group(2)!
-            .split(RegExp(r'\s+'))
-            .map(normalizeClassName)
-            .where((className) => className.isNotEmpty),
-      );
-      classes.sort();
-    }
-
-    final id = idPattern.firstMatch(attrs)?.group(2)?.trim();
-    final dataWhen = dataWhenPattern.firstMatch(attrs)?.group(2)?.trim();
-    final buffer = StringBuffer(tag);
-    if (id != null && id.isNotEmpty) {
-      buffer.write('#$id');
-    }
-    if (classes.isNotEmpty) {
-      buffer.write('.');
-      buffer.write(classes.join('.'));
-    }
-    if (dataWhen != null && dataWhen.isNotEmpty) {
-      buffer.write('[data-when=$dataWhen]');
-    }
-    sequence.add(buffer.toString());
-  }
-
-  return sequence;
+  return Set<String>.unmodifiable(_sorted(unmapped));
 }
 
-List<ElementMapEntry> parseElementMapYaml(String content) {
-  final entries = <ElementMapEntry>[];
-  String? cssClass;
-  String? key;
-  String? geometry;
+Set<String> detectUnmappedClassesFromDom({
+  required String html,
+  required Iterable<ElementRegistryEntry> registry,
+  Set<String> ignoreClasses = const <String>{},
+}) {
+  return detectUnmappedClasses(
+    extractedClasses: extractClassNames(html),
+    registry: registry,
+    ignoreClasses: ignoreClasses,
+  );
+}
 
-  void saveCurrent() {
-    if (cssClass != null) {
-      entries.add(
-        ElementMapEntry(cssClass: cssClass, key: key, geometry: geometry),
-      );
-    }
+ValueSetDiff diffDataWhenValues({
+  required Set<String> before,
+  required Set<String> after,
+}) {
+  final beforeValues = before
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty);
+  final afterValues = after
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty);
+  final beforeSet = Set<String>.of(beforeValues);
+  final afterSet = Set<String>.of(afterValues);
+
+  return ValueSetDiff(
+    added: Set<String>.unmodifiable(_sorted(afterSet.difference(beforeSet))),
+    removed: Set<String>.unmodifiable(_sorted(beforeSet.difference(afterSet))),
+  );
+}
+
+ValueSetDiff detectDataWhenDiff({
+  required String beforeHtml,
+  required String afterHtml,
+}) {
+  return diffDataWhenValues(
+    before: extractDataWhenValues(beforeHtml),
+    after: extractDataWhenValues(afterHtml),
+  );
+}
+
+List<String> normalizedDomChildSequence(
+  String html, {
+  Set<String> ignoreClasses = const <String>{},
+}) {
+  final root = _parseDom(html);
+  final ignored = _normalizeClassSet(ignoreClasses);
+  final sequence = <String>[];
+
+  for (final child in root.children) {
+    _appendNodeSequence(child, sequence, ignored);
   }
 
-  for (var line in const LineSplitter().convert(content)) {
-    line = line.trim();
-    if (line.isEmpty || line.startsWith('#')) {
-      continue;
-    }
+  return List<String>.unmodifiable(sequence);
+}
 
-    if (line.startsWith('-')) {
-      saveCurrent();
-      cssClass = null;
-      key = null;
-      geometry = null;
-      line = line.substring(1).trim();
-      if (line.isEmpty) {
-        continue;
-      }
-    }
+DomSequenceDiff detectDomChildSequenceDiff({
+  required String beforeHtml,
+  required String afterHtml,
+  Set<String> ignoreClasses = const <String>{},
+}) {
+  return DomSequenceDiff(
+    before: normalizedDomChildSequence(
+      beforeHtml,
+      ignoreClasses: ignoreClasses,
+    ),
+    after: normalizedDomChildSequence(afterHtml, ignoreClasses: ignoreClasses),
+  );
+}
 
-    final colon = line.indexOf(':');
-    if (colon == -1) {
-      continue;
-    }
-    final field = line.substring(0, colon).trim();
-    final value = _unquote(line.substring(colon + 1).trim());
-
-    switch (field) {
-      case 'class':
-        cssClass = value;
-      case 'key':
-        key = value;
-      case 'geometry':
-        geometry = value;
-    }
-  }
-  saveCurrent();
-
-  return entries;
+SubstantiveChangeResult detectSubstantiveChanges({
+  required String beforeHtml,
+  required String afterHtml,
+  required Iterable<ElementRegistryEntry> registry,
+  Set<String> ignoreClasses = const <String>{},
+}) {
+  return SubstantiveChangeResult(
+    unmappedClasses: detectUnmappedClassesFromDom(
+      html: afterHtml,
+      registry: registry,
+      ignoreClasses: ignoreClasses,
+    ),
+    dataWhenDiff: detectDataWhenDiff(
+      beforeHtml: beforeHtml,
+      afterHtml: afterHtml,
+    ),
+    domSequenceDiff: detectDomChildSequenceDiff(
+      beforeHtml: beforeHtml,
+      afterHtml: afterHtml,
+      ignoreClasses: ignoreClasses,
+    ),
+  );
 }
 
 String normalizeClassName(String className) {
@@ -240,43 +220,160 @@ String normalizeClassName(String className) {
   return normalized;
 }
 
-String _unquote(String value) {
-  if (value.length >= 2) {
-    final first = value.codeUnitAt(0);
-    final last = value.codeUnitAt(value.length - 1);
-    if ((first == 0x22 && last == 0x22) || (first == 0x27 && last == 0x27)) {
-      return value.substring(1, value.length - 1);
-    }
+Iterable<String> _attributeMatches(String html, String attributeName) sync* {
+  final safeName = RegExp.escape(attributeName);
+  final pattern = RegExp(
+    '(?:^|[\\s<])$safeName\\s*=\\s*'
+    '("([^"]*)"|\\\'([^\\\']*)\\\'|([^\\s"\\\'=<>`]+))',
+    caseSensitive: false,
+  );
+
+  for (final match in pattern.allMatches(html)) {
+    yield match.group(2) ?? match.group(3) ?? match.group(4) ?? '';
   }
-  return value;
 }
 
-List<String> _sorted(Set<String> values) => values.toList()..sort();
+Set<String> _normalizeClassSet(Iterable<String> classes) {
+  return classes
+      .map(normalizeClassName)
+      .where((className) => className.isNotEmpty)
+      .toSet();
+}
 
-bool _listEquals(List<Object?> a, List<Object?> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-  for (var i = 0; i < a.length; i += 1) {
-    if (a[i] != b[i]) {
-      return false;
+List<String> _sorted(Iterable<String> values) {
+  return values.toList()..sort();
+}
+
+_DomNode _parseDom(String html) {
+  final root = _DomNode('root');
+  final stack = <_DomNode>[root];
+  final cleanHtml = _removeIgnoredHtmlBlocks(html);
+  final tagPattern = RegExp(
+    r'<\s*(/)?\s*([A-Za-z][A-Za-z0-9:_-]*)([^>]*)>',
+    multiLine: true,
+  );
+
+  for (final match in tagPattern.allMatches(cleanHtml)) {
+    final isClosing = match.group(1) != null;
+    final tag = (match.group(2) ?? '').toLowerCase();
+    final attrs = match.group(3) ?? '';
+
+    if (tag.isEmpty || tag.startsWith('!')) continue;
+
+    if (isClosing) {
+      _closeNode(stack, tag);
+      continue;
     }
+
+    final node = _DomNode(tag, classes: _classesFromAttributes(attrs));
+    stack.last.children.add(node);
+
+    final isSelfClosing =
+        attrs.trimRight().endsWith('/') || _voidTags.contains(tag);
+    if (!isSelfClosing) {
+      stack.add(node);
+    }
+  }
+
+  return root;
+}
+
+String _removeIgnoredHtmlBlocks(String html) {
+  var result = html.replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
+  result = result.replaceAll(
+    RegExp(r'<script\b[\s\S]*?</script\s*>', caseSensitive: false),
+    '',
+  );
+  result = result.replaceAll(
+    RegExp(r'<style\b[\s\S]*?</style\s*>', caseSensitive: false),
+    '',
+  );
+  return result;
+}
+
+Set<String> _classesFromAttributes(String attrs) {
+  final match = RegExp(
+    "\\bclass\\s*=\\s*(\"([^\"]*)\"|'([^']*)'|([^\\s\"'=<>`]+))",
+    caseSensitive: false,
+  ).firstMatch(attrs);
+  if (match == null) return const <String>{};
+
+  final value = match.group(2) ?? match.group(3) ?? match.group(4) ?? '';
+  return value
+      .split(RegExp(r'\s+'))
+      .map(normalizeClassName)
+      .where((className) => className.isNotEmpty)
+      .toSet();
+}
+
+void _closeNode(List<_DomNode> stack, String tag) {
+  for (var index = stack.length - 1; index > 0; index -= 1) {
+    if (stack[index].tag == tag) {
+      stack.removeRange(index, stack.length);
+      return;
+    }
+  }
+}
+
+void _appendNodeSequence(
+  _DomNode node,
+  List<String> sequence,
+  Set<String> ignoreClasses,
+) {
+  final visibleClasses = node.classes.difference(ignoreClasses);
+  final isIgnoredWrapper = node.classes.intersection(ignoreClasses).isNotEmpty;
+
+  if (!isIgnoredWrapper) {
+    sequence.add(_nodeLabel(node.tag, visibleClasses));
+  }
+
+  for (final child in node.children) {
+    _appendNodeSequence(child, sequence, ignoreClasses);
+  }
+
+  if (!isIgnoredWrapper) {
+    sequence.add('/${_nodeLabel(node.tag, visibleClasses)}');
+  }
+}
+
+String _nodeLabel(String tag, Set<String> classes) {
+  if (classes.isEmpty) return tag;
+
+  final classList = _sorted(classes).join('.');
+  return '$tag.$classList';
+}
+
+bool _listEquals(List<String> left, List<String> right) {
+  if (identical(left, right)) return true;
+  if (left.length != right.length) return false;
+
+  for (var index = 0; index < left.length; index += 1) {
+    if (left[index] != right[index]) return false;
   }
   return true;
 }
 
-void main(List<String> args) {
-  if (args.length != 2 || args.first != 'scan-html') {
-    stderr.writeln('Usage: dart run bin/sync/detectors.dart scan-html <html>');
-    exitCode = 64;
-    return;
-  }
+class _DomNode {
+  _DomNode(this.tag, {Set<String>? classes}) : classes = classes ?? <String>{};
 
-  final html = File(args[1]).readAsStringSync();
-  final output = <String, Object>{
-    'classes': _sorted(extractClassesFromHtml(html)),
-    'dataWhenValues': _sorted(extractDataWhenValues(html)),
-    'domSequence': normalizedDomChildSequence(html),
-  };
-  stdout.writeln(const JsonEncoder.withIndent('  ').convert(output));
+  final String tag;
+  final Set<String> classes;
+  final List<_DomNode> children = <_DomNode>[];
 }
+
+const _voidTags = <String>{
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+};
