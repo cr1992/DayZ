@@ -33,7 +33,7 @@ graph LR
 
 -----
 
-- [ ] T1 · Debouncer 工具
+- [x] T1 · Debouncer 工具
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, NF2 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/drafts/debouncer.dart`, `test/drafts/debouncer_test.dart`
 
@@ -59,14 +59,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/debouncer_test.dart 通过（5/5）；dart analyze lib/drafts/debouncer.dart test/drafts/debouncer_test.dart 无问题。
+人工：N/A
 ```
 
 -----
 
-- [ ] T2 · DraftRecoveryStatus 数据类 + Saver 接口（编辑器中立）
+- [x] T2 · DraftRecoveryStatus 数据类 + Saver 接口（编辑器中立）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R7, R8 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/draft_recovery_status.dart`, `lib/drafts/draft_coordinator.dart`（接口骨架）, `test/drafts/draft_contract_test.dart`
 
@@ -93,9 +93,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/draft_contract_test.dart 通过（6/6）；dart analyze lib/drafts/draft_recovery_status.dart lib/drafts/draft_coordinator.dart test/drafts/draft_contract_test.dart 无问题；! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart 通过。
+人工：N/A
 ```
 
 -----
