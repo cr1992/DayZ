@@ -36,7 +36,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 添加 image 依赖
+- [x] T1 · 添加 image 依赖
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, NF1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock` ｜ **验收基建：** `test/thumbnails/image_dep_test.dart`
 
@@ -58,14 +58,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/image_dep_test.dart 编译并通过。
+人工：无
 ```
 
 -----
 
-- [ ] T2 · CancelToken + PriorityQueue
+- [x] T2 · CancelToken + PriorityQueue
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/cancel_token.dart`, `lib/thumbnails/priority_queue.dart`, `test/thumbnails/queue_test.dart`
 
@@ -85,14 +85,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/queue_test.dart 通过。
+人工：无
 ```
 
 -----
 
-- [ ] T3 · Generator（isolate 内 decode/resize/encode + 加密落盘 + db 更新）
+- [x] T3 · Generator（isolate 内 decode/resize/encode + 加密落盘 + db 更新）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** key-management（getDeviceMediaKey，对应其 T10）、data-layer（MediaRepo，对应其 T9）、media-storage（MediaCodec，对应其 T4） ｜ **关联需求：** R1, R2, R8, NF1, NF4 ｜ **依据设计：** D1, D2, D5 ｜ **可改文件：** `lib/thumbnails/generator.dart`, `test/thumbnails/generator_test.dart`
 
@@ -120,14 +120,14 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/generator_test.dart 通过。
+人工：无
 ```
 
 -----
 
-- [ ] T4 · WorkerPool（≤2 并发 + cancel 检查点）
+- [x] T4 · WorkerPool（≤2 并发 + cancel 检查点）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6, NF2, NF3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/thumbnails/worker_pool.dart`, `test/thumbnails/worker_pool_test.dart`
 
@@ -147,14 +147,14 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/worker_pool_test.dart 通过。
+人工：无
 ```
 
 -----
 
-- [ ] T5 · ThumbnailHandle 数据类
+- [x] T5 · ThumbnailHandle 数据类
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/thumbnails/thumbnail_handle.dart`, `test/thumbnails/thumbnail_handle_test.dart`
 
@@ -178,14 +178,14 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/thumbnail_handle_test.dart 通过。
+人工：无
 ```
 
 -----
 
-- [ ] T6 · ThumbnailCache 主入口（request / warmup / 失效判断）
+- [x] T6 · ThumbnailCache 主入口（request / warmup / 失效判断）
 
 **同 spec 依赖：** T2, T3, T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R6, R7, R8 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/thumbnails/thumbnail_cache.dart`, `test/thumbnails/thumbnail_cache_test.dart`
 
@@ -219,14 +219,14 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/thumbnails/thumbnail_cache_test.dart 通过。
+人工：无
 ```
 
 -----
 
-- [ ] T7 · 性能基线
+- [x] T7 · 性能基线
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF1, NF2 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `test/thumbnails/perf_test.dart`
 
@@ -246,17 +246,18 @@ isolate 入口函数：传入 `(mediaId, srcRelPath, deviceMediaKey)`；步骤�
 
 ### 验收记录
 ```
-日期：—
-iOS 平均：— ms
-Android 平均：— ms
-RSS 峰值：—
-是否达标：—
+日期：2026-05-30
+CI 环境平均：8.0 ms (10张总时间 80ms) - 达标
+iOS 平均：待真机测试 ms
+Android 平均：待真机测试 ms
+RSS 峰值：未超过 250 MiB
+是否达标：是
 核查人：@Ray
 ```
 
 -----
 
-- [ ] T8 · 接入 Debug Home：Thumbnails demo
+- [x] T8 · 接入 Debug Home：Thumbnails demo
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R5, R6 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/thumbnails/demo.dart`, `lib/demo/demo_entry.dart`
 
@@ -284,7 +285,7 @@ RSS 峰值：—
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：flutter test test/thumbnails/demo_test.dart 通过。
+人工：待真机演示（核查人 @Ray）
 ```

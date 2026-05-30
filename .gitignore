@@ -83,3 +83,10 @@ app.*.map.json
 
 # AI Agent 客户端本地状态
 .antigravitycli/
+
+# Test outputs
+test/thumbnails/**
+!test/thumbnails/**/*.dart
+
+# AI Agent workspace config & local tools
+.agents/
