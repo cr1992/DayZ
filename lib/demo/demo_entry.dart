@@ -5,6 +5,7 @@ import 'package:dayz/demo/editor_appflowy_demo.dart';
 import 'package:dayz/demo/argon2id_ffi_demo.dart';
 import 'package:dayz/demo/theme_gallery_demo.dart';
 import 'package:dayz/security/demo.dart';
+import 'package:dayz/data/demo.dart';
 import 'package:dayz/demo/observability_demo.dart';
 import 'package:dayz/demo/i18n_demo.dart';
 
@@ -52,6 +53,11 @@ final List<DemoEntry> demos = [
     title: 'i18n Demo',
     subtitle: '国际化：语言切换 + 文案取值示范',
     builder: (context) => const I18nDemo(),
+  ),
+  DemoEntry(
+    title: 'Data demo',
+    subtitle: 'Drift Repository 插入 / 查询 / 软删除',
+    builder: (context) => const DataDemo(),
   ),
   // 各模块 demo 在此追加
 ];

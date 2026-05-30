@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-30
+文档状态：定稿
 ---
 
 # 设计：data-layer
@@ -120,6 +120,7 @@ graph TD
 - `lib/data/tables/editing_session.dart`            新建
 - `lib/data/ids.dart`                               新建（UUID v7）
 - `lib/data/time_zone_triple.dart`                  新建
+- `lib/main.dart`                                   修改（App 启动时初始化 timezone 数据）
 - `lib/data/repositories/journal_repo.dart`         新建
 - `lib/data/repositories/entry_repo.dart`           新建
 - `lib/data/repositories/media_repo.dart`           新建

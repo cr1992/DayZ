@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-30
+文档状态：定稿
 ---
 
 # 任务列表：data-layer
@@ -48,7 +48,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 添加 Drift / SQLCipher / UUID / timezone 依赖
+- [x] T1 · 添加 Drift / SQLCipher / UUID / timezone 依赖
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle.kts`（如需）
 
@@ -77,14 +77,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter pub get` 与 `dart run build_runner build` 均成功运行
 人工：—（无）
 ```
 
 -----
 
-- [ ] T2 · Drift 表定义（含索引 + FTS5 虚拟表）
+- [x] T2 · Drift 表定义（含索引 + FTS5 虚拟表）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1, D7, D8 ｜ **可改文件：** `lib/data/database.dart`, `lib/data/tables/*.dart`
 
@@ -112,14 +112,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`dart run build_runner build --delete-conflicting-outputs` 成功；`flutter test test/data/schema_test.dart` 通过；串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T3 · SQLCipher 加密集成（用 KeyProvider 的密钥打开 db）
+- [x] T3 · SQLCipher 加密集成（用 KeyProvider 的密钥打开 db）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** key-management（KeyProvider.getAppDbKey，对应其 T6） ｜ **关联需求：** R2, NF3, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/data/database.dart`（追加 open 方法）, `test/data/encryption_test.dart`
 
@@ -151,14 +151,14 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/encryption_test.dart` 通过；实际栈为 sqlite3 3.x + SQLite3MultipleCiphers，自动验证项使用 `PRAGMA cipher == sqlcipher`、密文文件头与错误密钥 `WrongKeyException` 行为替代旧文案中的 `PRAGMA cipher_version`；串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T4 · UUID v7 工具
+- [x] T4 · UUID v7 工具
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/data/ids.dart`, `test/data/ids_test.dart`
 
@@ -183,16 +183,16 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/ids_test.dart` 通过；串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T5 · 时区三件套工具
+- [x] T5 · 时区三件套工具
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/data/time_zone_triple.dart`, `test/data/time_zone_triple_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/data/time_zone_triple.dart`, `lib/main.dart`, `test/data/time_zone_triple_test.dart`
 
 ### 背景
 给定 `entry_dt_utc`（DateTime UTC）+ `entry_tz`（IANA 字符串），算出 `local_year / local_month / local_day`。`timezone` 包需要在 App 启动时初始化时区数据库；本任务负责工具 + 初始化函数（在 main 中调用）。
@@ -215,16 +215,16 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/time_zone_triple_test.dart` 通过；串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T6 · DAO + 共享辅助（CRUD 基础块）
+- [x] T6 · DAO + 共享辅助（CRUD 基础块）
 
-**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/database.dart`（追加 DAO mixin）
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/database.dart`（追加 DAO mixin）, `test/data/dao_test.dart`
 
 ### 背景
 在 AppDatabase 内定义 DAO（Drift `DriftAccessor`），供 Repository 内部使用。Repo 不向上暴露 DAO。同时实现「默认查询过滤 deleted_at IS NULL」的辅助方法。
@@ -246,14 +246,14 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`dart analyze lib/data/database.dart test/data/dao_test.dart` 无问题；`flutter test test/data/dao_test.dart` 通过；串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T7 · JournalRepo
+- [x] T7 · JournalRepo
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/journal_repo.dart`, `test/data/journal_repo_test.dart`
 
@@ -276,14 +276,14 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/journal_repo_test.dart` 通过；串行组合 `flutter test test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T8 · EntryRepo（时间线 + 往年今日 + CRUD + 时区重算）
+- [x] T8 · EntryRepo（时间线 + 往年今日 + CRUD + 时区重算）
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, R5, R6, NF1, NF2, NF5 ｜ **依据设计：** D5, D6, D7 ｜ **可改文件：** `lib/data/repositories/entry_repo.dart`, `test/data/entry_repo_test.dart`
 
@@ -324,14 +324,14 @@ db 文件落在 `<app_documents>/db/main.sqlite`（NF4）；通过 `sqlcipher_fl
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/entry_repo_test.dart` 通过；串行组合 `flutter test test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T9 · MediaRepo（仅元数据）
+- [x] T9 · MediaRepo（仅元数据）
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/data/repositories/media_repo.dart`, `test/data/media_repo_test.dart`
 
@@ -355,14 +355,14 @@ media 主键 media_id 的契约：media_id 由 MediaStore.put（M3）调用 data
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/media_repo_test.dart` 通过；串行组合 `flutter test test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T10 · TagRepo + 关联管理
+- [x] T10 · TagRepo + 关联管理
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/tag_repo.dart`, `test/data/tag_repo_test.dart`
 
@@ -386,14 +386,14 @@ media 主键 media_id 的契约：media_id 由 MediaStore.put（M3）调用 data
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/tag_repo_test.dart` 通过；串行组合 `flutter test test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T11 · EditingSessionRepo（只暴露 CRUD）
+- [x] T11 · EditingSessionRepo（只暴露 CRUD）
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/repositories/editing_session_repo.dart`, `test/data/editing_session_repo_test.dart`
 
@@ -419,14 +419,14 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/editing_session_repo_test.dart` 通过；串行组合 `flutter test test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T12 · Migration 框架占位
+- [x] T12 · Migration 框架占位
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/data/database.dart`（追加 MigrationStrategy）, `test/data/migration_test.dart`
 
@@ -450,14 +450,14 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/migration_test.dart` 通过；data-layer 串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart test/data/migration_test.dart test/data/rekey_integration_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T13 · 对接 M1 rekey stub
+- [x] T13 · 对接 M1 rekey stub
 
 **同 spec 依赖：** T3 ｜ **跨 spec 依赖：** key-management（RekeyService 的 `TODO(data-layer-integration)` 桩，对应其 T7） ｜ **关联需求：** R8 ｜ **依据设计：** D10 ｜ **可改文件：** `lib/data/database.dart`（追加 rekey 方法）, `lib/security/rekey_service.dart`（替换 TODO 桩）
 
@@ -483,16 +483,16 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/data/rekey_integration_test.dart` 通过；`! grep -RIn 'TODO(data-layer-integration)' lib/security/` 通过；`flutter test test/security/rekey_service_test.dart` 通过；data-layer 串行回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart test/data/migration_test.dart test/data/rekey_integration_test.dart -j 1` 通过
 人工：—（无）
 ```
 
 -----
 
-- [ ] T14 · 接入 Debug Home：Data demo
+- [x] T14 · 接入 Debug Home：Data demo
 
-**同 spec 依赖：** T7, T8, T9, T10, T11 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
+**同 spec 依赖：** T7, T8, T9, T10, T11 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, R6 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/data/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）, `test/data/demo_test.dart`
 
 ### 背景
 做一个 Debug Home 入口，演示：
@@ -507,11 +507,13 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 2. 上述 5 个按钮 + 文本展示
 3. 注册到 demos 列表
 4. iOS + Android 真机各跑一次
+5. 每个操作写入 `AppLogger` 结构化事件，并在页面显示 Recent events，便于真机截图/控制台日志核查
 
 ### 验收标准（做完即止）
 - 入口在 Debug Home 可见（自动 widget test）
 - 五个操作均能完成（人工 @Ray）
 - 列表显示按 entry_dt_utc 倒序（人工目测）
+- Recent events / 控制台日志能看到 `.start`、`.ok` 或 `.error` 事件（人工 @Ray）
 
 ### 禁止
 - 不展示原始 SQL 字符串到 UI（Repo 已封装，避免破坏边界）
@@ -525,7 +527,7 @@ M4 auto-save-draft 会在此基础上实现保存 / 启动检测；本里程碑�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：`flutter test test/data/demo_test.dart` 通过；Data demo 事件日志断言已覆盖 `create-journal` / `create-entry` / `load-timeline` / `soft-delete` 的 `.ok`；data-layer 全量自动回归 `flutter test test/data/schema_test.dart test/data/encryption_test.dart test/data/ids_test.dart test/data/time_zone_triple_test.dart test/data/dao_test.dart test/data/journal_repo_test.dart test/data/entry_repo_test.dart test/data/media_repo_test.dart test/data/tag_repo_test.dart test/data/editing_session_repo_test.dart test/data/migration_test.dart test/data/rekey_integration_test.dart test/data/demo_test.dart -j 1` 通过
+人工：@Ray 提供 iOS 模拟器/调试运行日志，并确认先接受该结果完成本阶段 data-layer 收尾；`create-journal` / `create-entry` / `load-timeline` / `soft-delete` 均从 `.start` 到 `.ok`，计数从 `0/0` → `1/0` → `1/1` → `1/0`，未见 `.error`。Android 真机未跑；若后续出现平台打包/SQLCipher 差异，另开修复项处理。
 ```

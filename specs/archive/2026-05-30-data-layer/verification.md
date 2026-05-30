@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-30
+文档状态：定稿
 ---
 
 # 验证：data-layer
@@ -35,8 +35,8 @@
 - [ ] db 操作过程无任何明文密钥落盘（包括 WAL / journal 文件）— 人工（@Ray）目视审计
 
 ### 多端（NF4）
-- [ ] iOS 真机能打开加密 db 并完成 CRUD — 人工（@Ray），通过 T14 demo 验证
-- [ ] Android 真机同上 — 人工（@Ray）
+- [x] iOS 模拟器/调试运行能打开 db 并完成 CRUD — 人工（@Ray），通过 T14 demo 日志验证；@Ray 确认本阶段接受该结果，Android 真机差异后续另开修复项
+- [ ] Android 真机同上 — 人工（@Ray），本阶段未跑
 - [ ] db 路径在两端均为 `<app_documents>/db/main.sqlite`（相对路径一致）— 自动：`flutter test test/data/db_path_test.dart`（断言 `AppDatabase` 解析出的相对路径值 == `db/main.sqlite`，断言返回值而非 grep 源文件）
 
 ### 类型安全（NF5）

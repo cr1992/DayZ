@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:dayz/data/database.dart';
 import 'package:dayz/security/key_provider.dart';
 
 enum RekeyProgressStage { copying, rekeying, cleaning, done }
@@ -148,11 +149,17 @@ class RekeyService {
   }
 }
 
-void _rekeyStub(RekeyRequest request) {
+Future<void> _rekeyStub(RekeyRequest request) async {
   try {
-    // TODO(data-layer-integration): 待 data-layer 暴露 SQLCipher db 句柄/打开流程后，
-    // 在此 isolate 内执行真实的 `PRAGMA rekey`。
-    throw UnsupportedError('SQLCipher rekey 集成待 data-layer 落地');
+    final db = await AppDatabase.openFile(
+      File(request.dbPath),
+      Uint8List.fromList(request.oldKey),
+    );
+    try {
+      await db.rekey(Uint8List.fromList(request.newKey));
+    } finally {
+      await db.close();
+    }
   } finally {
     for (var i = 0; i < request.oldKey.length; i++) {
       request.oldKey[i] = 0;
