@@ -78,15 +78,13 @@ abstract final class DayzSheet {
     required List<DayzSheetItem> items,
     String cancelLabel = AppStrings.sheetCancel,
   }) {
-    final sheetItems = [
-      ...items,
-      if (items.isNotEmpty) const DayzSheetItem.sep(),
-      DayzSheetItem(label: cancelLabel, onTap: () {}),
-    ];
-
     return _show<T>(
       context,
-      _DayzSheetItems(items: sheetItems, showSelectedCheck: false),
+      _DayzSheetItems(
+        items: items,
+        showSelectedCheck: false,
+        cancelLabel: cancelLabel,
+      ),
     );
   }
 
@@ -234,19 +232,26 @@ class _DayzSheetHandle extends StatelessWidget {
 }
 
 class _DayzSheetItems extends StatelessWidget {
-  const _DayzSheetItems({required this.items, required this.showSelectedCheck});
+  const _DayzSheetItems({
+    required this.items,
+    required this.showSelectedCheck,
+    this.cancelLabel,
+  });
 
   final List<DayzSheetItem> items;
   final bool showSelectedCheck;
+  final String? cancelLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final hasCancel = cancelLabel != null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: DayzSpacing.s3),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final item in items)
             item.sep
@@ -259,7 +264,55 @@ class _DayzSheetItems extends StatelessWidget {
                     item: item,
                     showSelectedCheck: showSelectedCheck,
                   ),
+          if (hasCancel) ...[
+            const SizedBox(height: DayzSpacing.s2), // margin-top: 8px
+            _DayzSheetCancelButton(
+              label: cancelLabel!,
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _DayzSheetCancelButton extends StatelessWidget {
+  const _DayzSheetCancelButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.dayz;
+
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: true,
+      label: label,
+      child: ExcludeSemantics(
+        child: Material(
+          color: colors.bg2, // var(--bg-2)
+          borderRadius: BorderRadius.circular(DayzRadii.md), // var(--r-md)
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14), // padding: 14px
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: colors.ink, // var(--ink)
+                  fontSize: 15.5, // font-size: 15.5px
+                  fontWeight: FontWeight.w600, // font-weight: 600
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
