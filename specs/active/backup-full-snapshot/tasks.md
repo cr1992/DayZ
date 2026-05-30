@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-23
 最后更新：2026-05-31
-文档状态：已预审
+文档状态：定稿
 ---
 
 # 任务列表：backup-full-snapshot
@@ -40,7 +40,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 添加 archive 依赖 + 路径定义
+- [x] T1 · 添加 archive 依赖 + 路径定义
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳 / pubspec / 平台配置 / Debug Home 框架就绪） ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `pubspec.yaml`, `lib/backup/paths.dart`
 
@@ -51,21 +51,23 @@ graph LR
 ### 验收标准（做完即止）
 - `flutter pub get` 成功拉到 `archive` 包（自动）
 - `lib/backup/paths.dart` 暴露临时目录与备份输出目录路径工具（自动）
-- `flutter analyze` 无错误（自动）
+- `flutter analyze lib/backup test/backup` 无错误（自动；全仓回归另见 verification）
 
 ### 验收方式
-- 自动：`flutter pub get && flutter analyze`
+- 自动：
+  - `flutter pub get`
+  - `flutter analyze lib/backup test/backup`
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：`flutter pub get` 通过；`flutter analyze lib/backup test/backup` 通过；全仓 `flutter analyze` 仍失败于非 backup 范围既有 lint（57 issues，见本轮验收说明）
+人工：N/A
 ```
 
 -----
 
-- [ ] T2 · BackupFormat（外层 header 读写）
+- [x] T2 · BackupFormat（外层 header 读写）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/backup/backup_format.dart`, `test/backup/backup_format_test.dart`
 
@@ -85,14 +87,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `backup_format_test.dart`）
+人工：N/A
 ```
 
 -----
 
-- [ ] T3 · TAR 流式封装 + Manifest 数据类
+- [x] T3 · TAR 流式封装 + Manifest 数据类
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/backup/tar_stream.dart`, `lib/backup/manifest.dart`, `test/backup/tar_stream_test.dart`
 
@@ -110,14 +112,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `tar_stream_test.dart`）
+人工：N/A
 ```
 
 -----
 
-- [ ] T4 · BackupExporter（核心导出）
+- [x] T4 · BackupExporter（核心导出）
 
 **同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** key-management（deriveBackupKey / generateBackupSalt，对应其 T8）、data-layer（AppDatabase，对应其 T2 定义 / T3 加密开库）、media-storage（streamForBackup / encryptForBackup，对应其 T6）、observability（logsSubdir / `ApplicationSupport/logs/` 排除约束，对应归档验收说明） ｜ **关联需求：** R3, R4, R9, R12, NF1, NF3, NF4, NF5, NF6 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
 
@@ -147,14 +149,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `exporter_test.dart`；含密文性、日志排除、取消清理、带 fileSize 媒体导出）
+人工：N/A
 ```
 
 -----
 
-- [ ] T5 · BackupRestorer 解析 + manifest 校验 + 确认回调
+- [x] T5 · BackupRestorer 解析 + manifest 校验 + 确认回调
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5（前 4 步）, R7, R10, R11 ｜ **依据设计：** D5, D8 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（骨架）, `test/backup/restorer_parse_test.dart`
 
@@ -188,14 +190,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `restorer_parse_test.dart`）
+人工：N/A
 ```
 
 -----
 
-- [ ] T6 · BackupRestorer 整库替换 + media 重加密
+- [x] T6 · BackupRestorer 整库替换 + media 重加密
 
 **同 spec 依赖：** T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5（步骤 5-9）, R8, R9 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加）, `test/backup/restorer_apply_test.dart`
 
@@ -229,14 +231,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `restorer_apply_test.dart`；含写临时位置失败回滚、切换阶段前故障注入与旧 db / old media 回滚硬化）
+人工：N/A
 ```
 
 -----
 
-- [ ] T7 · 重建 FTS + 启动 warmup
+- [x] T7 · 重建 FTS + 启动 warmup
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** thumbnail-cache（ThumbnailCache.warmup，对应其 T6） ｜ **关联需求：** R5（步骤 10-11）, R6 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/backup/backup_restorer.dart`（追加方法）, `test/backup/restorer_fts_test.dart`
 
@@ -261,14 +263,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `restorer_fts_test.dart`；`! grep -RInE 'await[^;]*ThumbnailCache\.warmup' lib/backup/` 通过）
+人工：N/A
 ```
 
 -----
 
-- [ ] T8 · 端到端往返集成测试
+- [-] T8 · 端到端往返集成测试
 
 **同 spec 依赖：** T4, T7 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5, R8, NF1, NF2, NF3, NF4 ｜ **依据设计：** D1-D7 ｜ **可改文件：** `test/backup/roundtrip_test.dart`
 
@@ -278,11 +280,12 @@ graph LR
    - entries 全部一致（id / content_plain / entry_dt_utc）
    - media 文件存在且解密后字节与原 media 一致（用 sha256）
    - FTS 搜索仍能返回原结果
-3. 真机基准（NF1 / NF2）：10000 entries + 500 media（1.5 GiB）→ 真机跑一次记录耗时
+3. 真机基准（NF1 / NF2 / NF3）：Backup demo 的 Benchmark 区默认使用模拟器 smoke 档（1000 entries + 50 media x 1 MiB）；点 `Use Spec Scale` 切换为 10000 entries + 500 media x 3 MiB（约 1.5 GiB）→ 真机跑一次记录耗时与 RSS 增量
 
 ### 验收标准（做完即止）
 - CI 小规模往返测试全过（自动）
-- 真机基准 NF1 < 3 分钟、NF2 < 4 分钟（人工）
+- Backup demo 提供可配置 benchmark 造数 + export/restore 跑数入口，默认 smoke 档，`Use Spec Scale` 一键切 spec 体量（自动）
+- 真机基准 NF1 < 3 分钟、NF2 < 4 分钟、NF3 RSS 增量 < 300 MiB（人工）
 
 ### 验收方式
 - 自动：`flutter test test/backup/roundtrip_test.dart`
@@ -290,15 +293,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-真机 NF1 / NF2：—
-核查人：@Ray
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `roundtrip_test.dart`；`demo_test.dart` 覆盖 benchmark 区小规模 seed/export/restore PASS）
+人工：待确认（核查人 @Ray；NF1 / NF2 / NF3 真机基准，未在 Codex 环境越权代填）
 ```
 
 -----
 
-- [ ] T9 · 中间产物清理保证
+- [x] T9 · 中间产物清理保证
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF5 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/backup/backup_exporter.dart` / `backup_restorer.dart`（finally 块完善）, `test/backup/cleanup_test.dart`
 
@@ -319,14 +321,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `cleanup_test.dart`）
+人工：N/A
 ```
 
 -----
 
-- [ ] T10 · 接入 Debug Home：Backup demo
+- [-] T10 · 接入 Debug Home：Backup demo
 
 **同 spec 依赖：** T8 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5, R10 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/backup/demo.dart`, `lib/demo/demo_entry.dart`
 
@@ -345,8 +347,11 @@ graph LR
 5. iOS + Android 真机各跑一次
 
 ### 验收标准（做完即止）
-- 完整往返路径可演示（人工 @Ray）
-- 还原后 FTS 搜索能用、缩略图先占位再逐步出（人工 @Ray）
+- Backup demo 完整 UI 流程 seed → export → clear → restore 后自检 PASS（自动）
+- Backup demo Benchmark 区可一键造数并跑 seed/export/restore；默认 smoke 档，`Use Spec Scale` 一键切 10000 entries + 500 media x 3 MiB（自动）
+- 还原后 entries/media/FTS/备份文件/口令清空均有确定性自检结果，不靠目视判断（自动）
+- iOS + Android 真机完整往返路径可演示（人工 @Ray）
+- 还原后缩略图先占位再逐步出（人工 @Ray；缩略图异步主行为由 T7 自动测试覆盖）
 
 ### 禁止
 - 不在 UI 上展示备份口令明文（输入后立即清空显示）
@@ -357,7 +362,7 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-31
+自动：通过（`flutter test test/backup/` 覆盖 `demo_test.dart`；完整 UI 流程断言 `SELF CHECK: PASS`，含 entries/media/媒体可解密/FTS/备份文件/口令清空；benchmark 区小规模 seed/export/restore 断言 `BENCHMARK: PASS`）
+人工：待确认（核查人 @Ray；需 iOS + Android 真机演示）
 ```

@@ -8,7 +8,7 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 已预审 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
 | [timeline-screen](active/timeline-screen/) | P2 | 已预审 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
@@ -37,7 +37,7 @@
 > **选取规则**（同 spec-guide）：在「未开始 / 进行中」**且就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
 > 下表是当前快照（`app-scaffold` / `key-management` / `data-layer` / `media-storage` / `thumbnail-cache` / `auto-save-draft` / `observability` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：★`backup-full-snapshot`(P2) ‖ W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）‖ `design-sync-automation`(P2，期二 blocked：待首屏)
+1. **现在就绪**：W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）‖ `design-sync-automation`(P2，期二 blocked：待首屏)
 
 > ★＝数据/加密主干剩余链当前只余 `backup-full-snapshot`；`media-storage` / `thumbnail-cache` / `auto-save-draft` / `key-management` / `data-layer` 均已归档完成。
 >
