@@ -35,10 +35,11 @@
 
 ## Agent 备忘（踩坑记录，非项目规则）
 
-- **build_runner 权限注意**：在 Codex 沙箱内不要先普通运行 `dart run build_runner ...`；它可能无输出卡住，或因写 Flutter/Dart cache、AOT 入口、native assets 触发权限/签名问题。需要 codegen 时直接用已批准的提升权限 `dart run build_runner ...`；若已卡住，先终止卡住的 `dart.*build_runner` 进程，再 `dart run build_runner clean` 后重跑。
-- **Flutter/Dart 命令串行**：不要并行跑多个 `flutter test` / `dart run build_runner` / Flutter 工具命令；它们会抢启动锁、`ios/Flutter/ephemeral`、`.dart_tool/build` 或 `build/native_assets/*`，导致偶发删除失败、签名失败或旧产物误判。涉及 native assets / SQLCipher 的测试统一 `-j 1` 串行跑。
+- **build_runner 权限注意**：本环境里普通沙箱曾出现 `dart run build_runner ...` 无输出卡住；需要 codegen 时优先用已批准的提升权限 `dart run build_runner ...`。若已卡住，先终止卡住的 `dart.*build_runner` 进程，再 `dart run build_runner clean` 后重跑。
+- **Git index 写入权限**：`git add` / `git commit` / 部分 `git update-index` 会创建或更新 `.git/index.lock`；若在 Codex 沙箱内实际报 `Operation not permitted`，按审批机制对该 git 命令请求提升权限重跑，不要在普通沙箱里反复重试。`git status` / `git diff` 等只读检查不需要升权。
+- **Flutter/Dart 命令串行**：不要并行跑多个 `flutter test` / `dart run build_runner` / Flutter 工具命令；它们可能抢启动锁、`ios/Flutter/ephemeral`、`.dart_tool/build` 或 `build/native_assets/*`，导致偶发删除失败、签名失败或旧产物误判。涉及 native assets / SQLCipher 的测试统一 `-j 1` 串行跑。
 - **iOS 构建排障权限**：在 Codex 内跑 `flutter build ios` / `flutter run` 会写 Flutter SDK cache、Xcode DerivedData、CoreSimulator 等工作区外目录；若沙箱里出现 `Operation not permitted`，或 Xcode Pods embed framework 脚本偶发 `Killed: 9`，先提升权限单独重跑一次确认。若提升权限能过、用户终端仍失败，再清 DerivedData/Pods 缓存排查，不要先改业务源码。
-- **Drift 测试导入冲突**：测试文件若只需要 `Value`，用 `import 'package:drift/drift.dart' show Value;`，避免和 `flutter_test`/`matcher` 的 `isNull`、`isNotNull` 冲突。
-- **SQLite DateTime 断言**：Drift/SQLite 读回 `DateTime` 时可能变成本地时区表示同一瞬间；测试比较时间必须先 `.toUtc()`，不要直接和 UTC 字面值比对象。
-- **timezone UTC 别名**：`timezone` 包可不认 `UTC` location；项目工具已将 `UTC` 归一到 `Etc/UTC`。后续测试和调用优先用 IANA 名称，常见 UTC 输入仍应保持兼容。
+- **Drift 测试导入冲突**：测试文件若只需要 `Value`，用 `import 'package:drift/drift.dart' show Value;`，避免引入不必要符号并减少与 `flutter_test` / `matcher` 断言命名互扰。
+- **SQLite DateTime 断言**：Drift/SQLite 读回 `DateTime` 时可能变成本地时区表示同一瞬间；测试比较同一时刻时先 `.toUtc()`，不要直接和 UTC 字面值比对象。
+- **timezone UTC 别名**：`timezone` 的 `UTC` alias 支持可能随包版本 / 数据集变化；项目工具已将 `UTC` 归一到 `Etc/UTC`。后续测试和调用优先用 IANA 名称，常见 UTC 输入仍应保持兼容。
 - **SQLCipher 探测口径**：当前 `sqlite3` 3.x + SQLite3MultipleCiphers 下 `PRAGMA cipher_version` 可能为空；验证 SQLCipher 模式用 `PRAGMA cipher == sqlcipher`，并结合密文文件头与错密钥抛 `WrongKeyException` 行为验证。
