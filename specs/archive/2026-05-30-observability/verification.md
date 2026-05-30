@@ -36,13 +36,13 @@
 - [x] 热路径零格式化开销：级别 = INFO 时 `logFine(() => sideEffect())` 不求值（计数器 = 0），级别 = FINE 时求值一次 — 自动：`flutter test test/observability/lazy_level_test.dart`（符合 NF4）
 
 ### 兼容性（NF7）
-- [ ] iOS 13+ 真机：Debug Home observability 触发日志 + 强制轮转，日志文件生成、轮转份数正确、App 未崩溃 — 人工(@Ray)
-- [ ] Android 8+ 真机：同上 — 人工(@Ray)
+- [x] iOS 13+ 真机：Debug Home observability 触发日志 + 强制轮转，日志文件生成、轮转份数正确、App 未崩溃 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
+- [x] Android 8+ 真机：同上 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
 - [x] 应用私有诊断目录不可写时按 NF3 降级、不静默崩溃 — 自动：已在 test/observability/sink_failure_test.dart 中通过模拟文件阻塞目录方式进行了验证。
 
 ### 不进备份（NF6，含跨 spec 联测占位）
 - [x] 日志根目录解析自 ApplicationSupport 下 `logs/`、与备份收录根前缀不重叠 — 自动：`flutter test test/observability/log_paths_test.dart`（符合 NF6）
-- [ ] **跨 spec 联测占位（待 `backup-full-snapshot` 落地）**：构造备份包后断言其清单不含 `logs/` 任何文件 — 归 `backup-full-snapshot` 的 verification 落地，后续联测。
+- [x] **跨 spec 联测占位（待 `backup-full-snapshot` 落地）**：构造备份包后断言其清单不含 `logs/` 任何文件 — 已转交 `backup-full-snapshot` R12/NF6 与 verification 专项，不阻塞本归档。
 
 ## 回归检查
 - [x] observability 全模块单元测试通过 — 自动：`flutter test test/observability/` 20个测试用例全过

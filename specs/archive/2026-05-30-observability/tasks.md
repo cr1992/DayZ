@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-30
 最后更新：2026-05-30
-文档状态：草稿
+文档状态：已定稿
 ---
 
 # 任务列表：observability
@@ -78,9 +78,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
+人工：N/A
 ```
 
 -----
@@ -113,8 +113,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -148,8 +148,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -188,8 +188,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -219,8 +219,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -250,8 +250,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -289,8 +289,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
 人工：N/A
 ```
 
@@ -327,7 +327,7 @@ Debug Home 入口：装配门面 + ConsoleSink + RotatingFileSink，提供按钮
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-30
+自动：终局复验见 `specs/archive/acceptance-review.md`；本任务不再二次 review
+人工：N/A
 ```

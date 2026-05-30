@@ -119,7 +119,7 @@ graph LR
 
 - [ ] T4 · BackupExporter（核心导出）
 
-**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** key-management（deriveBackupKey / generateBackupSalt，对应其 T8）、data-layer（AppDatabase，对应其 T2 定义 / T3 加密开库）、media-storage（streamForBackup / encryptForBackup，对应其 T6） ｜ **关联需求：** R3, R4, R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** key-management（deriveBackupKey / generateBackupSalt，对应其 T8）、data-layer（AppDatabase，对应其 T2 定义 / T3 加密开库）、media-storage（streamForBackup / encryptForBackup，对应其 T6）、observability（logsSubdir / `ApplicationSupport/logs/` 排除约束，对应归档验收说明） ｜ **关联需求：** R3, R4, R9, R12, NF1, NF3, NF4, NF5, NF6 ｜ **依据设计：** D2, D3, D4, D9 ｜ **可改文件：** `lib/backup/backup_exporter.dart`, `lib/backup/exceptions.dart`, `test/backup/exporter_test.dart`
 
 ### 实施
 1. `export({password, outputPath, onProgress, onCancel})`（签名与 R3 一致）
@@ -128,12 +128,14 @@ graph LR
 4. 失败 / 取消清理 `.tmp` + 临时 db
 5. 测试：
    - 小型库（3 entries + 2 media）导出 + hexdump 检查无明文
+   - 临时 ApplicationSupport 下预置 `logs/app.log` / `logs/app.log.1`，导出后解析 TAR 条目，断言不含 `logs/` / `app.log`
    - cancel 触发后清理临时文件
    - VACUUM 失败 / 加密失败的回滚路径
 
 ### 验收标准（做完即止）
 - 全部测试通过（自动）
 - 输出 `.mydiary` hexdump 中不可见明文 manifest / db / media 字节（自动）
+- 备份包 TAR 条目清单不含 `logs/`、`app.log` 或任何 observability 轮转日志（自动，对应 R12/NF6）
 - 中间产物清理有测试覆盖（自动）
 
 ### 禁止

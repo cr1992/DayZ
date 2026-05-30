@@ -29,6 +29,7 @@
 - [ ] export 不创建明文临时文件 — 自动：监视临时目录
 - [ ] restore 不创建明文临时文件 — 自动：监视临时目录
 - [ ] 任一正常 / 异常 / 取消路径结束后无残留 `.tmp` / `.restoring` / `media/.old` / `full_*.db` — 自动：T9 cleanup_test
+- [ ] 备份包不收录 observability 诊断日志：预置 `ApplicationSupport/logs/app.log*` 后导出，解析 TAR 条目清单不含 `logs/` / `app.log` / 轮转日志 — 自动：`flutter test test/backup/exporter_test.dart`（承接 `observability` 归档复验的跨 spec 约束）
 
 ### 性能（NF1, NF2, NF3）
 - [ ] 中端真机 10000 entries + 500 media 导出 < 3 分钟 — 人工（@Ray），数据来源 T8
@@ -52,7 +53,7 @@
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，确保无遗漏。任一项不通过则 verification 未定稿。
-- [ ] 正向：R3, NF4（全量导出 + 加密/安全专项）、R5（错密码/正常往返）、R6（FTS 立即可用 + 与 M5 协作）、R7（schema 不兼容）、R8（还原原子性专项）、R10（confirmOverwrite false）、**R11（manifest 损坏 → ManifestCorrupted，功能验证表）**、NF1/NF2/NF3（性能专项）、NF5（残留清理专项）均有验证，无孤儿需求。R1/R2/R4/R9 在 tasks 单任务内验（T2/T3 格式与 manifest、T4 进度回调与明文不落临时文件），不重复列入跨任务 verification。
+- [ ] 正向：R3, NF4（全量导出 + 加密/安全专项）、R5（错密码/正常往返）、R6（FTS 立即可用 + 与 M5 协作）、R7（schema 不兼容）、R8（还原原子性专项）、R10（confirmOverwrite false）、**R11（manifest 损坏 → ManifestCorrupted，功能验证表）**、R12/NF6（observability logs 不进备份包专项）、NF1/NF2/NF3（性能专项）、NF5（残留清理专项）均有验证，无孤儿需求。R1/R2/R4/R9 在 tasks 单任务内验（T2/T3 格式与 manifest、T4 进度回调与明文不落临时文件），不重复列入跨任务 verification。
 - [ ] 反向：各验证项「关联需求」均指向真实存在的 R/NF；回归检查已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）

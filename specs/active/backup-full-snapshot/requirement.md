@@ -126,6 +126,12 @@ manifest.json MUST 含：
 - 操作：restore 读取并解析 manifest
 - 结果：抛 `ManifestCorrupted`，不进入确认与切换流程，本机数据原样不动
 
+### R12 · 诊断日志不进入备份包
+备份导出 MUST NOT 收录 `observability` 诊断日志目录（`ApplicationSupport/logs/`）中的任何文件。备份包 TAR 内容 SHALL 只包含 R1 定义的 `manifest.json`、`db/main.sqlite` 与 `media/<media_id>.bin` 条目；不得出现 `logs/`、`app.log` 或任何轮转日志文件。
+- 前提：本机存在 `ApplicationSupport/logs/app.log` 与轮转日志
+- 操作：执行全量导出并解析备份包 TAR 条目清单
+- 结果：条目清单不含任何日志文件，`manifest.media_index` 也不引用日志路径
+
 ## 非功能需求
 
 ### NF1 · 性能 - 导出吞吐
@@ -142,6 +148,9 @@ hexdump `.mydiary` 任意位置（除 header 8 + 1 + 2 + salt_len 字节外）MU
 
 ### NF5 · 安全 - 中间产物清理
 导出 / 还原结束后（成功或失败）MUST 清理：`<tmp>/full_*.db`、`<output>.tmp`、还原临时产物 `<db>/main.sqlite.restoring` 与 `<media>/.restoring/`、切换后被替换下来的旧产物 `<media>/.old/`、任何 `.tmp`。
+
+### NF6 · 隐私 - 派生诊断数据排除
+日志、缩略图、FTS 等派生诊断 / 索引数据 MUST NOT 进入备份包。MVP 本 spec 直接验证 `observability` 的 `logs/` 排除；缩略图与 FTS 由 R6 的重建 / warmup 路径覆盖。
 
 ## 专项维度逐维表态
 

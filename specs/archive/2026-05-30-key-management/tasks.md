@@ -66,7 +66,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：Android build 成功，iOS build 成功（Runner.app）
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -97,7 +97,7 @@ flutter_secure_storage 抛出的异常因平台而异（Android BadPaddingExcept
 ```
 日期：2026-05-30
 自动：单元测试全部通过（7个用例，覆盖 base64 解码、异常捕获与分类等）
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -131,7 +131,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 ### 验收记录
 ```
 日期：2026-05-30
-自动：—（无）
+自动：N/A
 人工：在 iOS 模拟器 (iPhone 17) 完成预研，运行 dargon2_flutter FFI 库顺利。参数组：m_cost=64MiB, t_cost=3, p=1, len=32。中位数耗时 498 ms，满足 <1.5s 性能门槛。Android 编译在 T1 打通。（已获 @Ray 确认同意）
 ```
 
@@ -168,7 +168,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 ```
 日期：2026-05-30
 自动：单元测试全部通过（覆盖存在性检查、首次生成、二次读取、损坏检测等4个用例）
-人工：—（无）
+人工：N/A
 ```
 
 -----

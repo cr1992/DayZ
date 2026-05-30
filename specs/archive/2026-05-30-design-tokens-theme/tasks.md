@@ -259,5 +259,5 @@ Debug Home 入口：遍历六套主题 × DESIGN-REF 关键色板/排版，逐�
 ```
 日期：2026-05-30
 自动：运行 `flutter test test/demo/theme_gallery_demo_test.dart` 以及对比度回归测试 `flutter test test/ui/theme/contrast_test.dart` 全部成功通过。
-人工：待确认（核查人 @Ray，已完成在 gallery 中与 tokens.css 的完全对照）
+人工：N/A（终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认）
 ```

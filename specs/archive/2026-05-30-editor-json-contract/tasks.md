@@ -99,7 +99,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/editor_doc_codec_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -135,7 +135,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/plain_text_extractor_test.dart` ✅；`flutter test test/editor/contract/plain_text_extractor_bench_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -168,7 +168,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/blocks/custom_blocks_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -201,7 +201,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/image_url_resolver_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -235,7 +235,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/readonly_renderer_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```
 
 -----
@@ -267,5 +267,5 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter test test/editor/contract/export_fallback_test.dart` ✅
-人工：—（无）
+人工：N/A
 ```

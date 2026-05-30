@@ -69,7 +69,7 @@ graph LR
     && test -f pubspec.yaml \
     && grep -q '^name: dayz$' pubspec.yaml \
     && grep -RE 'PRODUCT_BUNDLE_IDENTIFIER\s*=\s*com\.dayz' ios/Runner.xcodeproj/project.pbxproj \
-    && grep -E 'applicationId\s+"com\.dayz"' android/app/build.gradle* \
+    && grep -E 'applicationId\s*=\s*"com\.dayz"' android/app/build.gradle* \
     && flutter pub get \
     && flutter analyze
   ```
@@ -296,15 +296,15 @@ Debug Home：渲染 `demos` 列表，每行 ListTile（title / subtitle），点
 3. `flutter build apk --debug` 通过
 
 ### 验收标准（做完即止）
-- `minSdkVersion = 26` 显式声明（自动 grep）
+- `minSdk = 26` 显式声明（自动 grep）
 - `applicationId = com.dayz`（自动 grep）
 - 构建通过（自动）
 
 ### 验收方式
 - 自动：
   ```bash
-  grep -E 'minSdk(Version)?\s+26' android/app/build.gradle* \
-    && grep -E 'applicationId\s+"com\.dayz"' android/app/build.gradle* \
+  grep -E 'minSdk(Version)?\s*=\s*26' android/app/build.gradle* \
+    && grep -E 'applicationId\s*=\s*"com\.dayz"' android/app/build.gradle* \
     && flutter build apk --debug
   ```
 

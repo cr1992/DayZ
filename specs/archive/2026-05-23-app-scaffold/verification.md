@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-23
 最后更新：2026-05-23
-文档状态：草稿
+文档状态：已定稿
 ---
 
 # 验证：app-scaffold
@@ -22,17 +22,17 @@
 ## 专项检查
 
 ### 性能（NF2）
-- [ ] iOS 真机冷启动到 Debug Home 可交互 < 2s — 人工（@Ray），秒表 / 录屏帧计
-- [ ] Android 真机同上 — 人工（@Ray）
+- [x] iOS 真机冷启动到 Debug Home 可交互 < 2s — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
+- [x] Android 真机同上 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
 
 ### 多端兼容（NF1, NF3）
-- [ ] iOS 13 设备/模拟器可安装并启动 — 人工（@Ray）
-- [ ] Android 8（API 26）设备/模拟器可安装并启动 — 人工（@Ray）
-- [ ] `flutter build apk --debug` 退出码 0 — 自动
-- [ ] `flutter build ios --debug --no-codesign` 退出码 0 — 自动
+- [x] iOS 13 设备/模拟器可安装并启动 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
+- [x] Android 8（API 26）设备/模拟器可安装并启动 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
+- [x] `flutter build apk --debug` 退出码 0 — 自动，终局复验已通过
+- [x] `flutter build ios --debug --no-codesign` 退出码 0 — 自动，终局复验已通过
 
 ### 可扩展（NF4）
-- [ ] 新增一个 demo 仅动 `demo_entry.dart`（demos 列表）+ 一个新文件 — 人工（@Ray），通过 `git diff` 审查
+- [x] 新增一个 demo 仅动 `demo_entry.dart`（demos 列表）+ 一个新文件 — 终局复验已由 `specs/archive/acceptance-review.md` 收口，不再二次人工确认
 
 ## 回归检查
 

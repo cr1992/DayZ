@@ -13,7 +13,7 @@
 | [media-storage](active/media-storage/) | P1 | 草稿 | app-scaffold, key-management, data-layer | @Ray | 2026-05-23 |
 | [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
-| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-23 |
+| [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 草稿 | design-tokens-theme, ui-kit-components, data-layer | @Ray | 2026-05-29 |
@@ -33,19 +33,21 @@
 ## 执行顺序（派生快照）
 
 > **选取规则**（同 spec-guide）：在「未开始 / 进行中」**且就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
-> 下表是当前快照（`app-scaffold` 已完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
+> 下表是当前快照（`app-scaffold` / `key-management` / `design-tokens-theme` / `editor-json-contract` / `assets-management` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：★`key-management`(P0) ‖ `design-tokens-theme`(P1) ‖ `editor-json-contract`(P1) ‖ `assets-management`(P2)
-2. **`key-management` 完成后**：★`data-layer`(P0)
-3. **`data-layer` / `design-tokens-theme` 完成后**：`media-storage`(P1) ‖ `auto-save-draft`(P1) ‖ `design-sync-automation`(P2，期一可随 tokens 起)
+1. **现在就绪**：★`data-layer`(P0) ‖ `ui-kit-components`(P1) ‖ `dayz-security-rust`(P1) ‖ `design-sync-automation`(P2，期一)
+2. **`data-layer` 完成后**：`media-storage`(P1) ‖ `auto-save-draft`(P1)
+3. **`data-layer` / `ui-kit-components` 完成后**：`ui-shell-navigation`(P1)
 4. **`media-storage` 完成后**：`thumbnail-cache`(P2)
 5. **`thumbnail-cache` 完成后**：`backup-full-snapshot`(P2)
 
-> ★＝数据/加密主干链（`key-management → data-layer → media-storage → thumbnail-cache → backup-full-snapshot`，依赖强制串行）；无依赖叶子 `design-tokens-theme` / `editor-json-contract` / `assets-management` 可随时并入。
+> ★＝数据/加密主干剩余链（`data-layer → media-storage → thumbnail-cache → backup-full-snapshot`，依赖强制串行）；`key-management` 已归档完成。
 >
-> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme`（已就绪，P1）+ `design-sync-automation`(期一) → W1 `ui-kit-components` → `ui-shell-navigation` → W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故全部**被阻塞**至地基就绪）+ `design-sync-automation`(期二，等首屏+shell 落后补)。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
+> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation`(期一) 已就绪 → W1 `ui-kit-components` 已就绪，`ui-shell-navigation` 等 `ui-kit-components` + `data-layer` → W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故全部**被阻塞**至地基就绪）+ `design-sync-automation`(期二，等首屏+shell 落后补)。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
 
 ## 已归档
+
+> 终局复验说明见 [`archive/acceptance-review.md`](archive/acceptance-review.md)。历史 tasks / verification 中已由该说明收口的旧式人工项不再重复 review。
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
