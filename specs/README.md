@@ -30,6 +30,14 @@
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
 
+## 已交付·随设计维护
+
+> 仅限屏幕级 spec。交付 v1 后不归档，后续设计变更按 `design-sync-automation` 的微调档 / 实质档 / 大改档分流；对齐状态由 `active/design-sync-automation/screens.yaml` 与各屏 `test/ui/<feature>/` 基线维护。
+
+| 功能 | 当前对齐 | 依赖 | 负责人 | 进入维护态 |
+|------|----------|------|--------|------------|
+| — | — | — | — | — |
+
 ## 执行顺序（派生快照）
 
 > **选取规则**（同 spec-guide）：在「未开始 / 进行中」**且就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。

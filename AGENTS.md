@@ -17,6 +17,8 @@
 2. 按 `spec-kit/spec-guide.md` 执行协议做事（DayZ 专项见 `docs/spec-guide-ai.md`）；可改文件、验收方式都在任务卡里。
 3. 完成后填验收记录，按 `specs/README.md` 更新状态。
 
+屏幕 spec 交付 v1 后进入「已交付·随设计维护」泳道，终态→归档规则被 DayZ overlay override；细则见 `docs/spec-guide-ai.md`。
+
 新增功能或重大改动 → 先开 spec，不在源码里直接做。开 spec 时按 spec-guide「排序维护纪律」**想清依赖、相对现有 spec 定优先级**，并落到 `specs/README.md` 的依赖 / 优先级列——别留空或无脑同档。spec 已经写明的事，不要在这里、commit message、PR 描述里重复。
 
 ## 规则

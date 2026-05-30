@@ -1,0 +1,27 @@
+# DayZ screen design-sync registry.
+# `pinned` is filled by Phase 5 after the screen's first Flutter alignment.
+screens:
+  - id: timeline
+    pinned: null
+    lane: active
+    map: test/ui/timeline/element-map.yaml
+  - id: reader
+    pinned: null
+    lane: active
+    map: test/ui/reader/element-map.yaml
+  - id: editor
+    pinned: null
+    lane: active
+    map: test/ui/editor-integration/element-map.yaml
+  - id: onthisday
+    pinned: null
+    lane: active
+    map: test/ui/onthisday/element-map.yaml
+  - id: search
+    pinned: null
+    lane: active
+    map: test/ui/search/element-map.yaml
+  - id: settings
+    pinned: null
+    lane: active
+    map: test/ui/settings/element-map.yaml
