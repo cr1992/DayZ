@@ -377,10 +377,10 @@ packages:
     dependency: "direct main"
     description:
       name: keyboard_height_plugin
-      sha256: "3a51c8ebb43465ebe0b3bad17f3b6d945421e58011f3f5a08134afe69a3d775f"
+      sha256: d57944cd3e4f8d9cb4adb1b7f1300d14a8dcec99bfb4414d78c7dd0120c1d66c
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.3.0"
   leak_tracker:
     dependency: transitive
     description:

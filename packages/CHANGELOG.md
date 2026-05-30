@@ -66,6 +66,9 @@
 
 ## [2026-05-30]
 
+### appflowy-editor
+- **依赖升级**：将 `keyboard_height_plugin` 从 `^0.1.5` 升至 `^0.3.0`，采用上游已补的 iOS Swift Package Manager 支持，消除 DayZ 主工程中该插件的 SPM 兼容性预警（主工程仍剩 `argon2id_ffi` 待补 SPM）。
+
 ### argon2id_ffi（self-authored）
 - **新建 native 库**（手写 `dart:ffi`，无 FRB；cargokit 交叉编译；`com.dayz` 命名空间）：
   - `rust/src/api/crypto.rs`（纯算法）+ `rust/src/api/ffi.rs`（`extern "C"` C-ABI，catch_unwind + 错误码 + `#[used]`）。
