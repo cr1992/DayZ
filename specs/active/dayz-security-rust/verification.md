@@ -14,6 +14,7 @@
 | Argon2id 正确性（Rust 层） | 4 组 KAT 对 argon2-cffi(P-H-C C) | 逐字节一致 | R1 | `cargo test` | ✅ 7/7 |
 | HKDF 正确性（Rust 层） | RFC 5869 §A Case 1/2/3 | 逐字节一致 | R2 | `cargo test` | ✅ |
 | 手写 ffi 端到端（Dart 层） | host 加载 dylib，调 argon2/hkdf | Dart 得到与 Rust 逐字节一致 | R1,R2 | `flutter test` | ✅ 6/6 |
+| DayZ Argon2Kdf 接入（host） | 主工程经 `ARGON2ID_FFI_LIB` 加载 release dylib | KAT 字节兼容、确定性、salt 敏感、Dart password buffer 清零 | R1,R4 | `flutter test test/security/argon2_kdf_test.dart` | ✅ 4/4 |
 | 错误路径 | salt 过短 / 越界 | 抛 `Argon2idFfiException` 而非静默 | R1 | Rust+Dart | ✅ |
 | 空口令 / None salt 边界 | 空数组 / salt=null | 字节正确 | R1,R2 | `flutter test` | ✅ |
 | 双端交叉编译 | iOS arm64/sim + Android arm64 | 链接成功、产物对应架构 | R3 | `cargo build --target` | ✅ |
@@ -68,5 +69,10 @@ cd packages/argon2id_ffi/rust && cargo build --release              # 产出 hos
 cd packages/argon2id_ffi && \
   ARGON2ID_FFI_LIB="$PWD/rust/target/release/libargon2id_ffi.dylib" \
   flutter test test/crypto_ffi_test.dart                            # Dart 手写 ffi 端到端
+ARGON2ID_FFI_LIB="$PWD/packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib" \
+  flutter test test/security/argon2_kdf_test.dart                    # DayZ KDF 接入 host 复验
 cd packages/argon2id_ffi/rust && cargo run --release --example timing && cargo bench  # 性能
 ```
+
+> macOS host `flutter test` 不会把 iOS/macOS 静态链接符号注入测试进程；主工程 KDF 测试必须显式设置
+> `ARGON2ID_FFI_LIB` 走动态库 escape hatch。设备 / AOT 路径仍按 D2 的平台分流验证。
