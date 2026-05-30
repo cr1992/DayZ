@@ -5,7 +5,7 @@
 
 # 归档验收说明
 
-本文件记录 2026-05-30 初次复验与 2026-05-31 补充复验后，对 `specs/README.md`「已归档」表中 14 个 spec 的终局复验结论。后续不再逐个回翻历史 tasks / verification 做人工 review；历史文档中旧式 `人工：—（无）`、已由自动化覆盖的 `待确认`、以及已转由后续 spec 承接的跨 spec 占位，以本说明的结论为准。
+本文件记录 2026-05-30 初次复验与 2026-05-31 补充复验后，对 `specs/README.md`「已归档」表中 15 个 spec 的终局复验结论。后续不再逐个回翻历史 tasks / verification 做人工 review；历史文档中旧式 `人工：—（无）`、已由自动化覆盖的 `待确认`、以及已转由后续 spec 承接的跨 spec 占位，以本说明的结论为准。
 
 ## 复验范围
 
@@ -23,6 +23,7 @@
 - `dayz-security-rust`
 - `media-storage`
 - `thumbnail-cache`
+- `ui-shell-navigation`
 
 ## 已执行命令
 
@@ -75,6 +76,20 @@ dart analyze lib/data lib/media lib/drafts lib/thumbnails lib/security test/data
 
 结果：上述复验命令通过；`git check-ignore -q` 返回 1，表示 l10n 生成产物未被 ignore，符合预期。首次包内 FFI `flutter test` 在普通沙箱因 Flutter SDK cache 写权限失败，按项目备忘提升权限重跑同一命令后通过。
 
+2026-05-31 `ui-shell-navigation` 归档复验命令：
+
+```bash
+flutter pub get
+flutter test test/ui/shell/ test/app_router_mount_test.dart test/demo/ -j 1
+dart analyze lib/app.dart lib/ui/shell test/ui/shell test/app_router_mount_test.dart test/demo
+bash spec-kit/scripts/lint_acceptance_commands.sh specs
+bash spec-kit/scripts/lint_keywords.sh specs
+bash spec-kit/scripts/check_dead_links.sh specs
+bash spec-kit/scripts/archive_spec.sh ui-shell-navigation
+```
+
+结果：上述 `ui-shell-navigation` 复验命令通过；`flutter pub get` 首次在普通沙箱因 Flutter SDK cache 写权限失败，按项目备忘提升权限重跑同一命令后通过。全仓 `flutter analyze` 当前仍受无关 active backup / vendored / 历史 lint 影响，按本轮归档口径采用 shell/demo 定向 `dart analyze`。
+
 ## 结论
 
 | spec | 归档结论 | 说明 |
@@ -93,6 +108,7 @@ dart analyze lib/data lib/media lib/drafts lib/thumbnails lib/security test/data
 | `dayz-security-rust` | 通过 | Rust KAT、release host dylib、包内 Dart FFI、主工程 `test/security/` 均通过；host Flutter 测试必须先构建 dylib 并注入 `ARGON2ID_FFI_LIB`。iOS 真机 archive/TestFlight、Android 真机 release、真机 release 性能/体积、64 MiB 多 isolate 并发 OOM 明确为发布前后置闸门，不阻塞本归档。 |
 | `media-storage` | 通过 | `test/media/` 覆盖 AEAD smoke、设备媒体密钥消费、路径工具、codec 往返、100 MiB 流式读写正确性、nonce 唯一、篡改/错密钥失败、MediaStore put/openRead/soft/hard delete、备份重加密、路径安全与 Media demo；tag 验证旁路和绝对路径硬编码守卫无命中。真机吞吐/RSS、杀进程跨进程读取、demo UI 绝对路径目视、严格 crash fault-injection 作为后置项。 |
 | `thumbnail-cache` | 通过 | `test/thumbnails/` 覆盖缩略图生成、加密落盘、DB thumb 字段、脏失效、取消、并发上限、warmup、API 解耦守卫和 demo 入口；本轮定向 analyzer 清理后 `lib/thumbnails` + `test/thumbnails` 无静态问题。真机 isolate/RSS/JPEG 质量一致性、完整 demo 人工路径作为后置人工烟测，不阻塞归档。 |
+| `ui-shell-navigation` | 通过 | `test/ui/shell/` + `test/app_router_mount_test.dart` + `test/demo/` 覆盖路由常量/路径、真外壳启动、DebugHome 具名路由、抽屉（含头像/身份头、日记本/浏览/设置结构、计数注入）、FAB/sheet 交互、换肤、返回栈、44px 命中区、reduce-motion 与 Repository 边界；shell/demo 定向 analyzer 无 issue。生产壳层 journal 当前为入参/回调 + 内存 fallback，不持 Drift/SQL；真实 `JournalRepo` app bootstrap 接线归后续数据接入/页面 spec。 |
 
 ## 不作为归档阻塞
 
@@ -100,3 +116,4 @@ dart analyze lib/data lib/media lib/drafts lib/thumbnails lib/security test/data
 - 真机冷启动计时、字体观感、observability 真机按钮操作等历史人工项不再要求二次确认；后续若需要真机覆盖，归新 active spec 的验收范围。
 - `backup-full-snapshot` 尚未实现时，observability 的备份包联测只能作为后续备份 spec 约束，不阻塞 observability 归档。
 - `data-layer` 的 EXPLAIN 真索引命中、10000 条性能、WAL/journal 明文目审、Android 真机 CRUD；`media-storage` 的真机吞吐/RSS/跨进程读取和严格 crash fault-injection；`thumbnail-cache` 的真机 isolate/RSS/JPEG 质量一致性；`auto-save-draft` 的 100 KiB 真机 pendingFlush 耗时；`dayz-security-rust` 的真机 release/archive/体积/并发 OOM，均作为后置质量闸或发布前闸门，不追溯阻塞本次归档。
+- `ui-shell-navigation` 的真机 SafeArea/返回手势烟测、外壳文案从 `AppStrings` 统一迁移到 gen-l10n `AppLocalizations`、以及真实 `JournalRepo` app bootstrap 接线，均作为后续页面 / 设置 / 数据接入 spec 或发布前闸门处理，不追溯阻塞本次外壳骨架归档。

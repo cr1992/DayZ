@@ -4,6 +4,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -86,6 +87,7 @@ class _DayzGlassAppBarState extends State<DayzGlassAppBar> {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SliverAppBar(
       pinned: widget.pinned,
@@ -96,6 +98,13 @@ class _DayzGlassAppBarState extends State<DayzGlassAppBar> {
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       backgroundColor: Colors.transparent,
+      systemOverlayStyle: isDark
+          ? SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+            )
+          : SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
       foregroundColor: colors.ink,
       automaticallyImplyLeading: widget.automaticallyImplyLeading,
       centerTitle: widget.centerTitle,

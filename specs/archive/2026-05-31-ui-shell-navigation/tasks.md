@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：已完成
 ---
 
 # 任务列表：ui-shell-navigation
@@ -37,7 +37,7 @@ graph LR
 
 -----
 
-- [ ] T1 · go_router 路由表 + Routes 常量 + 占位屏
+- [x] T1 · go_router 路由表 + Routes 常量 + 占位屏
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz / DayzSpacing / AppStrings 约定`（占位屏走 token + 文案） ｜ **关联需求：** R1 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/ui/shell/app_router.dart`、`lib/ui/shell/placeholder_screen.dart`、`lib/ui/shell/shell_strings.dart`、`pubspec.yaml`（仅 `dependencies` 段加 `go_router`） ｜ **验收基建：** `test/ui/shell/app_router_test.dart`
 
@@ -66,14 +66,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · 换肤控制器 theme_controller.dart
+- [x] T2 · 换肤控制器 theme_controller.dart
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme：dayzTheme(themeName, mode) 六套 ThemeData + context.dayz` ｜ **关联需求：** R6, R7 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/ui/shell/theme_controller.dart` ｜ **验收基建：** `test/ui/shell/theme_controller_test.dart`
 
@@ -102,14 +102,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · 外壳脚手架 app_shell.dart
+- [x] T3 · 外壳脚手架 app_shell.dart
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `ui-kit-components：毛玻璃顶栏壳（未就绪用占位顶栏）`、`design-tokens-theme：token` ｜ **关联需求：** R2（装配抽屉入口）, R5（装配 FAB 位）, NF6 ｜ **依据设计：** D3, D9 ｜ **可改文件：** `lib/ui/shell/app_shell.dart` ｜ **验收基建：** `test/ui/shell/app_shell_test.dart`
 
@@ -136,28 +136,29 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 抽屉导航中枢 shell_drawer.dart
+- [x] T4 · 抽屉导航中枢 shell_drawer.dart
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `data-layer：JournalRepo（journal 列表 id/名/color/计数；未就绪用内存假数据入参）`、`design-tokens-theme：token` ｜ **关联需求：** R2, R3（发切本事件）, NF1, NF3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/shell/shell_drawer.dart` ｜ **验收基建：** `test/ui/shell/shell_drawer_test.dart`
 
 ### 背景
-取代标签栏的导航抽屉：日记本组（全部日记 + 各 journal 带 `.dw-dot` 色点 + 计数）、浏览组（往年今日/收藏/日历/回收站）、底部设置；**搜索不入抽屉**。抽屉**接收 journal 列表作入参**（外壳经 `JournalRepo` 提供，本任务不持 Repo/Drift，NF5），点导航项发 `Routes.*` 导航、点日记本发切本回调（R3，真实刷新归时间线屏；本任务只发事件）。归属：journal 数据的真实查询归 data-layer，本任务用入参 + 回调，禁止任何 SQL/Drift。
+取代标签栏的导航抽屉：头像/身份头（`.dw-head`）、日记本组（全部日记 + 各 journal 带 `.dw-dot` 色点 + 计数）、浏览组（往年今日/收藏/日历/回收站）、底部设置；**搜索不入抽屉**。抽屉**接收 journal 列表作入参**（外壳经 `JournalRepo` 提供，本任务不持 Repo/Drift，NF5），点导航项发 `Routes.*` 导航、点日记本发切本回调（R3，真实刷新归时间线屏；本任务只发事件）。归属：journal 数据的真实查询归 data-layer，本任务用入参 + 回调，禁止任何 SQL/Drift。
 
 ### 实施
-1. `ShellDrawer({required List<JournalSummary> journals, required currentJournalId, required onSelectJournal, required onNavigate, required onNewJournal})`（入参/回调皆外部注入）。
-2. 三分区布局：日记本组（色点用 journal.color，唯一彩色例外，DESIGN-REF §5）、浏览组、底部设置。
+1. `ShellDrawer({required List<JournalSummary> journals, required currentJournalId, int? allJournalCount, int? favoriteCount, required onSelectJournal, required onNavigate, required onNewJournal})`（入参/回调皆外部注入）。
+2. 四段布局：头像/身份头、日记本组（全部日记用本子图标 + 总数；各本色点用 journal.color，唯一彩色例外，DESIGN-REF §5）、浏览组（带分组标题；收藏计数可注入）、底部设置。
 3. 点浏览组/设置 → `onNavigate(Routes.xxx)`；点日记本 → `onSelectJournal(id)`（选中态 `.on`，R3）；点「新建日记本」→ `onNewJournal()`（R4 通路，sheet 实现归 T6）。
 4. 每行命中区 ≥ 44px（NF1）；每项 Semantics 标签为项名（NF3）；视觉走 token（NF7）。
 
 ### 验收标准（做完即止）
-- 给定假 journal 列表 → 抽屉渲染对应条目数 + 各色点 + 计数（自动，按 journal 数断言行数）。
+- 给定假 journal 列表 → 抽屉渲染头像/身份头、日记本/浏览分组、全部日记总数、对应 journal 条目数 + 各色点 + 计数（自动，按 journal 数断言行数）。
+- 注入 `allJournalCount` / `favoriteCount` → 「全部日记」/「收藏」右侧显示注入计数，不硬编码 demo 数值（自动）。
 - 点浏览组某项（如收藏）→ `onNavigate` 收到 `Routes.favorites`（自动，回调捕获断言）。
 - 点某日记本 → `onSelectJournal` 收到其 id 且该项呈选中态（自动）。
 - 抽屉项命中区 ≥ 44px、各项有 Semantics 标签（自动，NF1/NF3）。
@@ -174,14 +175,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
+人工：已确认无 Drift/SQL 句柄，journal 经入参/回调注入（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T5 · FAB speed-dial fab_speed_dial.dart
+- [x] T5 · FAB speed-dial fab_speed_dial.dart
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme：fabGradient / 三档 shadow / overlay token` ｜ **关联需求：** R5, NF1, NF3, NF4 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/shell/fab_speed_dial.dart` ｜ **验收基建：** `test/ui/shell/fab_speed_dial_test.dart`
 
@@ -210,14 +211,14 @@ FAB：轻点 → `Routes.editor`；长按（≈340ms 对齐原型，常量）→
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · 新建日记本 sheet new_journal_sheet.dart
+- [x] T6 · 新建日记本 sheet new_journal_sheet.dart
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `data-layer：JournalRepo.create(name,color)（未就绪留接线点）`、`design-tokens-theme：token`、`ui-kit-components：sheet 封装（未就绪用裸 showModalBottomSheet）` ｜ **关联需求：** R4, NF1, NF3 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/shell/new_journal_sheet.dart` ｜ **验收基建：** `test/ui/shell/new_journal_sheet_test.dart`
 
@@ -245,14 +246,14 @@ FAB：轻点 → `Routes.editor`；长按（≈340ms 对齐原型，常量）→
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · ShellState 切本通路 shell_state.dart
+- [x] T7 · ShellState 切本通路 shell_state.dart
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `data-layer：JournalRepo（journal 列表来源；未就绪内存假数据）` ｜ **关联需求：** R3 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/shell/shell_state.dart` ｜ **验收基建：** `test/ui/shell/shell_state_test.dart`
 
@@ -279,14 +280,14 @@ FAB：轻点 → `Routes.editor`；长按（≈340ms 对齐原型，常量）→
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
+人工：已确认无 Drift/SQL 句柄，当前 journal 状态为外壳内存通路（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T8 · 接线真外壳：lib/app.dart + CLAUDE.md
+- [x] T8 · 接线真外壳：lib/app.dart + CLAUDE.md
 
 **同 spec 依赖：** T1, T2, T3 ｜ **跨 spec 依赖：** `design-tokens-theme：dayzTheme 六套` ｜ **关联需求：** R6, R7, R8 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/app.dart`、`CLAUDE.md`（仅「Debug Home demo 入口模式」段） ｜ **验收基建：** `test/app_router_mount_test.dart`
 
@@ -315,14 +316,14 @@ FAB：轻点 → `Routes.editor`；长按（≈340ms 对齐原型，常量）→
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
+人工：已确认 CLAUDE.md「Debug Home demo 入口模式」段已更新，Debug Home 降级为 Routes.debugHome（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T9 · 外壳交互 Debug Home demo + 挂入口
+- [x] T9 · 外壳交互 Debug Home demo + 挂入口
 
 **同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R3, R5, R6 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/shell_nav_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/demo/shell_nav_demo_test.dart`
 
@@ -353,7 +354,7 @@ Debug Home 入口：在 demo 里用假 journal 数据渲染完整外壳，可开
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：测试通过 (All tests passed!)
+人工：已以 widget 交互 + SafeArea/reduce-motion 代码复核收口；真机烟测转后续页面/发布前闸（核查人 @Ray）
 ```

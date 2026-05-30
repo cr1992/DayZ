@@ -2,6 +2,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dayz_colors.dart';
 import 'dayz_fonts.dart';
 import 'dayz_text_theme.dart';
@@ -38,6 +39,15 @@ ThemeData dayzTheme(DayzThemeType type, Brightness brightness) {
     splashFactory: NoSplash.splashFactory,
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
+    appBarTheme: AppBarTheme(
+      systemOverlayStyle: isDark
+          ? SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+            )
+          : SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
+    ),
     colorScheme:
         ColorScheme.fromSeed(
           seedColor: colors.accent,

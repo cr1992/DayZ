@@ -11,10 +11,12 @@ import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/l10n/locale_controller.dart';
 import 'package:dayz/demo/i18n_demo.dart';
 import 'package:dayz/demo/demo_entry.dart';
+import 'package:dayz/ui/shell/app_router.dart';
 
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    appRouter.go(Routes.timelinePath);
   });
 
   testWidgets('demos 列表含 i18n Demo 入口', (tester) async {
@@ -75,6 +77,9 @@ void main() {
     await controller.setLocale(const Locale('zh'));
 
     await tester.pumpWidget(DayZApp(localeController: controller));
+    await tester.pumpAndSettle();
+
+    appRouter.goNamed(Routes.debugHome);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('i18n Demo'));

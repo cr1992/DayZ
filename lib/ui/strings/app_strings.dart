@@ -47,4 +47,27 @@ abstract final class AppStrings {
   static String galleryMoreCount(int count) => '+$count';
   static String entryCount(int count) => '$count 篇';
   static String yearsAgo(int years) => '$years 年前';
+
+  // Shell and Navigation strings
+  static const String drawerProfileName = 'DayZ';
+  static const String drawerProfileInitial = 'D';
+  static const String drawerProfileStatus = '本地 · 已加密';
+  static const String shellPlaceholderSuffix = '待页面级 spec 实现';
+  static const String allJournals = '全部日记';
+  static const String journalSectionHeader = '日记本';
+  static const String browseSectionHeader = '浏览';
+  static const String newJournal = '新建日记本';
+  static const String journalNameInputPlaceholder = '请输入日记本名称';
+  static const String journalNameLabel = '日记本名称';
+  static const String journalColorLabel = '日记本颜色';
+  static const String settings = '设置';
+  static const String timeline = '时间线';
+  static const String reader = '阅读';
+  static const String editor = '编辑';
+  static const String onThisDay = '往年今日';
+  static const String calendar = '日历';
+  static const String favorites = '收藏';
+  static const String trash = '回收站';
+  static const String memoryCardExport = '回忆卡导出';
+  static const String debugHome = 'Debug Home';
 }

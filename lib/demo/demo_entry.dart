@@ -12,6 +12,7 @@ import 'package:dayz/demo/widget_gallery_demo.dart';
 import 'package:dayz/drafts/demo.dart';
 import 'package:dayz/media/demo.dart';
 import 'package:dayz/thumbnails/demo.dart';
+import 'package:dayz/demo/shell_nav_demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -84,4 +85,9 @@ final List<DemoEntry> demos = [
     builder: (context) => const ThumbnailsDemo(),
   ),
   // 各模块 demo 在此追加
+  DemoEntry(
+    title: '外壳与导航 demo',
+    subtitle: 'AppShell 外壳、导航抽屉与 FAB 二级动作交互',
+    builder: (context) => const ShellNavDemo(),
+  ),
 ];
