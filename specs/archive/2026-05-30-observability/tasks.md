@@ -42,7 +42,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 引入 logging 依赖 + observability 模块脚手架 + 同 commit 更新 CLAUDE.md 架构大图 + README 立项
+- [x] T1 · 引入 logging 依赖 + observability 模块脚手架 + 同 commit 更新 CLAUDE.md 架构大图 + README 立项
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold：`lib/` 骨架 + Debug Home + pubspec 框架（已归档完成）｜ **关联需求：** NF5（仅引入 logging、无遥测包）｜ **依据设计：** D1, D4（模块边界 / 新模块层）｜ **可改文件：** `pubspec.yaml`、`pubspec.lock`、`CLAUDE.md`、`specs/README.md`
 
@@ -85,7 +85,7 @@ graph LR
 
 -----
 
-- [ ] T2 · LogLevel + LogRecord + LogSink 抽象接口（预留加密扩展点）
+- [x] T2 · LogLevel + LogRecord + LogSink 抽象接口（预留加密扩展点）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R5 ｜ **依据设计：** D1, D4, D5 ｜ **可改文件：** `lib/observability/log_level.dart`、`lib/observability/log_record.dart`、`lib/observability/log_sink.dart`、`test/observability/log_level_test.dart`
 
@@ -120,7 +120,7 @@ graph LR
 
 -----
 
-- [ ] T3 · Redactor 脱敏中间件 + redactAbsolutePath 纯函数（脱敏真源单点）
+- [x] T3 · Redactor 脱敏中间件 + redactAbsolutePath 纯函数（脱敏真源单点）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF1 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/observability/redaction.dart`、`test/observability/redaction_test.dart`
 
@@ -155,7 +155,7 @@ graph LR
 
 -----
 
-- [ ] T4 · AppLogger 门面：级别管控 + 强制脱敏中间件 + 惰性闭包 API + sink 列表 + barrel 导出
+- [x] T4 · AppLogger 门面：级别管控 + 强制脱敏中间件 + 惰性闭包 API + sink 列表 + barrel 导出
 
 **同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, NF1, NF4 ｜ **依据设计：** D1, D2, D4, D5 ｜ **可改文件：** `lib/observability/app_logger.dart`、`lib/observability/observability.dart`、`test/observability/app_logger_test.dart`、`test/observability/lazy_level_test.dart`
 
@@ -195,7 +195,7 @@ graph LR
 
 -----
 
-- [ ] T5 · ConsoleSink（零依赖底座 sink）
+- [x] T5 · ConsoleSink（零依赖底座 sink）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R5, NF3 ｜ **依据设计：** D4, D7 ｜ **可改文件：** `lib/observability/console_sink.dart`、`test/observability/console_sink_test.dart`
 
@@ -226,7 +226,7 @@ graph LR
 
 -----
 
-- [ ] T6 · LogPaths：ApplicationSupport/logs/ 解析（备份范围外，暴露日志根目录常量）
+- [x] T6 · LogPaths：ApplicationSupport/logs/ 解析（备份范围外，暴露日志根目录常量）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, NF6 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/observability/log_paths.dart`、`test/observability/log_paths_test.dart`
 
@@ -257,7 +257,7 @@ graph LR
 
 -----
 
-- [ ] T7 · RotatingFileSink：脱敏明文落盘 + size 轮转 + 失败降级（单写者异步，不进 DB 事务）
+- [x] T7 · RotatingFileSink：脱敏明文落盘 + size 轮转 + 失败降级（单写者异步，不进 DB 事务）
 
 **同 spec 依赖：** T2, T3, T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, NF2, NF3 ｜ **依据设计：** D3, D6, D7, D9 ｜ **可改文件：** `lib/observability/rotating_file_sink.dart`、`lib/observability/log_rotation.dart`、`test/observability/rotating_file_sink_test.dart`、`test/observability/sink_failure_test.dart`
 
@@ -296,7 +296,7 @@ graph LR
 
 -----
 
-- [ ] T8 · Debug Home observability demo 入口（追加 demos 末尾，触发各级别/强制轮转/查看降级状态）
+- [x] T8 · Debug Home observability demo 入口（追加 demos 末尾，触发各级别/强制轮转/查看降级状态）
 
 **同 spec 依赖：** T4, T5, T7 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6, NF7 ｜ **依据设计：** D4, D5, D7 ｜ **可改文件：** `lib/demo/observability_demo.dart`、`lib/demo/demo_entry.dart`、`test/demo/observability_demo_test.dart`
 

@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "DayZ",
+
+  "onThisDayCount": "{count, plural, =0{No entries today} =1{1 entry today} other{{count} entries today}}",
+
+  "yearsAgo": "{count, plural, =0{This year} =1{1 year ago} other{{count} years ago}}",
+
+  "locale_zh": "中文",
+
+  "locale_en": "English",
+
+  "followSystem": "Follow System",
+
+  "languageSetting": "Language"
+}

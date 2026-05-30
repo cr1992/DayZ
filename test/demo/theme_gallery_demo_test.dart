@@ -13,9 +13,9 @@ import 'package:dayz/ui/theme/dayz_colors.dart';
 /// Author: @Ray
 void main() {
   group('ThemeGalleryDemo Widget Tests', () {
-    test('demos list has theme_gallery_demo at the end', () {
-      expect(demos.last.title, '主题画廊 demo');
-      expect(demos.last.subtitle, '设计 Token 与六套主题画廊');
+    test('demos list has theme_gallery_demo entry', () {
+      final entry = demos.firstWhere((e) => e.title == '主题画廊 demo');
+      expect(entry.subtitle, '设计 Token 与六套主题画廊');
     });
 
     testWidgets('Can navigate to ThemeGalleryDemo from DebugHome and switch themes', (WidgetTester tester) async {

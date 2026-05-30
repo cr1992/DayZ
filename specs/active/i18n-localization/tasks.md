@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-30
 最后更新：2026-05-30
-文档状态：草稿
+文档状态：进行中（自动验收全过，T2 人工项待 @Ray 确认）
 ---
 
 # 任务列表：i18n-localization
@@ -31,7 +31,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 引入依赖 + l10n.yaml + 中英 seed arb
+- [x] T1 · 引入依赖 + l10n.yaml + 中英 seed arb
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `pubspec.yaml`、`l10n.yaml`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`
 
@@ -60,14 +60,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：PASS（flutter pub get 成功 + l10n.yaml 存在 + 两份 arb 合法 JSON）
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · 跑通生成，产出 AppLocalizations 并入库
+- [x] T2 · 跑通生成，产出 AppLocalizations 并入库
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/l10n/gen/app_localizations.dart`（生成产物）、`lib/l10n/gen/app_localizations_zh.dart`（生成产物）、`lib/l10n/gen/app_localizations_en.dart`（生成产物）、`.gitignore`（仅当现有规则误伤 `lib/l10n/gen/` 时） ｜ **验收基建：** `test/l10n/app_localizations_test.dart`（import 生成产物的取值测试，预批）
 
@@ -99,14 +99,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-30
+自动：PASS（gen-l10n 成功 + 产物存在 + 未被 gitignore + 15 个取值测试全过）
+人工：[-] 待确认（核查人 @Ray）— 连续两次 gen-l10n 后 git diff 为空（幂等）
 ```
 
 -----
 
-- [ ] T3 · MaterialApp 接线 + locale 解析（跟随系统 / 回退 zh）
+- [x] T3 · MaterialApp 接线 + locale 解析（跟随系统 / 回退 zh）
 
 **同 spec 依赖：** T2, T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R3 ｜ **依据设计：** D2, D4 ｜ **可改文件：** `lib/app.dart` ｜ **验收基建：** `test/l10n/material_app_locale_test.dart`（widget 测试，预批）
 
@@ -133,14 +133,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：PASS（en/zh/fr 三种 locale 的 widget 测试全过）
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · LocaleController（状态 + 持久化）
+- [x] T4 · LocaleController（状态 + 持久化）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/l10n/locale_controller.dart` ｜ **验收基建：** `test/l10n/locale_controller_test.dart`
 
@@ -167,14 +167,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：PASS（7 个测试全过：状态转移 + 持久化读写 + 异常回落 + notifyListeners）
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · arb key 对齐校验（NF2）
+- [x] T5 · arb key 对齐校验（NF2）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** NF2 ｜ **依据设计：** D5 ｜ **可改文件：** `scripts/check_arb_sync.sh` ｜ **验收基建：** `test/scripts/check_arb_sync_test.sh`（夹具构造一致/缺漏两种输入）
 
@@ -198,14 +198,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：PASS（4 个夹具测试全过：一致→exit0、en缺key→exit1、输出指明缺失key、zh缺key→exit1）
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · i18n demo + 挂 Debug Home
+- [x] T6 · i18n demo + 挂 Debug Home
 
 **同 spec 依赖：** T3, T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/demo/i18n_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/demo/i18n_demo_test.dart`
 
@@ -232,7 +232,7 @@ Debug Home 入口：一个 demo 页，含语言切换控件（跟随系统 / zh 
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：PASS（3 个 widget 测试全过：demos 含 i18n 入口 + zh 文案 + en 文案）
 人工：N/A
 ```

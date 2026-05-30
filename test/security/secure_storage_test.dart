@@ -1,11 +1,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import 'dart:typed_data';
-import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/security/secure_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class FakeFlutterSecureStorage extends Fake implements FlutterSecureStorage {
   final Map<String, String> _data = {};
@@ -78,7 +77,7 @@ class FakeFlutterSecureStorage extends Fake implements FlutterSecureStorage {
 }
 
 void main() {
-  group('SecureStore Tests', () {
+  group('SecureStore', () {
     late FakeFlutterSecureStorage fakeStorage;
     late SecureStore secureStore;
 
@@ -87,8 +86,8 @@ void main() {
       secureStore = SecureStore(storage: fakeStorage);
     });
 
-    test('set and get value successfully', () async {
-      final key = 'test_key';
+    test('set / get 正常往返', () async {
+      const key = 'test_key';
       final bytes = Uint8List.fromList([1, 2, 3, 4, 5]);
 
       await secureStore.set(key, bytes);
@@ -97,21 +96,20 @@ void main() {
       expect(result, equals(bytes));
     });
 
-    test('get non-existent key returns null', () async {
-      final result = await secureStore.get('non_existent');
-      expect(result, isNull);
+    test('读取不存在 key 返回 null', () async {
+      expect(await secureStore.get('non_existent'), isNull);
     });
 
-    test('contains returns correct status', () async {
-      final key = 'test_key';
+    test('contains 返回正确状态', () async {
+      const key = 'test_key';
       expect(await secureStore.contains(key), isFalse);
 
       await secureStore.set(key, Uint8List.fromList([1]));
       expect(await secureStore.contains(key), isTrue);
     });
 
-    test('delete removes key successfully', () async {
-      final key = 'test_key';
+    test('delete 成功移除 key', () async {
+      const key = 'test_key';
       await secureStore.set(key, Uint8List.fromList([1]));
       expect(await secureStore.contains(key), isTrue);
 
@@ -120,20 +118,22 @@ void main() {
       expect(await secureStore.get(key), isNull);
     });
 
-    test('get throws corrupted error on bad base64 string', () async {
+    test('bad base64 走 corrupted', () async {
       fakeStorage._data['bad_key'] = 'not-base64-encoded!';
 
       expect(
         () => secureStore.get('bad_key'),
-        throwsA(isA<SecureStoreException>().having(
-          (e) => e.code,
-          'code',
-          SecureStoreError.corrupted,
-        )),
+        throwsA(
+          isA<SecureStoreException>().having(
+            (error) => error.code,
+            'code',
+            SecureStoreError.corrupted,
+          ),
+        ),
       );
     });
 
-    test('wraps PlatformException bad padding to corrupted', () async {
+    test('BadPadding 平台异常映射为 corrupted', () async {
       fakeStorage.throwOnRead = true;
       fakeStorage.exceptionToThrow = PlatformException(
         code: 'badpadding',
@@ -142,15 +142,36 @@ void main() {
 
       expect(
         () => secureStore.get('any_key'),
-        throwsA(isA<SecureStoreException>().having(
-          (e) => e.code,
-          'code',
-          SecureStoreError.corrupted,
-        )),
+        throwsA(
+          isA<SecureStoreException>().having(
+            (error) => error.code,
+            'code',
+            SecureStoreError.corrupted,
+          ),
+        ),
       );
     });
 
-    test('wraps general platform exception to unknown', () async {
+    test('unavailable 平台异常映射为 unavailable', () async {
+      fakeStorage.throwOnRead = true;
+      fakeStorage.exceptionToThrow = PlatformException(
+        code: 'unavailable',
+        message: 'KeyStore unavailable on this device',
+      );
+
+      expect(
+        () => secureStore.get('any_key'),
+        throwsA(
+          isA<SecureStoreException>().having(
+            (error) => error.code,
+            'code',
+            SecureStoreError.unavailable,
+          ),
+        ),
+      );
+    });
+
+    test('通用平台异常映射为 unknown', () async {
       fakeStorage.throwOnRead = true;
       fakeStorage.exceptionToThrow = PlatformException(
         code: 'some_error',
@@ -159,11 +180,13 @@ void main() {
 
       expect(
         () => secureStore.get('any_key'),
-        throwsA(isA<SecureStoreException>().having(
-          (e) => e.code,
-          'code',
-          SecureStoreError.unknown,
-        )),
+        throwsA(
+          isA<SecureStoreException>().having(
+            (error) => error.code,
+            'code',
+            SecureStoreError.unknown,
+          ),
+        ),
       );
     });
   });

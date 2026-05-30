@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：定稿
 ---
 
@@ -25,7 +25,7 @@
 
 ### 安全（NF1）
 - [ ] 派生密钥 / 设备密钥不出现在任何日志输出 — 自动：`! grep -RInE '(print|debugPrint|log[A-Za-z]*)\([^)]*(key\|Key\|password\|secret\|derived)' lib/security`（**缺失/解耦守卫**：断言 `lib/security` 中无「日志调用直接打印 key/password/secret/derived 等敏感变量」，命中即 fail；NF1 的正向行为「明文使用后清零」由下条行为测试断言）
-- [ ] 派生路径明文使用后清零（best-effort）— 自动：`flutter test test/security/argon2_kdf_test.dart`（断言调用前后 password 引用持有的字节区被清零，对应 R2/NF1 的可观测结果）
+- [ ] 派生路径明文使用后清零（best-effort）— 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言调用前后 password 引用持有的字节区被清零，对应 R2/NF1 的可观测结果）
 - [ ] 派生密钥 / 设备密钥不写入任何文件（除 secure_storage 的密文存储）— 人工（@Ray）：审计 `lib/security/` 所有 File / IOSink 使用
 
 ### 性能（NF2）
@@ -39,7 +39,7 @@
 
 ### 可演进（NF4）
 - [ ] `KdfParams` 含 `version` 字段，且该 version 经持久化路径写出后可原样读回（即据存储的 version 反查参数，旧密钥派生路径仍可工作）— 自动：`flutter test test/security/kdf_version_persistence_test.dart`（断言 `KdfParams.v1().version == 1`；构造 params → 序列化/写入存储 → 读回，断言读回的 `version` 与写入相等、并据其重建出与原 `KdfParams` 逐字段相等的参数；断言**值/往返**而非源码字面量）
-- [ ] 读取 v1 params 的派生路径有单元测试 — 自动：`flutter test test/security/argon2_kdf_test.dart`（断言以 v1 params 派生输出与 RFC 9106 已知向量一致）
+- [ ] 读取 v1 params 的派生路径有单元测试 — 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言以 v1 params 派生输出与权威参考实现 KAT 逐字节一致）
 
 ## Demo 验证（接 Debug Home，对应 T9）
 
@@ -52,8 +52,8 @@
 
 > data-layer 尚未落地，无 db 集成回归。此处仅做模块内回归：
 
-- [ ] 全模块单元测试通过 — 自动：`flutter test test/security/`
-- [ ] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`flutter analyze && flutter build apk --debug && flutter build ios --debug --no-codesign`
+- [ ] 全模块单元测试通过 — 自动：`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/`
+- [ ] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`dart analyze lib/security test/security lib/demo/demo_entry.dart && flutter build apk --debug && flutter build ios --debug --no-codesign`
 
 ## 验证命令（汇总自动项）
 
@@ -61,8 +61,9 @@
 
 ```bash
 flutter pub get
-flutter test test/security/
-flutter analyze
+cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib
+ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/
+dart analyze lib/security test/security lib/demo/demo_entry.dart
 flutter build apk --debug
 flutter build ios --debug --no-codesign
 grep -RIn 'TODO(data-layer-integration)' lib/security/rekey_service.dart

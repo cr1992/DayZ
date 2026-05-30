@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：定稿
 ---
 
@@ -173,7 +173,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 -----
 
-- [ ] T5 · Argon2id 派生模块
+- [x] T5 · Argon2id 派生模块
 
 **同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF4 ｜ **依据设计：** D2, D3, D4 ｜ **可改文件：** `lib/security/argon2_kdf.dart`, `test/security/argon2_kdf_test.dart`, `test/security/kdf_version_persistence_test.dart`
 
@@ -184,7 +184,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 1. 定义 `KdfParams`（不可变）
 2. 提供 `KdfParams.v1()` 静态工厂返回 D3 基线
 3. 实现 `Argon2Kdf.deriveKey(Uint8List password, Uint8List salt, KdfParams params)`
-4. 加 RFC 9106 已知向量测试（A.2 节 Argon2id 测试向量）
+4. 加权威参考实现 KAT（与 `argon2-cffi` / C 参考实现逐字节一致；当前接口不含 secret / associated data，故不直接搬 RFC 9106 §5.3 那组含额外输入的向量）
 5. password 与中间变量在使用后尝试 zero-fill（best-effort，Dart 无强保证）
 6. 版本往返（NF4）：`KdfParams` 可把 `version` 序列化写出并读回，据存储的 version 反查参数，确保旧密钥派生路径仍可工作
 
@@ -198,22 +198,23 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/argon2_kdf_test.dart \
+  cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib \
+    && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart \
     && flutter test test/security/kdf_version_persistence_test.dart
   ```
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib` ✅；`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart` ✅；`flutter test test/security/kdf_version_persistence_test.dart` ✅
+人工：N/A
 ```
 
 -----
 
-- [ ] T6 · KeyProvider 统一入口
+- [x] T6 · KeyProvider 统一入口
 
-**同 spec 依赖：** T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R3, R5 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/security/key_provider.dart`, `test/security/key_provider_test.dart`
+**同 spec 依赖：** T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R3, R5 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `lib/security/key_provider.dart`, `test/security/key_provider_test.dart`
 
 ### 背景
 对 data-layer / backup 等上层只暴露语义化 API，隐藏底层实现：
@@ -223,7 +224,7 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 - `currentMode()`：返回 `AppPasswordMode { none, password }`
 
 ### 实施
-1. 定义 `AppPasswordMode` 枚举与 mode 持久化（key 用 shared_preferences，详见 D6）
+1. 补 `shared_preferences` direct dependency，并定义 `AppPasswordMode` 枚举与 mode 持久化（key 用 shared_preferences，详见 D6）
 2. `getAppDbKey` 在 mode=none 时返回 DeviceKey；mode=password 时调用方需先 `unlockWithPassword(password)`，缓存到内存
 3. `unlockWithPassword(password)` 内部：从 secure_storage 取 mode salt，Argon2id 派生后缓存；不正确密码的判定交给开库失败（在 data-layer 里）
 4. `lock()` 清内存缓存
@@ -238,19 +239,20 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/key_provider_test.dart
+  cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib \
+    && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart
   ```
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib` ✅；`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart` ✅
+人工：N/A
 ```
 
 -----
 
-- [ ] T7 · rekey 流程 + 失败兜底
+- [x] T7 · rekey 流程 + 失败兜底
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4, NF3 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/security/rekey_service.dart`, `test/security/rekey_service_test.dart`
 
@@ -288,14 +290,14 @@ D2 候选库是 dargon2_flutter；本任务在 iOS + Android 真机上跑预研�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：`flutter test test/security/rekey_service_test.dart` ✅；`grep -n 'TODO(data-layer-integration)' lib/security/rekey_service.dart` ✅
+人工：N/A
 ```
 
 -----
 
-- [ ] T8 · 备份口令派生接口暴露
+- [x] T8 · 备份口令派生接口暴露
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/key_provider.dart`（追加方法）, `test/security/key_provider_test.dart`（追加用例）
 
@@ -314,19 +316,20 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/key_provider_test.dart
+  cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib \
+    && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart
   ```
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib` ✅；`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart` ✅
+人工：N/A
 ```
 
 -----
 
-- [ ] T9 · 接入 Debug Home：Security demo
+- [x] T9 · 接入 Debug Home：Security demo
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/security/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）
 
@@ -361,14 +364,14 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无；真机耗时 <1.5s 门槛见 verification.md 性能节，数据源 T3）
+日期：2026-05-30
+自动：`flutter test test/security/demo_test.dart` ✅
+人工：N/A（真机耗时 <1.5s 门槛见 verification.md 性能节，数据源 T3）
 ```
 
 -----
 
-- [ ] T10 · 设备媒体密钥派生入口 getDeviceMediaKey（HKDF）
+- [x] T10 · 设备媒体密钥派生入口 getDeviceMediaKey（HKDF）
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6 ｜ **依据设计：** D4, D7 ｜ **可改文件：** `lib/security/hkdf.dart`, `lib/security/key_provider.dart`（追加方法）, `test/security/key_provider_test.dart`（追加用例）
 
@@ -388,13 +391,14 @@ T6 已暴露 `deriveBackupKey`，但仅当 KeyProvider 整体冒烟通过；本�
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/security/key_provider_test.dart
+  cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib \
+    && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart
   ```
   （断言：① 输出 == 独立重算 HKDF(info=`dayz/media/v1`) 期望值且长 32；② info 变→输出变；③ 与 db 密钥不同、跨主密码模式不变——均断言派生值/行为，不 grep 源码字面量）
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib` ✅；`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/key_provider_test.dart` ✅
+人工：N/A
 ```

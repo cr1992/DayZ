@@ -2,6 +2,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'dart:typed_data';
+
 import 'package:argon2id_ffi/argon2id_ffi.dart';
 
 class KdfParams {
@@ -20,22 +21,34 @@ class KdfParams {
   });
 
   const KdfParams.v1()
-      : mCostKiB = 65536,
-        tCost = 3,
-        parallelism = 1,
-        outputLen = 32,
-        version = 1;
+    : mCostKiB = 65536,
+      tCost = 3,
+      parallelism = 1,
+      outputLen = 32,
+      version = 1;
 
-  Map<String, dynamic> toJson() => {
-        'version': version,
-      };
+  static KdfParams fromVersion(int version) {
+    switch (version) {
+      case 1:
+        return const KdfParams.v1();
+      default:
+        throw ArgumentError('Unknown version: $version');
+    }
+  }
+
+  Map<String, Object?> toJson() => {'version': version};
 
   factory KdfParams.fromJson(Map<String, dynamic> json) {
-    final v = json['version'] as int?;
-    if (v == 1) {
-      return const KdfParams.v1();
+    final rawVersion = json['version'];
+    final version = switch (rawVersion) {
+      int value => value,
+      num value when value == value.toInt() => value.toInt(),
+      _ => null,
+    };
+    if (version == null) {
+      throw ArgumentError('Missing or invalid version: $rawVersion');
     }
-    throw ArgumentError('Unknown version: $v');
+    return KdfParams.fromVersion(version);
   }
 
   @override
@@ -51,16 +64,12 @@ class KdfParams {
 
   @override
   int get hashCode =>
-      mCostKiB.hashCode ^
-      tCost.hashCode ^
-      parallelism.hashCode ^
-      outputLen.hashCode ^
-      version.hashCode;
+      Object.hash(mCostKiB, tCost, parallelism, outputLen, version);
 }
 
 class Argon2Kdf {
   /// Argon2id 派生（后端 = 自研 `argon2id_ffi`，RustCrypto + 手写 dart:ffi）。
-  /// 算法/版本(0x13)/参数与原 dargon2 一致——相同入参派生密钥**逐字节相同**，切换不改密钥。
+  /// 算法/版本(0x13)/参数与原 dargon2 一致——相同入参派生密钥逐字节相同，切换不改密钥。
   /// 重活在 argon2id_ffi 内部跑在 Isolate，不阻塞 UI；无需初始化。
   static Future<Uint8List> deriveKey(
     Uint8List password,
@@ -77,10 +86,13 @@ class Argon2Kdf {
         outputLen: params.outputLen,
       );
     } finally {
-      // Dart 侧口令缓冲 best-effort 清零（argon2id_ffi 只擦其 Rust 内部副本，见其文档）。
-      for (int i = 0; i < password.length; i++) {
-        password[i] = 0;
-      }
+      _zero(password);
+    }
+  }
+
+  static void _zero(Uint8List bytes) {
+    for (var i = 0; i < bytes.length; i++) {
+      bytes[i] = 0;
     }
   }
 }

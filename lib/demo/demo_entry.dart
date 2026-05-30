@@ -5,6 +5,9 @@ import 'package:dayz/demo/editor_appflowy_demo.dart';
 import 'package:dayz/demo/editor_webview_tiptap_demo.dart';
 import 'package:dayz/demo/argon2id_ffi_demo.dart';
 import 'package:dayz/demo/theme_gallery_demo.dart';
+import 'package:dayz/security/demo.dart';
+import 'package:dayz/demo/observability_demo.dart';
+import 'package:dayz/demo/i18n_demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -12,11 +15,7 @@ class DemoEntry {
   final String? subtitle;
   final WidgetBuilder builder;
 
-  const DemoEntry({
-    required this.title,
-    this.subtitle,
-    required this.builder,
-  });
+  const DemoEntry({required this.title, this.subtitle, required this.builder});
 }
 
 final List<DemoEntry> demos = [
@@ -44,6 +43,21 @@ final List<DemoEntry> demos = [
     title: '主题画廊 demo',
     subtitle: '设计 Token 与六套主题画廊',
     builder: (context) => const ThemeGalleryDemo(),
+  ),
+  DemoEntry(
+    title: 'Security',
+    subtitle: '密钥与 Argon2 派生',
+    builder: (context) => const SecurityDemo(),
+  ),
+  DemoEntry(
+    title: 'Observability',
+    subtitle: '日志与可观测性基建',
+    builder: (context) => const ObservabilityDemo(),
+  ),
+  DemoEntry(
+    title: 'i18n Demo',
+    subtitle: '国际化：语言切换 + 文案取值示范',
+    builder: (context) => const I18nDemo(),
   ),
   // 各模块 demo 在此追加
 ];

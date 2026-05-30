@@ -1,0 +1,50 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "DayZ",
+  "@appTitle": {
+    "description": "App 标题"
+  },
+
+  "onThisDayCount": "{count, plural, =0{今天还没有记录} other{今天共 {count} 篇}}",
+  "@onThisDayCount": {
+    "description": "往年今日条目数",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "yearsAgo": "{count, plural, =0{今年} =1{1 年前} other{{count} 年前}}",
+  "@yearsAgo": {
+    "description": "相对年份",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+
+  "locale_zh": "中文",
+  "@locale_zh": {
+    "description": "中文语言名称"
+  },
+
+  "locale_en": "English",
+  "@locale_en": {
+    "description": "英文语言名称"
+  },
+
+  "followSystem": "跟随系统",
+  "@followSystem": {
+    "description": "语言设置：跟随系统"
+  },
+
+  "languageSetting": "语言设置",
+  "@languageSetting": {
+    "description": "语言设置标题"
+  }
+}
