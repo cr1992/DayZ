@@ -53,7 +53,7 @@ graph LR
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** app-scaffold（M0：壳/pubspec/平台配置/Debug Home 框架就绪） ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `pubspec.yaml`, `pubspec.lock`, `build.yaml`, `ios/Podfile`, `android/app/build.gradle.kts`（如需）
 
 ### 背景
-添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（drift_dev builder），与 assets-management 的 `flutter_gen_runner` builder 并存——builder 不同、输出目录隔离、互不冲突；本 spec **不**声称自己是「首个/唯一」codegen 工作流。静态资源生成（flutter_gen）已剥离至 `specs/active/assets-management`，本里程碑不涉及。
+添加：drift、drift_flutter、sqlcipher_flutter_libs、uuid、timezone、build_runner（dev）、drift_dev（dev）。`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen（drift_dev builder），与 assets-management 的 `flutter_gen_runner` builder 并存——builder 不同、输出目录隔离、互不冲突；本 spec **不**声称自己是「首个/唯一」codegen 工作流。静态资源生成（flutter_gen）已剥离至 `specs/archive/2026-05-30-assets-management`，本里程碑不涉及。
 
 ### 实施
 1. pubspec.yaml 添加上述依赖（锁版本）

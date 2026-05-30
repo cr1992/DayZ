@@ -294,7 +294,7 @@ Android 读吞吐：— MiB/s
 
 - [ ] T8 · 接入 Debug Home：Media demo
 
-**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/active/assets-management` R4，本任务**只读引用、不新增/改动该资产**）
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, NF5 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/media/demo.dart`, `lib/demo/demo_entry.dart`（追加注册）；demo 图复用既有资产 `assets/editor/demo_image.png`（唯一规范路径，单一来源见 `specs/archive/2026-05-30-assets-management` R4，本任务**只读引用、不新增/改动该资产**）
 
 ### 背景
 做一个真机可演示入口：

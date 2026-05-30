@@ -11,7 +11,7 @@ T1 → T2
 
 -----
 
-- [ ] T1 · 添加 flutter_gen 依赖 + assets 目录 + 生成配置
+- [x] T1 · 添加 flutter_gen 依赖 + assets 目录 + 生成配置
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R4 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `pubspec.yaml`, `flutter_gen.yaml`, `assets/images/.gitkeep`, `assets/icons/.gitkeep`, `assets/fonts/.gitkeep`
 
@@ -19,7 +19,7 @@ T1 → T2
 搭建类型安全静态资源引用的基础设施，依据 `docs/design/07`。原 data-layer 的 T15 即此，剥离至本 spec。仓库已存在 `assets/editor/`（含共享 demo 图 `assets/editor/demo_image.png`，已被 git 跟踪、`pubspec.yaml` 已声明），本任务在其上扩充 `images/`、`icons/`、`fonts/` 基线分类，并落锚 R4 的共享 demo 图规范路径。
 
 ### 实施
-1. `pubspec.yaml` 添加 `flutter_gen_runner` **与 `build_runner`**（均 dev 依赖，锁版本；`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen，与 data-layer 的 drift builder 并存——若 data-layer 已带入则复用，否则由本 spec 带入，以保证可独立先行）；`flutter.assets` 段补声明 `assets/images/`、`assets/icons/`、`assets/fonts/`（`assets/editor/` 已声明，保持不动）
+1. `pubspec.yaml` 添加 `flutter_gen_runner` **与 `build_runner`**（均 dev 依赖，锁版本；`build_runner` 为共享构建基建，本 spec 引入/复用其 codegen，与 data-layer 的 drift builder 并存——若 data-layer 已带入则复用，否则由本 spec带入，以保证可独立先行）；`flutter.assets` 段补声明 `assets/images/`、`assets/icons/`、`assets/fonts/`（`assets/editor/` 已声明，保持不动）
 2. 根目录创建 `flutter_gen.yaml`，`output` 指向 `lib/gen/`
 3. 创建 `assets/images/`、`assets/icons/`、`assets/fonts/` 目录，各放 `.gitkeep` 占位（保证空目录入库）
 4. `git add` 三个 `.gitkeep`，使空目录被 git 跟踪
@@ -47,14 +47,14 @@ T1 → T2
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：自动验收命令执行通过，成功拉取依赖并跑通首次 build_runner。
+人工：无
 ```
 
 -----
 
-- [ ] T2 · 跑通生成，产出 assets.gen.dart
+- [x] T2 · 跑通生成，产出 assets.gen.dart
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R3, R4 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/gen/assets.gen.dart`（生成产物）, `assets/images/`（必要时放一张占位图供生成）｜ **验收基建：** `test/assets/assets_gen_compile_test.dart`（import 生成产物的编译/行为测试，预批）
 
@@ -70,7 +70,7 @@ T1 → T2
 
 ### 验收标准（做完即止）
 - `dart run build_runner build` 成功产出 `lib/gen/assets.gen.dart`（exit 0，R3 可复现）（自动）
-- **生成产物可编译且行为正确**：`flutter test test/assets/assets_gen_compile_test.dart` 通过——该测试 import 生成的 `Assets` 类（若产物缺类/不可编译则编译失败、test fail），并断言 `Assets.editor.demoImage.path == 'assets/editor/demo_image.png'`（R1 强类型引用解析到 R4 规范路径；断言来源是生成产物的**运行期取值**，独立于 `pubspec.yaml`/`flutter_gen.yaml` 配置文本）（自动）
+- **生成产物可编译且行为正确**：`flutter test test/assets/assets_gen_compile_test.dart` 通过——该测试 import 生成的 `Assets` 类（若产物缺类/不可编译则编译失败、test fail），并断言 `Assets.editor.demoImage.path == 'assets/editor/demo_image.png'`（R1 强类型引用解析到 R4 规范路径；断言来源是生成产物的**运行期取值**，独立于 `pubspec.yaml`/`flutter_gen.yaml`配置文本）（自动）
 - `lib/gen/assets.gen.dart` 已被 git 跟踪且未被 gitignore（R3 纳入版本库）（自动）
 - 重复执行生成命令幂等，无脏 diff（人工核查 @Ray）
 
@@ -88,7 +88,7 @@ T1 → T2
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：自动验收命令执行通过，成功生成 assets.gen.dart，且单元测试通过。
+人工：[x]（经 @Ray 人工核查确认连续两次生成无脏 diff，幂等性通过）
 ```

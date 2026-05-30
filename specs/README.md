@@ -15,7 +15,6 @@
 | [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-23 |
-| [assets-management](active/assets-management/) | P2 | 进行中 | 无 | @Ray | 2026-05-29 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 草稿 | design-tokens-theme, ui-kit-components, data-layer | @Ray | 2026-05-29 |
@@ -52,6 +51,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [assets-management](archive/2026-05-30-assets-management/) | 已完成 | 2026-05-30 |
 | [app-scaffold](archive/2026-05-23-app-scaffold/) | 已完成 | 2026-05-23 |
 | [editor-research](archive/2026-05-29-editor-research/) | 已完成（选型=A，经 @Ray 拍板替代正式实测） | 2026-05-29 |
 | [appflowy-patch-tracking](archive/2026-05-29-appflowy-patch-tracking/) | 已完成 | 2026-05-29 |

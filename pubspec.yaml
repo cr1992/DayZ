@@ -42,6 +42,7 @@ dependencies:
   # Argon2id/HKDF KDF 后端（自研 argon2id_ffi：RustCrypto + 手写 dart:ffi，已替换 dargon2）。
   argon2id_ffi:
     path: packages/argon2id_ffi
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   csslib: ^1.0.0
+  build_runner: ^2.15.0
+  flutter_gen_runner: ^5.14.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -73,6 +76,9 @@ flutter:
 
   assets:
     - assets/editor/
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

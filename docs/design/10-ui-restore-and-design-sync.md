@@ -61,7 +61,7 @@
 
 **字体**：打包两套小体积 Latin 品牌字（衬线 + 无衬线，确认 SIL OFL 许可后入 `pubspec.yaml`），**绝不打包 CJK web 字体**，中文靠 `fontFamilyFallback` 落系统字。注意 Flutter 对可变字体字重轴支持有限，多数情况要切静态字重 ttf（至少 regular + semibold）；CJK 行高放宽并配 `TextLeadingDistribution.even`。具体字体名/字重/行高**以 DESIGN-REF §2 与 `tokens.css` 为准**。
 
-**i18n 取向【须在 `design-tokens-theme` 阶段拍板】**：这是结构性决定（影响每屏 `Text` 怎么写）——MVP 是否单中文硬编码？拖到屏写完再抽 `flutter_localizations + arb` 是大返工。
+**i18n 取向**：见 `docs/design/11-internationalization-and-localization.md` 与 `i18n-localization` spec（gen-l10n + arb + 中英双语）。这是影响每屏 `Text` 怎么写的横切约束，独立成 spec 承载，不在本层处理。
 
 ## 3. 逐屏映射不在本文
 
@@ -160,7 +160,8 @@ Phase 5  Pin & Report    ── 更新各屏 pinned hash（screens.yaml）+ 产�
 
 | 档 | spec | 拥有什么（概要） | dependsOn |
 |---|---|---|---|
-| **基础** | `design-tokens-theme` | `gen_tokens.dart` 解析器 + 生成的 token + 手写 `DayzColors` + 字体打包 + **i18n 取向拍板** | — |
+| **基础** | `design-tokens-theme` | `gen_tokens.dart` 解析器 + 生成的 token + 手写 `DayzColors` + 字体打包 | — |
+| | `i18n-localization` | gen-l10n + arb 生成管线 + 中英双语 + `MaterialApp` 接线 + `LocaleController` | — |
 | | `ui-kit-components` | DESIGN-REF §3 登记的可复用 widget + 跨屏外壳 + 多状态画廊（widgetbook，补 Debug Home 单列表覆盖不了的「组件×主题×状态」矩阵） | tokens-theme |
 | | `ui-shell-navigation` | 路由 + 抽屉 + FAB + 取代 `DebugHome` 的真外壳 | tokens, ui-kit, data-layer |
 | **自动化** | `design-sync-automation` | 同步工作流脚本 + diff 路由器 + 样式/几何 harness + 栅格兜底（golden + 区域化 SSIM） + `screens.yaml` + pinned-hash 巡检 hook + 维护态泳道/三档分流规则 | 分两期 |
@@ -198,7 +199,7 @@ W3  依附件（undo-redo / media-picker / autosave-recovery 等）   W4  后置
 
 ## 12. 建议第一步
 
-**立 `design-tokens-theme` + `design-sync-automation`（期一）的 spec 四件套**，先做 token/主题层 + `gen_tokens.dart` 生成管线 + 参数对齐 harness 骨架。最高杠杆（全部 UI spec 依赖它）、最低风险（纯数据，不碰布局 / data 接缝），且一次性把同步策略里**唯一真自动化的那一环**打通。验收项必须含：解析器鲁棒性（§2，硬验收项）、三份 tokens.css 同源校验（§2），并拍板 i18n 取向（§2）。
+**立 `design-tokens-theme` + `design-sync-automation`（期一）的 spec 四件套**，先做 token/主题层 + `gen_tokens.dart` 生成管线 + 参数对齐 harness 骨架。最高杠杆（全部 UI spec 依赖它）、最低风险（纯数据，不碰布局 / data 接缝），且一次性把同步策略里**唯一真自动化的那一环**打通。验收项必须含：解析器鲁棒性（§2，硬验收项）、三份 tokens.css 同源校验（§2）。
 
 -----
 

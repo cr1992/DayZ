@@ -262,7 +262,7 @@ RSS 峰值：—
 
 ### 背景
 做一个 Debug Home 入口演示：
-- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（共用唯一规范资产 `assets/editor/demo_image.png`，单一来源见 `specs/active/assets-management`）
+- 「插入 demo 大图」按钮：调 M3 MediaStore.put 一张资产图（共用唯一规范资产 `assets/editor/demo_image.png`，单一来源见 `specs/archive/2026-05-30-assets-management`）
 - 「生成缩略图」按钮：request → 显示 handle 状态变化
 - 「显示缩略图」按钮：openRead `<thumbs>/<id>.bin` → 解密 → 渲染到 Image widget
 - 「篡改原图 updated_at」按钮：手动 bump → 再次 request → 看是否重建
