@@ -17,7 +17,7 @@ class ObservabilityDemo extends StatefulWidget {
 
 class _ObservabilityDemoState extends State<ObservabilityDemo> {
   RotatingFileSink? _fileSink;
-  String _logsDirPath = 'Loading...';
+  String _logsDirPath = '加载中...';
   int _degradationCount = 0;
 
   @override
@@ -62,10 +62,16 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
         AppLogger.instance.logInfo(message, fields: {'test_field': 'info_val'});
         break;
       case LogLevel.warning:
-        AppLogger.instance.logWarning(message, fields: {'test_field': 'warn_val'});
+        AppLogger.instance.logWarning(
+          message,
+          fields: {'test_field': 'warn_val'},
+        );
         break;
       case LogLevel.severe:
-        AppLogger.instance.logSevere(message, fields: {'test_field': 'severe_val'});
+        AppLogger.instance.logSevere(
+          message,
+          fields: {'test_field': 'severe_val'},
+        );
         break;
     }
     _refreshStatus();
@@ -83,15 +89,13 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
     final currentLevel = AppLogger.instance.isLoggable(LogLevel.fine)
         ? 'FINE'
         : AppLogger.instance.isLoggable(LogLevel.info)
-            ? 'INFO'
-            : AppLogger.instance.isLoggable(LogLevel.warning)
-                ? 'WARNING'
-                : 'SEVERE';
+        ? 'INFO'
+        : AppLogger.instance.isLoggable(LogLevel.warning)
+        ? 'WARNING'
+        : 'SEVERE';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Observability Demo'),
-      ),
+      appBar: AppBar(title: const Text('可观测性演示')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -103,11 +107,14 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Log Level: $currentLevel',
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      '日志级别：$currentLevel',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         ElevatedButton(
                           onPressed: () {
@@ -138,7 +145,7 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
                           child: const Text('SEVERE'),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -150,8 +157,10 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Trigger Log Records:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      '触发日志记录：',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -159,23 +168,23 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
                       children: [
                         ElevatedButton(
                           onPressed: () =>
-                              _triggerLog(LogLevel.fine, 'User triggered fine log'),
-                          child: const Text('Log FINE'),
+                              _triggerLog(LogLevel.fine, '用户触发 FINE 日志'),
+                          child: const Text('记录 FINE'),
                         ),
                         ElevatedButton(
                           onPressed: () =>
-                              _triggerLog(LogLevel.info, 'User triggered info log'),
-                          child: const Text('Log INFO'),
+                              _triggerLog(LogLevel.info, '用户触发 INFO 日志'),
+                          child: const Text('记录 INFO'),
                         ),
                         ElevatedButton(
                           onPressed: () =>
-                              _triggerLog(LogLevel.warning, 'User triggered warning log'),
-                          child: const Text('Log WARN'),
+                              _triggerLog(LogLevel.warning, '用户触发 WARN 日志'),
+                          child: const Text('记录 WARN'),
                         ),
                         ElevatedButton(
                           onPressed: () =>
-                              _triggerLog(LogLevel.severe, 'User triggered severe log'),
-                          child: const Text('Log SEVERE'),
+                              _triggerLog(LogLevel.severe, '用户触发 SEVERE 日志'),
+                          child: const Text('记录 SEVERE'),
                         ),
                       ],
                     ),
@@ -190,23 +199,26 @@ class _ObservabilityDemoState extends State<ObservabilityDemo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Rotation & Degradation Status:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      '轮转与降级状态：',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
-                    Text('Logs Directory: $_logsDirPath'),
+                    Text('日志目录：$_logsDirPath'),
                     const SizedBox(height: 4),
-                    Text('Degradation Count: $_degradationCount'),
+                    Text('降级次数：$_degradationCount'),
                     const SizedBox(height: 12),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         ElevatedButton(
                           onPressed: _forceRotation,
-                          child: const Text('Force Rotation (1MB+)'),
+                          child: const Text('强制轮转（1MB+）'),
                         ),
-                        const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: _refreshStatus,
-                          child: const Text('Refresh Status'),
+                          child: const Text('刷新状态'),
                         ),
                       ],
                     ),

@@ -35,6 +35,11 @@
 
 ## Agent 备忘（踩坑记录，非项目规则）
 
+- **Flutter SDK cache 沙箱权限**：在 Codex 沙箱内，`flutter pub get` / `flutter test` / `flutter build ...` /
+  `flutter run` 等 Flutter 命令都可能先执行 SDK 内部 `update_engine_version.sh`，写
+  `/opt/homebrew/Caskroom/flutter/.../bin/cache/engine.stamp.tmp.*`、`engine.realm` 等工作区外缓存；若报
+  `Operation not permitted`，这通常是沙箱权限问题，不是依赖解析或业务代码问题。按审批机制对**同一条
+  Flutter 命令**提升权限重跑；不要在普通沙箱里反复重试，也不要先改源码排查。
 - **build_runner 权限注意**：本环境里普通沙箱曾出现 `dart run build_runner ...` 无输出卡住；需要 codegen 时优先用已批准的提升权限 `dart run build_runner ...`。若已卡住，先终止卡住的 `dart.*build_runner` 进程，再 `dart run build_runner clean` 后重跑。
 - **Git index 写入权限**：`git add` / `git commit` / 部分 `git update-index` 会创建或更新 `.git/index.lock`；若在 Codex 沙箱内实际报 `Operation not permitted`，按审批机制对该 git 命令请求提升权限重跑，不要在普通沙箱里反复重试。`git status` / `git diff` 等只读检查不需要升权。
 - **Flutter/Dart 命令串行**：不要并行跑多个 `flutter test` / `dart run build_runner` / Flutter 工具命令；它们可能抢启动锁、`ios/Flutter/ephemeral`、`.dart_tool/build` 或 `build/native_assets/*`，导致偶发删除失败、签名失败或旧产物误判。涉及 native assets / SQLCipher 的测试统一 `-j 1` 串行跑。

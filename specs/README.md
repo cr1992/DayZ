@@ -8,7 +8,6 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏 + ui-shell） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，待 @Ray 画廊目检） | design-tokens-theme | @Ray | 2026-05-29 |
@@ -54,6 +53,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [thumbnail-cache](archive/2026-05-30-thumbnail-cache/) | 已完成（单元测试 Benchmark 耗时 8.0ms/张，支持 Isolate 限制并发、设备密钥加密落盘、一致性补偿） | 2026-05-30 |
 | [media-storage](archive/2026-05-30-media-storage/) | 已完成（本机基线吞吐 write=14.4 MiB/s, read=14.5 MiB/s） | 2026-05-30 |
 | [auto-save-draft](archive/2026-05-30-auto-save-draft/) | 已完成 | 2026-05-30 |
 | [dayz-security-rust](archive/2026-05-30-dayz-security-rust/) | 已完成 | 2026-05-30 |

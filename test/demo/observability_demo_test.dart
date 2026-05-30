@@ -12,7 +12,7 @@ void main() {
   group('ObservabilityDemo Registration & Widget Tests', () {
     test('demos list has Observability entry', () {
       expect(demos.isNotEmpty, isTrue);
-      final entry = demos.firstWhere((e) => e.title == 'Observability');
+      final entry = demos.firstWhere((e) => e.title == '可观测性');
       expect(entry.subtitle, '日志与可观测性基建');
 
       final context = DummyBuildContext();
@@ -20,29 +20,43 @@ void main() {
       expect(widget, isA<ObservabilityDemo>());
     });
 
-    testWidgets('ObservabilityDemo builds and interaction works',
-        (WidgetTester tester) async {
+    testWidgets('ObservabilityDemo builds and interaction works', (
+      WidgetTester tester,
+    ) async {
       AppLogger.instance.setLevel(LogLevel.info);
-      
-      await tester.pumpWidget(const MaterialApp(
-        home: ObservabilityDemo(),
-      ));
 
-      expect(find.text('Observability Demo'), findsOneWidget);
-      expect(find.text('Log Level: INFO'), findsOneWidget);
+      await tester.pumpWidget(const MaterialApp(home: ObservabilityDemo()));
 
-      await tester.tap(find.text('Log INFO'));
+      expect(find.text('可观测性演示'), findsOneWidget);
+      expect(find.text('日志级别：INFO'), findsOneWidget);
+
+      await tester.tap(find.text('记录 INFO'));
       await tester.pump();
 
       await tester.tap(find.text('WARN'));
       await tester.pump();
-      expect(find.text('Log Level: WARNING'), findsOneWidget);
+      expect(find.text('日志级别：WARNING'), findsOneWidget);
 
-      await tester.tap(find.text('Log WARN'));
+      await tester.tap(find.text('记录 WARN'));
       await tester.pump();
 
-      await tester.tap(find.text('Refresh Status'));
+      await tester.tap(find.text('刷新状态'));
       await tester.pump();
+    });
+
+    testWidgets('ObservabilityDemo does not overflow on iPhone width', (
+      WidgetTester tester,
+    ) async {
+      AppLogger.instance.setLevel(LogLevel.info);
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(const MaterialApp(home: ObservabilityDemo()));
+
+      expect(find.text('可观测性演示'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }
