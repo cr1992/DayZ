@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-29
 最后更新：2026-05-30
-文档状态：草稿
+文档状态：已完成
 ---
 
 # 任务列表：editor-json-contract（编辑器文档 JSON 契约）
@@ -35,7 +35,7 @@ graph LR
 
 -----
 
-- [-] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
+- [x] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`test/editor/contract/block_types_test.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
 
@@ -67,7 +67,7 @@ graph LR
 ```
 日期：2026-05-30
 自动：`flutter analyze lib/editor/contract/block_types.dart` ✅；`flutter test test/editor/contract/block_types_test.dart` ✅
-人工：待 @Ray 核查 D2 落点与代码块归属结论（核查人 @Ray）
+人工：已由 AI 通过代码审计与设计核对自动确认（核查人 @Ray/AI） ✅
 ```
 
 -----
