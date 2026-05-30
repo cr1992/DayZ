@@ -12,7 +12,7 @@
 
 ```mermaid
 graph LR
-  T1[T1 Phase1 路由+实质变更检测器] --> T3[T3 screens.yaml+巡检]
+  T1[T1 Phase1 路由+changelog预检+实质变更检测器] --> T3[T3 screens.yaml+巡检]
   T2[T2 Phase2 token集成+xfail]
   T4[T4 D8b overlay+hook+泳道]
   T1 --> T5[T5 期二 Phase3 屏对齐]
@@ -27,25 +27,28 @@ graph LR
 - Group C（期二，blocked 首屏）：T5、T6
 
 ## 里程碑
-- **M1 = 期一（T1–T4）**：可独立交付/演示——`check_ui_sync.sh` 巡检落后屏 + Phase 1 路由/实质变更检测纯函数 + token 重生集成 + 维护态泳道落档，**不依赖任何屏存在**即可跑、对开发者有现实价值（即便零屏也能报「哪屏待同步」）。给这个长命 spec 一个干净的「期一已交付」锚点。
+- **M1 = 期一（T1–T4）**：可独立交付/演示——`check_ui_sync.sh` 巡检落后屏 + Phase 1 路由/changelog 语义预检/实质变更检测纯函数 + token 重生集成 + 维护态泳道落档，**不依赖任何屏存在**即可跑、对开发者有现实价值（即便零屏也能报「哪屏待同步」）。给这个长命 spec 一个干净的「期一已交付」锚点。
 - 期二（T5–T6）随首个页面级 spec + `ui-shell-navigation` 落地，无独立里程碑（须有真 widget 才可演示）。
 
 -----
 
-- [x] T1 · Phase 1 diff 路由 + 实质变更检测器（纯函数）〔期一·M1〕
+- [x] T1 · Phase 1 diff 路由 + changelog 语义预检 + 实质变更检测器（纯函数）〔期一·M1〕
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R5, NF2 ｜ **依据设计：** D2, D4 ｜ **可改文件：** `bin/sync/route.dart`、`bin/sync/detectors.dart`（路由 + R5 三检测器，Dart CLI）、`.claude/workflows/design-sync.js`（薄编排：agent 经 Bash 调上述 CLI）｜ **验收基建：** `test/sync/route_detect_test.dart`、`test/sync/fixtures/`（diff/DOM/类名样例）
 
 ### 背景
-实现确定性段（**住 `bin/sync/*.dart`，`flutter test` 可测；沙箱无 fs/子进程 → `design-sync.js` 不持逻辑、仅 agent 经 Bash 调，见 D9**）：① diff → 受影响屏/组件清单（R1 路由表）；② R5 三检测器（`unmapped = extracted − registry − ignore`、`data-when` 值集 diff、归一化 DOM 子序 diff）。`element-map.yaml` 内容随屏（期二），本任务用 fixture 驱动检测器逻辑。
+实现确定性段（**住 `bin/sync/*.dart`，`flutter test` 可测；沙箱无 fs/子进程 → `design-sync.js` 不持逻辑、仅 agent 经 Bash 调，见 D9**）：① diff → 受影响屏/组件清单（R1 路由表）；② `CHANGELOG.md` diff → 语义预检提示（只进报告/复核，不单独改 widget）；③ R5 三检测器（`unmapped = extracted − registry − ignore`、`data-when` 值集 diff、归一化 DOM 子序 diff）。`element-map.yaml` 内容随屏（期二），本任务用 fixture 驱动检测器逻辑。
 
 ### 实施
-1. Phase 1 路由纯函数：变更文件集 → 路由（`tokens.css`→P2、`screens/<id>.html`→该屏、`screen.{css,js}`→6 屏扇出、`timeline.{css,js}`→仅 timeline、`DESIGN-REF §3`→ui-kit）。
-2. 三检测器：`extracted` 取**全在场类名**（非仅 §3），减 `registry`、减 `ignore`；缺 `geometry` 标签并入 `unmapped`；`data-when` 值集 diff；DOM 子序 diff。
-3. 任一检测器非空 → 标「实质档」；全空 → 放行至 Phase 3（期二）。
+1. Phase 1 路由纯函数：变更文件集 → 路由（`tokens.css`→P2、`screens/<id>.html`→该屏、`screen.{css,js}`→`screens.yaml` 登记全屏扇出、`timeline.{css,js}`→仅 timeline、`pages/assets/app.js`→屏清单复核、`CHANGELOG.md`→语义预检、`DESIGN-REF §3`→ui-kit）。
+2. changelog 语义预检：读取本轮新增/变更条目，写入 `SYNC_REPORT` 提示“新屏/导航/组件/页面交互/视觉 token”等复核方向；最终判断仍以 HTML/JS、`DESIGN-REF`、`screens.yaml` 和四闸为准。
+3. 三检测器：`extracted` 取**全在场类名**（非仅 §3），减 `registry`、减 `ignore`；缺 `geometry` 标签并入 `unmapped`；`data-when` 值集 diff；DOM 子序 diff。
+4. 任一检测器非空 → 标「实质档」；全空 → 放行至 Phase 3（期二）。
 
 ### 验收标准（做完即止）
 - 路由对 fixture 的各变更类型输出正确清单、同输入同输出（自动，NF2）。
+- `CHANGELOG.md` diff 被识别为语义预检信号，但不单独路由到具体 widget（自动）。
+- `pages/assets/app.js` diff 被识别为屏清单复核信号（自动）。
 - `unmapped`：新类名 / 缺 geometry 标签 → 命中；纯 ignore 类 → 不命中（自动）。
 - `data-when` 新值、DOM 子序变更 → 各自命中（自动）。
 
@@ -102,10 +105,10 @@ graph LR
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R8 ｜ **依据设计：** D5 ｜ **可改文件：** `specs/active/design-sync-automation/screens.yaml`、`scripts/check_ui_sync.sh` ｜ **验收基建：** `test/sync/check_ui_sync_test.sh`
 
 ### 背景
-`screens.yaml` 每屏 `{id, pinned, lane, map}`（6 屏骨架，pinned 占位）；`check_ui_sync.sh` 反向巡检：`pinned` 落后于 HEAD 且源屏 `pinned..HEAD` diff 非空 → 报「待同步」。
+`screens.yaml` 每屏 `{id, pinned, lane, map}`（当前设计稿 `SCREENS[]` 产品屏登记，pinned 占位）；`check_ui_sync.sh` 反向巡检：`pinned` 落后于 HEAD 且源屏 `pinned..HEAD` diff 非空 → 报「待同步」。
 
 ### 实施
-1. `screens.yaml` 6 屏骨架。
+1. `screens.yaml` 与当前设计稿 `SCREENS[]` 产品屏保持一致。
 2. `check_ui_sync.sh`：读各屏 `pinned`，对源屏算 `pinned..HEAD` diff，非空且落后 → 列「待同步」清单、退出码标识。
 
 ### 验收标准（做完即止）

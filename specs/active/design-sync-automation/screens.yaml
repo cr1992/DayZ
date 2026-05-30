@@ -17,6 +17,22 @@ screens:
     pinned: null
     lane: active
     map: test/ui/onthisday/element-map.yaml
+  - id: memory
+    pinned: null
+    lane: active
+    map: test/ui/memory_card_export/element-map.yaml
+  - id: favorites
+    pinned: null
+    lane: active
+    map: test/ui/favorites/element-map.yaml
+  - id: calendar
+    pinned: null
+    lane: active
+    map: test/ui/calendar/element-map.yaml
+  - id: trash
+    pinned: null
+    lane: active
+    map: test/ui/trash/element-map.yaml
   - id: search
     pinned: null
     lane: active

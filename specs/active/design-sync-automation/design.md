@@ -31,6 +31,13 @@
 - **理由：** 把确定性的路由/生成/钉账与模糊的对齐/视觉隔开，最大化可复算面（NF2）。
 - **代价：** Phase 3 并行改多屏需 worktree（doc 10：worktree 隔离避免并行文件冲突），有 setup 开销，仅在多屏受影响时付。
 
+### D2b · 设计 changelog = 语义预检，不是唯一真源
+- **状态：** 采纳
+- **背景：** 设计稿会随 `ui-design/current/docs/CHANGELOG.md` 下发已定档变更，能快速指出“为什么改”和“哪些新屏/新交互已定”。它比直接扫全量 HTML 更适合作为同步入口。但 changelog 不是机器完备源：可能漏写，也可能出现 `CHANGELOG` 已定档而 `DESIGN-REF` 仍腐化的情况（例如月份头从下拉箭头改小日历图标）。
+- **选择：** Phase 1 看到 `docs/CHANGELOG.md` diff 时，把变更条目摘要放进 `SYNC_REPORT` 的「设计语义预检」段，并用关键词/模块辅助提示档位：新屏/导航/入口 → 优先复核 `SCREENS[]` + `screens.yaml`；组件/设计规范 → 复核 `DESIGN-REF` + `ui-kit-components`；页面/交互 → 复核对应 `pages/screens/<id>.html`。**但最终路由与验收仍以屏源 HTML/JS、`DESIGN-REF`、`screens.yaml`、参数/几何 fixture 为准**，不因 changelog 文字单独改 widget。
+- **理由：** changelog 降低阅读成本，HTML/JS 和登记表保证可复算；二者叠加能同时防“漏看设计意图”和“文档腐化误导实现”。
+- **代价：** 需要在报告里多维护一个语义摘要；该摘要只影响提示和复核，不进入硬闸。
+
 ### D3 · 元素映射 + geometry 登记：per-screen `element-map.yaml`〔watch 1〕
 - **状态：** 采纳
 - **背景：** ③ 布局几何闸要把 HTML 类名 ↔ Flutter widget 对应起来比框；映射粒度是人工选定的维护面（DOM 与 widget 树不同构），属重 churn 数据。
@@ -60,7 +67,7 @@
 
 ### D5 · `screens.yaml` 全局轻量登记 + pinned-hash 巡检
 - **状态：** 采纳
-- **选择：** `screens.yaml` 每屏 `{id, pinned, lane, map}`。`pinned` = 该屏上次对齐的 `ui-design` commit，是工作流**输入锚**：增量 = `git diff <pinned>..HEAD -- pages/screens/<id>.html` + 参数清单重抽 diff。`scripts/check_ui_sync.sh` 反向巡检落后屏。
+- **选择：** `screens.yaml` 每屏 `{id, pinned, lane, map}`，登记的屏 id 集合必须跟 `ui-design/current/pages/assets/app.js` 的 `SCREENS[]` 产品屏一致（`_template` 不登记）。`pinned` = 该屏上次对齐的 `ui-design` commit，是工作流**输入锚**：增量 = `git diff <pinned>..HEAD -- pages/screens/<id>.html` + 参数清单重抽 diff。`scripts/check_ui_sync.sh` 反向巡检落后屏。
 - **理由：** 把 doc 10 §8「hash 烂成死数字」的隐患解掉——hash 是工作流每次跑的活参数、有巡检脚本盯，不是文档摆设。
 - **代价：** 需在每屏 v1 对齐时写入 `pinned`；由 Phase 5 自动维护。
 
@@ -124,7 +131,7 @@ graph TD
 - `bin/sync/phase2_token.dart`                      新建（token 重生编排判定 + 对比度 xfail 分流）
 - `.claude/workflows/design-sync.js`               新建（**薄编排层**：agent 经 Bash 调上述 Dart CLI + `*.sh`/gstack + 控制流；不持确定性逻辑）
 - `scripts/check_ui_sync.sh`                        新建（pinned-hash 落后巡检）
-- `specs/active/design-sync-automation/screens.yaml` 新建（6 屏登记骨架）
+- `specs/active/design-sync-automation/screens.yaml` 新建（登记当前设计稿 `SCREENS[]` 产品屏；随设计新增/删除屏同步维护）
 - `docs/spec-guide-ai.md`                           修改（DayZ overlay：定义「已交付·随设计维护」泳道 = **override 终态→归档（限屏幕 spec）** + 三档分流 + 视觉验收默认修订）
 - `AGENTS.md`                                       修改（加一行指针：屏幕 spec 终态→归档被 overlay override；DayZ-own，不被 railkit 同步冲）
 - `specs/README.md`                                 修改（加维护态泳道分区 + 本 spec 立项行）

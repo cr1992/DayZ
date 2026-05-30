@@ -27,13 +27,15 @@
 ## 功能需求
 
 ### R1 · diff 路由（Phase 1，确定性）
-给定 `git diff ui-design/current/` 的变更文件集，工作流 SHALL 确定性地分类路由，无 agent 判断：
+给定 `git diff ui-design/current/` 的变更文件集，工作流 SHALL 确定性地分类路由，无 agent 判断；若 `docs/CHANGELOG.md` 有 diff，工作流 SHALL 把它作为**语义预检输入**读入 `SYNC_REPORT`，用于快速定位本轮定档意图与可能档位，但最终路由 / 屏清单 / 结构判断仍以 `pages/assets/app.js`、`pages/screens/*.html`、`DESIGN-REF.md` 与 `screens.yaml` 为准。
 | diff 命中 | 路由 |
 |---|---|
 | `design-system/assets/tokens.css` | → Phase 2 token 重生（全屏覆盖）|
 | `pages/screens/<id>.html` | → Phase 3 该屏 |
-| `pages/assets/screen.{css,js}` | → Phase 3 **扇出全部 6 屏**（共享层）|
+| `pages/assets/screen.{css,js}` | → Phase 3 **扇出 `screens.yaml` 登记的全部屏**（共享层）|
 | `pages/assets/timeline.{css,js}` | → 仅 timeline |
+| `pages/assets/app.js` | → 屏清单 / 路由登记复核（新屏、删屏、状态顺序变化）|
+| `docs/CHANGELOG.md` | → changelog 语义预检（不单独改 widget）|
 | `DESIGN-REF.md §3` | → `ui-kit-components` 增量 |
 - 结果：输出「受影响屏/组件清单」，同输入同输出（NF2）。
 
@@ -43,7 +45,7 @@ When `tokens.css` 在 diff 中，工作流 SHALL 依次：① 跑 `check_tokens_
 - 结果：`dayz_tokens.g.dart` 与 `tokens.css` 不漂移；非 xfail 的步骤失败则该轮中止并报告。
 
 ### R3 · 屏幕登记表 `screens.yaml`（全局轻量）
-系统 SHALL 维护 `specs/active/design-sync-automation/screens.yaml`：每屏一条 `{id, pinned: <ui-design commit hash>, lane: <维护态>, map: <element-map 路径指针>}`。
+系统 SHALL 维护 `specs/active/design-sync-automation/screens.yaml`：每屏一条 `{id, pinned: <ui-design commit hash>, lane: <维护态>, map: <element-map 路径指针>}`，屏 id 集合 MUST 与 `ui-design/current/pages/assets/app.js` 的 `SCREENS[]` 中产品屏保持一致（模板 `_template` 不登记）。
 - `pinned` 是工作流每次跑的**输入锚**（diff 基线），不是文档摆设。
 - MUST NOT 把映射表 / param fixture / golden 等重 churn 数据塞进本表（它们活在 per-feature 测试树）。
 

@@ -116,17 +116,17 @@ graph LR
 
 ### 背景
 实现 §3b 跨端复用件 + §3c 中明确跨屏的空态 `.empty`（D7）。日期/篇数/「N 年前」走 `package:intl`（MUST NOT 自拼 `'2026年5月'`/`'12 篇'`）；空态插画走 §5 单色线性 SVG（`flutter_svg`，复用 T1 `dayz_icons`）。`.topsearch`/`.suggest-row`/`.cal-*` 等屏内一次性件**不在此**，留各屏 spec。
-归属：`DayzMonthHeader` 是触发器外形（`.tl-month` + `.tl-caret` 展开态），点击回调由页面级接日历跳转，本组件只暴露 `onTap`/`expanded`，不接日历面板。
+归属：`DayzMonthHeader` 是触发器外形（`.tl-month` + `.tl-cal` 小日历图标展开态），点击回调由页面级接日历跳转，本组件只暴露 `onTap`/`expanded`，不接日历面板。
 
 ### 实施
-1. `DayzMonthHeader`：年月 + 篇数（`intl` 格式化）+ `.tl-caret` 旋转（`expanded`）+ `onTap` 回调；吸顶由页面级 `SliverPersistentHeader` 包，本件是其内容外形。
+1. `DayzMonthHeader`：年月 + 篇数（`intl` 格式化）+ `.tl-cal` 小日历图标（`expanded` 时着 accent）+ `onTap` 回调；吸顶由页面级 `SliverPersistentHeader` 包，本件是其内容外形。
 2. `DayzYearSeparator`：`.year-sep` 年份 + "N 年前"（`intl`/相对年差）+ 分隔线。
 3. `DayzSetRow`/分组/账户头卡：`.set-row` `.ic`+`.tx`(b 主+span 次)+右侧 `.switch`/`.val`/`.chev`；可点行带命中区与语义。
 4. `DayzEmptyState`：中性暖底圆徽 + §5 插画 + 标题 + 说明（`AppStrings`）。
 5. `DayzSearchField`：`.search-head` 输入框骨架（图标+输入+取消），纯输入外形+回调。
 
 ### 验收标准（做完即止）
-- 月份头日期/篇数经 `intl` 格式化（断言渲染文本由 `intl` 产出，非裸拼接）、`.tl-caret` 在 `expanded` 时旋转、点击触发 `onTap`（自动）。
+- 月份头日期/篇数经 `intl` 格式化（断言渲染文本由 `intl` 产出，非裸拼接）、`.tl-cal` 在 `expanded` 时使用 accent 态、点击触发 `onTap`（自动）。
 - 年份分隔显年份 + 相对年差文案（`AppStrings`/`intl`），样式参数==设计（自动）。
 - `DayzSetRow` 右侧 switch/val/chev 三型各渲染正确；可点行命中区 ≥44（自动）。
 - `DayzEmptyState` 渲染插画+标题+说明，文案经 `AppStrings`（`find.text(AppStrings.xxx)`）（自动）。

@@ -23,7 +23,7 @@ void main() {
     );
   }
 
-  testWidgets('month header formats month/count and handles tap/rotation', (
+  testWidgets('month header formats month/count and handles tap/icon state', (
     tester,
   ) async {
     var taps = 0;
@@ -52,9 +52,9 @@ void main() {
     expect(find.text(metaText), findsOneWidget);
     expect(
       tester
-          .widget<AnimatedRotation>(find.byKey(DayzMonthHeader.caretKey))
-          .turns,
-      0,
+          .widget<AnimatedScale>(find.byKey(DayzMonthHeader.calendarIconKey))
+          .scale,
+      1,
     );
     expect(
       tester.getSize(find.byType(DayzMonthHeader)).height,
@@ -79,9 +79,9 @@ void main() {
 
     expect(
       tester
-          .widget<AnimatedRotation>(find.byKey(DayzMonthHeader.caretKey))
-          .turns,
-      0.5,
+          .widget<AnimatedScale>(find.byKey(DayzMonthHeader.calendarIconKey))
+          .scale,
+      0.92,
     );
   });
 

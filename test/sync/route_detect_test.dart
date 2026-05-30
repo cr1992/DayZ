@@ -20,6 +20,8 @@ void main() {
         const DesignDiffEntry('ui-design/current/pages/assets/screen.js'),
         const DesignDiffEntry('ui-design/current/pages/assets/timeline.css'),
         const DesignDiffEntry('ui-design/current/pages/assets/timeline.js'),
+        const DesignDiffEntry('ui-design/current/pages/assets/app.js'),
+        const DesignDiffEntry('ui-design/current/docs/CHANGELOG.md'),
         const DesignDiffEntry(
           'ui-design/current/docs/DESIGN-REF.md',
           changedSections: <String>{'3'},
@@ -31,7 +33,11 @@ void main() {
 
       expect(first.requiresTokenRegen, isTrue);
       expect(first.screenIds, phase1DefaultScreenIds);
-      expect(first.components, <String>['ui-kit']);
+      expect(first.components, <String>[
+        'design-changelog',
+        'screen-registry',
+        'ui-kit',
+      ]);
       expect(second.toJson(), first.toJson());
     });
 
@@ -45,12 +51,22 @@ void main() {
       expect(result.components, isEmpty);
     });
 
-    test('routes shared screen assets to all six phase-1 screens', () {
+    test('routes shared screen assets to all phase-1 screens', () {
       final result = routeChangedPaths(<String>[
         'ui-design/current/pages/assets/screen.js',
       ]);
 
       expect(result.screenIds, phase1DefaultScreenIds);
+    });
+
+    test('routes newly registered screen html by id', () {
+      final result = routeChangedPaths(<String>[
+        'ui-design/current/pages/screens/trash.html',
+      ]);
+
+      expect(result.requiresTokenRegen, isFalse);
+      expect(result.screenIds, <String>['trash']);
+      expect(result.components, isEmpty);
     });
 
     test('routes timeline assets only to timeline', () {

@@ -10,6 +10,10 @@ const phase1DefaultScreenIds = <String>[
   'reader',
   'editor',
   'onthisday',
+  'memory',
+  'favorites',
+  'calendar',
+  'trash',
   'search',
   'settings',
 ];
@@ -167,6 +171,14 @@ DesignRouteResult routeDesignChanges(
       screens.add('timeline');
     }
 
+    if (_isPrototypeShell(path)) {
+      components.add('screen-registry');
+    }
+
+    if (_isDesignChangelog(path)) {
+      components.add('design-changelog');
+    }
+
     if (_isDesignRef(path) && _containsSection3(change.changedSections)) {
       components.add('ui-kit');
     }
@@ -225,6 +237,14 @@ bool _isSharedScreenAsset(String path) {
 bool _isTimelineAsset(String path) {
   return path == 'pages/assets/timeline.css' ||
       path == 'pages/assets/timeline.js';
+}
+
+bool _isPrototypeShell(String path) {
+  return path == 'pages/assets/app.js';
+}
+
+bool _isDesignChangelog(String path) {
+  return path == 'docs/CHANGELOG.md' || path.endsWith('/docs/CHANGELOG.md');
 }
 
 bool _isDesignRef(String path) {

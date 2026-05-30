@@ -141,7 +141,7 @@ graph TD
 - `lib/ui/widgets/dayz_gallery.dart`           新建（`.gallery` 九宫格，列数随张数 + 第9格 +N 蒙层，接 `ImageProvider` 列表 + 回调）
 
 **页面级复用组件（§3b）+ 跨屏空态（§3c 中跨屏件）`lib/ui/widgets/`**
-- `lib/ui/widgets/dayz_month_header.dart`      新建（`.tl-month` 年月吸顶头触发器 + `.tl-caret`，日期走 intl）
+- `lib/ui/widgets/dayz_month_header.dart`      新建（`.tl-month` 年月吸顶头触发器 + `.tl-cal` 小日历图标，日期走 intl）
 - `lib/ui/widgets/dayz_year_separator.dart`    新建（`.year-sep` 年份分隔，年份/"N 年前"走 intl）
 - `lib/ui/widgets/dayz_set_row.dart`           新建（`.set-*`：`.set-row`/`.set-group`/`.lab`/账户头卡，右侧 switch/val/chev）
 - `lib/ui/widgets/dayz_empty_state.dart`       新建（`.empty` 跨屏兜底插画态，D7）

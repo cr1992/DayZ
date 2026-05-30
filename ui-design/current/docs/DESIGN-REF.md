@@ -107,7 +107,7 @@
 > 曾有 `warm` 暖纸 / `paired` 主题配套 / `sepia` 深褐，评估同色发闷、捆绑不自由后移除；纸与主题色各自独立（点主题不换纸）。每套都让 `surface` 比 `bg` 亮一档，突出主体。
 - **不要写死背景色**：组件一律用 `var(--bg/--surface/...)`，纸色切换即自动生效。
 - 切换 + 持久化在 `spec.js`（`.paper-btn[data-bg]` 点击；`#paperHue` 滑块 → `custom` + 设种子）。展示见 `design-system.html` §02。
-- **联动**：点顶栏主题色（`.swatch-btn`）= 切主题 **并** 把纸设为 `paired`（配套纸）；单独点纸（`.paper-btn`）只改纸、不动主题。顶栏切换后自动滚到 §06 真实界面看效果（`spec.js` `jumpToContext`）。
+- **联动**：点顶栏主题色（`.swatch-btn`）只切主题；点纸色（`.paper-btn`）只改纸、不动主题。顶栏切换后自动滚到 §06 真实界面看效果（`spec.js` `jumpToContext`）。
 - **Flutter**：纸色 = 一个 `paper` 枚举 + 可空 `paperSeed` 颜色；`tinted`/`custom` 用 HSL/oklch 把 accent 或 seed 以低比例混入基底背景（`Color.alphaBlend` 或手算），映射到 `ThemeExtension` 的背景族。
 
 ---
@@ -245,11 +245,11 @@
 > **真源分两处**：跨端共享的组件在 `design-system/assets/spec.css`（改后须复制到 `pages/assets/`）；**仅原型用的屏内组件/骨架**在 `pages/assets/screen.css`（不回流设计规范）。本节(3b)= spec.css；下一节(3c)= screen.css。
 
 ### 时间线年月吸顶头 `.tl-month`
-`position:sticky; top:var(--top-h)`，停靠在覆盖式顶栏正下方（`--top-h` 见 §3c 骨架）。**现为可点击触发器**（`<button>`）：点它打开日期跳转日历（见 §3c「时间线日期跳转」）。带 `data-cal-open` + `data-ym="YYYY-M"` + 末尾下拉 `.tl-caret`（展开态 `aria-expanded="true"` 时旋转）。
+`position:sticky; top:0`，停靠在覆盖式顶栏正下方（`.app-scroll` 已用 `--top-h` 留白，sticky 自身不再叠加 top）。**现为可点击触发器**（`<button>`）：点它打开日期跳转日历（见 §3c「时间线日期跳转」）。带 `data-cal-open` + `data-ym="YYYY-M"` + 末尾小日历图标 `.tl-cal`（展开态 `aria-expanded="true"` 时着 accent）。
 ```html
 <button class="tl-month" data-cal-open data-ym="2026-5" aria-expanded="false">
   <span class="y">5月</span><span class="c">2026 · 12 篇</span>
-  <svg class="tl-caret" viewBox="0 0 24 24" …><path d="m6 9 6 6 6-6"/></svg>
+  <svg class="tl-cal" viewBox="0 0 24 24" …><rect x="3.5" y="4.5" width="17" height="16" rx="3"/></svg>
 </button>
 ```
 
