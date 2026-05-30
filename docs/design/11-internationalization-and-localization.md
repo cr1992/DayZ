@@ -4,7 +4,7 @@
 > 作者：@Ray
 > 创建：2026-05-30
 > 定位：回答一个结构性问题——DayZ 的 UI 文案、日期、数字、复数怎么做国际化，使「加一门语言」不是大返工。
-> 配套真源：落地清单见 `specs/active/i18n-localization/`；字体回退策略见 `docs/design/10-ui-restore-and-design-sync.md` §2 与 `design-tokens-theme`（D3）。
+> 配套真源：落地清单见 `specs/archive/2026-05-30-i18n-localization/`；字体回退策略见 `docs/design/10-ui-restore-and-design-sync.md` §2 与 `design-tokens-theme`（D3）。
 
 > **会变的东西一律以 arb 为准、本文不枚举**：支持哪些语言、有哪些文案 key、每条翻译是什么——指向真源 `lib/l10n/arb/`，本文只给取向与约束。
 
@@ -66,4 +66,4 @@ lib/l10n/
 ## 维护本文件
 
 - 本文是 i18n 取向的**冻结决策**，只放取向与横切约束。支持语言清单、文案 key、翻译内容一律以 `lib/l10n/arb/` 为真源，本文不枚举。
-- 落地细节（`l10n.yaml` 具体配置、任务拆分、验收）下沉到 `specs/active/i18n-localization/` 四件套，本文只留指针与跨 spec 约束。
+- 落地细节（`l10n.yaml` 具体配置、任务拆分、验收）下沉到 `specs/archive/2026-05-30-i18n-localization/` 四件套，本文只留指针与跨 spec 约束。

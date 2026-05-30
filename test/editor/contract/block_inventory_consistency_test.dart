@@ -28,7 +28,7 @@ void main() {
 
 Set<String> _readTypesFromDesign() {
   final design = File(
-    'specs/active/editor-json-contract/design.md',
+    'specs/archive/2026-05-30-editor-json-contract/design.md',
   ).readAsLinesSync();
   final types = <String>{};
   final typeRegex = RegExp(r'`([^`]+)`');
