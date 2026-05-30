@@ -8,6 +8,7 @@ import 'package:dayz/security/demo.dart';
 import 'package:dayz/data/demo.dart';
 import 'package:dayz/demo/observability_demo.dart';
 import 'package:dayz/demo/i18n_demo.dart';
+import 'package:dayz/demo/widget_gallery_demo.dart';
 import 'package:dayz/drafts/demo.dart';
 import 'package:dayz/media/demo.dart';
 
@@ -47,7 +48,7 @@ final List<DemoEntry> demos = [
     builder: (context) => const SecurityDemo(),
   ),
   DemoEntry(
-    title: 'Observability',
+    title: '可观测性',
     subtitle: '日志与可观测性基建',
     builder: (context) => const ObservabilityDemo(),
   ),
@@ -55,6 +56,11 @@ final List<DemoEntry> demos = [
     title: 'i18n Demo',
     subtitle: '国际化：语言切换 + 文案取值示范',
     builder: (context) => const I18nDemo(),
+  ),
+  DemoEntry(
+    title: 'UI Kit 组件画廊',
+    subtitle: 'Widgetbook：组件 × 状态 × 六套主题',
+    builder: (context) => const WidgetGalleryDemo(),
   ),
   DemoEntry(
     title: 'Data demo',

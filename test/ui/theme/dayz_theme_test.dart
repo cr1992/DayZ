@@ -13,11 +13,31 @@ void main() {
   group('DayzTheme Assembly Tests', () {
     test('Brightness and extensions of the 6 configurations are correct', () {
       final configs = {
-        'purpleLight': (DayzThemes.purpleLight, Brightness.light, DayzColors.purpleLight),
-        'purpleDark': (DayzThemes.purpleDark, Brightness.dark, DayzColors.purpleDark),
-        'amberLight': (DayzThemes.amberLight, Brightness.light, DayzColors.amberLight),
-        'amberDark': (DayzThemes.amberDark, Brightness.dark, DayzColors.amberDark),
-        'sageLight': (DayzThemes.sageLight, Brightness.light, DayzColors.sageLight),
+        'purpleLight': (
+          DayzThemes.purpleLight,
+          Brightness.light,
+          DayzColors.purpleLight,
+        ),
+        'purpleDark': (
+          DayzThemes.purpleDark,
+          Brightness.dark,
+          DayzColors.purpleDark,
+        ),
+        'amberLight': (
+          DayzThemes.amberLight,
+          Brightness.light,
+          DayzColors.amberLight,
+        ),
+        'amberDark': (
+          DayzThemes.amberDark,
+          Brightness.dark,
+          DayzColors.amberDark,
+        ),
+        'sageLight': (
+          DayzThemes.sageLight,
+          Brightness.light,
+          DayzColors.sageLight,
+        ),
         'sageDark': (DayzThemes.sageDark, Brightness.dark, DayzColors.sageDark),
       };
 
@@ -26,16 +46,29 @@ void main() {
         final expectedBrightness = data.$2;
         final expectedColors = data.$3;
 
-        expect(theme.brightness, expectedBrightness, reason: '$name brightness mismatch');
-        
+        expect(
+          theme.brightness,
+          expectedBrightness,
+          reason: '$name brightness mismatch',
+        );
+
         final colors = theme.extension<DayzColors>();
         expect(colors, isNotNull, reason: '$name lacks DayzColors extension');
         expect(colors!.bg, expectedColors.bg, reason: '$name bg mismatch');
-        expect(colors.accent, expectedColors.accent, reason: '$name accent mismatch');
+        expect(
+          colors.accent,
+          expectedColors.accent,
+          reason: '$name accent mismatch',
+        );
+        expect(theme.splashFactory, same(NoSplash.splashFactory));
+        expect(theme.splashColor, Colors.transparent);
+        expect(theme.highlightColor, Colors.transparent);
       });
     });
 
-    testWidgets('context.dayz returns correct values for pumped themes', (WidgetTester tester) async {
+    testWidgets('context.dayz returns correct values for pumped themes', (
+      WidgetTester tester,
+    ) async {
       final testCases = [
         (DayzThemes.purpleLight, DayzColors.purpleLight.accent),
         (DayzThemes.purpleDark, DayzColors.purpleDark.accent),

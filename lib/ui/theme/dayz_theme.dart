@@ -17,7 +17,7 @@ enum DayzThemeType { purple, amber, sage }
 ThemeData dayzTheme(DayzThemeType type, Brightness brightness) {
   final DayzColors colors;
   final bool isDark = brightness == Brightness.dark;
-  
+
   switch (type) {
     case DayzThemeType.purple:
       colors = isDark ? DayzColors.purpleDark : DayzColors.purpleLight;
@@ -35,16 +35,19 @@ ThemeData dayzTheme(DayzThemeType type, Brightness brightness) {
   return ThemeData(
     useMaterial3: true,
     brightness: brightness,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: colors.accent,
-      brightness: brightness,
-    ).copyWith(
-      background: colors.bg,
-      surface: colors.surface,
-      onSurface: colors.ink,
-      primary: colors.accent,
-      onPrimary: colors.onAccent,
-    ),
+    splashFactory: NoSplash.splashFactory,
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    colorScheme:
+        ColorScheme.fromSeed(
+          seedColor: colors.accent,
+          brightness: brightness,
+        ).copyWith(
+          surface: colors.surface,
+          onSurface: colors.ink,
+          primary: colors.accent,
+          onPrimary: colors.onAccent,
+        ),
     scaffoldBackgroundColor: colors.bg,
     fontFamily: DayzFonts.sans,
     fontFamilyFallback: DayzFonts.sansFallback,
@@ -58,10 +61,7 @@ ThemeData dayzTheme(DayzThemeType type, Brightness brightness) {
       bodySmall: textTheme.caption,
       labelSmall: textTheme.overline,
     ),
-    extensions: [
-      colors,
-      textTheme,
-    ],
+    extensions: [colors, textTheme],
   );
 }
 
@@ -69,22 +69,28 @@ ThemeData dayzTheme(DayzThemeType type, Brightness brightness) {
 ///
 /// Author: @Ray
 abstract final class DayzThemes {
-  static ThemeData get purpleLight => dayzTheme(DayzThemeType.purple, Brightness.light);
-  static ThemeData get purpleDark => dayzTheme(DayzThemeType.purple, Brightness.dark);
+  static ThemeData get purpleLight =>
+      dayzTheme(DayzThemeType.purple, Brightness.light);
+  static ThemeData get purpleDark =>
+      dayzTheme(DayzThemeType.purple, Brightness.dark);
 
-  static ThemeData get amberLight => dayzTheme(DayzThemeType.amber, Brightness.light);
-  static ThemeData get amberDark => dayzTheme(DayzThemeType.amber, Brightness.dark);
+  static ThemeData get amberLight =>
+      dayzTheme(DayzThemeType.amber, Brightness.light);
+  static ThemeData get amberDark =>
+      dayzTheme(DayzThemeType.amber, Brightness.dark);
 
-  static ThemeData get sageLight => dayzTheme(DayzThemeType.sage, Brightness.light);
-  static ThemeData get sageDark => dayzTheme(DayzThemeType.sage, Brightness.dark);
+  static ThemeData get sageLight =>
+      dayzTheme(DayzThemeType.sage, Brightness.light);
+  static ThemeData get sageDark =>
+      dayzTheme(DayzThemeType.sage, Brightness.dark);
 
   /// Helper map of themes.
   static Map<String, ThemeData> get all => {
-        'purpleLight': purpleLight,
-        'purpleDark': purpleDark,
-        'amberLight': amberLight,
-        'amberDark': amberDark,
-        'sageLight': sageLight,
-        'sageDark': sageDark,
-      };
+    'purpleLight': purpleLight,
+    'purpleDark': purpleDark,
+    'amberLight': amberLight,
+    'amberDark': amberDark,
+    'sageLight': sageLight,
+    'sageDark': sageDark,
+  };
 }

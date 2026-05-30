@@ -1,0 +1,220 @@
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../strings/app_strings.dart';
+import '../theme/dayz_colors.dart';
+import '../theme/dayz_text_theme.dart';
+import '../theme/dayz_tokens.g.dart';
+import 'dayz_icons.dart';
+
+/// Search header input skeleton with search, clear, and cancel affordances.
+///
+/// Author: @Ray
+class DayzSearchField extends StatefulWidget {
+  const DayzSearchField({
+    super.key,
+    this.controller,
+    this.focusNode,
+    this.hintText = AppStrings.search,
+    this.onChanged,
+    this.onSubmitted,
+    this.onClear,
+    this.onCancel,
+    this.autofocus = false,
+    this.enabled = true,
+  });
+
+  static const Key inputKey = ValueKey<String>('dayz-search-field-input');
+  static const Key clearButtonKey = ValueKey<String>('dayz-search-field-clear');
+  static const Key cancelButtonKey = ValueKey<String>(
+    'dayz-search-field-cancel',
+  );
+
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final String hintText;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final VoidCallback? onClear;
+  final VoidCallback? onCancel;
+  final bool autofocus;
+  final bool enabled;
+
+  @override
+  State<DayzSearchField> createState() => _DayzSearchFieldState();
+}
+
+class _DayzSearchFieldState extends State<DayzSearchField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? TextEditingController();
+    _controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void didUpdateWidget(DayzSearchField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      _controller.removeListener(_onTextChanged);
+      if (oldWidget.controller == null) {
+        _controller.dispose();
+      }
+      _controller = widget.controller ?? TextEditingController();
+      _controller.addListener(_onTextChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTextChanged);
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.dayz;
+    final typography = context.dayzText;
+    final hasQuery = _controller.text.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        DayzSpacing.s4,
+        DayzSpacing.s2,
+        DayzSpacing.s4,
+        DayzSpacing.s3,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.bg2,
+                  borderRadius: BorderRadius.circular(DayzRadii.full),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: DayzSpacing.s4,
+                  ),
+                  child: Row(
+                    children: [
+                      SvgPicture.string(
+                        _searchSvg,
+                        width: 18,
+                        height: 18,
+                        colorFilter: ColorFilter.mode(
+                          colors.ink3,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(width: DayzSpacing.s2),
+                      Expanded(
+                        child: TextField(
+                          key: DayzSearchField.inputKey,
+                          controller: _controller,
+                          focusNode: widget.focusNode,
+                          autofocus: widget.autofocus,
+                          enabled: widget.enabled,
+                          onChanged: widget.onChanged,
+                          onSubmitted: widget.onSubmitted,
+                          textInputAction: TextInputAction.search,
+                          cursorColor: colors.accent,
+                          style: typography.body.copyWith(
+                            color: colors.ink,
+                            fontSize: 15,
+                            letterSpacing: 0,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            hintText: widget.hintText,
+                            hintStyle: typography.body.copyWith(
+                              color: colors.ink3,
+                              fontSize: 15,
+                              letterSpacing: 0,
+                            ),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                      if (hasQuery)
+                        IconButton(
+                          key: DayzSearchField.clearButtonKey,
+                          onPressed: widget.enabled ? _clear : null,
+                          tooltip: AppStrings.clear,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 44,
+                            height: 44,
+                          ),
+                          padding: EdgeInsets.zero,
+                          icon: SvgPicture.string(
+                            _clearSvg,
+                            width: 18,
+                            height: 18,
+                            colorFilter: ColorFilter.mode(
+                              colors.ink3,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (widget.onCancel != null) ...[
+            const SizedBox(width: DayzSpacing.s2),
+            TextButton(
+              key: DayzSearchField.cancelButtonKey,
+              onPressed: widget.enabled ? widget.onCancel : null,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.accentInk,
+                minimumSize: const Size(44, 44),
+                padding: const EdgeInsets.symmetric(horizontal: DayzSpacing.s2),
+                textStyle: typography.body.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0,
+                ),
+              ),
+              child: const Text(AppStrings.cancel),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _onTextChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _clear() {
+    _controller.clear();
+    widget.onChanged?.call('');
+    widget.onClear?.call();
+  }
+}
+
+const String _searchSvg =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.searchPath}"/></svg>';
+
+const String _clearSvg =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.closePath}"/></svg>';
