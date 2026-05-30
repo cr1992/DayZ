@@ -8,14 +8,14 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [dayz-security-rust](active/dayz-security-rust/) | P0 | 草稿 | app-scaffold | @Ray | 2026-05-30 |
-| [key-management](active/key-management/) | P0 | 进行中 | app-scaffold, dayz-security-rust | @Ray | 2026-05-23 |
+| [dayz-security-rust](active/dayz-security-rust/) | P2 | 草稿（对照实验·非生产替换） | app-scaffold | @Ray | 2026-05-30 |
+| [key-management](active/key-management/) | P0 | 进行中 | app-scaffold | @Ray | 2026-05-23 |
 | [data-layer](active/data-layer/) | P0 | 草稿 | app-scaffold, key-management | @Ray | 2026-05-23 |
 | [media-storage](active/media-storage/) | P1 | 草稿 | app-scaffold, key-management, data-layer | @Ray | 2026-05-23 |
 | [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-23 |
-| [editor-json-contract](active/editor-json-contract/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
+| [editor-json-contract](active/editor-json-contract/) | P1 | 进行中 | 无 | @Ray | 2026-05-29 |
 | [assets-management](active/assets-management/) | P2 | 草稿 | 无 | @Ray | 2026-05-29 |
 | [design-tokens-theme](active/design-tokens-theme/) | P1 | 草稿 | 无 | @Ray | 2026-05-29 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -35,9 +35,9 @@
   - A. 把 `media.id` 直接塞进原生 `url` 字段——污染语义，第三方工具/上游渲染器会当真去 load 一个非法 url。
   - B. **自定义 scheme 复用 url**：`url = 'dayz-media://<media.id>'`，保留原生字段位，由一个 `ImageUrlResolver` 拦截该 scheme，经 `media.id → media.rel_path → 当前媒体目录` 解析为运行时可读路径（解密流见 `media-storage`）。
   - C. **加自定义 attribute**：在 image node `data` 中增 `media_id` 字段，`url` 留空，渲染时优先读 `media_id`。
-- **选择：** 倾向 **C（`data.media_id` 为权威引用键，`url` 不入库/置空）**，**最终落点【实现时补全】**——须读 `ImageBlockKeys` 与 `image_block_component.dart` 确认自定义 `data` 字段能否被原生 image builder 忽略而不报错；若原生 builder 强依赖 `url`，则回退方案 B（自定义 scheme），二选一在实现首个任务中拍板并记录。
-- **理由：** C 语义最干净（引用键与可加载 url 解耦，契约层不掺运行时路径）；B 是兼容性更稳的退路。无论 C/B，`content_json` 中 MUST NOT 出现真实路径——满足 R2「路径变化不破坏文档」。
-- **代价：** 需要一个统一的「图片节点 → 真实文件」解析层（`ImageUrlResolver`/自定义 image BlockComponentBuilder），编辑器与只读渲染器都要接它；C 还需确认原生 image builder 对额外字段的容忍度。
+- **选择：** **B（自定义 scheme 复用 `url`）**。图片块继续使用原生 `ImageBlockKeys.url`，其持久化值固定为 `dayz-media://<media.id>`；运行时由 `ImageUrlResolver` 拦截该 scheme，经 `media.id → media.rel_path → 当前媒体目录` 解析为可读文件。额外自定义 `data` 字段虽可被 `Node.toJson/fromJson` 无损透传，但当前版本原生 image builder / HTML encoder / Markdown encoder 都直接读取 `url`，故 `url` 不能留空。
+- **理由：** 与上游 image 节点/标准 builder 兼容性最好，同时仍满足 R2：`content_json` 中只保存稳定的 `media.id` 引用，不出现真实路径；路径变化时只需重做运行时解析，不需改文档本体。
+- **代价：** 需要一个统一的「图片节点 → 真实文件」解析层（`ImageUrlResolver`/自定义 image BlockComponentBuilder），编辑器与只读渲染器都要接它；且消费方若直接读取原生 `url`，需识别 `dayz-media://` 而非把它当真实网络地址。
 
 ### D3 · 位置 / 天气自定义块的 AppFlowy 注册方式
 - **背景：** R3 要求预留位置块/天气块，且其值引用 `entries` 的结构化字段而非自由文本；需在 AppFlowy 中成为一等块。
@@ -80,17 +80,17 @@
 | 有序列表项 | `numbered_list` | `delta`, `children`（可嵌套；序号运行时算） | `1. ` 起的序号 + 文本 | 否 |
 | 待办 checkbox | `todo_list` | `checked`(bool), `delta` | `[x] `/`[ ] ` + 文本 | 否 |
 | 引用 | `quote` | `delta` | `> ` + 文本 | 否 |
-| 代码块 | `code`（**type 名【实现时补全】**，确认是否内置/需启用插件） | `delta`, `language`(可选) | 代码文本原文（保留换行） | 否（若需插件则标注） |
+
 | 分割线 | `divider` | （无 delta） | 空行（导出为 `---`） | 否 |
-| 图片 | `image` | **`media_id`（D2 权威引用键）**, `width`, `height`, `align`；`url` 不入库 | `[图片]` 占位行 | 否（结构原生，引用键改造） |
+| 图片 | `image` | `url='dayz-media://<media.id>'`, `width`, `height`, `align` | `[图片]` 占位行 | 否（结构原生，引用键改造） |
 | 位置块 | `location`（自定义） | `place_name`, `lat`, `lng` | `📍 {place_name}` | **是** |
 | 天气块 | `weather`（自定义） | `weather_code`, `weather_temp` | `🌤 {weather_temp}°C` | **是** |
 | 行内样式（非块） | — | delta `attributes`: `bold`/`italic`/`underline`/`strikethrough`/`code`/`href` | 仅保留文字，丢样式 | 否（行内，附于上述文本块） |
 
 > 表注：
-> - **MVP 块集合 = 上表去掉「待补全/待定」标注后的封闭集**；代码块若依赖未内置插件，可在首个实现任务中决定「MVP 纳入并启用插件」或「降级为段落、移出 MVP」，结论回填本表。
+> - **MVP 块集合 = 上表封闭集**。经首个实现任务读源码确认：当前版本 AppFlowy Editor 的 markdown/plugin 侧可识别 `type='code'`，但默认 `standardBlockComponentBuilderMap` 未注册对应 block builder，故**代码块本期移出 MVP**，待后续确认自定义 builder / 上游支持方案后再单独纳入。
 > - **未知块（清单外 type）**：抽取器取 `data.delta` 文本或跳过；只读渲染器跳过或降级为段落，均不得崩溃（R5）。
-> - **位置/天气缺值降级**：`place_name` 为空时位置块产出空（不输出 `📍`）；`weather_temp` 为空但有 `weather_code` 时输出图标+天气描述，二者皆空则产出空。**精确缺值规则在抽取器任务中定稿并补全本注**。
+- **位置/天气缺值降级**：`place_name` 为空时位置块产出空字符串（不输出 `📍`）；`weather_temp` 为空但有 `weather_code` 时直接输出 `🌤 {weather_code}`；二者皆空则产出空。
 > - **嵌套**：列表/待办的 `children` 嵌套子项，抽取按层级递归，UI 设计需考虑缩进层级呈现。
 
 ## 架构
@@ -136,8 +136,7 @@ graph TD
 
 ## 已知风险
 
-- **D2 落点未拍板**（自定义 `data.media_id` vs 自定义 url scheme），取决于原生 image builder 对额外字段/非法 url 的容忍度——首个实现任务读源码后定稿，二选一并回填。
-- **代码块是否内置**未确认（`code` type 可能需启用插件），影响 MVP 块集合——首个任务确认后回填块清单表。
+- **代码块暂未纳入 MVP**：当前版本 AppFlowy Editor 的 markdown/plugin 侧可识别 `type='code'`，但默认 block builder 注册表未覆盖该 type；若后续要支持，需先拍板自定义 builder 或升级/对齐上游实现。
 - 自定义块（location/weather）不被上游 markdown/html encoder 识别，导出必须由本契约导出降级规则兜底；若将来接 AppFlowy 官方 HTML 导出，需注入自定义块的 HTML 序列化器（远期，本期只保证 plain 降级）。
 - `docVersion` 迁移表当前为空（仅 v1）；格式演进时须在 codec 中补迁移函数，避免老文档读不出。
 - 抽取器与导出器共用「降级表现」表，二者实现若分散到不同 spec，须以本契约表为唯一来源，防止漂移（verification 设交叉校验）。

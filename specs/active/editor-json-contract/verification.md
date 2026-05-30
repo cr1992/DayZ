@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -24,26 +24,26 @@
 > 对应 requirement 的 NF 编号。
 
 ### 抽取性能（NF1）
-- [ ] 50 块典型文档抽取 < 5ms（主机 Dart VM bench；阈值源自中端真机预算，见 NF1 度量口径） — 自动：`flutter test test/editor/contract/plain_text_extractor_bench_test.dart`
-- [ ] 1000 块极端文档抽取 < 50ms — 自动：同上
-- [ ] 抽取过程无任何文件/DB I/O — 自动：mock 断言无 I/O 调用
+- [x] 50 块典型文档抽取 < 5ms（主机 Dart VM bench；阈值源自中端真机预算，见 NF1 度量口径） — 自动：`flutter test test/editor/contract/plain_text_extractor_bench_test.dart`
+- [x] 1000 块极端文档抽取 < 50ms — 自动：同上
+- [x] 抽取过程无任何文件/DB I/O — 自动：`flutter test test/editor/contract/plain_text_extractor_test.dart`
 
 ### 编辑器↔只读渲染器一致性（NF2）
-- [ ] 块清单每种块在编辑态与只读态语义一致（种类/顺序/层级/文本/图片引用目标/行内样式） — 自动：`flutter test test/editor/contract/render_consistency_test.dart`（golden / 结构断言）
-- [ ] 自定义块（位置/天气）两端呈现相同结构化值 — 自动：同上
-- [ ] 行内样式（粗/斜/下划线/删除线/行内代码/链接）两端一致 — 自动：同上
-- [ ] 仅光标/选区/占位等编辑专属装饰存在差异，无内容差异 — 人工复核（@Ray）
+- [x] 块清单每种块在编辑态与只读态语义一致（种类/顺序/层级/文本/图片引用目标/行内样式） — 自动：`flutter test test/editor/contract/render_consistency_test.dart`
+- [x] 自定义块（位置/天气）两端呈现相同结构化值 — 自动：同上
+- [x] 行内样式（粗/斜/下划线/删除线/行内代码/链接）两端一致 — 自动：同上
+- [-] 仅光标/选区/占位等编辑专属装饰存在差异，无内容差异 — 人工复核（@Ray）
 
 ## 契约一致性交叉检查
 
-- [ ] **块清单单一来源**：抽取器/渲染器/导出器实际识别的 type 集合 == `block_types.dart` 暴露的支持 type 集合（== design 块清单表枚举），无第五种私自新增 — 自动：`flutter test test/editor/contract/block_inventory_consistency_test.dart`（断言四方实际识别集合的 `Set` 相等，是运行时取值断言而非字面量存在）
-- [ ] **降级表同源**：对块清单每一种块，导出器 `exportFallbackLine(node)` 的返回值 == 抽取器对同一 node 的产出行（逐块逐字节相等 → 证明二者共用同一份「降级表现」映射、不存在两套文本） — 自动：`flutter test test/editor/contract/export_fallback_test.dart`（断言两路返回值相等，非「同一常量来源」式静态字面量检查）
-- [ ] **media.id 引用完整性**：任意 encode 后的 `content_json` 中，图片节点不含真实路径，仅含 media.id；扫描全文无 `/var/mobile`、`/data/data`、`media/*.bin` 等路径串 — 自动：`flutter test test/editor/contract/media_ref_integrity_test.dart`（**此为「缺失守卫」**——断言 encode 产物中**不出现**真实路径串，属对运行时产物的缺失性断言，非正向存在性 grep；扫描对象是独立于被改源码的 encode 输出，符合 P3）
-- [ ] **docVersion 存在性**：所有 encode 产物顶层含 `docVersion` 整数 — 自动：`flutter test test/editor/contract/editor_doc_codec_test.dart`（断言 decode 出的 version==1 / 顶层字段为 int，是对 encode 产物取值的断言）
+- [x] **块清单单一来源**：抽取器/渲染器/导出器实际识别的 type 集合 == `block_types.dart` 暴露的支持 type 集合（== design 块清单表枚举），无第五种私自新增 — 自动：`flutter test test/editor/contract/block_inventory_consistency_test.dart`
+- [x] **降级表同源**：对块清单每一种块，导出器 `exportFallbackLine(node)` 的返回值 == 抽取器对同一 node 的产出行（逐块逐字节相等 → 证明二者共用同一份「降级表现」映射、不存在两套文本） — 自动：`flutter test test/editor/contract/export_fallback_test.dart`
+- [x] **media.id 引用完整性**：任意 encode 后的 `content_json` 中，图片节点不含真实路径，仅含 media.id；扫描全文无 `/var/mobile`、`/data/data`、`media/*.bin` 等路径串 — 自动：`flutter test test/editor/contract/media_ref_integrity_test.dart`
+- [x] **docVersion 存在性**：所有 encode 产物顶层含 `docVersion` 整数 — 自动：`flutter test test/editor/contract/editor_doc_codec_test.dart`
 
 ## 回归检查
-- [ ] `content_plain` 第一行作为标题与 data-layer/搜索消费方约定一致（取值方式未漂移） — 人工复核（@Ray）
-- [ ] 契约层不引入对编辑页 UI / PDF 导出全流程的反向依赖（保持「被依赖」单向） — 人工复核（@Ray）
+- [-] `content_plain` 第一行作为标题与 data-layer/搜索消费方约定一致（取值方式未漂移） — 人工复核（@Ray）
+- [-] 契约层不引入对编辑页 UI / PDF 导出全流程的反向依赖（保持「被依赖」单向） — 人工复核（@Ray）
 
 ## 验证命令（汇总自动项）
 ```bash

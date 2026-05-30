@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -35,7 +35,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
+- [-] T1 · 确认 AppFlowy 真实结构，定稿块类型常量与 D2/代码块落点
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R5 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `lib/editor/contract/block_types.dart`、`test/editor/contract/block_types_test.dart`、`specs/active/editor-json-contract/design.md`（仅回填【实现时补全】项与块清单表注）
 
@@ -65,14 +65,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：`flutter analyze lib/editor/contract/block_types.dart` ✅；`flutter test test/editor/contract/block_types_test.dart` ✅
+人工：待 @Ray 核查 D2 落点与代码块归属结论（核查人 @Ray）
 ```
 
 -----
 
-- [ ] T2 · EditorDocCodec 薄封装（encode/decode + docVersion）
+- [x] T2 · EditorDocCodec 薄封装（encode/decode + docVersion）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/editor/contract/editor_doc_codec.dart`
 
@@ -97,14 +97,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/editor_doc_codec_test.dart` ✅
 人工：—（无）
 ```
 
 -----
 
-- [ ] T3 · content_plain 抽取器（表驱动降级 + 标题取首行）
+- [x] T3 · content_plain 抽取器（表驱动降级 + 标题取首行）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4, R5, NF1 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/plain_text_extractor.dart`
 
@@ -133,14 +133,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/plain_text_extractor_test.dart` ✅；`flutter test test/editor/contract/plain_text_extractor_bench_test.dart` ✅
 人工：—（无）
 ```
 
 -----
 
-- [ ] T4 · 位置块 / 天气块自定义节点定义 + BlockComponentBuilder
+- [x] T4 · 位置块 / 天气块自定义节点定义 + BlockComponentBuilder
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/editor/contract/blocks/location_block.dart`、`lib/editor/contract/blocks/weather_block.dart`
 
@@ -166,14 +166,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/blocks/custom_blocks_test.dart` ✅
 人工：—（无）
 ```
 
 -----
 
-- [ ] T5 · 图片节点 media.id 引用解析（ImageUrlResolver）
+- [x] T5 · 图片节点 media.id 引用解析（ImageUrlResolver）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/image_url_resolver.dart`、`test/editor/contract/image_url_resolver_test.dart`、`test/editor/contract/media_ref_integrity_test.dart`（承接 verification「media.id 引用完整性」的全文路径扫描用例）
 
@@ -199,14 +199,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/image_url_resolver_test.dart` ✅
 人工：—（无）
 ```
 
 -----
 
-- [ ] T6 · 只读渲染器 + 编辑器接线（共用块清单与解析层）
+- [x] T6 · 只读渲染器 + 编辑器接线（共用块清单与解析层）
 
 **同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5, NF2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/readonly_renderer.dart`、`lib/editor/contract/editor_block_registry.dart`、`test/editor/contract/readonly_renderer_test.dart`、`test/editor/contract/render_consistency_test.dart`（承接 verification NF2 一致性）、`test/editor/contract/block_inventory_consistency_test.dart`（承接 verification 块清单单一来源）
 
@@ -233,14 +233,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/readonly_renderer_test.dart` ✅
 人工：—（无）
 ```
 
 -----
 
-- [ ] T7 · 导出降级规则（复用抽取器降级表）
+- [x] T7 · 导出降级规则（复用抽取器降级表）
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R5 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/editor/contract/export_fallback.dart`
 
@@ -265,7 +265,7 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/editor/contract/export_fallback_test.dart` ✅
 人工：—（无）
 ```
