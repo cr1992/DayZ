@@ -5,14 +5,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dayz/demo/debug_home.dart';
+import 'package:dayz/drafts/draft_coordinator.dart';
+import 'package:dayz/drafts/draft_recovery_status.dart';
+import 'package:dayz/drafts/lifecycle_bridge.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/l10n/locale_controller.dart';
+
+class DraftRecoveryHolder {
+  DraftRecoveryHolder._();
+
+  static DraftRecoveryStatus lastStatus = const DraftRecoveryStatus(
+    hasResidual: false,
+  );
+
+  static void update(DraftRecoveryStatus status) {
+    lastStatus = status;
+  }
+
+  static void resetForTesting() {
+    lastStatus = const DraftRecoveryStatus(hasResidual: false);
+  }
+}
 
 class DayZApp extends StatefulWidget {
   /// 可选注入 [LocaleController]，方便测试。
   final LocaleController? localeController;
 
-  const DayZApp({super.key, this.localeController});
+  /// 可选注入草稿协调器；生产入口注入后由根 Widget 挂生命周期桥。
+  final DraftCoordinator? draftCoordinator;
+
+  const DayZApp({super.key, this.localeController, this.draftCoordinator});
 
   @override
   State<DayZApp> createState() => _DayZAppState();
@@ -20,6 +42,7 @@ class DayZApp extends StatefulWidget {
 
 class _DayZAppState extends State<DayZApp> {
   late final LocaleController _localeController;
+  LifecycleBridge? _draftLifecycleBridge;
 
   @override
   void initState() {
@@ -27,14 +50,25 @@ class _DayZAppState extends State<DayZApp> {
     _localeController = widget.localeController ?? LocaleController();
     _localeController.addListener(_onLocaleChanged);
     _localeController.init();
+    _startDraftLifecycleBridge();
   }
 
   void _onLocaleChanged() {
     setState(() {});
   }
 
+  void _startDraftLifecycleBridge() {
+    final coordinator = widget.draftCoordinator;
+    if (coordinator == null) {
+      return;
+    }
+
+    _draftLifecycleBridge = LifecycleBridge(coordinator: coordinator)..start();
+  }
+
   @override
   void dispose() {
+    _draftLifecycleBridge?.stop();
     _localeController.removeListener(_onLocaleChanged);
     // 只 dispose 自己创建的 controller。
     if (widget.localeController == null) {

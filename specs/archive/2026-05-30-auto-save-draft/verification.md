@@ -1,13 +1,13 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
 # 验证：auto-save-draft
 
-> 跨任务质量校验。命中：数据完整性（NF1）、防抖准确性（NF2）、生命周期同步（NF3）、启动检测不阻塞主线程（NF4）。
+> 跨任务质量校验。命中：数据完整性（NF1）、防抖准确性（NF2）、生命周期 pending flush（NF3）、启动检测不阻塞主线程（NF4）。
 
 ## 功能验证（端到端）
 
@@ -15,7 +15,7 @@
 |------|------|----------|----------|------|
 | 防抖保存 | 输入 → 停顿 1.5s | editing_session 写入对应 draft | R1 | 自动 |
 | 连续输入合并 | 间隔 500ms 输入 3 次 → 停 | 仅一次保存（防抖合并） | R1 | 自动 |
-| paused 强制保存 | 输入后立刻切后台 | editing_session 立即写最新 | R2 | 自动 |
+| paused 强制保存 | 输入后立刻切后台 | 同一同步回调 turn 内创建 `pendingFlush`；await 后 editing_session 写最新 | R2 | 自动 |
 | 内容无变化跳过 | 相同 payload 多次 fire | db 写次数为 0 | R6 | 自动 |
 | 启动检测 | 残留 editing_session → 启动 | startupCheck.hasResidual=true | R7 | 自动 |
 | 启动检测无残留 | 无 editing_session → 启动 | hasResidual=false | R7 | 自动 |
@@ -26,11 +26,12 @@
 
 ### 数据完整性（NF1）
 - [ ] 任何崩溃场景下 editing_session JSON 都可 `jsonDecode` — 自动：T6 crash_recovery_test 集成
-- [ ] paused 钩子是 await 同步等待（不是 fire-and-forget） — 自动：`flutter test test/drafts/lifecycle_bridge_test.dart`（断言行为：让 forceFlush 返回一个延迟完成的 Future，触发 paused 后断言生命周期回调在该 Future 完成**之前不返回**——即写盘完成才返回，证明同步等待而非 fire-and-forget；不 grep 源文件）
+- [ ] paused / inactive 触发后不丢弃 Future — 自动：`flutter test test/drafts/lifecycle_bridge_test.dart`（断言行为：让 forceFlush 返回一个延迟完成的 Future，触发 paused 后立即读到非空 `pendingFlush`；完成该 Future 后 await `pendingFlush` 成功，证明生命周期桥接保留了可观察 Future，而非静默 fire-and-forget；不 grep 源文件）
 
 ### 性能（NF2, NF3, NF4）
 - [ ] 防抖窗口测试中位耗时 1450-1700ms — 自动：fakeAsync + 真实 Timer 对比
-- [ ] paused 钩子到 upsert 完成 < 100ms（中端真机，100 KiB draft） — 人工（@Ray）
+- [ ] AppLifecycleListener 收到 paused / inactive 后同一同步回调 turn 内创建 `pendingFlush` — 自动：`flutter test test/drafts/lifecycle_bridge_test.dart`
+- [ ] 在应用仍存活前提下，`pendingFlush` 从触发到 upsert 完成 < 100ms（中端真机，100 KiB draft） — 人工（@Ray）
 - [ ] startupCheck 不阻塞主线程 > 50ms（残留单行场景，`Stopwatch` 计时同步段 elapsed < 50ms） — 自动：T5 startup_check_test 计时断言
 
 ### 单行模型不变式

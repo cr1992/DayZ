@@ -8,6 +8,7 @@ import 'package:dayz/security/demo.dart';
 import 'package:dayz/data/demo.dart';
 import 'package:dayz/demo/observability_demo.dart';
 import 'package:dayz/demo/i18n_demo.dart';
+import 'package:dayz/drafts/demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -58,6 +59,11 @@ final List<DemoEntry> demos = [
     title: 'Data demo',
     subtitle: 'Drift Repository 插入 / 查询 / 软删除',
     builder: (context) => const DataDemo(),
+  ),
+  DemoEntry(
+    title: 'Drafts demo',
+    subtitle: '自动保存草稿与恢复状态演示',
+    builder: (context) => const DraftsDemo(),
   ),
   // 各模块 demo 在此追加
 ];

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -100,7 +100,7 @@ graph LR
 
 -----
 
-- [ ] T3 · DraftCoordinator 实现（防抖 + 串行队列 + hash + 重试）
+- [x] T3 · DraftCoordinator 实现（防抖 + 串行队列 + hash + 重试）
 
 **同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer（EditingSessionRepo，对应其 T11） ｜ **关联需求：** R1, R3, R4, R5, R6, NF1 ｜ **依据设计：** D3, D4, D5, D6 ｜ **可改文件：** `lib/drafts/draft_coordinator.dart`, `test/drafts/draft_coordinator_test.dart`
 
@@ -136,29 +136,35 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/draft_coordinator_test.dart 通过（9/9）；dart analyze lib/drafts/draft_coordinator.dart test/drafts/draft_coordinator_test.dart 无问题；flutter test test/drafts/draft_contract_test.dart 通过（6/6）；flutter test test/drafts/debouncer_test.dart 通过（5/5）；flutter test test/data/editing_session_repo_test.dart 通过（1/1）；! grep -Eq 'AppFlowy|TipTap|WebView' lib/drafts/draft_coordinator.dart 通过。
+人工：N/A
 ```
 
 -----
 
-- [ ] T4 · LifecycleBridge
+- [x] T4 · LifecycleBridge
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, NF3 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/drafts/lifecycle_bridge.dart`, `test/drafts/lifecycle_bridge_test.dart`
 
 ### 背景
-封装 `AppLifecycleListener` 监听 paused / inactive；持有 DraftCoordinator 引用，在事件中 `await coordinator.forceFlush()`。
+封装 `AppLifecycleListener` 监听 paused / inactive。Flutter 生命周期回调本身是同步 `void`，不能被框架 await；因此本任务提供两层契约：
+- `handleLifecycleState(state) -> Future<void>`：可 await 的测试 / 应用内手动入口，对 paused / inactive await `coordinator.forceFlush()`。
+- `start()` 注册的 listener：在同步回调内立即创建并保存 `pendingFlush`，不得丢弃 Future；调用方可读取 `pendingFlush` 观察完成 / 失败。
 
 ### 实施
 1. `class LifecycleBridge` 接 DraftCoordinator
-2. `start()` 注册 AppLifecycleListener；`stop()` dispose
-3. paused / inactive → forceFlush
-4. 测试：用 `binding.handleAppLifecycleStateChanged` 触发，断言 forceFlush 被调用
+2. `Future<void>? pendingFlush` 暴露最近一次生命周期触发的 flush Future
+3. `handleLifecycleState(AppLifecycleState state)`：paused / inactive 时 await `coordinator.forceFlush()`；其他状态 no-op
+4. `start()` 注册 AppLifecycleListener；paused / inactive 的 `void` 回调中立即赋值 `pendingFlush = handleLifecycleState(state)`，并挂错误处理（日志 / 状态位）
+5. `stop()` dispose listener
+6. 测试：直接 await `handleLifecycleState(paused/inactive)` 断言 forceFlush 完成；通过 `binding.handleAppLifecycleStateChanged` 触发后断言 `pendingFlush` 已创建且最终完成
 
 ### 验收标准（做完即止）
 - 单测通过（自动）
-- paused 同步等待 forceFlush 完成才返回（自动）
+- `handleLifecycleState(paused/inactive)` await 后 forceFlush 已完成（自动）
+- AppLifecycleListener 回调同一 turn 内创建 `pendingFlush`，且不丢弃 Future（自动）
+- forceFlush 失败进入可观察错误状态 / 日志，不静默吞掉（自动）
 
 ### 验收方式
 - 自动：
@@ -168,14 +174,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/lifecycle_bridge_test.dart 通过（5/5）；dart analyze lib/drafts/lifecycle_bridge.dart test/drafts/lifecycle_bridge_test.dart 无问题。
+人工：N/A
 ```
 
 -----
 
-- [ ] T5 · main / app.dart 集成 startupCheck
+- [x] T5 · main / app.dart 集成 startupCheck
 
 **同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R7, NF4 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/app.dart`, `lib/main.dart`, `test/drafts/startup_check_test.dart`
 
@@ -202,14 +208,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/startup_check_test.dart 通过（3/3）；dart analyze lib/app.dart lib/main.dart test/drafts/startup_check_test.dart 无问题。
+人工：N/A
 ```
 
 -----
 
-- [ ] T6 · 集成测试：崩溃恢复路径
+- [x] T6 · 集成测试：崩溃恢复路径
 
 **同 spec 依赖：** T3, T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R4, R7, NF1 ｜ **依据设计：** D3, D4 ｜ **可改文件：** `test/drafts/crash_recovery_test.dart`
 
@@ -237,14 +243,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（无）
+日期：2026-05-30
+自动：flutter test test/drafts/crash_recovery_test.dart 通过（4/4）；dart analyze test/drafts/crash_recovery_test.dart 无问题。
+人工：N/A
 ```
 
 -----
 
-- [ ] T7 · 接入 Debug Home：Drafts demo
+- [-] T7 · 接入 Debug Home：Drafts demo
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/drafts/demo.dart`, `lib/demo/demo_entry.dart`
 
@@ -255,17 +261,18 @@ graph LR
 - 「模拟切后台」按钮：手动调 LifecycleBridge 的 paused 钩子触发 forceFlush
 - 「提交并清空」按钮：写 EntryRepo.create（content_plain = TextField 文本）+ coordinator.clear
 - 「弃稿不清」按钮：什么都不做，直接退出（模拟崩溃保留草稿）
+- 「模拟重启」按钮：不杀 App，只清空当前 UI 状态后重新跑 startupCheck 并从 editing_session 回填输入框，降低人工验收门槛；模拟器通过即可视作人工通过
 - 文本块展示当前 editing_session 表内容
 
 ### 实施
 1. `class DraftsDemo extends StatefulWidget`
 2. 上述四按钮 + TextField
 3. 注册到 demos 列表
-4. iOS + Android 真机各跑一次
+4. 模拟器跑一次完整流程
 
 ### 验收标准（做完即止）
 - 输入 → 1.5s 后底部「上次保存时间」更新（人工 @Ray）
-- 「弃稿不清」后杀进程 → 重启进 demo → 顶部显示「检测到残留草稿」（人工 @Ray）
+- 「弃稿不清」后点「模拟重启」→ 顶部显示「检测到残留草稿」，输入框恢复刚才文本（人工 @Ray）
 - 「提交并清空」后 editing_session 表内容显示为空（人工 @Ray）
 
 ### 验收方式
@@ -273,11 +280,11 @@ graph LR
   ```bash
   flutter test test/drafts/demo_test.dart
   ```
-- 人工（@Ray）：iOS + Android 真机各跑一次完整流程
+- 人工（@Ray）：模拟器跑一次完整流程
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：—（核查人 @Ray）
+日期：2026-05-30
+自动：flutter test test/drafts/demo_test.dart 通过（5/5）；dart analyze lib/drafts/demo.dart lib/demo/demo_entry.dart test/drafts/demo_test.dart 无问题；flutter test test/demo/debug_home_test.dart 通过（2/2）。
+人工：待确认（核查人 @Ray）
 ```

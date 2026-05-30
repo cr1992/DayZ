@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-23
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -18,10 +18,24 @@
 
 ### D2 · 生命周期监听
 - **背景：** 需要监 `AppLifecycleState.paused/inactive`。
-- **选项：** `WidgetsBindingObserver` / `AppLifecycleListener`（Flutter 3.13+） / 第三方包。
-- **选择：** **`AppLifecycleListener`**（Flutter stable 内置，3.13+ 推荐替代 WidgetsBindingObserver）。
-- **理由：** 新 API 设计明确，专为生命周期观察；本项目 Flutter 跟随 stable 最新，可用。
-- **代价：** 若 Flutter 版本回退到 3.12 以前会失效——同步在 D2 注明依赖最低 Flutter 3.13。
+- **事实约束：** Flutter 的 `AppLifecycleListener` / `WidgetsBindingObserver.didChangeAppLifecycleState`
+  生命周期回调都是同步 `void`，框架不会 await 应用返回的 Future；不存在“paused 回调返回前由
+  Flutter 等待异步写盘完成”的 API。
+- **选项：** `WidgetsBindingObserver` / `AppLifecycleListener`（Flutter 3.13+） / 第三方包 /
+  应用内可控路径显式 await。
+- **选择：** **`AppLifecycleListener` + 可 await 的 `LifecycleBridge.handleLifecycleState`**
+  组合：
+  1. `start()` 注册 `AppLifecycleListener`，监听 paused / inactive。
+  2. listener 的同步 `void` 回调立即调用 `handleLifecycleState(state)`，并把 returned Future 保存到
+     `pendingFlush`；异常进入日志 / 状态，不静默吞掉。
+  3. `handleLifecycleState(state) -> Future<void>` 是测试与应用内手动入口；对 paused / inactive
+     必须 await `DraftCoordinator.forceFlush()`。
+  4. 退出编辑页、切换 target、正式提交前等**应用内可控路径**直接 await `forceFlush()` 或
+     `handleLifecycleState(...)`，这是“同步保存”的强保证落点。
+- **理由：** 保留 Flutter 推荐生命周期 API，同时把可验证的 await 语义放在 DayZ 自己控制的桥接方法上，
+  不对 Flutter/OS 无法提供的等待语义做虚假承诺。
+- **代价：** 系统后台切换属于 best-effort：若 OS 在 `pendingFlush` 完成前冻结 / 杀死进程，最新输入
+  可能未落盘；但 Drift 事务仍保证表内已有内容完整（完整 JSON 或空）。最低 Flutter 3.13 依赖不变。
 
 ### D3 · DraftCoordinator 状态与并发
 - **背景：** 单行模型不允许两个 onChanged 对不同 targetId 同时未 flush。
@@ -70,7 +84,9 @@ graph TD
   Hash -->|相同| Skip[跳过]
   Tx --> ESR[EditingSessionRepo.upsert]
 
-  ALL[AppLifecycleListener] -->|paused/inactive| Force[DC.forceFlush]
+  ALL[AppLifecycleListener] -->|void callback| LB[LifecycleBridge]
+  LB -->|save pendingFlush Future| PF[(pendingFlush)]
+  LB -->|await in handleLifecycleState| Force[DC.forceFlush]
   Force --> Saver
 
   Boot[main 启动] --> Check[DC.startupCheck]
@@ -83,7 +99,7 @@ graph TD
 - `lib/drafts/debouncer.dart`            新建
 - `lib/drafts/draft_coordinator.dart`    新建（核心）
 - `lib/drafts/draft_recovery_status.dart` 新建（数据类）
-- `lib/drafts/lifecycle_bridge.dart`     新建（AppLifecycleListener → forceFlush 桥接）
+- `lib/drafts/lifecycle_bridge.dart`     新建（AppLifecycleListener → pendingFlush / handleLifecycleState 桥接）
 - `lib/drafts/demo.dart`                 新建（Debug Home demo）
 - `lib/app.dart`                         修改（在根 Widget 挂 LifecycleBridge + startupCheck）
 - `lib/main.dart`                        修改（启动时 await startupCheck，落 NF4 50ms 计时；T5）
@@ -94,5 +110,7 @@ graph TD
 
 - **app.dart 修改影响 M0 文件白名单**：M0 已经写了 app.dart，本里程碑会再改它一次（挂 LifecycleBridge）——任务白名单已包含。
 - **`AppLifecycleListener` 最低 Flutter 3.13**：Flutter 跟随 stable 最新；写明依赖。
-- **paused 异步保存可能在系统冻结前完成不了**：R2 要求同步；Dart 同步写 db 是阻塞操作，paused 钩子需 `await db.transaction(...)`，可能延迟系统挂起；这是已知 tradeoff，可接受（同步 vs 数据丢失，选数据完整）。
+- **paused 异步保存可能在系统冻结前完成不了**：Flutter 生命周期回调不可 await。系统事件只能
+  best-effort 立即触发并保存 `pendingFlush`；强一致保存只承诺在应用内可控路径（退出编辑页、切 target、
+  提交前）通过 await 完成。
 - **多 isolate 写 editing_session**：协调器假设主 isolate 唯一持有；若未来其他 isolate 也写 db 需重新审视。

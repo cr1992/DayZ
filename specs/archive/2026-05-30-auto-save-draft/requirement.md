@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-23
-最后更新：2026-05-29
+最后更新：2026-05-30
 文档状态：草稿
 ---
 
@@ -28,16 +28,21 @@ v6 第 7.3 节定调：自动保存与草稿恢复**共用同一张表（editing
 - 操作：连续 fire 三次（间隔 500ms），第三次后停顿
 - 结果：仅触发一次保存，时间窗为「最后一次 fire + 1500ms」
 
-### R2 · 生命周期 paused / inactive 强制保存
-系统 MUST 监听 `AppLifecycleState.paused` 与 `inactive`，触发立即强制保存（绕过防抖窗口）；MUST 同步完成写盘（不允许 fire-and-forget）。
+### R2 · 生命周期 paused / inactive 触发可观察强制保存
+系统 MUST 监听 `AppLifecycleState.paused` 与 `inactive`，触发立即强制保存（绕过防抖窗口），并 MUST 暴露本次保存的 `pendingFlush` Future 供测试与应用内可控路径 await。
+
+Flutter 的 `AppLifecycleListener` 生命周期回调是同步 `void`，框架不会等待应用返回的 Future；本 spec **不承诺** OS / Flutter 在后台切换前等待写盘完成。系统 MUST 做到：
+- `LifecycleBridge.handleLifecycleState(state) -> Future<void>` 是可 await 的测试/手动入口；对 paused / inactive 必须 await `DraftCoordinator.forceFlush()`。
+- `AppLifecycleListener` 的 `void` 回调必须同步创建并保存 `pendingFlush`，不得丢弃 Future；失败必须进入可观察错误状态 / 日志。
+- 应用内可控路径（退出编辑页、切换编辑目标、正式提交前）MUST 直接 await `forceFlush()` 或 `handleLifecycleState(...)`，不得 fire-and-forget。
 - 前提：编辑现场有未提交变化
 - 操作：触发 paused
-- 结果：写盘完成后才返回；后续异步流程不允许遗失数据
+- 结果：同一同步回调 turn 内创建 `pendingFlush`；await 该 Future 后，editing_session 已写入最新草稿。若进程在 `pendingFlush` 完成前被系统冻结 / 杀死，只保证不留下半截 JSON，不保证最新变化已落盘。
 
 ### R3 · DraftCoordinator 统一保存协调器
 系统 MUST 提供 `DraftCoordinator`，封装：
 - `onChanged({targetId?, draftJson, isNew, cursorPos?})` —— 编辑器变化时调用；内部走防抖
-- `forceFlush() -> Future<void>` —— 强制保存（paused / 退出编辑页 / 切换编辑目标前）
+- `forceFlush() -> Future<void>` —— 强制保存；应用内可控路径 MUST await，系统生命周期桥接必须保存 returned Future
 - `clear()` —— 退出且已正式提交时调（清 editing_session 那一行）
 - `startupCheck() -> Future<DraftRecoveryStatus>` —— 启动时读 editing_session 判断状态
 - `DraftRecoveryStatus { hasResidual: bool, targetId: String?, isNew: bool, lastUpdated: DateTime? }`
@@ -78,13 +83,15 @@ DraftCoordinator MUST 与具体编辑器解耦——只接受 `(targetId, draftJ
 ## 非功能需求
 
 ### NF1 · 数据完整性
-任何崩溃 / 杀进程 / 退后台场景 MUST 保证 editing_session 表中是「完整可解析 JSON 或空」二选一。本 NF 在 verification 中以集成测试覆盖。
+任何已进入 EditingSessionRepo 写盘事务的场景 MUST 保证 editing_session 表中是「完整可解析 JSON 或空」二选一。本 NF 在 verification 中以集成测试覆盖。
+
+系统 paused / inactive 若在 `pendingFlush` 完成前被 OS 冻结或杀死，最新变化 MAY 尚未落盘；但表内已有内容仍 MUST 保持完整 JSON 或空，不得出现部分 JSON。
 
 ### NF2 · 性能 - 防抖窗口准确性
 连续 fire 测试中，最后一次 fire 到实际保存调用之间间隔误差 MUST 在 1450-1700ms 内。
 
-### NF3 · 性能 - paused 同步保存
-paused 钩子到 EditingSessionRepo.upsert 完成 MUST < 100ms（中端真机，单条 draft < 100 KiB）。
+### NF3 · 性能 - 生命周期触发与 pending flush
+`AppLifecycleListener` 收到 paused / inactive 后，`LifecycleBridge` MUST 在同一同步回调 turn 内创建 `pendingFlush` 并触发 `forceFlush()`；在应用仍存活的前提下，`pendingFlush` 从触发到 EditingSessionRepo.upsert 完成 MUST < 100ms（中端真机，单条 draft < 100 KiB）。
 
 ### NF4 · 性能 - 启动检测不阻塞主线程
 `DraftCoordinator.startupCheck`（一次 db 查询）MUST 不阻塞主线程超过 50ms。本 NF 约束 R7 的启动检测，在 verification 中以性能检查覆盖。
@@ -98,5 +105,5 @@ paused 钩子到 EditingSessionRepo.upsert 完成 MUST < 100ms（中端真机，
 | 安全 | 否 | 草稿写入复用 data-layer 既有加密 db，本 spec 不引入新的口令/密钥/敏感数据处理。 |
 | 权限 | 否 | 不访问相册/相机/通知等系统权限，仅读写应用内 editing_session 表。 |
 | 无障碍 | 否 | 本里程碑无 UI（提示条/设置项归后续 UI spec），无可聚焦/朗读控件可约束。 |
-| 性能 | 是 | NF2 防抖窗口准确性、NF3 paused 同步保存 < 100ms、NF4 startupCheck 不阻塞主线程 > 50ms 均为可度量性能硬约束。 |
+| 性能 | 是 | NF2 防抖窗口准确性、NF3 生命周期触发 + pending flush < 100ms、NF4 startupCheck 不阻塞主线程 > 50ms 均为可度量性能硬约束。 |
 | 多端兼容 | 否 | 纯 Dart 逻辑层（Debouncer / 协调器 / 生命周期桥），无平台分叉代码；T7 真机跑测属验证手段非兼容性需求。 |

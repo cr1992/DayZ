@@ -47,7 +47,9 @@ class AppDatabase extends _$AppDatabase {
     super.e, {
     this.onUpgradeForTesting,
     this.schemaVersionForTesting = 1,
-  });
+  }) {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  }
 
   final AppDatabaseUpgradeObserver? onUpgradeForTesting;
   final int schemaVersionForTesting;
