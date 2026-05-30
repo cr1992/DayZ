@@ -4,13 +4,27 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:widgetbook/widgetbook.dart';
 
 import '../ui/components.dart';
 import '../ui/theme/dayz_colors.dart';
 import '../ui/theme/dayz_text_theme.dart';
 import '../ui/theme/dayz_theme.dart';
 import '../ui/theme/dayz_tokens.g.dart';
+
+class GalleryTheme {
+  final String name;
+  final ThemeData data;
+  const GalleryTheme({required this.name, required this.data});
+}
+
+final List<GalleryTheme> widgetGalleryThemes = [
+  GalleryTheme(name: 'purpleLight', data: DayzThemes.purpleLight),
+  GalleryTheme(name: 'purpleDark', data: DayzThemes.purpleDark),
+  GalleryTheme(name: 'amberLight', data: DayzThemes.amberLight),
+  GalleryTheme(name: 'amberDark', data: DayzThemes.amberDark),
+  GalleryTheme(name: 'sageLight', data: DayzThemes.sageLight),
+  GalleryTheme(name: 'sageDark', data: DayzThemes.sageDark),
+];
 
 /// Direct visual gallery for DayZ UI kit components.
 ///
@@ -55,13 +69,6 @@ class _WidgetGalleryDemoState extends State<WidgetGalleryDemo> {
                       setState(() {
                         _sectionIndex = index;
                       });
-                    },
-                    onOpenWidgetbook: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const WidgetbookMatrixDemo(),
-                        ),
-                      );
                     },
                   ),
                   Expanded(
@@ -125,99 +132,6 @@ class _WidgetGalleryDemoState extends State<WidgetGalleryDemo> {
 /// Widgetbook-backed matrix kept for exhaustive state/theme inspection.
 ///
 /// Author: @Ray
-class WidgetbookMatrixDemo extends StatelessWidget {
-  const WidgetbookMatrixDemo({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Widgetbook.material(
-      directories: widgetGalleryDirectories,
-      addons: [
-        MaterialThemeAddon(
-          themes: widgetGalleryThemes,
-          initialTheme: widgetGalleryThemes.first,
-        ),
-      ],
-      lightTheme: DayzThemes.purpleLight,
-      darkTheme: DayzThemes.purpleDark,
-      home: _matrixHome,
-    );
-  }
-}
-
-/// Six standard DayZ themes exposed for tests and Widgetbook.
-///
-/// Author: @Ray
-final List<WidgetbookTheme<ThemeData>> widgetGalleryThemes = [
-  WidgetbookTheme(name: 'purpleLight', data: DayzThemes.purpleLight),
-  WidgetbookTheme(name: 'purpleDark', data: DayzThemes.purpleDark),
-  WidgetbookTheme(name: 'amberLight', data: DayzThemes.amberLight),
-  WidgetbookTheme(name: 'amberDark', data: DayzThemes.amberDark),
-  WidgetbookTheme(name: 'sageLight', data: DayzThemes.sageLight),
-  WidgetbookTheme(name: 'sageDark', data: DayzThemes.sageDark),
-];
-
-/// Component directory used by Widgetbook.
-///
-/// Author: @Ray
-final List<WidgetbookNode> widgetGalleryDirectories = [
-  WidgetbookComponent(
-    name: 'DayzButton',
-    useCases: [
-      WidgetbookUseCase(name: 'variants', builder: (_) => _buttonVariants()),
-      WidgetbookUseCase(name: 'icon', builder: (_) => _buttonIcon()),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzInputs',
-    useCases: [
-      WidgetbookUseCase(name: 'text field', builder: (_) => _textFields()),
-      WidgetbookUseCase(
-        name: 'switch option segmented',
-        builder: (_) => _choiceControls(),
-      ),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzChips',
-    useCases: [
-      WidgetbookUseCase(name: 'tags mood weather', builder: (_) => _chips()),
-      WidgetbookUseCase(name: 'toolbar', builder: (_) => _toolbar()),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzEntryCard',
-    useCases: [
-      WidgetbookUseCase(name: 'single cover', builder: (_) => _entryCard()),
-      WidgetbookUseCase(name: 'gallery', builder: (_) => _galleryCard()),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzPageComponents',
-    useCases: [
-      WidgetbookUseCase(
-        name: 'month year empty',
-        builder: (_) => _pageComponents(),
-      ),
-      WidgetbookUseCase(name: 'settings search', builder: (_) => _settings()),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzShell',
-    useCases: [
-      WidgetbookUseCase(name: 'glass app bar', builder: (_) => _glassAppBar()),
-      WidgetbookUseCase(name: 'toast tones', builder: (_) => _toastStage()),
-      WidgetbookUseCase(name: 'sheet buttons', builder: (_) => _sheetStage()),
-      WidgetbookUseCase(name: 'fab', builder: (_) => _fabStage()),
-    ],
-  ),
-  WidgetbookComponent(
-    name: 'DayzDialog',
-    useCases: [
-      WidgetbookUseCase(name: 'confirm surface', builder: (_) => _dialog()),
-    ],
-  ),
-];
 
 class _GallerySection {
   const _GallerySection({
@@ -384,14 +298,12 @@ class _GalleryHeader extends StatelessWidget {
     required this.sectionIndex,
     required this.onThemeChanged,
     required this.onSectionChanged,
-    required this.onOpenWidgetbook,
   });
 
   final int themeIndex;
   final int sectionIndex;
   final ValueChanged<int> onThemeChanged;
   final ValueChanged<int> onSectionChanged;
-  final VoidCallback onOpenWidgetbook;
 
   @override
   Widget build(BuildContext context) {
@@ -426,11 +338,6 @@ class _GalleryHeader extends StatelessWidget {
                       color: colors.ink,
                     ),
                   ),
-                ),
-                DayzButton.icon(
-                  icon: const Icon(Icons.grid_view_rounded),
-                  semanticLabel: '打开高级矩阵',
-                  onPressed: onOpenWidgetbook,
                 ),
               ],
             ),
@@ -563,7 +470,7 @@ class _ThemeSwatchButton extends StatelessWidget {
     required this.onTap,
   });
 
-  final WidgetbookTheme<ThemeData> theme;
+  final GalleryTheme theme;
   final bool selected;
   final VoidCallback onTap;
 

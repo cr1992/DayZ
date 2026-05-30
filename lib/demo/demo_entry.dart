@@ -11,6 +11,7 @@ import 'package:dayz/demo/i18n_demo.dart';
 import 'package:dayz/demo/widget_gallery_demo.dart';
 import 'package:dayz/drafts/demo.dart';
 import 'package:dayz/media/demo.dart';
+import 'package:dayz/thumbnails/demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -59,7 +60,7 @@ final List<DemoEntry> demos = [
   ),
   DemoEntry(
     title: 'UI Kit 组件画廊',
-    subtitle: 'Widgetbook：组件 × 状态 × 六套主题',
+    subtitle: '原生画廊：组件 × 状态 × 六套主题',
     builder: (context) => const WidgetGalleryDemo(),
   ),
   DemoEntry(
@@ -76,6 +77,11 @@ final List<DemoEntry> demos = [
     title: 'Media demo',
     subtitle: '媒体加密写入 / 读取 / 备份重加密',
     builder: (context) => const MediaDemo(),
+  ),
+  DemoEntry(
+    title: '缩略图缓存 demo',
+    subtitle: '缩略图生成 / 脏重建 / 取消与预热',
+    builder: (context) => const ThumbnailsDemo(),
   ),
   // 各模块 demo 在此追加
 ];

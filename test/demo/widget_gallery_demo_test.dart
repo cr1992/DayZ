@@ -9,7 +9,6 @@ import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:widgetbook/widgetbook.dart';
 
 /// Widget tests for [WidgetGalleryDemo].
 ///
@@ -19,38 +18,10 @@ void main() {
     final entry = demos.singleWhere((entry) => entry.title == 'UI Kit 组件画廊');
 
     expect(entry.title, 'UI Kit 组件画廊');
-    expect(entry.subtitle, 'Widgetbook：组件 × 状态 × 六套主题');
+    expect(entry.subtitle, '原生画廊：组件 × 状态 × 六套主题');
     expect(entry.builder, isNotNull);
   });
 
-  test('widget gallery registers themes and component use cases', () {
-    expect(widgetGalleryThemes, hasLength(6));
-    expect(widgetGalleryThemes.map((theme) => theme.name), [
-      'purpleLight',
-      'purpleDark',
-      'amberLight',
-      'amberDark',
-      'sageLight',
-      'sageDark',
-    ]);
-
-    final components = widgetGalleryDirectories.cast<WidgetbookComponent>();
-    expect(
-      components.map((component) => component.name),
-      contains('DayzButton'),
-    );
-    expect(
-      components.map((component) => component.name),
-      contains('DayzShell'),
-    );
-    expect(
-      components.fold<int>(
-        0,
-        (total, component) => total + component.useCases.length,
-      ),
-      greaterThanOrEqualTo(12),
-    );
-  });
 
   testWidgets('Debug Home can navigate to widget gallery', (tester) async {
     await tester.pumpWidget(
@@ -71,7 +42,6 @@ void main() {
       find.textContaining('design-system/assets/spec.css:252'),
       findsOneWidget,
     );
-    expect(find.byType(Widgetbook), findsNothing);
   });
 
   testWidgets('widget gallery shows design source labels for each section', (
@@ -168,21 +138,6 @@ void main() {
     expect(cancelButton.variant, DayzButtonVariant.ghost);
   });
 
-  testWidgets('widget gallery keeps Widgetbook matrix behind action button', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const WidgetGalleryDemo(),
-      ),
-    );
-
-    await tester.tap(find.bySemanticsLabel('打开高级矩阵'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(Widgetbook), findsOneWidget);
-  });
 
   testWidgets('a gallery use case renders with selected DayZ theme', (
     tester,

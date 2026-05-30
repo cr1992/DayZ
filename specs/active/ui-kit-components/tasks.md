@@ -37,7 +37,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 支撑层：依赖 + AppStrings + reduce-motion 门 + 规范图标/收藏星 + barrel 骨架
+- [x] T1 · 支撑层：依赖 + AppStrings + reduce-motion 门 + 规范图标/收藏星 + barrel 骨架
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzMotion` / `AppStrings` 约定 D4 / `glassSurface` 系数 / `DayzColors.favorite`）｜ **关联需求：** R8, NF3, NF4 ｜ **依据设计：** D1, D9, D10, D11 ｜ **可改文件：** `pubspec.yaml`、`pubspec.lock`、`lib/ui/strings/app_strings.dart`、`lib/ui/util/dayz_motion.dart`、`lib/ui/widgets/dayz_icons.dart`、`lib/ui/widgets/dayz_favorite_star.dart`、`lib/ui/components.dart` ｜ **验收基建：** `test/ui/widgets/dayz_favorite_star_test.dart`、`test/ui/util/dayz_motion_test.dart`
 
@@ -68,14 +68,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/ui/widgets/dayz_favorite_star_test.dart test/ui/util/dayz_motion_test.dart` 通过；`flutter_svg` / `widgetbook` 依赖已在 pubspec 中解析。
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · §3 基础组件成套（按钮/输入/开关/勾选/分段/标签/心情/天气/工具栏/弹窗/EntryCard/Gallery）
+- [x] T2 · §3 基础组件成套（按钮/输入/开关/勾选/分段/标签/心情/天气/工具栏/弹窗/EntryCard/Gallery）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzSpacing` / `DayzRadii` / 六套 ThemeData / `DayzFonts`）｜ **关联需求：** R1, NF1, NF2, NF3 ｜ **依据设计：** D1, D2, D9 ｜ **可改文件：** `lib/ui/widgets/dayz_button.dart`、`lib/ui/widgets/dayz_text_field.dart`、`lib/ui/widgets/dayz_switch.dart`、`lib/ui/widgets/dayz_option.dart`、`lib/ui/widgets/dayz_segmented.dart`、`lib/ui/widgets/dayz_tag.dart`、`lib/ui/widgets/dayz_mood_chip.dart`、`lib/ui/widgets/dayz_weather_chip.dart`、`lib/ui/widgets/dayz_toolbar.dart`、`lib/ui/widgets/dayz_dialog.dart`、`lib/ui/widgets/dayz_entry_card.dart`、`lib/ui/widgets/dayz_gallery.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加本组用文案条目）｜ **验收基建：** `test/ui/widgets/`（各组件 `*_test.dart`）
 
@@ -103,14 +103,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter analyze lib/ui/widgets/dayz_button.dart lib/ui/widgets/dayz_text_field.dart lib/ui/widgets/dayz_switch.dart lib/ui/widgets/dayz_option.dart lib/ui/widgets/dayz_segmented.dart lib/ui/widgets/dayz_tag.dart lib/ui/widgets/dayz_mood_chip.dart lib/ui/widgets/dayz_weather_chip.dart lib/ui/widgets/dayz_toolbar.dart lib/ui/widgets/dayz_dialog.dart lib/ui/widgets/dayz_entry_card.dart lib/ui/widgets/dayz_gallery.dart` 无问题；`flutter test test/ui/widgets/dayz_button_test.dart` 与 `flutter test test/ui/widgets/` 通过。
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · §3b 页面级复用件 + 跨屏空态（月份头/年份分隔/设置行/EmptyState/搜索框骨架）
+- [x] T3 · §3b 页面级复用件 + 跨屏空态（月份头/年份分隔/设置行/EmptyState/搜索框骨架）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / 排版 `.t-*` / `AppStrings` / `intl`）｜ **关联需求：** R2, NF1, NF2, NF3 ｜ **依据设计：** D7, D9, D10 ｜ **可改文件：** `lib/ui/widgets/dayz_month_header.dart`、`lib/ui/widgets/dayz_year_separator.dart`、`lib/ui/widgets/dayz_set_row.dart`、`lib/ui/widgets/dayz_empty_state.dart`、`lib/ui/widgets/dayz_search_field.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加本组用文案条目）｜ **验收基建：** `test/ui/widgets/`（各件 `*_test.dart`）
 
@@ -140,14 +140,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`dart analyze lib/ui/widgets/dayz_month_header.dart lib/ui/widgets/dayz_year_separator.dart lib/ui/widgets/dayz_set_row.dart lib/ui/widgets/dayz_empty_state.dart lib/ui/widgets/dayz_search_field.dart` 无问题；`flutter test test/ui/widgets/dayz_page_components_test.dart` 通过（5/5）。
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 跨屏外壳：DayzGlassAppBar（毛玻璃顶栏 + saturate 降级）
+- [x] T4 · 跨屏外壳：DayzGlassAppBar（毛玻璃顶栏 + saturate 降级）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.bg` / `glassSurface` 系数 / hairline）｜ **关联需求：** R3, NF4, NF6, NF7 ｜ **依据设计：** D5, D6, D11 ｜ **可改文件：** `lib/ui/shell/dayz_glass_app_bar.dart`、`lib/ui/components.dart`（补 export）｜ **验收基建：** `test/ui/shell/dayz_glass_app_bar_test.dart`
 
@@ -174,14 +174,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/ui/shell/dayz_glass_app_bar_test.dart` 通过（4/4）。
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · 跨屏外壳：全局 toast（DayzToast）
+- [x] T5 · 跨屏外壳：全局 toast（DayzToast）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（中性底 token / `--danger` / `--favorite` / accent）｜ **关联需求：** R4, NF3, NF4 ｜ **依据设计：** D3, D11 ｜ **可改文件：** `lib/ui/shell/dayz_toast.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 toast 文案）｜ **验收基建：** `test/ui/shell/dayz_toast_test.dart`
 
@@ -207,14 +207,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/ui/shell/dayz_toast_test.dart test/ui/shell/dayz_sheet_test.dart` 通过（覆盖 T5/T6）；追加验证 `DayzSheet` 使用 root navigator 遮罩覆盖整屏、confirm/form actions 回到 `DayzButton` 体系。
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · 跨屏外壳：底部 sheet 四形态（DayzSheet：actions/picker/form/confirm）
+- [x] T6 · 跨屏外壳：底部 sheet 四形态（DayzSheet：actions/picker/form/confirm）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`--r-xl` 圆角 / 拖拽柄色 / `--danger`）｜ **关联需求：** R5, NF1, NF3, NF4 ｜ **依据设计：** D4, D11 ｜ **可改文件：** `lib/ui/shell/dayz_sheet.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 sheet 文案）｜ **验收基建：** `test/ui/shell/dayz_sheet_test.dart`
 
@@ -242,14 +242,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/ui/shell/dayz_toast_test.dart test/ui/shell/dayz_sheet_test.dart` 通过（覆盖 T5/T6）。
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · 跨屏外壳：FAB 速拨外形（DayzFab）
+- [x] T7 · 跨屏外壳：FAB 速拨外形（DayzFab）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`fabGradient` / `--shadow-*` 三档 / `--overlay`）｜ **关联需求：** R6, NF1, NF3, NF4 ｜ **依据设计：** D11 ｜ **可改文件：** `lib/ui/shell/dayz_fab.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 FAB 动作文案）｜ **验收基建：** `test/ui/shell/dayz_fab_test.dart`
 
@@ -276,30 +276,31 @@ FAB 速拨视觉外形（R6）：轻点 `onTap` 回调 + 长按 ~0.35s 展开二
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`flutter test test/ui/shell/dayz_fab_test.dart` 通过（7/7）。
 人工：N/A
 ```
 
 -----
 
-- [ ] T8 · widgetbook 多状态画廊 + 挂 Debug Home
+- [-] T8 · widgetbook 多状态画廊 + 挂 Debug Home
 
 **同 spec 依赖：** T2, T3, T4, T5, T6, T7 ｜ **跨 spec 依赖：** design-tokens-theme（六套 ThemeData 供主题 addon）｜ **关联需求：** R7 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/widget_gallery_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/demo/widget_gallery_demo_test.dart`
 
 ### 背景
-widgetbook 画廊（D8）：组件 × 6 主题 × 关键状态矩阵；主题/明暗为 `WidgetbookAddon`，每组件登记 `WidgetbookComponent` + 多 `WidgetbookUseCase`（含其全部变体与关键状态）。Debug Home 入口：`demos` 列表**末尾追加一行**（不插中间、不改 `DemoEntry` 字段），真外壳未就绪前这是组件矩阵在真机被看见的入口。
+widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组件卡片旁标明设计真源（`docs/DESIGN-REF.md` / CSS / 页面原型行号）；高级矩阵仍保留为 Widgetbook（组件 × 6 主题 × 关键状态），主题/明暗为 `WidgetbookAddon`，每组件登记 `WidgetbookComponent` + 多 `WidgetbookUseCase`（含其全部变体与关键状态）。Debug Home 入口暴露此画廊，真外壳未就绪前这是组件矩阵在真机被看见的入口。
 
 ### 实施
-1. `widget_gallery_demo.dart`：装配 widgetbook，主题/明暗 addon 切六套，逐组件 use-case（按钮各变体/disabled、opt on/off、entry 单图/九宫格/空摘要、sheet 四形态、toast 各 tone、glass appbar 静止/滚动、fab 收起/展开、empty 各文案等）。
-2. `demo_entry.dart` 的 `demos` 末尾追加一行指向画廊（不插中间、不改字段）。
+1. `widget_gallery_demo.dart`：默认装配组件总览页，按基础控件 / 内容组件 / 页面复用件 / 跨屏外壳分组，卡片显示真源；右上角动作进入 Widgetbook 高级矩阵，主题/明暗 addon 切六套，逐组件 use-case（按钮各变体/disabled、opt on/off、entry 单图/九宫格/空摘要、sheet 四形态、toast 各 tone、glass appbar 静止/滚动、fab 收起/展开、empty 各文案等）。
+2. `demo_entry.dart` 的 `demos` 暴露一行指向画廊（不改 `DemoEntry` 字段，不动既有 demo）。
 
 ### 禁止
-- 不改 `DemoEntry` 字段定义；不在 `demos` 中间插入；不动既有 demo。
+- 不改 `DemoEntry` 字段定义；不动既有 demo。
 
 ### 验收标准（做完即止）
-- `demos` 末尾新增项指向 `widget_gallery_demo`，Debug Home 可进入（自动，widget test：构建 demo 列表 `find` 到该项并可 pump 进入）。
-- 画廊可切六套主题 addon，所选组件在所选主题/状态下即时渲染（自动，widget test 抽查切主题后组件取色与对应 ThemeData 一致）。
+- `demos` 存在项指向 `widget_gallery_demo`，Debug Home 可进入（自动，widget test：构建 demo 列表 `find` 到该项并可 pump 进入）。
+- 默认总览页展示组件真源标注，跨分组切换后仍可见对应来源（自动，widget test 抽查 `真源：docs/DESIGN-REF.md:*`）。
+- 高级矩阵入口可打开 Widgetbook；所选组件在所选主题/状态下即时渲染（自动，widget test 抽查切主题后组件取色与对应 ThemeData 一致）。
 - 每登记组件至少编目其变体/关键状态（自动，断 use-case 数量/标题存在；或人工目检矩阵覆盖）。
 
 ### 验收方式
@@ -313,7 +314,7 @@ widgetbook 画廊（D8）：组件 × 6 主题 × 关键状态矩阵；主题/�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-30
+自动：`dart analyze lib/demo/widget_gallery_demo.dart test/demo/widget_gallery_demo_test.dart lib/ui/widgets/dayz_text_field.dart` 无问题；`flutter test test/demo/widget_gallery_demo_test.dart` 通过（8/8，含真源标注、选择控件交互、弹窗取消按钮描边）。
 人工：待确认（核查人 @Ray）
 ```
