@@ -23,10 +23,10 @@ DayZ 需要在 iOS+Android 上跑 Argon2id（主密码 KDF）。现有选项各�
 ## 范围外
 
 - 主密码 / 加密设置 UI（属设置页与外壳 spec）；数据库加解密逻辑（属 `data-layer`）。
-- **DayZ 生产接入（已落地 2026-05-30）**：`lib/security/argon2_kdf.dart` 后端已切到 argon2id_ffi、
+- **DayZ 生产接入（已落地 2026-05-30，模拟器口径归档）**：`lib/security/argon2_kdf.dart` 后端已切到 argon2id_ffi、
   移除 `dargon2_flutter` 与 `ios/Podfile` 的 force-load hack、删除 `argon2_probe.dart`。验证：Argon2Kdf
-  KAT 字节兼容 6/6、iOS 模拟器 + Android profile/AOT 在真实 app 内跑通。**唯一待补**：iOS 真机 archive/TestFlight
-  符号留存最终确认（iOS 模拟器不跑 AOT、需实机；macOS profile/AOT 已作强代理验证）。
+  KAT 字节兼容 6/6、iOS 模拟器 + Android profile/AOT 在真实 app 内跑通。**后置发布闸门**：iOS 真机
+  archive/TestFlight 符号留存最终确认（iOS 模拟器不跑 AOT、需实机；macOS profile/AOT 已作强代理验证）。
 - **接入 key-management 的 `getDeviceMediaKey` / `hkdf.dart`**：HKDF 的生产实现归属 key-management
   （D7/T10，纯 Dart）。本库的 HKDF 是通用能力暴露，**不接入、不替换**它。
 
@@ -48,7 +48,10 @@ DayZ 需要在 iOS+Android 上跑 Argon2id（主密码 KDF）。现有选项各�
 库 MUST 能为 iOS（真机+模拟器）和 Android（真机+模拟器）交叉编译并链接。
 - cargokit 把构建胶水（podspec/gradle）注入工程；iOS anti-strip 由生成的 `ios/argon2id_ffi.podspec`
   接好（`-force_load …libargon2id_ffi.a` + `script_phase` + `Classes/dummy_file.c`），Rust 侧 C-ABI 函数
-  加 `#[no_mangle]` + `#[used]`。**debug 假绿、release/archive 才暴露剥离**——R3 验收必须覆盖 release/archive。
+  加 `#[no_mangle]` + `#[used]`。本 spec 归档验收覆盖 host、交叉编译、iOS 模拟器 debug、Android 模拟器 profile/AOT；
+  release/archive 剥离风险归后置发布闸门。
+- iOS 在 Flutter SPM 开启时 MUST 也能链接：`ios/argon2id_ffi/Package.swift` 使用静态库
+  `argon2id_ffi.xcframework` 承载 Rust 产物；不能以空 Swift package 取代 podspec。
 
 ### R4 · 敏感内存擦除（best-effort）
 - Rust 侧 MUST 对入参 `password` / `ikm` 的 `Vec` **显式** `zeroize`；argon2 `zeroize` feature 擦内部块。
@@ -58,12 +61,13 @@ DayZ 需要在 iOS+Android 上跑 Argon2id（主密码 KDF）。现有选项各�
 ## 非功能需求
 
 ### NF1 · 性能回归门槛
-v0 参数（m=64MiB, t=3, p=1, len=32）下，中端移动**真机** release 单次中位耗时 MUST < 1.5s，
-且不得劣于 dargon2 基线（498ms 同环境对照）。已知（工作机 aarch64）：比 C 快 ~1.29×（见 `BENCHMARK.md`），真机数待补。
+v0 参数（m=64MiB, t=3, p=1, len=32）下，归档口径 MUST 证明工作机 aarch64 release 与 Android 模拟器
+profile/AOT 都 < 1.5s，且不得出现相对 C 对照的明显性能回退。已知（工作机 aarch64）：比 C 快 ~1.29×
+（见 `BENCHMARK.md`）；中端移动真机 release 不劣于 dargon2 基线（498ms 同环境对照）作为后置发布闸门。
 
 ### NF2 · 包体积增量
 **单架构**安装包体积增量 SHOULD ≤ 3MB。已实测 cdylib（DCE+strip）：**iOS 0.317MB / Android 0.333MB**
-（余量 ~9×）。验收以 `flutter build appbundle --analyze-size` 真机整包口径为准。
+（余量 ~9×）。真机整包 `--analyze-size` 口径作为后置发布闸门，不阻塞本次模拟器口径归档。
 
 ## 专项维度逐维表态（选档依据）
 

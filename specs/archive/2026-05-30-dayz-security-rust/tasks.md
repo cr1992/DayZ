@@ -7,9 +7,10 @@
 
 # 任务列表：dayz-security-rust（argon2id_ffi）
 
-> 本里程碑只交付独立库 `packages/argon2id_ffi` + 实测数据，**不碰主工程 `lib/security/`、
-> 不删 dargon2、不动 `ios/Podfile`**（DayZ 接入待真机闸门，见 design D6）。
-> 算法正确性的权威断言下沉到 Rust `cargo test`（CI 友好、无需 Flutter）；Dart 层验 ffi 绑定透传。
+> 归档口径：交付独立库 `packages/argon2id_ffi`、DayZ KDF 接入、host/iOS 模拟器/Android 模拟器
+> profile-AOT 验证与实测数据。**不宣称 iOS 真机 archive/TestFlight 或 Android 真机 release 已验**；
+> 真机发布闸门作为后置发布风险保留。算法正确性的权威断言下沉到 Rust `cargo test`（CI 友好、无需 Flutter）；
+> Dart 层验 ffi 绑定透传。
 
 ## 任务依赖图
 
@@ -25,6 +26,7 @@ graph TD
   T4 --> T7[T7 体积/性能 benchmark]
   T5 --> T7
   T6 --> T7
+  T5 --> T9[T9 iOS Swift Package Manager 支持]
 ```
 
 -----
@@ -159,18 +161,48 @@ graph TD
 
 ### 实施
 1. 性能：Rust `examples/timing.rs`（N=11 中位，release）+ C `scripts/bench_compare.py`（argon2-cffi 同机同参）。
-2. 体积：三端 cdylib（DCE+strip）字节。3. 汇总进 `BENCHMARK.md`（方法学 + 复现 + 待真机补测）。
+2. 体积：三端 cdylib（DCE+strip）字节。3. 汇总进 `BENCHMARK.md`（方法学 + 复现 + 发布前真机闸门后置）。
 
 ### 验收记录
 ```
 2026-05-30 自动：v0 Rust 59.9ms vs C 77.2ms（快 1.29×）；cdylib iOS 0.317MB / Android 0.333MB。
-人工：BENCHMARK.md 已成文，待 @Ray 核。
+人工：BENCHMARK.md 已成文；@Ray 确认本轮按模拟器口径归档，真机数后置。
 ```
 
 ---
 
-- [ ] T8 ·（待 @Ray，非本里程碑）真机闸门 + DayZ 接入 / 发布决策
+- [x] T8 · 模拟器闸门 + DayZ 接入收口；真机发布闸门后置
 
-**关联需求：** NF1, NF2, R3 ｜ **说明：** ① 真机 release 耗时 + 整包增量 + iOS archive/TestFlight 符号留存 + 并发 OOM
-（见 verification 兼容性专项 + BENCHMARK §5）；② 闸门过后决定 DayZ 是否切换（切则改 key-management D2/argon2_kdf.dart、删 Podfile hack）
-+ 是否发 pub（预编译二进制 + 填 repository）。**列此留指针。**
+**关联需求：** NF1, NF2, R3 ｜ **依据设计：** D6 ｜ **可改文件：** `specs/archive/2026-05-30-dayz-security-rust/{requirement,design,tasks,verification}.md`
+
+### 实施 / 验收
+1. 明确归档口径：host 正确性 + iOS 模拟器 debug + Android 模拟器 profile/AOT 足以完成本 spec；不把它写成真机发布验收。
+2. DayZ KDF 接入已落地并通过 KAT / host / 模拟器验证；iOS 真机 archive/TestFlight 符号留存、Android 真机 release、
+   真机整包增量与并发 OOM 作为后续发布闸门，不阻塞本 spec 归档。
+
+### 验收记录
+```
+2026-05-30 自动：Rust cargo test、Dart ffi 端到端、DayZ Argon2Kdf host KAT、iOS 模拟器 debug、Android 模拟器 profile/AOT 均已有通过记录（见 verification）。
+人工：@Ray 确认本轮只跑模拟器；真机/archive 不作为本 spec 归档阻塞。
+```
+
+---
+
+- [x] T9 · iOS Swift Package Manager 支持
+
+**同 spec 依赖：** T5 ｜ **关联需求：** R3 ｜ **依据设计：** D7 ｜ **可改文件：**
+`packages/argon2id_ffi/ios/argon2id_ffi/**`、`packages/argon2id_ffi/scripts/build_ios_xcframework.sh`、
+`packages/argon2id_ffi/CHANGELOG.md`、`packages/CHANGELOG.md`
+
+### 实施
+1. 新增 Flutter 约定路径 `ios/argon2id_ffi/Package.swift`，产品名为 `argon2id-ffi`，供
+   `FlutterGeneratedPluginSwiftPackage` 自动依赖。
+2. 新增 Rust 静态库 `argon2id_ffi.xcframework`（真机 arm64 + 模拟器 arm64/x86_64），让 SPM 构建链真正链接
+   `argon2id_ffi_derive` / `hkdf_sha256_ffi_derive`，不是空包消警告。
+3. 保留原 CocoaPods `script_phase + -force_load` 路径，作为未启用 SPM 与后续 macOS 的兼容通道。
+4. 新增 `scripts/build_ios_xcframework.sh` 记录可复现构建命令。
+
+### 验收记录
+```
+2026-05-30 自动：swift package dump-package 通过；flutter pub get 不再提示 argon2id_ffi 缺少 iOS SPM 支持；flutter build ios --simulator --debug 通过。
+```

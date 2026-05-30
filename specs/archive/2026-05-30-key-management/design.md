@@ -24,12 +24,12 @@
 
 ### D2' · Argon2id 后端 = 自研 `argon2id_ffi`（2026-05-30 取代 D2）
 - **选择：** `lib/security/argon2_kdf.dart` 后端改用 `packages/argon2id_ffi`（RustCrypto argon2 + 手写
-  dart:ffi，spec 见 `specs/active/dayz-security-rust/`）。`Argon2Kdf.deriveKey` 接口/参数不变。
+  dart:ffi，spec 见 `specs/archive/2026-05-30-dayz-security-rust/`）。`Argon2Kdf.deriveKey` 接口/参数不变。
 - **关键性质：** 底层同为 P-H-C 算法、version 0x13、相同参数 → **派生密钥与原 dargon2 逐字节相同**
   （`test/security/argon2_kdf_test.dart` KAT 守护），切换不改密钥、无 rekey 风险。
 - **理由：** 活跃可维护（RustCrypto）、依赖面最小、iOS 符号剥离用 `@Native` 根治（去掉 Podfile hack）。
-- **验证：** Argon2Kdf KAT 6/6；iOS 模拟器 + Android profile/AOT 在真实 app 内跑通；iOS 真机 archive 待补。
-- **代价：** 引入 Rust 工具链（cargokit 构建）；iOS 真机 archive 符号留存为最终待验项。
+- **验证：** Argon2Kdf KAT 6/6；iOS 模拟器 + Android profile/AOT 在真实 app 内跑通；iOS 真机 archive 为发布前后置闸门。
+- **代价：** 引入 Rust 工具链（cargokit 构建）；iOS 真机 archive 符号留存需发布前复验。
 
 ### D3 · Argon2id 参数基线
 - **背景：** Argon2 参数与设备性能/内存深度绑定，移动端必须实测。

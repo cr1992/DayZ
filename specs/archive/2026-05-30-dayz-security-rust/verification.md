@@ -18,6 +18,8 @@
 | 错误路径 | salt 过短 / 越界 | 抛 `Argon2idFfiException` 而非静默 | R1 | Rust+Dart | ✅ |
 | 空口令 / None salt 边界 | 空数组 / salt=null | 字节正确 | R1,R2 | `flutter test` | ✅ |
 | 双端交叉编译 | iOS arm64/sim + Android arm64 | 链接成功、产物对应架构 | R3 | `cargo build --target` | ✅ |
+| DayZ 模拟器闸门 | iOS 模拟器 debug + Android 模拟器 profile/AOT 跑真实 app | KDF 调用链在模拟器内可用 | R3,NF1 | integration test | ✅ |
+| iOS SPM 构建 | Flutter SPM enabled，主工程依赖 argon2id_ffi | 无 SPM 兼容性预警，iOS 模拟器构建通过 | R3 | `flutter pub get` + `flutter build ios --simulator --debug` | ✅ |
 | 内存擦除（R4） | 见专项 | 入参 Vec 被显式 zeroize | R4 | 单测 | best-effort |
 
 ## 专项检查
@@ -29,12 +31,13 @@
 ### 性能（NF1）— 详见 `BENCHMARK.md` §2
 方法学：同参数 N=11、预热 1、取中位；Rust `examples/timing.rs`(release) 与 C `scripts/bench_compare.py`(argon2-cffi) 同机同口径。
 - [x] 工作机 aarch64：v0 Rust 59.9ms vs C 77.2ms（快 1.29×），三组参数均 <1.5s。
-- [ ] **iOS / Android 真机** release 中位 < 1.5s 且不劣于 498ms — 人工(@Ray)，走 `example/integration_test`。
+- [x] Android 模拟器 profile/AOT：真实 DayZ app integration_test 通过（132ms），满足本次“只跑模拟器”归档口径。
+- **后置发布闸门（不属于本 spec 完成判定）**：iOS / Android 真机 release 中位 < 1.5s 且不劣于 498ms — 后续发布前走 `example/integration_test`。
 
 ### 体积（NF2）— 详见 `BENCHMARK.md` §3
 方法学：单架构 cdylib（DCE+strip）字节为准；`.a` 是链接前归档不算。真机整包以 `--analyze-size` 下载体积差为准。
 - [x] 单架构 cdylib：iOS 0.317MB / Android 0.333MB（≪ 3MB）。
-- [ ] **真机整包增量**（带本包 vs 不带）≤ 3MB — 人工(@Ray)，`--analyze-size` / `--split-per-abi`。
+- **后置发布闸门（不属于本 spec 完成判定）**：真机整包增量（带本包 vs 不带）≤ 3MB — 后续发布前用 `--analyze-size` / `--split-per-abi` 复验。
 
 ### 兼容性（R3） — 符号解析按平台分流，AOT 多端已验证
 - [x] **iOS release strip 风险已定位修复**：实测 `flutter build ios --release` 二进制动态导出表**无**该符号
@@ -43,10 +46,12 @@
 - [x] **Android profile/AOT**：真实 DayZ app 在模拟器跑 integration_test 通过（132ms）—— Android 用
   `.so` + `DynamicLibrary.open + lookupFunction`（导出符号 release 下仍在，无 iOS 静态链接剥离问题）。
 - [x] **iOS 模拟器(debug)**：真实 DayZ app 跑通（3/3）。
+- [x] **iOS Swift Package Manager**：`argon2id_ffi` 提供 `Package.swift` + static-library XCFramework；
+  主工程 `flutter build ios --simulator --debug` 通过，SPM 预警消失。
 - [x] cargokit gradle 与新版 Gradle 兼容（`plugin.gradle` 改用 `ExecOperations`）。
-- [ ] **iOS 真机 archive/TestFlight 运行**（最终确认，iOS 模拟器不跑 AOT、需实机；macOS-AOT 是强代理）— 人工(@Ray)。
-- [ ] Android **真机** release 运行（已过模拟器 AOT，真机补一次）— 人工(@Ray)。
-- [ ] 并发 OOM：64MiB × 多 isolate RSS 峰值可控（建议并发限 2）— 人工(@Ray)，profile DevTools。
+- **后置发布闸门（不属于本 spec 完成判定）**：iOS 真机 archive/TestFlight 运行（最终确认，iOS 模拟器不跑 AOT、需实机；macOS-AOT 是强代理）。
+- **后置发布闸门（不属于本 spec 完成判定）**：Android 真机 release 运行（已过模拟器 AOT，真机补一次）。
+- **后置发布闸门（不属于本 spec 完成判定）**：并发 OOM，64MiB × 多 isolate RSS 峰值可控（建议并发限 2），后续用 profile DevTools 验。
 
 ## 需求 ↔ 验证 覆盖核验（双向闭环）
 
@@ -56,8 +61,8 @@
 | R2 HKDF | HKDF 正确性(Rust) + ffi 端到端(Dart) + None salt 边界 |
 | R3 双端编译 | 双端交叉编译 + 兼容性专项（含 release 符号留存） |
 | R4 zeroize | 专项 R4（结果级 + 边界声明） |
-| NF1 性能 | 性能专项（工作机实测 ✅ + 真机待补） |
-| NF2 体积 | 体积专项（单架构 cdylib ✅ + 真机整包待补） |
+| NF1 性能 | 性能专项（工作机实测 ✅ + Android 模拟器 profile/AOT ✅；真机发布闸门后置） |
+| NF2 体积 | 体积专项（单架构 cdylib ✅；真机整包发布闸门后置） |
 
 反向：上表所有行均挂 R#/NF#，无孤儿验证。
 
@@ -72,6 +77,8 @@ cd packages/argon2id_ffi && \
 ARGON2ID_FFI_LIB="$PWD/packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib" \
   flutter test test/security/argon2_kdf_test.dart                    # DayZ KDF 接入 host 复验
 cd packages/argon2id_ffi/rust && cargo run --release --example timing && cargo bench  # 性能
+cd packages/argon2id_ffi && bash scripts/build_ios_xcframework.sh     # 重建 iOS SPM XCFramework
+flutter pub get && flutter build ios --simulator --debug              # 主工程 iOS SPM 构建验证
 ```
 
 > macOS host `flutter test` 不会把 iOS/macOS 静态链接符号注入测试进程；主工程 KDF 测试必须显式设置

@@ -5,7 +5,7 @@
 //! - Argon2id：`argon2`（开启 `zeroize` feature，内部内存块算完即擦）
 //! - HKDF-SHA256：`hkdf` + `sha2`
 //!
-//! 设计与需求见 `specs/active/dayz-security-rust/`。
+//! 设计与需求见 `specs/archive/2026-05-30-dayz-security-rust/`。
 //!
 //! ## 关于内存擦除（R4）的诚实边界
 //! 本层只能擦除**进入 Rust 的副本**：FRB 把 Dart 的 `Uint8List` 反序列化成

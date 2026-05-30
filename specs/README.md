@@ -8,13 +8,12 @@
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
 |------|--------|------|------|--------|------|
-| [dayz-security-rust](active/dayz-security-rust/) | P1 | 草稿（已接入 key-management KDF 后端，iOS 真机闸门待补） | app-scaffold | @Ray | 2026-05-30 |
 | [media-storage](active/media-storage/) | P1 | 草稿 | app-scaffold, key-management, data-layer | @Ray | 2026-05-23 |
-| [auto-save-draft](active/auto-save-draft/) | P1 | 草稿 | app-scaffold, data-layer | @Ray | 2026-05-23 |
+| [auto-save-draft](active/auto-save-draft/) | P1 | 进行中（T1–T3 已完成） | app-scaffold, data-layer | @Ray | 2026-05-23 |
 | [thumbnail-cache](active/thumbnail-cache/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage | @Ray | 2026-05-23 |
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 草稿 | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏 + ui-shell） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-kit-components](active/ui-kit-components/) | P1 | 草稿 | design-tokens-theme | @Ray | 2026-05-29 |
+| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，待 @Ray 画廊目检） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-shell-navigation](active/ui-shell-navigation/) | P1 | 草稿 | design-tokens-theme, ui-kit-components, data-layer | @Ray | 2026-05-29 |
 | [timeline-screen](active/timeline-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [reader-screen](active/reader-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
@@ -32,16 +31,16 @@
 ## 执行顺序（派生快照）
 
 > **选取规则**（同 spec-guide）：在「未开始 / 进行中」**且就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
-> 下表是当前快照（`app-scaffold` / `key-management` / `design-tokens-theme` / `editor-json-contract` / `assets-management` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
+> 下表是当前快照（`app-scaffold` / `key-management` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：★`media-storage`(P1) ‖ ★`auto-save-draft`(P1) ‖ `ui-kit-components`(P1) ‖ `dayz-security-rust`(P1) ‖ `design-sync-automation`(P2，期一)
-2. **`ui-kit-components` 完成后**：`ui-shell-navigation`(P1)
+1. **现在就绪**：★`media-storage`(P1) ‖ ★`auto-save-draft`(P1) ‖ `design-sync-automation`(P2，期一)
+2. **`ui-kit-components` 完成后**：`ui-shell-navigation`(P1)（ui-kit 当前仅余 @Ray 画廊目检）
 3. **`media-storage` 完成后**：`thumbnail-cache`(P2)
 4. **`thumbnail-cache` 完成后**：`backup-full-snapshot`(P2)
 
 > ★＝数据/加密主干剩余链（`media-storage → thumbnail-cache → backup-full-snapshot`，依赖强制串行；`auto-save-draft` 已随 data-layer 解锁，可并行）；`key-management` / `data-layer` 已归档完成。
 >
-> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation`(期一) 已就绪 → W1 `ui-kit-components` 已就绪，`ui-shell-navigation` 等 `ui-kit-components`（data-layer 已完成）→ W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故仍按各自底层依赖解锁）+ `design-sync-automation`(期二，等首屏+shell 落后补)。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
+> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation`(期一) 已就绪 → W1 `ui-kit-components` 已进入收尾（自动验收通过，待 @Ray 画廊目检），`ui-shell-navigation` 等 `ui-kit-components`（data-layer 已完成）→ W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故仍按各自底层依赖解锁）+ `design-sync-automation`(期二，等首屏+shell 落后补)。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
 
 ## 已交付·随设计维护
 
@@ -57,6 +56,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [dayz-security-rust](archive/2026-05-30-dayz-security-rust/) | 已完成 | 2026-05-30 |
 | [data-layer](archive/2026-05-30-data-layer/) | 已完成 | 2026-05-30 |
 | [i18n-localization](archive/2026-05-30-i18n-localization/) | 已完成 | 2026-05-30 |
 | [key-management](archive/2026-05-30-key-management/) | 已完成 | 2026-05-30 |
@@ -82,5 +82,9 @@
 - **每日本地通知**（往年今日）— 依附 `onthisday-screen`
 - **PDF / HTML 归档**（方案 A 无天然 HTML，走 widget→PDF 或 JSON→HTML）
 - **持久备份目标 + media 增量**（阶段二）
+
+## 待立 spec（工程后置件）
+
+- **argon2id_ffi 发布真机闸门**（衍生自 `dayz-security-rust`）— iOS archive/TestFlight、Android 真机 release、整包 `--analyze-size`、并发 OOM；当前按模拟器口径归档，不阻塞主线，发布前再补。
 
 补 spec 时直接在 `active/` 下新建对应目录，并在本表添加一行。

@@ -56,9 +56,10 @@
 
 ### argon2id_ffi（自研 Argon2id / HKDF 库）
 - 全新自研 native 库：Argon2id + HKDF-SHA256（RustCrypto）+ 手写 `dart:ffi`（无 FRB），
-  cargokit 做交叉编译。面向可发布到 pub。spec 见 `specs/active/dayz-security-rust/`，
+  cargokit 做交叉编译。面向可发布到 pub。spec 见 `specs/archive/2026-05-30-dayz-security-rust/`，
   对比数据见 `packages/argon2id_ffi/BENCHMARK.md`。
-- **DayZ 生产接入待真机闸门**（不删 dargon2、不碰 `lib/security/`、不动 `ios/Podfile`）。
+- **DayZ 生产接入已按模拟器口径收口**：KAT / host / iOS 模拟器 / Android 模拟器 profile-AOT 已过；
+  iOS archive/TestFlight、Android 真机 release、整包增量与并发 OOM 作为发布前后置闸门。
 
 ---
 
@@ -70,6 +71,9 @@
 - **依赖升级**：将 `keyboard_height_plugin` 从 `^0.1.5` 升至 `^0.3.0`，采用上游已补的 iOS Swift Package Manager 支持，消除 DayZ 主工程中该插件的 SPM 兼容性预警（主工程仍剩 `argon2id_ffi` 待补 SPM）。
 
 ### argon2id_ffi（self-authored）
+- **iOS SPM 支持**：新增 `ios/argon2id_ffi/Package.swift` 与 Rust 静态库
+  `argon2id_ffi.xcframework`，让 Flutter 开启 Swift Package Manager 时能通过 SPM 链接本包；
+  CocoaPods `script_phase + -force_load` 路径保留给非 SPM 构建。
 - **新建 native 库**（手写 `dart:ffi`，无 FRB；cargokit 交叉编译；`com.dayz` 命名空间）：
   - `rust/src/api/crypto.rs`（纯算法）+ `rust/src/api/ffi.rs`（`extern "C"` C-ABI，catch_unwind + 错误码 + `#[used]`）。
   - Dart `lib/src/ffi/`（bindings/errors + `Isolate.run` 异步 API）；依赖仅 `ffi`。

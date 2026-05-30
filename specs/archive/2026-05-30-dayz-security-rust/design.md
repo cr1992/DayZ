@@ -10,8 +10,8 @@
 > **定位**：生产可用、可发布到 pub 的最小 native KDF 库——RustCrypto(argon2/hkdf) +
 > `extern "C"` C-ABI + 手写 `dart:ffi`（`Isolate.run` 异步），cargokit 做 iOS/Android 交叉编译，
 > 不引入 flutter_rust_bridge。验证：Rust `cargo test` 7/7、Dart ffi 端到端 6/6、`flutter analyze` 干净。
-> **不替换 DayZ 生产路径**（不删 dargon2、不碰 `lib/security/`、不动 `ios/Podfile`）——
-> 待真机 release 闸门（符号留存/耗时）通过再议（见 D6 / verification）。
+> DayZ 接入已按模拟器口径收口；iOS 真机 archive/TestFlight 与 Android 真机 release 作为后置发布闸门保留
+> （见 D6 / verification）。
 
 ## 方案选型：为什么自研 Rust 库
 
@@ -57,7 +57,7 @@ DayZ 需要在 iOS+Android 上跑 Argon2id（主密码 KDF）。备选与取舍�
 - **cargokit gradle 兼容**：新版 Gradle(8/9) 移除了 `Project.exec(Closure)`，已把 cargokit 的
   `cargokit/gradle/plugin.gradle` 改用注入的 `ExecOperations`（这是本包对 vendored cargokit 的唯一改动）。
 - **代价**：marshaling（ptr+len）/ 异步 / C-ABI 内存归属 / panic 处理需**手写并自验**。
-  设备侧（iOS 静态符号解析、Android `.so` 打包、并发 OOM）需真机验。
+  设备侧（iOS 静态符号解析、Android `.so` 打包、并发 OOM）需在发布前真机复验。
 
 ### D3 · RustCrypto crate 选型（argon2 / hkdf / sha2 / zeroize）
 - **选择**：RustCrypto 官方 `argon2`(0.5.3, `default-features=false, features=["alloc","zeroize"]`) /
@@ -99,7 +99,23 @@ DayZ 需要在 iOS+Android 上跑 Argon2id（主密码 KDF）。备选与取舍�
   `dargon2_flutter`；`ios/Podfile` 删除 force-load hack；删 `argon2_probe.dart`；key-management D2→D2'。
 - **安全性**：底层同算法/version/参数 → 派生密钥逐字节相同（Argon2Kdf KAT 守护），无 rekey 风险。
 - **验证**：Argon2Kdf KAT 6/6；iOS 模拟器(debug) + Android profile/AOT 真实 app 跑通；macOS profile/AOT
-  作 iOS @Native 抗 strip 的强代理。**唯一待补**：iOS 真机 archive/TestFlight 符号留存最终确认。
+  作 iOS @Native 抗 strip 的强代理。
+- **后置发布闸门**：iOS 真机 archive/TestFlight 符号留存最终确认、Android 真机 release、真机整包增量与
+  并发 OOM 不作为本 spec 归档阻塞；发布前另行复验。
+
+### D7 · iOS Swift Package Manager 支持（2026-05-30）
+- **背景**：Flutter 开启 SPM 后，如果插件存在 `ios/<plugin>/Package.swift`，CocoaPods helper 会跳过该
+  插件的 podspec。因此不能只加空 `Package.swift` 消警告；否则原 podspec 里的 `script_phase`
+  不再编译 Rust，`OTHER_LDFLAGS=-force_load ...libargon2id_ffi.a` 也不会生效。
+- **选择**：iOS SPM 走预构建 Rust 静态库 XCFramework：
+  1. `ios/argon2id_ffi/Package.swift` 暴露 `argon2id-ffi` 产品（Flutter 以包名下划线转短横线自动引用）。
+  2. `argon2id_ffi_native` 是 `argon2id_ffi.xcframework` binary target，内含真机 arm64 与模拟器
+     arm64/x86_64 两个 static-library slice。
+  3. Swift target 保留一个很薄的 anchor，显式引用两个 C-ABI 函数，避免静态库对象在链接时被裁掉。
+- **保留 CocoaPods 路径**：`ios/argon2id_ffi.podspec` 不删。未启用 SPM 或后续 macOS 仍走
+  cargokit `script_phase + -force_load`。
+- **代价**：SPM 产物现在需要随包提交，更新 Rust 代码后必须运行
+  `packages/argon2id_ffi/scripts/build_ios_xcframework.sh` 重建；这也是发布前预编译二进制路线的雏形。
 
 ---
 
@@ -136,9 +152,11 @@ graph TD
   - `rust/examples/timing.rs`  [NEW] N 次取中位计时（与 C 侧配对）
   - `lib/argon2id_ffi.dart` + `lib/src/ffi/{bindings,errors,crypto_ffi}.dart`  [NEW] 手写 dart:ffi 绑定 + 异步 API
   - `android/` / `ios/`（cargokit 接线：`ios/argon2id_ffi.podspec` 的 `-force_load` + `script_phase` + `ios/Classes/dummy_file.c`）  [NEW]
+  - `ios/argon2id_ffi/Package.swift` + `argon2id_ffi.xcframework` + C header / Swift anchor  [NEW] iOS SPM 支持
   - `test/crypto_ffi_test.dart`  [NEW] 手写 ffi 端到端测试
   - `example/`（`example/lib/main.dart` Argon2id demo + `example/integration_test/` 真机验证）  [NEW]
   - `scripts/bench_compare.py`  [NEW] C 侧（argon2-cffi）对照基准
+  - `scripts/build_ios_xcframework.sh`  [NEW] iOS SPM XCFramework 复现脚本
   - `BENCHMARK.md` / `README.md` / `LICENSE`(MIT) / `CHANGELOG.md`  [NEW] 发布与对比文档
 - `packages/CHANGELOG.md`  修改（自研包新起一节，见 D5）
 
@@ -146,8 +164,8 @@ graph TD
 
 ## 已知风险
 
-- **设备级闸门（host 验不了）**：iOS release/archive/TestFlight 符号剥离（靠 podspec `-force_load`
-  + Rust `#[used]` 防住，但**必须真机 archive 实测**）；Android `.so` 打包（`extractNativeLibs`）；
+- **后置发布闸门（host / 模拟器验不了）**：iOS release/archive/TestFlight 符号剥离（靠 podspec `-force_load`
+  + Rust `#[used]` 防住，但发布前仍需真机 archive 实测）；Android 真机 `.so` 打包（`extractNativeLibs`）；
   Argon2 64MiB × 并发 isolate 的 RSS 峰值 OOM（建议并发限 2）。详见 verification 兼容性专项。
 - **手写 ffi 自担风险**：panic 跨 C-ABI 是 UB——靠 `catch_unwind` 收口（发布禁 `panic=abort`）；
   内存归属"调用方分配 out、Rust 只写"，越界/泄漏靠单测 + finally free 守。
