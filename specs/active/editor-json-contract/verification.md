@@ -45,6 +45,34 @@
 - [-] `content_plain` 第一行作为标题与 data-layer/搜索消费方约定一致（取值方式未漂移） — 人工复核（@Ray）
 - [-] 契约层不引入对编辑页 UI / PDF 导出全流程的反向依赖（保持「被依赖」单向） — 人工复核（@Ray）
 
+## @Ray 人工核查最短清单
+
+> 目标：只覆盖当前仍未闭环的人工项；自动项已由 `flutter analyze lib/editor/contract test/editor/contract` 与 `flutter test test/editor/contract` 覆盖，无需重复。
+
+- [ ] **T1 / D2 / 代码块归属**
+  - 打开 `specs/active/editor-json-contract/design.md`
+  - 核对三点：
+    1. 图片落点已定为 `url='dayz-media://<media.id>'`
+    2. 该结论与上游原生 image builder / encoder 直接读取 `url` 的事实一致
+    3. `code` 已移出 MVP 的理由成立（上游可识别 `type='code'`，但默认 `standardBlockComponentBuilderMap` 未注册对应 builder）
+
+- [ ] **NF2 人工复核：编辑态 vs 只读态只差编辑装饰**
+  - 参考 `test/editor/contract/render_consistency_test.dart` 的样例内容
+  - 重点核对：正文内容、行内样式、图片占位、自定义块值一致；允许差异仅限光标/选区/占位等编辑专属装饰
+
+- [ ] **标题回归：第一行契约未漂移**
+  - 核对 `lib/editor/contract/plain_text_extractor.dart` 中 `extractTitle()` 的“取第一行”规则
+  - 与 data-layer / 搜索消费方当前预期比对，确认没有出现标题来源漂移
+
+- [ ] **依赖方向回归：契约层仍是被依赖方**
+  - 核对 `lib/editor/contract/` 当前实现只依赖 `appflowy_editor` 与契约内模块
+  - 确认未反向依赖编辑页 UI、PDF/HTML 导出全流程、页面层或业务层模块
+
+> @Ray 核查完成后，可：
+> 1. 把本文件中的 3 个 `[-]` 人工项改为 `[x]`
+> 2. 把 `specs/active/editor-json-contract/tasks.md` 中 T1 的人工记录补为已确认
+> 3. 再将 `specs/README.md` 中 `editor-json-contract` 从「进行中」推进到「已完成」并归档
+
 ## 验证命令（汇总自动项）
 ```bash
 flutter analyze lib/editor/contract/
