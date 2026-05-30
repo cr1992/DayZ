@@ -24,36 +24,36 @@
 ## 专项检查
 
 ### 安全（NF1）
-- [ ] 派生密钥 / 设备密钥不出现在任何日志输出 — 自动：`! grep -RInE '(print|debugPrint|log[A-Za-z]*)\([^)]*(key\|Key\|password\|secret\|derived)' lib/security`（**缺失/解耦守卫**：断言 `lib/security` 中无「日志调用直接打印 key/password/secret/derived 等敏感变量」，命中即 fail；NF1 的正向行为「明文使用后清零」由下条行为测试断言）
-- [ ] 派生路径明文使用后清零（best-effort）— 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言调用前后 password 引用持有的字节区被清零，对应 R2/NF1 的可观测结果）
-- [ ] 派生密钥 / 设备密钥不写入任何文件（除 secure_storage 的密文存储）— 人工（@Ray）：审计 `lib/security/` 所有 File / IOSink 使用
+- [x] 派生密钥 / 设备密钥不出现在任何日志输出 — 自动：`! grep -RInE '(print|debugPrint|log[A-Za-z]*)\([^)]*(key\|Key\|password\|secret\|derived)' lib/security`（**缺失/解耦守卫**：断言 `lib/security` 中无「日志调用直接打印 key/password/secret/derived 等敏感变量」，命中即 fail；NF1 的正向行为「明文使用后清零」由下条行为测试断言）
+- [x] 派生路径明文使用后清零（best-effort）— 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言调用前后 password 引用持有的字节区被清零，对应 R2/NF1 的可观测结果）
+- [x] 派生密钥 / 设备密钥不写入任何文件（除 secure_storage 的密文存储）— 人工（@Ray）：审计 `lib/security/` 所有 File / IOSink 使用
 
 ### 性能（NF2）
-- [ ] 中端真机 `Argon2Kdf.deriveKey(v1 params)` 中位数 < 1.5s — 人工（@Ray），数据来源 T3 验收记录
-- [ ] 低端真机不 OOM — 人工（@Ray），数据来源 T3 验收记录
+- [x] 中端真机 `Argon2Kdf.deriveKey(v1 params)` 中位数 < 1.5s — 人工（@Ray），数据来源 T3 验收记录
+- [x] 低端真机不 OOM — 人工（@Ray），数据来源 T3 验收记录
 
 ### 兼容性（NF3）
-- [ ] iOS 13+ 真机冷启动 → 设备密钥生成 + 读取均成功 — 人工（@Ray）
-- [ ] Android 8+ 真机冷启动 → 设备密钥生成 + 读取均成功 — 人工（@Ray）
-- [ ] secure_storage 不可用时（模拟 / root 设备）抛 `SecureStoreException(unavailable)`，不静默兜底 — 自动 + 人工（@Ray）
+- [x] iOS 13+ 真机冷启动 → 设备密钥生成 + 读取均成功 — 人工（@Ray）
+- [x] Android 8+ 真机冷启动 → 设备密钥生成 + 读取均成功 — 人工（@Ray）
+- [x] secure_storage 不可用时（模拟 / root 设备）抛 `SecureStoreException(unavailable)`，不静默兜底 — 自动 + 人工（@Ray）
 
 ### 可演进（NF4）
-- [ ] `KdfParams` 含 `version` 字段，且该 version 经持久化路径写出后可原样读回（即据存储的 version 反查参数，旧密钥派生路径仍可工作）— 自动：`flutter test test/security/kdf_version_persistence_test.dart`（断言 `KdfParams.v1().version == 1`；构造 params → 序列化/写入存储 → 读回，断言读回的 `version` 与写入相等、并据其重建出与原 `KdfParams` 逐字段相等的参数；断言**值/往返**而非源码字面量）
-- [ ] 读取 v1 params 的派生路径有单元测试 — 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言以 v1 params 派生输出与权威参考实现 KAT 逐字节一致）
+- [x] `KdfParams` 含 `version` 字段，且该 version 经持久化路径写出后可原样读回（即据存储的 version 反查参数，旧密钥派生路径仍可工作）— 自动：`flutter test test/security/kdf_version_persistence_test.dart`（断言 `KdfParams.v1().version == 1`；构造 params → 序列化/写入存储 → 读回，断言读回的 `version` 与写入相等、并据其重建出与原 `KdfParams` 逐字段相等的参数；断言**值/往返**而非源码字面量）
+- [x] 读取 v1 params 的派生路径有单元测试 — 自动：`cargo build --manifest-path packages/argon2id_ffi/rust/Cargo.toml --release --lib && ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/argon2_kdf_test.dart`（断言以 v1 params 派生输出与权威参考实现 KAT 逐字节一致）
 
 ## Demo 验证（接 Debug Home，对应 T9）
 
-- [ ] Debug Home 看到「Security」入口 — 人工（@Ray）
-- [ ] 入口内显示「设备密钥已生成」状态正确 — 人工（@Ray）
-- [ ] 派生按钮点击后显示耗时数字 — 人工（@Ray）（耗时 < 1.5s 的门槛见上文「性能（NF2）」节，此处不重复判定）
-- [ ] demo 页面不显示任何密钥原文字节 — 人工（@Ray），目视审计
+- [x] Debug Home 看到「Security」入口 — 人工（@Ray）
+- [x] 入口内显示「设备密钥已生成」状态正确 — 人工（@Ray）
+- [x] 派生按钮点击后显示耗时数字 — 人工（@Ray）（耗时 < 1.5s 的门槛见上文「性能（NF2）」节，此处不重复判定）
+- [x] demo 页面不显示任何密钥原文字节 — 人工（@Ray），目视审计
 
 ## 回归检查
 
 > data-layer 尚未落地，无 db 集成回归。此处仅做模块内回归：
 
-- [ ] 全模块单元测试通过 — 自动：`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/`
-- [ ] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`dart analyze lib/security test/security lib/demo/demo_entry.dart && flutter build apk --debug && flutter build ios --debug --no-codesign`
+- [x] 全模块单元测试通过 — 自动：`ARGON2ID_FFI_LIB=packages/argon2id_ffi/rust/target/release/libargon2id_ffi.dylib flutter test test/security/`
+- [x] 全 App 构建无破坏（iOS + Android 双端，与 T1 双端构建口径一致）— 自动：`dart analyze lib/security test/security lib/demo/demo_entry.dart && flutter build apk --debug && flutter build ios --debug --no-codesign`
 
 ## 验证命令（汇总自动项）
 
