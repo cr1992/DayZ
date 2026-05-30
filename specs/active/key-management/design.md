@@ -16,12 +16,20 @@
 - **理由：** 跨端封装 Keychain (iOS) / Keystore (Android)，社区成熟、Drift 生态常见搭配；MVP 不需要更底层细粒度控制。
 - **代价：** 依赖第三方包；Android 部分旧机型存在已知 BadPaddingException、需在 T2 加 try/catch + 重试 + 明确错误。
 
-### D2 · Argon2id 实现库选型
+### D2 · Argon2id 实现库选型 ~~（dargon2_flutter）~~ → **被 D2' 取代（2026-05-30）**
 - **背景：** Argon2 是 CPU 密集运算，纯 Dart 实现慢且无 SIMD；自实现存在 side-channel 风险。
-- **选项：** Pure Dart Argon2 库 / FFI 绑定（dargon2_flutter、argon2_ffi 等） / 自实现。
-- **选择：** 已锁定使用 FFI 绑定库 `dargon2_flutter`。预研期（T3）已验证其 iOS/Android 构建均可行并完成。
-- **理由：** 性能要求决定必须用原生实现；FFI 绑定对上层 Dart API 透明、迁移成本低。
-- **代价：** FFI 工具链；跨平台编译复杂度；候选库若停止维护需重新预研——这是已知风险（见下）。
+- **原选择（已作废）：** FFI 绑定库 `dargon2_flutter`。T3 预研验证可行（iOS 模拟器中位 498ms）。
+- **作废原因：** `dargon2_flutter` ~2 年失维 + iOS pod 漏标 `ffiPlugin:true` 致符号剥离、需 `ios/Podfile`
+  force-load hack 兜底。已切换到自研 `argon2id_ffi`（见 D2'）。
+
+### D2' · Argon2id 后端 = 自研 `argon2id_ffi`（2026-05-30 取代 D2）
+- **选择：** `lib/security/argon2_kdf.dart` 后端改用 `packages/argon2id_ffi`（RustCrypto argon2 + 手写
+  dart:ffi，spec 见 `specs/active/dayz-security-rust/`）。`Argon2Kdf.deriveKey` 接口/参数不变。
+- **关键性质：** 底层同为 P-H-C 算法、version 0x13、相同参数 → **派生密钥与原 dargon2 逐字节相同**
+  （`test/security/argon2_kdf_test.dart` KAT 守护），切换不改密钥、无 rekey 风险。
+- **理由：** 活跃可维护（RustCrypto）、依赖面最小、iOS 符号剥离用 `@Native` 根治（去掉 Podfile hack）。
+- **验证：** Argon2Kdf KAT 6/6；iOS 模拟器 + Android profile/AOT 在真实 app 内跑通；iOS 真机 archive 待补。
+- **代价：** 引入 Rust 工具链（cargokit 构建）；iOS 真机 archive 符号留存为最终待验项。
 
 ### D3 · Argon2id 参数基线
 - **背景：** Argon2 参数与设备性能/内存深度绑定，移动端必须实测。

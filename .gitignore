@@ -78,3 +78,8 @@ app.*.map.json
 # 换机器/clone 后重跑 `bash spec-kit/install.sh --with-gemini` 重新生成（与 pre-commit hook 同属本机产物）
 .gemini/settings.json
 
+# Codex —— install.sh 写入的 hook 命令是本机绝对路径
+.codex/
+
+# AI Agent 客户端本地状态
+.antigravitycli/
