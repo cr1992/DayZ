@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'取消搜索'**
   String get searchCancel;
 
+  /// 搜索输入框的占位提示词
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索日记、标签、地点'**
+  String get searchHint;
+
   /// No description provided for @clear.
   ///
   /// In zh, this message translates to:
@@ -446,22 +452,28 @@ abstract class AppLocalizations {
   /// **'新建日记本'**
   String get newJournal;
 
+  /// No description provided for @sheetCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建'**
+  String get sheetCreate;
+
   /// No description provided for @journalNameInputPlaceholder.
   ///
   /// In zh, this message translates to:
-  /// **'请输入日记本名称'**
+  /// **'例如：读书、健身、远行'**
   String get journalNameInputPlaceholder;
 
   /// No description provided for @journalNameLabel.
   ///
   /// In zh, this message translates to:
-  /// **'日记本名称'**
+  /// **'名称'**
   String get journalNameLabel;
 
   /// No description provided for @journalColorLabel.
   ///
   /// In zh, this message translates to:
-  /// **'日记本颜色'**
+  /// **'封面色'**
   String get journalColorLabel;
 
   /// No description provided for @settings.

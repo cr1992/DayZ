@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
+import 'package:dayz/ui/widgets/dayz_search_field.dart';
 import '../../l10n/localized_test_app.dart';
 
 void main() {
@@ -90,7 +91,7 @@ void main() {
     },
   );
 
-  testWidgets('clicking search button navigates to search page', (
+  testWidgets('clicking search button opens search field and navigates on submit', (
     tester,
   ) async {
     await tester.pumpWidget(buildTestApp());
@@ -99,6 +100,16 @@ void main() {
     // Click search button
     final searchButton = find.bySemanticsLabel(testL10n.search);
     await tester.tap(searchButton);
+    await tester.pumpAndSettle();
+
+    // DayzSearchField should be revealed and shown
+    expect(find.byType(DayzSearchField), findsOneWidget);
+    // Should not have navigated yet
+    expect(find.text('Search Page Content'), findsNothing);
+
+    // Enter text and submit to trigger navigation
+    await tester.enterText(find.byType(TextField), 'Test query');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
     // Page should navigate and show search content (which is outside AppShell in this test configuration)

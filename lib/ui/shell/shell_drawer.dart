@@ -235,48 +235,54 @@ class ShellDrawer extends StatelessWidget {
     final colors = context.dayz;
     final l10n = AppLocalizations.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        DayzSpacing.s5,
-        DayzSpacing.s2,
-        DayzSpacing.s3,
-        DayzSpacing.s2,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 44.0),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.centerLeft,
         children: [
-          Expanded(
-            child: _buildSectionLabel(
-              context,
-              l10n.journalSectionHeader,
-              padding: EdgeInsets.zero,
+          _buildSectionLabel(
+            context,
+            l10n.journalSectionHeader,
+            padding: const EdgeInsets.fromLTRB(
+              DayzSpacing.s5,
+              16.0,  // top: 16px (sp-4)
+              DayzSpacing.s5,
+              8.0,   // bottom: 8px (sp-2)
             ),
           ),
-          Semantics(
-            button: true,
-            label: actionText,
-            child: ExcludeSemantics(
-              child: SizedBox.square(
-                dimension: 44,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 44,
-                    height: 44,
-                  ),
-                  icon: SvgPicture.string(
-                    _svg(DayzIcons.plusPath),
-                    width: 15,
-                    height: 15,
-                    colorFilter: ColorFilter.mode(
-                      colors.ink3,
-                      BlendMode.srcIn,
+          PositionedDirectional(
+            end: DayzSpacing.s3,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Semantics(
+                button: true,
+                label: actionText,
+                child: ExcludeSemantics(
+                  child: SizedBox.square(
+                    dimension: 44,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 44,
+                        height: 44,
+                      ),
+                      icon: SvgPicture.string(
+                        _svg(DayzIcons.plusPath),
+                        width: 15,
+                        height: 15,
+                        colorFilter: ColorFilter.mode(
+                          colors.ink3,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onAction();
+                      },
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onAction();
-                  },
                 ),
               ),
             ),
@@ -336,8 +342,8 @@ class ShellDrawer extends StatelessWidget {
 
     if (actualLeading != null) {
       actualLeading = SizedBox(
-        width: 20,
-        height: 20,
+        width: 19,
+        height: 19,
         child: Center(
           child: actualLeading,
         ),
@@ -359,7 +365,7 @@ class ShellDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: DayzSpacing.s3,
-        vertical: 2.0,
+        vertical: 0.0,
       ),
       child: Semantics(
         selected: isSelected,
@@ -457,8 +463,8 @@ class ShellDrawer extends StatelessWidget {
   Widget _buildSvgIcon(String path, Color color) {
     return SvgPicture.string(
       _svg(path),
-      width: 20,
-      height: 20,
+      width: 19,
+      height: 19,
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
   }

@@ -213,6 +213,50 @@ W3  依附件（undo-redo / media-picker / autosave-recovery 等）   W4  后置
 
 -----
 
+## 13. 实战踩坑与 SOP 避坑沉淀（以侧边栏全部日记与日记本对齐为例）
+
+在 `ui-shell-navigation` 的实战中，我们通过侧边栏“全部日记”和“日记本”组件的像素级对齐，沉淀出以下两个典型踩坑案例和标准 SOP 避坑指南：
+
+### ① 避坑 SOP 1：大热区无障碍按钮与极致紧凑文本间距的冲突
+* **踩坑场景**：
+  在设计中，“日记本”分组标题文字到底部“全部日记”背景色块边缘只有 `8px` 距离（由 `.dw-label` 的 `padding-bottom: var(--sp-2)` (8px) 物理占位）。然而，右侧的加号（新建日记本）按钮需要满足无障碍热区 $\ge 44\text{px}$ 的硬指标。
+  - *第一代错误*：使用 `Row(crossAxisAlignment: center)`。44px 按钮将行高顶到 44px，文字在垂直方向居中后，下部产生了额外的 `(44 - 11) / 2 = 16.5px` 的空隙，使得实际视觉间距偏远，偏离设计稿。
+  - *第二代错误*：改用 `Stack` 布局将文字和加号解耦定位。虽然把文字底 padding 锁到了 8.0px，但因为 Stack 高度由文字 padding (16.0 + 8.0) 加上 11px 字号决定，Stack 自身实际高度只有 `43.0px`。导致里面 `PositionedDirectional(top: 0, bottom: 0)` 的加号按钮热区高度被约束在了 `43.0px`，直接在 CI 中触发 `new journal action hit area >= 44px` 单元测试报错。
+* **避坑 SOP**：
+  在 Flutter 中处理“小文本间距（小于 44px）+ 大热区按钮”的复合布局时，**必须在外层强行包裹 `ConstrainedBox` 限制最小高度为 44.0px**。这不仅能保持极致紧凑的文字排版，同时确保 Positioned 组件在纵向上有足够的空间撑开 44px 的无障碍热区。
+  ```dart
+  ConstrainedBox(
+    constraints: const BoxConstraints(minHeight: 44.0),
+    child: Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.centerLeft,
+      children: [
+        _buildSectionLabel(..., padding: EdgeInsets.fromLTRB(20, 16, 20, 8)),
+        PositionedDirectional(
+          end: 12.0,
+          top: 0, bottom: 0,
+          child: Center(
+            child: SizedBox.square(
+              dimension: 44.0,
+              child: IconButton(...), // 44px 热区无障碍按钮
+            ),
+          ),
+        ),
+      ],
+    ),
+  )
+  ```
+
+### ② 避坑 SOP 2：严禁“凭感觉调参”，强行 1-to-1 比对 CSS 样式
+* **踩坑场景**：
+  在实现列表条目（如“全部日记”、“工作本”）时，开发者惯性地加上了 `vertical: 2.0` 的垂直外边距；并且给前置 SVG 图标使用了常规的 `20px` 尺寸。
+  - *结果*：这导致列表条目之间产生了 `4px` 的物理空隙。当条目被选中或 Hover 时，背景色块无法无缝相连，破坏了设计稿中圆角背景“无缝堆叠”的艺术连贯性；此外，图标尺寸与设计稿定义的 `width: 19px; height: 19px;` 产生了 `1px` 像素差。
+* **避坑 SOP**：
+  1. **检查 margin 级联**：在还原 Flutter 列表项时，必须检查 HTML 对应元素是否有 margin 设定。如果设计稿中无垂直 margin，Flutter 列表项的 vertical margin 必须强制设为 `0.0`，利用条目自身高度（如 `SizedBox(height: 44)`）和内部 padding 支撑间距，实现无缝堆叠。
+  2. **精确比对 SVG 属性**：前置图标不能一概用 `20px` / `24px` 的默认尺寸，必须根据 `.dw-item svg` 定义的真实尺寸（如 `19px`），在 Flutter 的 `SizedBox` 与 `SvgPicture` 中同时声明相同的物理像素（如 `width: 19, height: 19`），完成像素对齐。
+
+-----
+
 ## 维护本文件
 
 - 本文是 UI 系列 spec 的总纲，**只放方法骨架与指针**。会变的清单（屏/组件/token 数值）一律指向设计稿真源，本文不枚举、不追着设计稿改——与最新设计稿没逐项对齐也没关系，方法对就行。

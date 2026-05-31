@@ -52,9 +52,8 @@ void main() {
       expect(find.bySemanticsLabel(hex), findsOneWidget);
     }
 
-    // Verify Cancel and Confirm buttons are rendered
-    expect(find.text(testL10n.sheetCancel), findsOneWidget);
-    expect(find.text(testL10n.sheetConfirm), findsOneWidget);
+    // Verify Create button is rendered
+    expect(find.text(testL10n.sheetCreate), findsOneWidget);
   });
 
   testWidgets('selecting a color updates selection state', (tester) async {
@@ -108,10 +107,10 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // Confirm button is initially disabled because name is empty
+      // Create button is initially disabled because name is empty
       final confirmButton = tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text(testL10n.sheetConfirm),
+          of: find.text(testL10n.sheetCreate),
           matching: find.byType(ElevatedButton),
         ),
       );
@@ -121,17 +120,17 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Personal Thoughts');
       await tester.pumpAndSettle();
 
-      // Confirm button should now be enabled
+      // Create button should now be enabled
       final confirmButtonEnabled = tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text(testL10n.sheetConfirm),
+          of: find.text(testL10n.sheetCreate),
           matching: find.byType(ElevatedButton),
         ),
       );
       expect(confirmButtonEnabled.onPressed, isNotNull);
 
-      // Tap Confirm
-      await tester.tap(find.text(testL10n.sheetConfirm));
+      // Tap Create
+      await tester.tap(find.text(testL10n.sheetCreate));
       await tester.pumpAndSettle();
 
       // Verify onSubmit callback parameter correctness and sheet closure
@@ -141,28 +140,6 @@ void main() {
       expect(find.text(testL10n.newJournal), findsNothing);
     },
   );
-
-  testWidgets('cancel button closes sheet without submission', (tester) async {
-    var submitFired = false;
-    await tester.pumpWidget(
-      buildSheetHost(onSubmit: (name, color) => submitFired = true),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    // Enter some text
-    await tester.enterText(find.byType(TextField), 'Work Notes');
-    await tester.pumpAndSettle();
-
-    // Click Cancel
-    await tester.tap(find.text(testL10n.sheetCancel));
-    await tester.pumpAndSettle();
-
-    // Verify sheet closed and no submission
-    expect(submitFired, false);
-    expect(find.text(testL10n.newJournal), findsNothing);
-  });
 
   testWidgets('color item hit area >= 44px', (tester) async {
     await tester.pumpWidget(buildSheetHost(onSubmit: ignoreSubmit));

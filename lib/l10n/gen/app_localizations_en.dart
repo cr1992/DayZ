@@ -103,6 +103,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchCancel => 'Cancel search';
 
   @override
+  String get searchHint => 'Search entries, tags, locations';
+
+  @override
   String get clear => 'Clear';
 
   @override
@@ -214,13 +217,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newJournal => 'New journal';
 
   @override
-  String get journalNameInputPlaceholder => 'Enter journal name';
+  String get sheetCreate => 'Create';
 
   @override
-  String get journalNameLabel => 'Journal name';
+  String get journalNameInputPlaceholder => 'e.g., Reading, Fitness, Travel';
 
   @override
-  String get journalColorLabel => 'Journal color';
+  String get journalNameLabel => 'Name';
+
+  @override
+  String get journalColorLabel => 'Cover Color';
 
   @override
   String get settings => 'Settings';

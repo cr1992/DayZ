@@ -101,6 +101,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchCancel => '取消搜索';
 
   @override
+  String get searchHint => '搜索日记、标签、地点';
+
+  @override
   String get clear => '清除';
 
   @override
@@ -209,13 +212,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newJournal => '新建日记本';
 
   @override
-  String get journalNameInputPlaceholder => '请输入日记本名称';
+  String get sheetCreate => '创建';
 
   @override
-  String get journalNameLabel => '日记本名称';
+  String get journalNameInputPlaceholder => '例如：读书、健身、远行';
 
   @override
-  String get journalColorLabel => '日记本颜色';
+  String get journalNameLabel => '名称';
+
+  @override
+  String get journalColorLabel => '封面色';
 
   @override
   String get settings => '设置';

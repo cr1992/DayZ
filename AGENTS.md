@@ -10,6 +10,7 @@
 | spec 怎么写、执行协议、档位选择 | `spec-kit/spec-guide.md`（规则真源）；DayZ overlay `docs/spec-guide-ai.md` |
 | 当前功能列表、状态、优先级、依赖 | `specs/README.md` |
 | 单个功能的需求 / 设计 / 任务 | `specs/active/<feature>/` |
+| UI 像素级对齐还原与避坑 SOP | [docs/design/10-ui-restore-and-design-sync.md](file:///Users/xiaji/dev/DayZ/docs/design/10-ui-restore-and-design-sync.md#13-实战踩坑与-sop-避坑沉淀以侧边栏全部日记与日记本对齐为例) |
 
 ## 工作流
 

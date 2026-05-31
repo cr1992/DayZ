@@ -10,12 +10,13 @@ import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
 import 'package:dayz/ui/shell/fab_speed_dial.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
+import 'package:dayz/ui/widgets/dayz_search_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 
 /// The layout shell for DayZ pages containing shared drawer, glass app bar, and FAB.
 ///
 /// Author: @Ray
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   final Widget body;
   final List<JournalSummary> journals;
   final String? currentJournalId;
@@ -40,22 +41,46 @@ class AppShell extends StatelessWidget {
   });
 
   @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  bool _isSearching = false;
+  bool _renderSearch = false;
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final l10n = AppLocalizations.of(context);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
-    final route = currentRoute ?? _getRouteName(context);
+    final route = widget.currentRoute ?? _getRouteName(context);
 
     return Scaffold(
       backgroundColor: colors.bg,
       drawer: ShellDrawer(
-        journals: journals,
-        currentJournalId: currentJournalId,
-        allJournalCount: allJournalCount,
-        favoriteCount: favoriteCount,
-        onSelectJournal: onSelectJournal,
-        onNavigate: onNavigate,
-        onNewJournal: onNewJournal,
+        journals: widget.journals,
+        currentJournalId: widget.currentJournalId,
+        allJournalCount: widget.allJournalCount,
+        favoriteCount: widget.favoriteCount,
+        onSelectJournal: widget.onSelectJournal,
+        onNavigate: widget.onNavigate,
+        onNewJournal: widget.onNewJournal,
       ),
       floatingActionButton: const FabSpeedDial(),
       drawerEnableOpenDragGesture: !disableAnimations,
@@ -63,6 +88,49 @@ class AppShell extends StatelessWidget {
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             DayzGlassAppBar(
+              isSearching: _isSearching,
+              searchWidget: _renderSearch
+                  ? DayzSearchField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      hintText: l10n.searchHint,
+                      onCancel: () {
+                        setState(() {
+                          _isSearching = false;
+                        });
+                        _searchController.clear();
+                        _searchFocusNode.unfocus();
+                        Future.delayed(const Duration(milliseconds: 200), () {
+                          if (mounted && !_isSearching) {
+                            setState(() {
+                              _renderSearch = false;
+                            });
+                          }
+                        });
+                      },
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          widget.onNavigate(Routes.search);
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            if (mounted) {
+                              setState(() {
+                                _isSearching = false;
+                              });
+                              _searchController.clear();
+                              _searchFocusNode.unfocus();
+                              Future.delayed(const Duration(milliseconds: 200), () {
+                                if (mounted && !_isSearching) {
+                                  setState(() {
+                                    _renderSearch = false;
+                                  });
+                                }
+                              });
+                            }
+                          });
+                        }
+                      },
+                    )
+                  : null,
               title: Text(_getTitle(route, l10n)),
               leading: Builder(
                 builder: (context) {
@@ -100,7 +168,13 @@ class AppShell extends StatelessWidget {
                   label: l10n.search,
                   path: DayzIcons.searchPath,
                   colors: colors,
-                  onPressed: () => onNavigate(Routes.search),
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                      _renderSearch = true;
+                    });
+                    _searchFocusNode.requestFocus();
+                  },
                 ),
                 if (route == Routes.timeline) ...[
                   const SizedBox(width: 6.0),
@@ -108,7 +182,7 @@ class AppShell extends StatelessWidget {
                     label: l10n.onThisDay,
                     path: DayzIcons.historyClockPath,
                     colors: colors,
-                    onPressed: () => onNavigate(Routes.onthisday),
+                    onPressed: () => widget.onNavigate(Routes.onthisday),
                   ),
                 ],
               ],
@@ -118,7 +192,7 @@ class AppShell extends StatelessWidget {
         body: SafeArea(
           top: false, // NestedScrollView handles top padding
           bottom: true,
-          child: body,
+          child: widget.body,
         ),
       ),
     );

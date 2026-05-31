@@ -28,6 +28,9 @@ class DayzGlassAppBar extends StatefulWidget {
     this.centerTitle,
     this.automaticallyImplyLeading = false,
     this.blurSigma = defaultBlurSigma,
+    this.isSearching = false,
+    this.searchWidget,
+    this.searchAnimationDuration,
   });
 
   static const double defaultBlurSigma = 20;
@@ -48,6 +51,10 @@ class DayzGlassAppBar extends StatefulWidget {
   final bool? centerTitle;
   final bool automaticallyImplyLeading;
   final double blurSigma;
+
+  final bool isSearching;
+  final Widget? searchWidget;
+  final Duration? searchAnimationDuration;
 
   @override
   State<DayzGlassAppBar> createState() => _DayzGlassAppBarState();
@@ -88,6 +95,7 @@ class _DayzGlassAppBarState extends State<DayzGlassAppBar> {
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final duration = widget.searchAnimationDuration ?? dayzMotionDuration(context);
 
     return SliverAppBar(
       pinned: widget.pinned,
@@ -106,33 +114,94 @@ class _DayzGlassAppBarState extends State<DayzGlassAppBar> {
               statusBarColor: Colors.transparent,
             ),
       foregroundColor: colors.ink,
-      automaticallyImplyLeading: widget.automaticallyImplyLeading,
+      automaticallyImplyLeading:
+          widget.isSearching ? false : widget.automaticallyImplyLeading,
       centerTitle: widget.centerTitle,
       toolbarHeight: widget.toolbarHeight,
       titleSpacing: DayzSpacing.s4,
-      leadingWidth: widget.leading != null ? 44.0 + DayzSpacing.s4 : null,
+      leadingWidth: (!widget.isSearching && widget.leading != null)
+          ? 44.0 + DayzSpacing.s4
+          : null,
       leading: widget.leading != null
-          ? Padding(
-              padding: const EdgeInsets.only(left: DayzSpacing.s4),
-              child: widget.leading,
+          ? IgnorePointer(
+              ignoring: widget.isSearching,
+              child: AnimatedOpacity(
+                opacity: widget.isSearching ? 0.0 : 1.0,
+                duration: duration,
+                curve: Curves.easeOutCubic,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: DayzSpacing.s4),
+                  child: widget.leading,
+                ),
+              ),
             )
           : null,
-      title: widget.title,
+      title: widget.title != null
+          ? IgnorePointer(
+              ignoring: widget.isSearching,
+              child: AnimatedOpacity(
+                opacity: widget.isSearching ? 0.0 : 1.0,
+                duration: duration,
+                curve: Curves.easeOutCubic,
+                child: widget.title,
+              ),
+            )
+          : null,
       actions: widget.actions.isNotEmpty
           ? [
-              ...widget.actions,
-              const SizedBox(width: DayzSpacing.s4 - 8.0),
+              IgnorePointer(
+                ignoring: widget.isSearching,
+                child: AnimatedOpacity(
+                  opacity: widget.isSearching ? 0.0 : 1.0,
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...widget.actions,
+                      const SizedBox(width: DayzSpacing.s4 - 8.0),
+                    ],
+                  ),
+                ),
+              ),
             ]
-          : widget.actions,
+          : null,
       iconTheme: IconThemeData(color: colors.ink),
       actionsIconTheme: IconThemeData(color: colors.ink),
       titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
         color: colors.ink,
         fontWeight: FontWeight.w600,
       ),
-      flexibleSpace: _DayzGlassAppBarSurface(
-        scrolledUnder: _effectiveScrolledUnder,
-        blurSigma: widget.blurSigma,
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: [
+          _DayzGlassAppBarSurface(
+            scrolledUnder: _effectiveScrolledUnder,
+            blurSigma: widget.blurSigma,
+          ),
+          IgnorePointer(
+            ignoring: !widget.isSearching,
+            child: AnimatedOpacity(
+              opacity: widget.isSearching ? 1.0 : 0.0,
+              duration: duration,
+              curve: Curves.easeOutCubic,
+              child: AnimatedSlide(
+                offset: widget.isSearching ? Offset.zero : const Offset(0, -0.05),
+                duration: duration,
+                curve: Curves.easeOutCubic,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    height: widget.toolbarHeight,
+                    child: Center(
+                      child: widget.searchWidget,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -70,7 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Confirm
-    await tester.tap(find.text(testL10n.sheetConfirm));
+    await tester.tap(find.text(testL10n.sheetCreate));
     await tester.pumpAndSettle();
 
     // Open drawer again to verify Travel Journal was added
