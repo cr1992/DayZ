@@ -24,7 +24,7 @@
 ## 规则
 
 - **中文回复**：本项目的问答与开发指导始终使用中文。
-- **禁止自行提交**：未经用户明确许可，严禁执行 `git commit` 或 push。
+- **绝对禁止自行提交**：未经当次明确的交互授权，严禁自行执行 `git commit` 或 push。即使在用户泛指“收尾提交”的语境下，也必须在执行 commit 前，向用户出示 Diff 与 commit message，并在用户明确回复“确认提交”或类似确认指令后，方可执行 commit 动作。
 - **作者署名统一 `@Ray`**。
 - **授权 MPL-2.0（混合授权）**：新建 Dart 源文件 MUST 加 MPL-2.0 头注（模板见 README「License」）。`packages/appflowy-editor/` 保留上游 AGPL-3.0 / MPL-2.0 双授权，不可重新授权。
 - **包名 `com.dayz`**，iOS 13+，Android minSdk 26。
