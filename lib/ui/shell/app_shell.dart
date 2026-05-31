@@ -96,19 +96,21 @@ class AppShell extends StatelessWidget {
                 },
               ),
               actions: [
-                if (route == Routes.timeline)
-                  _buildActionButton(
-                    label: l10n.onThisDay,
-                    path: DayzIcons.historyClockPath,
-                    colors: colors,
-                    onPressed: () => onNavigate(Routes.onthisday),
-                  ),
                 _buildActionButton(
                   label: l10n.search,
                   path: DayzIcons.searchPath,
                   colors: colors,
                   onPressed: () => onNavigate(Routes.search),
                 ),
+                if (route == Routes.timeline) ...[
+                  const SizedBox(width: 6.0),
+                  _buildActionButton(
+                    label: l10n.onThisDay,
+                    path: DayzIcons.historyClockPath,
+                    colors: colors,
+                    onPressed: () => onNavigate(Routes.onthisday),
+                  ),
+                ],
               ],
             ),
           ];
@@ -125,7 +127,7 @@ class AppShell extends StatelessWidget {
   String _getTitle(String? route, AppLocalizations l10n) {
     switch (route) {
       case Routes.timeline:
-        return l10n.timeline;
+        return '';
       case Routes.reader:
         return l10n.reader;
       case Routes.editor:

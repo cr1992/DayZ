@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/demo/debug_home.dart';
-import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
@@ -41,11 +40,11 @@ abstract final class Routes {
   static const String debugHomePath = '/debugHome';
 }
 
-/// Global shared state container for the shell.
+// Global shared state container for the shell.
 final ShellState shellState = ShellState();
-EntryRepo? _timelineEntryRepo;
+dynamic _timelineEntryRepo;
 
-void registerTimelineEntryRepo(EntryRepo? repo) {
+void registerTimelineEntryRepo(dynamic repo) {
   _timelineEntryRepo = repo;
 }
 
@@ -101,51 +100,65 @@ final GoRouter appRouter = GoRouter(
             return TimelineShellPage(repo: repo, shellState: shellState);
           },
         ),
-        GoRoute(
-          name: Routes.reader,
-          path: Routes.readerPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.reader),
-        ),
-        GoRoute(
-          name: Routes.onthisday,
-          path: Routes.onthisdayPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.onThisDay),
-        ),
-        GoRoute(
-          name: Routes.settings,
-          path: Routes.settingsPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.settings),
-        ),
-        GoRoute(
-          name: Routes.calendar,
-          path: Routes.calendarPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.calendar),
-        ),
-        GoRoute(
-          name: Routes.favorites,
-          path: Routes.favoritesPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.favorites),
-        ),
-        GoRoute(
-          name: Routes.trash,
-          path: Routes.trashPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.trash),
-        ),
-        GoRoute(
-          name: Routes.memory,
-          path: Routes.memoryPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.memoryCardExport),
-        ),
       ],
     ),
     // Bounded-free standalone routes
+    GoRoute(
+      name: Routes.reader,
+      path: Routes.readerPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.reader,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.onthisday,
+      path: Routes.onthisdayPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.onThisDay,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.settings,
+      path: Routes.settingsPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.settings,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.calendar,
+      path: Routes.calendarPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.calendar,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.favorites,
+      path: Routes.favoritesPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.favorites,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.trash,
+      path: Routes.trashPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.trash,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.memory,
+      path: Routes.memoryPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.memoryCardExport,
+        showAppBar: true,
+      ),
+    ),
     GoRoute(
       name: Routes.editor,
       path: Routes.editorPath,

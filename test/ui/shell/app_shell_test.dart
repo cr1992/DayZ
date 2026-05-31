@@ -19,7 +19,7 @@ void main() {
           builder: (context, state, child) => AppShell(
             body: child,
             onSelectJournal: (_) {},
-            onNavigate: (route) => context.goNamed(route),
+            onNavigate: (route) => context.pushNamed(route),
             onNewJournal: () {},
           ),
           routes: [

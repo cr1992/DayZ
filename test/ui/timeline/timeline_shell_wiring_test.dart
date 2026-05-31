@@ -112,7 +112,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('工作日志首篇'), findsOneWidget);
-    expect(find.text(testL10n.timeline), findsOneWidget);
+    expect(find.text(testL10n.timeline), findsNothing);
     expect(
       find.byKey(const ValueKey<String>('timeline-page-title')),
       findsNothing,

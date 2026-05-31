@@ -110,9 +110,20 @@ class _DayzGlassAppBarState extends State<DayzGlassAppBar> {
       centerTitle: widget.centerTitle,
       toolbarHeight: widget.toolbarHeight,
       titleSpacing: DayzSpacing.s4,
-      leading: widget.leading,
+      leadingWidth: widget.leading != null ? 44.0 + DayzSpacing.s4 : null,
+      leading: widget.leading != null
+          ? Padding(
+              padding: const EdgeInsets.only(left: DayzSpacing.s4),
+              child: widget.leading,
+            )
+          : null,
       title: widget.title,
-      actions: widget.actions,
+      actions: widget.actions.isNotEmpty
+          ? [
+              ...widget.actions,
+              const SizedBox(width: DayzSpacing.s4 - 8.0),
+            ]
+          : widget.actions,
       iconTheme: IconThemeData(color: colors.ink),
       actionsIconTheme: IconThemeData(color: colors.ink),
       titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
