@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
@@ -51,15 +52,20 @@ class ShellDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
-    final textTheme = context.dayzText;
     final l10n = AppLocalizations.of(context);
     final totalCount =
         allJournalCount ??
         journals.fold<int>(0, (sum, journal) => sum + journal.count);
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final double computedBottom = bottomPadding > 0
+        ? bottomPadding * 0.6
+        : DayzSpacing.s3;
 
     return Drawer(
       backgroundColor: colors.bg,
+      width: (MediaQuery.sizeOf(context).width * 0.85).clamp(0.0, 320.0),
       child: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -78,14 +84,8 @@ class ShellDrawer extends StatelessWidget {
                       label: l10n.allJournals,
                       isSelected: currentJournalId == null,
                       onTap: () => onSelectJournal(null),
-                      leading: _buildSvgIcon(
-                        DayzIcons.notebookPath,
-                        colors.ink,
-                      ),
-                      trailing: Text(
-                        l10n.entryCount(totalCount),
-                        style: textTheme.caption.copyWith(color: colors.ink3),
-                      ),
+                      iconPath: DayzIcons.notebookPath,
+                      count: totalCount,
                     ),
 
                     // Active journals
@@ -95,16 +95,13 @@ class ShellDrawer extends StatelessWidget {
                         label: journal.name,
                         isSelected: currentJournalId == journal.id,
                         onTap: () => onSelectJournal(journal.id),
-                        trailing: Text(
-                          l10n.entryCount(journal.count),
-                          style: textTheme.caption.copyWith(color: colors.ink3),
-                        ),
+                        count: journal.count,
                         leading: _buildColorDot(journal.color),
                       );
                     }),
 
                     const SizedBox(height: DayzSpacing.s2),
-                    const Divider(height: 1, thickness: 0.5),
+                    Divider(height: 1, thickness: 1, color: colors.hairline),
 
                     // --- Group 2: Browse ---
                     const SizedBox(height: DayzSpacing.s2),
@@ -114,45 +111,29 @@ class ShellDrawer extends StatelessWidget {
                       label: l10n.onThisDay,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.onthisday),
-                      leading: _buildSvgIcon(
-                        DayzIcons.historyClockPath,
-                        colors.ink,
-                      ),
+                      iconPath: DayzIcons.historyClockPath,
                     ),
                     _buildDrawerItem(
                       context: context,
                       label: l10n.favorites,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.favorites),
-                      leading: _buildSvgIcon(
-                        DayzIcons.favoriteStarPath,
-                        colors.ink,
-                      ),
-                      trailing: favoriteCount == null
-                          ? null
-                          : Text(
-                              l10n.entryCount(favoriteCount!),
-                              style: textTheme.caption.copyWith(
-                                color: colors.ink3,
-                              ),
-                            ),
+                      iconPath: DayzIcons.favoriteStarPath,
+                      count: favoriteCount,
                     ),
                     _buildDrawerItem(
                       context: context,
                       label: l10n.calendar,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.calendar),
-                      leading: _buildSvgIcon(
-                        DayzIcons.calendarPath,
-                        colors.ink,
-                      ),
+                      iconPath: DayzIcons.calendarPath,
                     ),
                     _buildDrawerItem(
                       context: context,
                       label: l10n.trash,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.trash),
-                      leading: _buildSvgIcon(DayzIcons.trashPath, colors.ink),
+                      iconPath: DayzIcons.trashPath,
                     ),
                   ],
                 ),
@@ -160,15 +141,20 @@ class ShellDrawer extends StatelessWidget {
             ),
 
             // --- Group 3: Settings ---
-            const Divider(height: 1, thickness: 0.5),
+            Divider(height: 1, thickness: 1, color: colors.hairline),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: DayzSpacing.s2),
+              padding: EdgeInsets.fromLTRB(
+                DayzSpacing.s3,
+                DayzSpacing.s2,
+                DayzSpacing.s3,
+                computedBottom,
+              ),
               child: _buildDrawerItem(
                 context: context,
                 label: l10n.settings,
                 isSelected: false,
                 onTap: () => onNavigate(Routes.settings),
-                leading: _buildSvgIcon(DayzIcons.settingsPath, colors.ink),
+                iconPath: DayzIcons.settingsPath,
               ),
             ),
           ],
@@ -185,24 +171,27 @@ class ShellDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         DayzSpacing.s5,
+        DayzSpacing.s5,
+        DayzSpacing.s5,
         DayzSpacing.s4,
-        DayzSpacing.s5,
-        DayzSpacing.s5,
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: colors.accent,
+              color: colors.accentSoft,
               borderRadius: BorderRadius.circular(DayzRadii.full),
-              boxShadow: colors.shadowSm,
             ),
             child: Text(
               l10n.drawerProfileInitial,
-              style: textTheme.h3.copyWith(color: colors.onAccent),
+              style: textTheme.h3.copyWith(
+                color: colors.accentInk,
+                fontSize: 20.0,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: DayzSpacing.s3),
@@ -217,14 +206,18 @@ class ShellDrawer extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.body.copyWith(
                     color: colors.ink,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   l10n.drawerProfileStatus,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.caption.copyWith(color: colors.ink3),
+                  style: textTheme.caption.copyWith(
+                    color: colors.ink3,
+                    fontSize: 12.0,
+                  ),
                 ),
               ],
             ),
@@ -243,9 +236,11 @@ class ShellDrawer extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DayzSpacing.s4,
-        vertical: DayzSpacing.s2,
+      padding: const EdgeInsets.fromLTRB(
+        DayzSpacing.s5,
+        DayzSpacing.s2,
+        DayzSpacing.s3,
+        DayzSpacing.s2,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -271,10 +266,10 @@ class ShellDrawer extends StatelessWidget {
                   ),
                   icon: SvgPicture.string(
                     _svg(DayzIcons.plusPath),
-                    width: 18,
-                    height: 18,
+                    width: 15,
+                    height: 15,
                     colorFilter: ColorFilter.mode(
-                      colors.accent,
+                      colors.ink3,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -294,9 +289,11 @@ class ShellDrawer extends StatelessWidget {
   Widget _buildSectionLabel(
     BuildContext context,
     String label, {
-    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(
-      horizontal: DayzSpacing.s4,
-      vertical: DayzSpacing.s1,
+    EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(
+      DayzSpacing.s5,
+      DayzSpacing.s4,
+      DayzSpacing.s5,
+      DayzSpacing.s2,
     ),
   }) {
     final colors = context.dayz;
@@ -307,8 +304,10 @@ class ShellDrawer extends StatelessWidget {
       child: Text(
         label,
         style: textTheme.caption.copyWith(
-          color: colors.ink2,
-          fontWeight: FontWeight.bold,
+          color: colors.ink3,
+          fontSize: 11.0,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.32,
         ),
       ),
     );
@@ -319,15 +318,47 @@ class ShellDrawer extends StatelessWidget {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
+    String? iconPath,
     Widget? leading,
-    Widget? trailing,
+    int? count,
   }) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
+
+    Widget? actualLeading = leading;
+    if (iconPath != null) {
+      actualLeading = _buildSvgIcon(
+        iconPath,
+        isSelected ? colors.accentInk : colors.ink2,
+      );
+    }
+
+    if (actualLeading != null) {
+      actualLeading = SizedBox(
+        width: 20,
+        height: 20,
+        child: Center(
+          child: actualLeading,
+        ),
+      );
+    }
+
+    Widget? trailing;
+    if (count != null) {
+      trailing = Text(
+        l10n.entryCount(count),
+        style: textTheme.caption.copyWith(
+          color: isSelected ? colors.accentInk : colors.ink3,
+          fontSize: 12.0,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: DayzSpacing.s2,
+        horizontal: DayzSpacing.s3,
         vertical: 2.0,
       ),
       child: Semantics(
@@ -336,15 +367,17 @@ class ShellDrawer extends StatelessWidget {
         label: label,
         child: ExcludeSemantics(
           child: SizedBox(
-            height: 48,
+            height: 44,
             child: Material(
               color: isSelected ? colors.accentSoft : Colors.transparent,
               borderRadius: BorderRadius.circular(DayzRadii.sm),
               child: Stack(
+                fit: StackFit.expand,
+                clipBehavior: Clip.none,
                 children: [
                   if (isSelected)
                     PositionedDirectional(
-                      start: 0,
+                      start: -3,
                       top: 9,
                       bottom: 9,
                       child: Container(
@@ -366,25 +399,27 @@ class ShellDrawer extends StatelessWidget {
                         horizontal: DayzSpacing.s3,
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (leading != null) ...[
-                            leading,
+                          if (actualLeading != null) ...[
+                            actualLeading,
                             const SizedBox(width: DayzSpacing.s3),
                           ],
                           Expanded(
                             child: Text(
                               label,
                               style: textTheme.body.copyWith(
+                                fontSize: 15.0,
                                 color: isSelected
-                                    ? colors.accentStrong
+                                    ? colors.accentInk
                                     : colors.ink,
                                 fontWeight: isSelected
-                                    ? FontWeight.bold
+                                    ? FontWeight.w600
                                     : FontWeight.normal,
                               ),
                             ),
                           ),
-                          ?trailing,
+                          if (trailing != null) trailing,
                         ],
                       ),
                     ),
@@ -401,14 +436,11 @@ class ShellDrawer extends StatelessWidget {
   Widget _buildColorDot(String? colorStr) {
     final color = _parseColor(colorStr) ?? Colors.transparent;
     return Container(
-      width: 10,
-      height: 10,
+      width: 11,
+      height: 11,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
-        border: colorStr == null
-            ? null
-            : Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
       ),
     );
   }
