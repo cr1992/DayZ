@@ -2,6 +2,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -211,6 +212,8 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
 
     // We align secondary buttons exactly above the original FAB offset
     final double fabTopY = widget.fabOffset.dy;
+    final double fabLeftX = widget.fabOffset.dx;
+    final double fabWidth = widget.fabSize.width;
 
     final actions = [
       _ActionItem(
@@ -230,158 +233,206 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
       ),
     ];
 
-    return Stack(
-      children: [
-        // 1. Scrim barrier
-        GestureDetector(
-          onTap: _handleClose,
-          child: Semantics(
-            label: l10n.close,
-            button: true,
-            child: AnimatedBuilder(
-              animation: _fadeAnimation,
-              builder: (context, _) {
-                return Container(
-                  color: colors.overlay.withValues(
-                    alpha: colors.overlay.a * _fadeAnimation.value,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-
-        // 2. Action buttons list
-        Positioned(
-          bottom: MediaQuery.of(context).size.height - fabTopY + DayzSpacing.s3,
-          left: 0,
-          right: 0,
-          child: AnimatedBuilder(
-            animation: _animController,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, _slideAnimation.value),
-                child: Opacity(opacity: _fadeAnimation.value, child: child),
-              );
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: actions.asMap().entries.map((entry) {
-                final action = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: DayzSpacing.s2),
-                  child: Semantics(
-                    button: true,
-                    label: action.label,
-                    child: ExcludeSemantics(
-                      child: GestureDetector(
-                        onTap: () => widget.onAction(action.type),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Text label bubble
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: DayzSpacing.s3,
-                                vertical: DayzSpacing.s1 + 2.0,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(
-                                  DayzRadii.md,
-                                ),
-                                boxShadow: colors.shadowSm,
-                              ),
-                              child: Text(
-                                action.label,
-                                style: textTheme.body.copyWith(
-                                  color: colors.ink,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: DayzSpacing.s2),
-                            // Rounded icon button
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: colors.surface,
-                                boxShadow: colors.shadowSm,
-                                border: Border.all(
-                                  color: colors.hairline,
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Center(
-                                child: SvgPicture.string(
-                                  _svg(action.iconPath),
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(
-                                    colors.accent,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          // 1. Scrim barrier with blur and paper tint
+          GestureDetector(
+            onTap: _handleClose,
+            child: Semantics(
+              label: l10n.close,
+              button: true,
+              child: AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, _) {
+                  return ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 2.0 * _fadeAnimation.value,
+                        sigmaY: 2.0 * _fadeAnimation.value,
+                      ),
+                      child: Container(
+                        color: colors.bg.withValues(
+                          alpha: 0.55 * _fadeAnimation.value,
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-
-        // 3. Mirror the original FAB on top of the overlay (without triggering overlay actions)
-        Positioned(
-          left: widget.fabOffset.dx,
-          top: widget.fabOffset.dy,
-          width: widget.fabSize.width,
-          height: widget.fabSize.height,
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _fadeAnimation,
-              builder: (context, child) {
-                return Opacity(
-                  opacity:
-                      1.0 -
-                      _fadeAnimation.value *
-                          0.3, // Dim the original FAB slightly
-                  child: child,
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: colors.fabGradient,
-                  boxShadow: colors.shadowMd,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 0.5,
-                  ),
-                ),
-                child: Center(
-                  child: SvgPicture.string(
-                    _svg(DayzIcons.plusPath),
-                    width: 24,
-                    height: 24,
-                    colorFilter: ColorFilter.mode(
-                      colors.onAccent,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
-        ),
-      ],
+
+          // 2. Action buttons list (aligned right, matching FAB center line)
+          Positioned(
+            bottom: MediaQuery.sizeOf(context).height - fabTopY + DayzSpacing.s3,
+            right: MediaQuery.sizeOf(context).width - fabLeftX - fabWidth + 5.0,
+            child: AnimatedBuilder(
+              animation: _animController,
+              builder: (context, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: actions.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final action = entry.value;
+
+                    // Stagger animation: camera (index 2, bottom) starts first, text (index 0, top) last
+                    final double start = ((2 - idx) * 40) / 220.0;
+                    final double end = (start + 0.6).clamp(0.0, 1.0);
+
+                    final itemFadeValue = Tween<double>(begin: 0.0, end: 1.0).transform(
+                      CurvedAnimation(
+                        parent: _animController,
+                        curve: Interval(start, end, curve: Curves.easeOut),
+                      ).value,
+                    );
+
+                    final itemSlideValue = Tween<double>(begin: 10.0, end: 0.0).transform(
+                      CurvedAnimation(
+                        parent: _animController,
+                        curve: Interval(start, end, curve: Curves.easeOut),
+                      ).value,
+                    );
+
+                    return Opacity(
+                      opacity: itemFadeValue,
+                      child: Transform.translate(
+                        offset: Offset(0, itemSlideValue),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0), // gap: 12px
+                          child: Semantics(
+                            button: true,
+                            label: action.label,
+                            child: ExcludeSemantics(
+                              child: GestureDetector(
+                                onTap: () => widget.onAction(action.type),
+                                behavior: HitTestBehavior.opaque,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Text label bubble
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: colors.surface,
+                                        borderRadius: BorderRadius.circular(
+                                          DayzRadii.full,
+                                        ),
+                                        border: Border.all(
+                                          color: colors.hairline,
+                                          width: 1.0,
+                                        ),
+                                        boxShadow: colors.shadowSm,
+                                      ),
+                                      child: Text(
+                                        action.label,
+                                        style: textTheme.body.copyWith(
+                                          color: colors.ink,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10), // gap: 10px
+                                    // Rounded icon button (46x46)
+                                    Container(
+                                      width: 46,
+                                      height: 46,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: colors.surface,
+                                        boxShadow: colors.shadowSm,
+                                        border: Border.all(
+                                          color: colors.hairline,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.string(
+                                          _svg(action.iconPath),
+                                          width: 20,
+                                          height: 20,
+                                          colorFilter: ColorFilter.mode(
+                                            colors.accentInk,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+
+          // 3. Mirror the original FAB on top of the overlay (rotate and change color gradient)
+          Positioned(
+            left: widget.fabOffset.dx,
+            top: widget.fabOffset.dy,
+            width: widget.fabSize.width,
+            height: widget.fabSize.height,
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  // Interpolated gradient to shift color darker when open
+                  final Color colorStart = Color.lerp(
+                    Color.lerp(colors.accent, const Color(0xFFFFFFFF), 0.08)!,
+                    Color.lerp(colors.accentStrong, const Color(0xFFFFFFFF), 0.18)!,
+                    _fadeAnimation.value,
+                  )!;
+                  final Color colorMid = Color.lerp(colors.accent, colors.accentStrong, _fadeAnimation.value)!;
+                  final Color colorEnd = colors.accentStrong;
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [colorStart, colorMid, colorEnd],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                      boxShadow: colors.shadowMd,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Transform.rotate(
+                        angle: _fadeAnimation.value * (3.141592653589793 / 4), // 45 degrees
+                        child: SvgPicture.string(
+                          _svg(DayzIcons.plusPath),
+                          width: 24,
+                          height: 24,
+                          colorFilter: ColorFilter.mode(
+                            colors.onAccent,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
