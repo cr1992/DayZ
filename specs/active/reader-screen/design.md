@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-31
 文档状态：草稿
 ---
 
@@ -43,13 +43,13 @@
 - **理由：** 把「异步 / 占位 / 禁同步重建」收敛到一个 `ReaderImage`，使违红线的同步路径写不出来；与 ui-kit `DayzGallery`「只接 provider」契合。
 - **代价：** 首次进屏图为渐显（占位→图）；这是隐私加密媒体的固有代价，符合基调。
 
-### D5 · 只读正文渲染：先纯段落，AppFlowy 只读渲染器按交付物名预留
+### D5 · 只读正文渲染：v1 纯段落，富文本后续只替换正文注入点
 - **状态：** 采纳
-- **背景：** entry 正文存 `content_json` + `content_plain`（项目 CLAUDE.md）；AppFlowy 只读渲染器（解析 `content_json` → 富文本只读视图）归 `editor-json-contract` / 编辑屏 spec，本屏此刻不应自造富文本解析。设计稿 `.r-body p` 当前是衬线段落。
-- **选项：** (A) 本屏自写 `content_json` → 富文本解析渲染（与编辑屏重复、易分叉）；(B) 本屏先按 `content_plain` 渲染衬线段落（`.t-diary`），富文本只读渲染器就绪后经其交付物名替换正文区；(C) 阻塞等编辑屏。
-- **选择：** B。`ReaderBody`（`lib/ui/reader/reader_body.dart`）当前消费 `ReaderViewData.bodyParagraphs`（来自 `content_plain` 切段）渲染 `.t-diary` 衬线段落；预留「正文区 = 注入式 widget」，待 `editor-json-contract` 的**只读渲染器交付物**就绪后由其替换（**待确认**：该交付物名 / API，见已知风险）。
-- **理由：** 不阻塞本屏交付、不与编辑屏抢富文本解析归属；版式 / 排版角色（衬线 1.85）本就由本屏负责，正文「内容如何解析」可后插。
-- **代价：** 第一版正文为纯段落（无行内格式 / 列表 / 引用渲染）；待只读渲染器接入补齐，记已知风险。
+- **背景：** entry 正文存 `content_json` + `content_plain`；AppFlowy 只读渲染器（解析 `content_json` → 富文本只读视图）归 `editor-json-contract` / 编辑屏 spec，本屏此刻不应自造富文本解析。设计稿 `.r-body p` 当前是衬线段落，阅读屏 v1 的主要价值是交付版式、媒体、菜单、收藏、软删与移本等屏内行为。
+- **选项：** (A) 本屏自写 `content_json` → 富文本解析渲染（与编辑屏重复、易分叉）；(B) 本屏 v1 按 `content_plain` 渲染衬线段落（`.t-diary`），富文本只读渲染器后续只替换正文区；(C) 阻塞等编辑屏。
+- **选择：** B。`ReaderBody`（`lib/ui/reader/reader_body.dart`）消费 `ReaderViewData.bodyParagraphs`（来自 `content_plain` 切段）渲染 `.t-diary` 衬线段落；保留「正文区 = 可注入 widget」的扩展点。后续接入 `editor-json-contract` 的富文本只读渲染器时，只替换该注入点，不改阅读屏的整体结构、媒体链路、顶栏 / sheet 动作或 v1 验收口径。
+- **理由：** 不阻塞本屏交付、不与编辑屏抢富文本解析归属；版式 / 排版角色（衬线 1.85）本就由本屏负责，正文「内容如何解析」可后插。该边界已在 2026-05-31 经 @Ray 确认，作为正式 v1 决策记录。
+- **代价：** 第一版正文为纯段落（无行内格式 / 列表 / 引用 / 行内图渲染）；这不是 reader-screen v1 的缺陷，而是后续富文本只读渲染接入范围。
 
 ### D6 · 收藏 / 删除 / 移本：乐观 UI + Repo 写入 + toast 编排（对齐 screen.js）
 - **状态：** 采纳
@@ -97,7 +97,7 @@ graph TD
   ASM -. 取数仅经 .-> TR[TagRepo]
   CTRL -. 取列表仅经 .-> JR[JournalRepo · 移到日记本选择器]
   RS --> BAR[DayzGlassAppBar（ui-kit）\nactions: DayzFavoriteStar + ⋯钮]
-  RS --> BODY[ReaderBody · .t-diary 衬线段落\n（待 editor-json-contract 只读渲染器替换）]
+  RS --> BODY[ReaderBody · content_plain .t-diary 衬线段落\n（后续富文本只读渲染仅替换注入点）]
   RS --> GAL[DayzGallery（ui-kit）\n列数随张数 + +N 蒙层 + expanded]
   RS --> IMG[ReaderImage · 异步缩略图 + 占位]
   IMG -. 异步 warmup / 已就绪 handle .-> TC[ThumbnailCache.warmup / ThumbnailHandle]
@@ -136,15 +136,15 @@ graph TD
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 → READY 门 / 降级）：**
   - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings` 约定、`.t-diary`/`.t-h1` 排版角色。**强依赖**，未定稿则本屏阻塞。
-  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`AppStrings`/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；其中 sheet 的 `.confirm` 工厂、`DayzGallery` 的 `expanded` 入参与「接 provider 列表 + 回调」契约需与 ui-kit 实测对齐（**待确认**：ui-kit 当前为草稿，`DayzGallery` 的 `+N` 展开是否暴露 `expanded`/回调入参须以其定稿 API 为准；不一致则停下回填本设计、不擅自改 ui-kit）。
+  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`AppStrings`/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；2026-05-31 已按当前代码确认 `DayzGallery(images, expanded, onMoreTap)`、`DayzSheet.actions/picker/confirm`、`DayzGlassAppBar` 与 `components.dart` barrel 均存在。若后续 ui-kit API 再变更，先回填本设计与任务白名单，再改 reader 屏实现。
   - `ui-shell-navigation`（已登记）：`Routes.reader`/`Routes.editor` 常量、`go_router` 的 `CupertinoPageRoute` 转场配置。**强依赖**；路由名是跨 spec 契约，引常量不写裸字符串。本屏被某来源屏跳转（时间线 / 搜索 / 收藏 / 往年今日）= 那些屏在其元素上接 `Routes.reader` 导航（归各来源屏 spec），本 spec 只负责「进入本屏后」与「从本屏导航编辑 / 返回」。
   - `data-layer`（已登记）：`EntryRepo`（组合查询 entry+媒体+标签 D6、`softDelete`/`hardDelete` D7、更新 favorite / journalId / 时区三件套封装 D5）、`MediaRepo`（媒体元数据）、`JournalRepo`（日记本列表）、`TagRepo`。**取数唯一入口（NF1 红线）**。未就绪时本屏用内存假 `ReaderViewData` / 假 Repo（demo + 测试），真接线作为依赖就绪后的后续，**MUST NOT 为赶进度在屏内直连 Drift / 写 SQL**。
   - `media-storage`（已登记）：`MediaStore.openRead(rel_path) → Stream<List<int>>`、`DMED` 加密容器、设备媒体密钥（独立于主密码、不参与 rekey）。本屏只消费读取入口。
   - `thumbnail-cache`（已登记）：`ThumbnailCache.warmup`（异步入队）、`ThumbnailHandle`（ready 态 + `ImageProvider`）。**红线**：本屏 MUST NOT 调用任何同步重建 / 全量重建入口（thumbnail-cache 只暴露 `warmup`，本就堵死该路径）。
-  - `editor-json-contract` / 编辑屏 spec（**非 README 依赖**，仅正文渲染关系）：富文本**只读渲染器**（解析 `content_json`）归彼处；本屏 D5 先按 `content_plain` 渲染衬线段落，预留注入点待其交付物替换（**待确认**：只读渲染器交付物名 / API；不可在本屏自造 `content_json` 解析）。
+  - `editor-json-contract` / 编辑屏 spec（**非 README 依赖**，仅正文渲染关系）：富文本**只读渲染器**（解析 `content_json`）归彼处；本屏 D5 正式决定 v1 先按 `content_plain` 渲染衬线段落，预留注入点待后续交付物替换。该交付物名 / API 未定不阻塞 reader-screen v1；不可在本屏自造 `content_json` 解析。
   - `design-sync-automation`（**非 README 依赖**，仅验证基建关系）：参数 / 几何抽取 harness、`element-map.yaml`（reader 屏映射 + fixed/content 标签）、SSIM 兜底属其交付物；本屏的样式参数闸（②）与布局几何闸（③）用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；「对设计稿源屏 `reader.html` 比框 / 比像素」的部分留给 design-sync 期二，不在本 spec 重造。golden 基线归本屏 `test/ui/reader/`（任务 `验收基建` 预批）。
 - **乐观 UI 写失败回滚（D6）**：收藏 / 移本乐观更新后若 Repo 写抛错，须回滚本地态并弹错误 toast；删除若 `softDelete` 失败则不返回、保留当前篇并提示。验证用注入「抛错的假 Repo」断言回滚。
-- **正文为纯段落（D5）**：第一版正文不渲染行内格式 / 列表 / 引用 / 行内图，待只读渲染器接入补齐；与设计稿 `.r-body p` 的纯段落示意一致，不算还原缺陷，记此以免误判。
+- **正文为纯段落（D5）**：第一版正文不渲染行内格式 / 列表 / 引用 / 行内图，待只读渲染器接入补齐；与设计稿 `.r-body p` 的纯段落示意一致，不算还原缺陷。reader-screen v1 的验收只覆盖 `content_plain` 段落渲染与阅读版式，不覆盖 `content_json` 富文本效果。
 - **`AppStrings` 追加而非新建**：本 spec 向 `ui-kit-components` 拥有的 `lib/ui/strings/app_strings.dart` **追加** reader 文案条目，MUST NOT 新建第二个文案类、MUST NOT 改既有条目；该共享文件已在 `## 文件变更` 显式列出并归入对应任务白名单（避免清单外越界写）。
 - **九宫格 `+N` 与 ≤9 张布局**：列数随张数（1/2/3/4/≥5）与第 9 格 `+N` 蒙层规则由 `DayzGallery` 承载，本屏只传图列表与展开态；张数 / 列数对应关系以 DESIGN-REF §3 与 ui-kit `DayzGallery` 定稿为准，本 spec 不重写网格算法。
 - **新文件加 MPL-2.0 头注**：`lib/ui/reader/*.dart`、`lib/demo/reader_demo.dart` 全部新建 Dart 文件 MUST 在顶部加 MPL-2.0 头注（模板见 README「License」/ AGENTS.md）。

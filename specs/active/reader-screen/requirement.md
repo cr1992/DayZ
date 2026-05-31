@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-31
 文档状态：草稿
 ---
 
@@ -20,7 +20,7 @@
 - **编辑功能本身**：动作菜单「编辑」MUST 仅经 `Routes.editor` 导航到编辑屏（携 entryId），编辑屏的富文本能力归 `editor-json-contract` / 编辑屏 spec；本 spec MUST NOT 实现任何编辑 / AppFlowy 命令。
 - **真实分享链路**：动作菜单「分享」在本 spec 仅触发一条 toast 占位反馈（对齐原型 `data-share` 行为）；真实分享（`RepaintBoundary.toImage` / `share_plus` / 链接生成）归后续 spec，本 spec SHALL NOT 接入真实分享 SDK。
 - **回收站列表与恢复 / 彻底删除**：删除在本屏只做「软删除（`EntryRepo.softDelete`）+ toast 撤销」，回收站屏（`trash`）与 30 天清理归各自 spec。
-- **正文富文本渲染引擎**：本 spec 的只读正文按设计稿 `.r-body p`（衬线段落）渲染纯文本 / 段落；AppFlowy 只读渲染器（解析 `content_json`）归 `editor-json-contract` 的渲染交付物，本 spec 按其只读渲染交付物名引用（**待确认**，见 design 已知风险）。
+- **正文富文本渲染引擎**：本 spec v1 的只读正文 SHALL 仅按 `content_plain` 切分段落，并按设计稿 `.r-body p`（衬线段落）渲染纯文本；MUST NOT 在本屏解析 `content_json`、实现 AppFlowy 只读渲染器或行内格式 / 列表 / 引用渲染。富文本只读渲染归 `editor-json-contract` / 编辑屏后续交付；未来仅替换 `ReaderBody` 的正文渲染注入点，不改变本屏版式、媒体、菜单与动作编排验收口径。
 - **相册查看器（全屏看图 / 缩放 / 翻页）**：点九宫格图进入的全屏查看器归 media-picker / 后续相册查看器 spec；本屏只做「九宫格展开（`+N` 蒙层就地展开）」。
 - **参数 / 几何抽取 harness 与 SSIM 兜底**：归 `design-sync-automation`；本 spec 用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验。
 
@@ -39,10 +39,10 @@
 - 结果：有封面才渲染 `read-hero`；有天气 / 地点 / 心情 / 标签才渲染对应 `r-meta` 元素；正文段落始终渲染；无任一字段时其行 / 块在 widget 树中不存在（`find` 不到），相邻块间距按存在的相邻元素折叠（不出现空槽撑出的间距）。
 
 ### R3 · 阅读版式结构与排版角色
-单篇阅读屏 SHALL 按 `.reader` 版式自上而下渲染：（可选）封面 `read-hero` → `r-kicker`（含日历图标 + 日期，日期走 `intl`）→ `h1`（衬线大标题）→ `r-meta`（weather-chip + tag + 地点，存在才渲染）→ `r-body`（衬线正文段落）→（可选）九宫格 → `r-tags`（标签组）。
+单篇阅读屏 SHALL 按 `.reader` 版式自上而下渲染：（可选）封面 `read-hero` → `r-kicker`（含日历图标 + 日期，日期走 `intl`）→ `h1`（衬线大标题）→ `r-meta`（weather-chip + tag + 地点，存在才渲染）→ `r-body`（基于 `content_plain` 的衬线纯文本段落）→（可选）九宫格 → `r-tags`（标签组）。
 - 前提：渲染 default 态长篇。
 - 操作：取各文本块的排版角色与样式。
-- 结果：标题用 `.t-h1` 衬线角色、正文段落用 `.t-diary` 衬线角色（`height==1.85`、`leadingDistribution==even`），kicker / 地点 meta 用 caption / 次要文本角色；顺序与设计稿 `reader.html` 一致；颜色 / 字号 / 间距 / 圆角全部取自 `context.dayz.*` / `DayzSpacing` / `DayzRadii`，**屏内无硬编码视觉值**。
+- 结果：标题用 `.t-h1` 衬线角色、正文段落用 `.t-diary` 衬线角色（`height==1.85`、`leadingDistribution==even`），正文 v1 只断言 `content_plain` 段落渲染，不断言 `content_json` 行内格式 / 列表 / 引用效果；kicker / 地点 meta 用 caption / 次要文本角色；顺序与设计稿 `reader.html` 一致；颜色 / 字号 / 间距 / 圆角全部取自 `context.dayz.*` / `DayzSpacing` / `DayzRadii`，**屏内无硬编码视觉值**。
 
 ### R4 · 封面与多图九宫格走加密媒体 + 异步缩略图
 Where 该 entry 有媒体，单篇阅读屏 SHALL 经 `MediaRepo` 取媒体元数据、经 `MediaStore.openRead` / `ThumbnailCache` 异步取解密后的封面与九宫格图，**MUST NOT 在构建 / 滚动路径同步重建缩略图**（缩略图只能经 `ThumbnailCache.warmup` 异步入队）。

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-31
 文档状态：草稿
 ---
 
@@ -140,7 +140,7 @@ graph LR
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`.t-diary` 排版角色（衬线 `height==1.85`/`leadingDistribution==even`）/`context.dayz` ｜ **关联需求：** R3 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/reader/reader_body.dart` ｜ **验收基建：** 无
 
 ### 背景
-`.r-body` 只读正文：第一版按 `ReaderViewData.bodyParagraphs`（来自 `content_plain` 切段）渲染衬线段落（`.t-diary`），预留「正文区 = 可注入 widget」的接口，待 `editor-json-contract` 只读渲染器替换（D5，记已知风险）。
+`.r-body` 只读正文：v1 按 `ReaderViewData.bodyParagraphs`（来自 `content_plain` 切段）渲染衬线纯文本段落（`.t-diary`）。本任务只交付并验收纯段落阅读；保留「正文区 = 可注入 widget」的接口，供后续 `editor-json-contract` 富文本只读渲染器替换（D5 决策），但本 spec 不解析 `content_json`。
 
 ### 实施
 1. 段落列表 → 衬线 `Text`（`.t-diary` 角色），段间距走 `DayzSpacing`。
@@ -149,6 +149,7 @@ graph LR
 ### 验收标准（做完即止）
 - 多段正文 → 渲染对应段落数（自动，`find` 段落 widget 计数）。
 - 段落 `TextStyle` 取自 `.t-diary` 角色（`height==1.85`、`leadingDistribution==even`、衬线字族）（自动：解析渲染后 style 断言值，对齐 tokens-theme R6）。
+- v1 不验 `content_json` 行内格式 / 列表 / 引用 / 行内图效果；测试夹具只喂 `content_plain` 切出的段落（自动，D5 决策边界）。
 
 ### 验收方式
 - 自动：
@@ -212,7 +213,7 @@ graph LR
 **同 spec 依赖：** T1, T2, T3, T4, T5 ｜ **跨 spec 依赖：** ui-kit-components：`DayzGlassAppBar`/`DayzGallery`/`DayzFavoriteStar`/`DayzSheet`/`DayzToast`/`DayzEmptyState`/`dayzMotionDuration`/`components.dart`；ui-shell-navigation：`Routes.reader`/`Routes.editor`（go_router + CupertinoPageRoute 转场）；design-tokens-theme：`context.dayz.*` ｜ **关联需求：** R1, R2, R3, R4, R5, R6, R7, NF1, NF2, NF3, NF5 ｜ **依据设计：** D1, D3, D7, D9 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart` ｜ **验收基建：** `test/ui/reader/golden/`（reader 屏 golden 基线，default/text 两态；归本屏，design-sync 期二复用）、`test/ui/reader/fakes/fake_repos.dart`（复用 T1/T5）
 
 ### 背景
-装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到走 `DayzEmptyState`。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
+装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到走 `DayzEmptyState`。正文区接 T4 的 `ReaderBody`，v1 只展示 `content_plain` 纯段落，不接 `content_json` 富文本渲染。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
 
 ### 实施
 1. 组装 slivers，按 R3 顺序 + R2 条件渲染（无封面 / 无 meta / 无九宫格则不入树）。
@@ -223,6 +224,7 @@ graph LR
 ### 验收标准（做完即止）
 - 进屏（go_router 推 `Routes.reader`，带 entryId）→ 经 `CupertinoPageRoute` 转场入场、返回钮 pop（自动：widget test 断言路由进入 / pop；转场类型由 shell 提供，断言 route 为 Cupertino 系）（R1）。
 - default 态 → read-hero / kicker / h1 / r-meta / r-body / 九宫格 / r-tags 顺序正确、几何不溢出（自动：`tester.getRect` 断顺序 + 包含 + 不溢出；fixed 元素（顶栏钮 / 收藏星）尺寸 ≥44）（R3, NF3）。
+- r-body v1 → 渲染 `content_plain` 段落，保持在 reader 版式顺序中；不验 `content_json` 富文本效果（自动，D5 决策边界）（R3）。
 - text 态（纯文字篇）→ 无 read-hero / 无 weather / 无地点 / 无九宫格元素（`find` 不到），无空槽（自动）（R2）。
 - 点收藏星 → 星态切换 + toast（自动，经 controller）（R6）；点 ⋯ → 弹六项动作菜单含分隔 + 删除 danger（自动，`find` 菜单项 + 顺序）（R7）。
 - 点九宫格 `+N` → 展开露全部、当前路由不变（自动：展开后图数增加 + 路由栈深度不变）（R5）。
