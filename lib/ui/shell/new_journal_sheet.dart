@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
+import 'package:dayz/ui/widgets/dayz_text_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
@@ -54,30 +55,19 @@ class _NewJournalSheet extends StatefulWidget {
 
 class _NewJournalSheetState extends State<_NewJournalSheet> {
   final TextEditingController _nameController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   String _selectedColor = kJournalColorPalette.first;
   bool _canSubmit = false;
-  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _nameController.addListener(_updateSubmitState);
-    _focusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
     super.dispose();
-  }
-
-  void _onFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
   }
 
   void _updateSubmitState() {
@@ -128,62 +118,30 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
           ),
           const SizedBox(height: DayzSpacing.s4),
 
-          // Name Input Field
-          Text(
-            l10n.journalNameLabel,
-            style: textTheme.overline.copyWith(color: colors.ink2),
+          // Name Input Field (DayzTextField)
+          DayzTextField(
+            controller: _nameController,
+            autofocus: true,
+            label: l10n.journalNameLabel,
+            hintText: l10n.journalNameInputPlaceholder,
+            maxWidth: null,
           ),
-          const SizedBox(height: DayzSpacing.s1),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(DayzRadii.sm),
-              boxShadow: _isFocused
-                  ? [
-                      BoxShadow(
-                        color: colors.accentRing,
-                        spreadRadius: 4.0,
-                        blurRadius: 0.0,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: TextField(
-              controller: _nameController,
-              focusNode: _focusNode,
-              autofocus: true,
-              style: textTheme.body.copyWith(color: colors.ink, fontSize: 15.0),
-              decoration: InputDecoration(
-                hintText: l10n.journalNameInputPlaceholder,
-                hintStyle: textTheme.body.copyWith(color: colors.ink3, fontSize: 15.0),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14.0,
-                  vertical: 11.0,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(DayzRadii.sm),
-                  borderSide: BorderSide(color: colors.hairline2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(DayzRadii.sm),
-                  borderSide: BorderSide(color: colors.accent, width: 1.0),
-                ),
+          // Color Selector Title with CSS margin/padding alignment
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 10.0, left: 2.0),
+            child: Text(
+              l10n.journalColorLabel,
+              style: textTheme.overline.copyWith(
+                color: colors.ink3,
+                fontSize: 12.5,
               ),
             ),
           ),
-          const SizedBox(height: DayzSpacing.s4),
 
-          // Color Selector Title
-          Text(
-            l10n.journalColorLabel,
-            style: textTheme.overline.copyWith(color: colors.ink2),
-          ),
-          const SizedBox(height: DayzSpacing.s2),
-
-          // Color Palette Selectors with 12px gap
+          // Color Palette Selectors with 12px gap (sp-3)
           Wrap(
             spacing: 12.0,
-            runSpacing: 8.0,
+            runSpacing: 12.0,
             children: kJournalColorPalette.map((colorHex) {
               final color = _parseColor(colorHex);
               final isSelected = _selectedColor == colorHex;
@@ -199,40 +157,46 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
                         _selectedColor = colorHex;
                       });
                     },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
+                    child: SizedBox(
                       width: 44,
                       height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: color, width: 2.0)
-                            : Border.all(color: Colors.transparent, width: 2.0),
-                      ),
-                      padding: const EdgeInsets.all(3.0),
-                      child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: color,
-                          border: isSelected
-                              ? Border.all(color: colors.surface, width: 2.0)
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: color,
+                                      spreadRadius: 4.0,
+                                      blurRadius: 0,
+                                    ),
+                                    BoxShadow(
+                                      color: colors.surface,
+                                      spreadRadius: 2.0,
+                                      blurRadius: 0,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: SvgPicture.string(
+                                    _svg(DayzIcons.checkPath),
+                                    width: 13,
+                                    height: 13,
+                                    colorFilter: const ColorFilter.mode(
+                                      Colors.white,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                )
                               : null,
                         ),
-                        child: isSelected
-                            ? Center(
-                                child: SvgPicture.string(
-                                  _svg(DayzIcons.checkPath),
-                                  width: 13,
-                                  height: 13,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.white,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              )
-                            : null,
                       ),
                     ),
                   ),

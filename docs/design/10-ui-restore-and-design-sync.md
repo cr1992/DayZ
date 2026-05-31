@@ -252,8 +252,16 @@ W3  依附件（undo-redo / media-picker / autosave-recovery 等）   W4  后置
   在实现列表条目（如“全部日记”、“工作本”）时，开发者惯性地加上了 `vertical: 2.0` 的垂直外边距；并且给前置 SVG 图标使用了常规的 `20px` 尺寸。
   - *结果*：这导致列表条目之间产生了 `4px` 的物理空隙。当条目被选中或 Hover 时，背景色块无法无缝相连，破坏了设计稿中圆角背景“无缝堆叠”的艺术连贯性；此外，图标尺寸与设计稿定义的 `width: 19px; height: 19px;` 产生了 `1px` 像素差。
 * **避坑 SOP**：
-  1. **检查 margin 级联**：在还原 Flutter 列表项时，必须检查 HTML 对应元素是否有 margin 设定。如果设计稿中无垂直 margin，Flutter 列表项的 vertical margin 必须强制设为 `0.0`，利用条目自身高度（如 `SizedBox(height: 44)`）和内部 padding 支撑间距，实现无缝堆叠。
+  1. **检查 margin 级联**：在还原 Flutter 列表项时，必须检查 HTML 对应元素是否有 margin 设定。如果设计稿中无垂直 margin，Flutter 列表项的 vertical margin 必须强制设为 `0.0`，利用条目自身高度（如 `SizedBox(height: 44)`） and 内部 padding 支撑间距，实现无缝堆叠。
   2. **精确比对 SVG 属性**：前置图标不能一概用 `20px` / `24px` 的默认尺寸，必须根据 `.dw-item svg` 定义的真实尺寸（如 `19px`），在 Flutter 的 `SizedBox` 与 `SvgPicture` 中同时声明相同的物理像素（如 `width: 19, height: 19`），完成像素对齐。
+
+### ③ 避坑 SOP 3：严禁在未确认的情况下手动生造基础交互组件，必须优先复用组件库且创建新组件须获得用户认可
+* **踩坑场景**：
+  在还原“新建日记本”弹窗中的输入框时，开发者直接用原生 `TextField` + `FocusNode` 监听 + `ValueListenableBuilder` 实现了带有外阴影（4px accentRing shadow）和特定圆角的输入框样式。
+  - *结果*：这导致代码严重冗余且未能复用已经经过打磨的通用输入框组件 `DayzTextField`。并且由于在 State 层面引入多余的 Focus 变更 `setState` 重新构建 `TextField`，导致在 iOS 系统上聚焦时触发了系统级 “Scan Text” 悬浮气泡，严重遮挡了 UI 文本。
+* **避坑 SOP**：
+  1. **原则上创建新组件需要 USER 的认可。** 必须严格遵循“自底向上”的分层构建策略，在动笔实现具体页面（屏幕层）前，先查阅 `lib/ui/widgets/`（组件层）下是否有现成的封装组件。
+  2. **优先复用组件库。** 诸如输入框（`DayzTextField`）、按钮（`DayzButton`）、对话框（`DayzDialog`）等具有特定设计规范和动效阴影的表单组件，必须优先使用现有的组件，切忌“凭感觉或局部需求”从零用原生 `TextField` 手写封装。
 
 -----
 
