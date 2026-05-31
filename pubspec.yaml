@@ -87,6 +87,9 @@ hooks:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+flutter_gen:
+  output: lib/gen/
+
 # The following section is specific to Flutter packages.
 flutter:
   generate: true
