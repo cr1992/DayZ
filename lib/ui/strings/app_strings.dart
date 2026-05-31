@@ -1,7 +1,11 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-/// Centralized user-facing strings for DayZ UI components.
+/// Legacy user-facing strings bucket kept only for older UI surfaces.
+///
+/// Do not add new copy here. New user-visible strings must live in
+/// `lib/l10n/app_zh.arb` and `lib/l10n/app_en.arb`, and be read via
+/// `AppLocalizations.of(context)`.
 ///
 /// Author: @Ray
 abstract final class AppStrings {
@@ -47,6 +51,12 @@ abstract final class AppStrings {
   static String galleryMoreCount(int count) => '+$count';
   static String entryCount(int count) => '$count 篇';
   static String yearsAgo(int years) => '$years 年前';
+  static const String loadingEarlier = '载入更早...';
+  static const String reachedOldest = '已经到最早的一篇了';
+  static const String timelineEmptyTitle = '这里还没有日记';
+  static const String timelineEmptyDescription = '轻点右下角，写下第一页。';
+  static const String jumpToDate = '跳转到日期';
+  static const String backToToday = '回到今天';
 
   // Shell and Navigation strings
   static const String drawerProfileName = 'DayZ';

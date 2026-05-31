@@ -40,6 +40,7 @@ class DayzEntryCard extends StatelessWidget {
     this.onTap,
     this.onImageTap,
     this.onGalleryMoreTap,
+    this.showFavorite = true,
   });
 
   final String title;
@@ -54,6 +55,7 @@ class DayzEntryCard extends StatelessWidget {
   final VoidCallback? onTap;
   final ValueChanged<int>? onImageTap;
   final VoidCallback? onGalleryMoreTap;
+  final bool showFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -122,20 +124,21 @@ class DayzEntryCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Semantics(
-                            container: true,
-                            button: onFavoritePressed != null,
-                            label: favorite
-                                ? AppStrings.unfavorite
-                                : AppStrings.favorite,
-                            child: ExcludeSemantics(
-                              child: DayzFavoriteStar(
-                                isFavorite: favorite,
-                                onPressed: onFavoritePressed,
-                                size: 16,
+                          if (showFavorite)
+                            Semantics(
+                              container: true,
+                              button: onFavoritePressed != null,
+                              label: favorite
+                                  ? AppStrings.unfavorite
+                                  : AppStrings.favorite,
+                              child: ExcludeSemantics(
+                                child: DayzFavoriteStar(
+                                  isFavorite: favorite,
+                                  onPressed: onFavoritePressed,
+                                  size: 16,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       if (summary.isNotEmpty) ...[

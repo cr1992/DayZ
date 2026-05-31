@@ -36,9 +36,9 @@ graph LR
 
 -----
 
-- [ ] T1 · TimelineController（注入 EntryRepo + 游标分页 + 按月分组）
+- [x] T1 · TimelineController（注入 EntryRepo + 游标分页 + 按月分组）
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `data-layer：EntryRepo.timeline({cursor, limit=30}) / EntryRepo.byId / （新增·待确认）monthCounts / entryDaysInMonth`；`design-tokens-theme：intl 约定` ｜ **关联需求：** R2, R5, NF1 ｜ **依据设计：** D3, D4, D6 ｜ **可改文件：** `lib/ui/timeline/timeline_controller.dart`, `lib/ui/timeline/timeline_month_section.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `data-layer：EntryRepo.timeline({cursor, limit=30}) / EntryRepo.byId / （新增·待确认）monthCounts / entryDaysInMonth`；`design-tokens-theme：intl 约定` ｜ **关联需求：** R2, R5, NF1 ｜ **依据设计：** D3, D4, D6 ｜ **可改文件：** `lib/ui/timeline/timeline_controller.dart`, `lib/ui/timeline/timeline_month_section.dart` ｜ **验收基建：** `test/ui/timeline/timeline_controller_test.dart`, `test/ui/timeline/fake_entry_repo.dart`
 
 ### 背景
 本屏的取数与状态核心，也是 NF1（Repository 边界）的把守层：`ChangeNotifier` 持「按月分组后的 `List<MonthSection>` + 当前 cursor + isLoading + reachedEnd + 当前 journalId」，构造注入 `EntryRepo`（便于 demo/test 喂假数据）。按月分组逻辑（把 `timeline()` 扁平页聚合成 `MonthSection{year, month, count?, entries}`）归本任务。**`MonthSection` 数据模型与分组辅助归 `timeline_month_section.dart`；分页/跳月状态机归 `timeline_controller.dart`。** 月份篇数/有条目日按 D4：优先 `EntryRepo.monthCounts`/`entryDaysInMonth`（待确认交付物），就绪前用已加载分页就地累计降级。
@@ -65,14 +65,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_controller_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · 内存假 EntryRepo（验收基建，demo/test 共享）
+- [x] T2 · 内存假 EntryRepo（验收基建，demo/test 共享）
 
 **同 spec 依赖：** T1（依赖其消费的 `EntryRepo` 取数方法形态）｜ **跨 spec 依赖：** `data-layer：EntryRepo 取数方法签名` ｜ **关联需求：** R8, NF1 ｜ **依据设计：** D8 ｜ **可改文件：** `test/ui/timeline/fake_entry_repo.dart`
 
@@ -100,16 +100,16 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_controller_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · 时间线滚动骨架（CustomScrollView + 三类 sliver）
+- [x] T3 · 时间线滚动骨架（CustomScrollView + 三类 sliver）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `ui-kit-components：DayzGlassAppBar(sliver) / DayzMonthHeader / DayzEntryCard`；`design-tokens-theme：context.dayz / DayzSpacing` ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`, `lib/ui/timeline/timeline_month_section.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `ui-kit-components：DayzGlassAppBar(sliver) / DayzMonthHeader / DayzEntryCard`；`design-tokens-theme：context.dayz / DayzSpacing` ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`, `lib/ui/timeline/timeline_month_section.dart` ｜ **验收基建：** `test/ui/timeline/timeline_page_skeleton_test.dart`
 
 ### 背景
 搭 `TimelinePage` 的 `CustomScrollView`：slivers = `DayzGlassAppBar(pinned)` → 每个 `MonthSection`（`SliverPersistentHeader(pinned, DayzMonthHeader)` + `SliverList(DayzEntryCard)`）→ 尾部 loader 占位 sliver。本任务只搭结构与顺序（loader 文案态归 T6、吸顶阴影/卡片字段归 T4）。组件未就绪时用走 token 的最小内联占位，标 TODO 待替换（见 design 已知风险）。归属：sliver 编排在 `timeline_page.dart`；把单个月装成「持久头 + 列表」的辅助在 `timeline_month_section.dart`（与 T1 的数据模型同文件，T1 先建模型、本任务加构建辅助）。
@@ -133,14 +133,14 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_page_skeleton_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 月份头吸顶阴影 + 卡片字段/收藏星/点击进阅读屏
+- [x] T4 · 月份头吸顶阴影 + 卡片字段/收藏星/点击进阅读屏
 
 **同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzMonthHeader / DayzEntryCard / DayzGallery / DayzFavoriteStar`；`ui-shell-navigation：Routes.reader`；`design-tokens-theme：context.dayz.shadow* / intl` ｜ **关联需求：** R1, R6, NF8 ｜ **依据设计：** D2, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`, `lib/ui/timeline/timeline_month_section.dart`, `lib/ui/strings/app_strings.dart`
 
@@ -173,8 +173,8 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_card_header_test.dart`
 人工：N/A
 ```
 
@@ -215,7 +215,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 -----
 
-- [ ] T6 · 空状态 + loader 文案态 + 切本刷新淡入
+- [x] T6 · 空状态 + loader 文案态 + 切本刷新淡入
 
 **同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzEmptyState / dayzMotionDuration`；`design-tokens-theme：context.dayz / AppStrings` ｜ **关联需求：** R3, R7（切本刷新部分）, NF6 ｜ **依据设计：** D3, D7, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_loader.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/ui/strings/app_strings.dart`
 
@@ -240,8 +240,8 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_empty_loader_test.dart`
 人工：N/A
 ```
 
