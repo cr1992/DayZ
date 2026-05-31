@@ -19,7 +19,24 @@ void main() {
     await tester.pumpWidget(_routerTestApp());
     await tester.pumpAndSettle();
 
-    expect(find.text(testL10n.timeline), findsOneWidget);
+    expect(find.text(testL10n.timeline), findsAtLeastNWidgets(1));
+    expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
+  });
+
+  testWidgets('timeline shell exposes on-this-day icon navigation', (
+    tester,
+  ) async {
+    appRouter.go(Routes.timelinePath);
+    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpAndSettle();
+
+    final onThisDayButton = find.bySemanticsLabel(testL10n.onThisDay);
+    expect(onThisDayButton, findsOneWidget);
+
+    await tester.tap(onThisDayButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text(testL10n.onThisDay), findsAtLeastNWidgets(1));
     expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
   });
 
@@ -47,7 +64,7 @@ void main() {
       appRouter.goNamed(entry.key);
       await tester.pumpAndSettle();
 
-      expect(find.text(entry.value), findsOneWidget);
+      expect(find.text(entry.value), findsAtLeastNWidgets(1));
       if (entry.key != Routes.debugHome) {
         expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
       }
@@ -75,7 +92,7 @@ void main() {
       appRouter.go(entry.key);
       await tester.pumpAndSettle();
 
-      expect(find.text(entry.value), findsOneWidget);
+      expect(find.text(entry.value), findsAtLeastNWidgets(1));
       expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
     }
   });

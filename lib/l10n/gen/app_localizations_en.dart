@@ -226,10 +226,218 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsGroupPrivacy => 'Privacy & Encryption';
+
+  @override
+  String get settingsGroupBackup => 'Backup & Export';
+
+  @override
+  String get settingsGroupAppearance => 'Appearance';
+
+  @override
+  String get settingsGroupWriting => 'Writing';
+
+  @override
+  String settingsAccountStats(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 · Local library $size';
+  }
+
+  @override
+  String get settingsAppLockTitle => 'App Lock';
+
+  @override
+  String get settingsAppLockSubtitle => 'Face ID / passcode unlock';
+
+  @override
+  String get settingsDbEncryptionTitle => 'Database encryption';
+
+  @override
+  String get settingsDbEncryptionSubtitle => 'SQLCipher · always on';
+
+  @override
+  String get settingsDbEncryptedValue => 'Encrypted';
+
+  @override
+  String get settingsMediaNotLockedByPassword =>
+      'Setting a master password does not encrypt photos. Photos are always protected by the device key.';
+
+  @override
+  String get settingsBackupTitle => 'Local backup';
+
+  @override
+  String get settingsBackupSubtitle => 'Last · Today 08:30';
+
+  @override
+  String get settingsExportTitle => 'Export';
+
+  @override
+  String get settingsExportSubtitle => 'PDF · Markdown · JSON';
+
+  @override
+  String get settingsThemeTitle => 'Theme color';
+
+  @override
+  String get settingsThemeSubtitle => 'Mist purple / warm amber / fog sage';
+
+  @override
+  String get settingsAppearanceModeTitle => 'Appearance mode';
+
+  @override
+  String get settingsAppearanceModeSubtitle => 'Follow system';
+
+  @override
+  String get settingsDraftRecoveryTitle => 'Recover unfinished edits';
+
+  @override
+  String get settingsDraftRecoverySubtitle =>
+      'Prompt for residual drafts on launch';
+
+  @override
+  String get settingsThemePurple => 'Mist purple';
+
+  @override
+  String get settingsThemeAmber => 'Warm amber';
+
+  @override
+  String get settingsThemeSage => 'Fog sage';
+
+  @override
+  String get settingsModeSystem => 'Follow system';
+
+  @override
+  String get settingsModeLight => 'Light';
+
+  @override
+  String get settingsModeDark => 'Dark';
+
+  @override
+  String get settingsBackSemanticLabel => 'Back';
+
+  @override
+  String get settingsAppLockSemanticLabel => 'App Lock switch';
+
+  @override
+  String get settingsDraftRecoverySemanticLabel =>
+      'Recover unfinished edits switch';
+
+  @override
+  String get settingsActionUnavailableToast => 'Feature coming later';
+
+  @override
   String get timeline => 'Timeline';
 
   @override
   String get reader => 'Reader';
+
+  @override
+  String get readerMetaDate => 'Date';
+
+  @override
+  String get readerMetaWeather => 'Weather';
+
+  @override
+  String get readerMetaPlace => 'Place';
+
+  @override
+  String get readerMetaMood => 'Mood';
+
+  @override
+  String get readerMetaTags => 'Tags';
+
+  @override
+  String readerDateSemantic(String date) {
+    return 'Journal date: $date';
+  }
+
+  @override
+  String readerWeatherSemantic(String weather) {
+    return 'Weather: $weather';
+  }
+
+  @override
+  String readerPlaceSemantic(String place) {
+    return 'Place: $place';
+  }
+
+  @override
+  String readerMoodSemantic(String mood) {
+    return 'Mood: $mood';
+  }
+
+  @override
+  String readerTagSemantic(String tag) {
+    return 'Tag: $tag';
+  }
+
+  @override
+  String get readerActionsSemantic => 'Reader actions';
+
+  @override
+  String get readerActionEdit => 'Edit';
+
+  @override
+  String get readerActionShare => 'Share';
+
+  @override
+  String get readerActionMoveToJournal => 'Move to journal';
+
+  @override
+  String get readerActionFavorite => 'Favorite';
+
+  @override
+  String get readerActionUnfavorite => 'Unfavorite';
+
+  @override
+  String get readerActionDelete => 'Delete';
+
+  @override
+  String get readerDeleteTitle => 'Delete this entry?';
+
+  @override
+  String get readerDeleteMessage =>
+      'It will move to Trash and can be restored there.';
+
+  @override
+  String get readerDeleteConfirm => 'Move to Trash';
+
+  @override
+  String get readerEmptyTitle => 'Entry not found';
+
+  @override
+  String get readerEmptyDescription =>
+      'It may have been deleted or is not in this journal.';
+
+  @override
+  String get readerToastFavoriteAdded => 'Added to favorites';
+
+  @override
+  String get readerToastFavoriteRemoved => 'Removed from favorites';
+
+  @override
+  String get readerToastDeleted => 'Moved to Trash';
+
+  @override
+  String get readerToastRestored => 'Restored';
+
+  @override
+  String readerToastMovedToJournal(String journalName) {
+    return 'Moved to \"$journalName\"';
+  }
+
+  @override
+  String get readerToastSharePending => 'Share will be available later';
+
+  @override
+  String get readerToastActionFailed => 'Action failed. Try again.';
 
   @override
   String get editor => 'Editor';
@@ -254,4 +462,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notFound => 'Not Found';
+
+  @override
+  String get editorTitleNew => 'New Entry';
+
+  @override
+  String get editorTitleDraftSaved => 'Draft Saved';
+
+  @override
+  String get editorTitlePlaceholder => 'Title';
+
+  @override
+  String get editorBodyPlaceholderEmpty => 'Write something...';
+
+  @override
+  String get editorBodyPlaceholderWriting => 'Keep writing today\'s story here';
+
+  @override
+  String get editorDone => 'Done';
+
+  @override
+  String get editorCloseSemanticLabel => 'Close editor';
+
+  @override
+  String get editorDoneSemanticLabel => 'Save and return';
+
+  @override
+  String get editorMetaMood => 'Mood';
+
+  @override
+  String get editorMetaWeather => 'Weather';
+
+  @override
+  String get editorMetaLocation => 'Location';
+
+  @override
+  String get editorMetaTags => 'Tags';
+
+  @override
+  String get editorMetaPlaceholderSheet =>
+      'Picker flow will be connected by a later spec';
+
+  @override
+  String editorDateKickerToday(String date, String weekday) {
+    return 'Today · $date $weekday';
+  }
+
+  @override
+  String editorDateKicker(String date, String weekday) {
+    return '$date $weekday';
+  }
 }

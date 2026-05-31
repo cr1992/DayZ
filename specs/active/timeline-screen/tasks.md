@@ -247,7 +247,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 -----
 
-- [ ] T7 · 装配进 app_shell + 顶栏/FAB/抽屉导航接线
+- [x] T7 · 装配进 app_shell + 顶栏/FAB/抽屉导航接线
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `ui-shell-navigation：app_shell / Routes.timeline,search,onthisday,editor / ShellState(当前 journalId + 切本事件流) / fab_speed_dial`；`ui-kit-components：DayzGlassAppBar` ｜ **关联需求：** R7, NF1, NF7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`
 
@@ -273,16 +273,16 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_shell_wiring_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T8 · Debug Home demo + 入口
+- [x] T8 · Debug Home demo + 入口
 
-**同 spec 依赖：** T5, T6, T7 ｜ **跨 spec 依赖：** 无（demo 用本屏自带最小 Scaffold + 假 Repo，不强依赖 shell 就绪）｜ **关联需求：** R8 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/timeline_demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T5, T6, T7 ｜ **跨 spec 依赖：** 无（demo 用本屏自带最小 Scaffold + 假 Repo，不强依赖 shell就绪）｜ **关联需求：** R8 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/timeline_demo.dart`, `lib/demo/demo_entry.dart`
 
 ### 背景
 用内存假 `EntryRepo`（T2）注入 `TimelineController`，在一台模拟设备框内渲染 `TimelinePage`（可滚动/向上分页/开日历面板/切空与有内容两态/开抽屉与 FAB），作为真机走查与可独立 pump 的 widget 测试入口。`lib/demo/demo_entry.dart` 的 `demos` 列表**末尾追加一行**（不插中间、不改 `DemoEntry` 字段）。
@@ -306,7 +306,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/demo/timeline_demo_test.dart`
 人工：N/A
 ```

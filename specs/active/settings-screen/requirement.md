@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：定稿
 ---
 
 # settings-screen（设置屏）
@@ -32,7 +32,7 @@
 设置屏 SHALL 在 `Routes.settings` 路由下渲染一个账户头卡 + 设计稿四个分组（`DayzSetGroup`：分组标题 `.lab` + `DayzSetRow` 列表），承载于 `ui-kit-components` 的 `DayzGlassAppBar`（标题「设置」+ 返回钮）下的唯一滚动区。
 - 前提：从外壳导航进入 `Routes.settings`。
 - 操作：渲染设置屏。
-- 结果：可见账户头卡（头像字 + 姓名 + 「N 篇 · 本地库 X MB」副行）与四个分组，各行图标徽（`flutter_svg`）+ 主/次文案 + 右侧尾随件（switch / val / chev）按设计稿就位。
+- 结果：路由落到真实 `SettingsScreen`（非 `PlaceholderScreen`）；可见账户头卡（头像字 + 姓名 + 「N 篇 · 本地库 X MB」副行）与四个分组，各行图标徽（`flutter_svg`）+ 主/次文案 + 右侧尾随件（switch / val / chev）按设计稿就位。
 
 ### R2 · 主题色选择器接外壳换肤
 点击「主题色」行（`DayzSetRow.tappable`，右侧 `.val` 显当前主题色点 + 名称 + chev）SHALL 打开底部单选选择器（`DayzSheet.picker`），列雾紫 / 暖黄 / 雾绿三项（带色点），选中项即时经外壳 `theme_controller.setTheme(...)` 上抛换肤、全树 rebuild。
@@ -66,7 +66,14 @@
 - 结果：触发对应回调（widget test 可观测回调被调用 + 传值正确）；本屏不写 Drift/SQL、不触发真实备份/导出/rekey（落库接线归底层 spec）。
 - 注：If 底层偏好/业务入口（如 `auto-save-draft` 的草稿恢复偏好、`key-management` 的 App 锁状态、`backup-full-snapshot` 的备份执行）尚未就绪，then 本屏 SHALL 以入参驱动展示态 + 回调留待接线，MUST NOT 为赶进度在本屏直接写库（NF4 红线）。
 
-### R7 · Debug Home 入口
+### R7 · 真路由接入与返回
+设置屏 SHALL 接入 `Routes.settings` 的真实路由，并提供可预测的返回行为。
+- 前提：从抽屉「设置」或其它入口进入 `Routes.settings`。
+- 操作：观察页面 / 点击顶栏返回按钮。
+- 结果：页面为 settings 设计稿对应的独立设置屏，MUST NOT 仍显示占位页；点击返回时若路由栈可回退则 `pop` 回来源页，若不可回退则回到 `Routes.timeline`，MUST NOT 让用户停在无返回路径的设置页。
+- 约束：本 spec 只允许改 `Routes.settings` 自己的 route definition / builder 及主题控制器暴露所需的最小外壳接线，MUST NOT 改 `Routes` 常量命名、抽屉条目语义或其它屏 builder。
+
+### R8 · Debug Home 入口
 设置屏 SHALL 挂一个 Debug Home demo 入口（`lib/demo/settings_screen_demo.dart`），在 `lib/demo/demo_entry.dart` 的 `demos` 列表**末尾追加一行**（不插中间、不改 `DemoEntry` 字段），供真机走查与 widget test 独立 pump。
 - 前提：App 启动进 Debug Home。
 - 操作：进入设置屏 demo。
@@ -101,4 +108,4 @@
 | 性能 | 否 | 静态列表屏，无可度量运行阈值 |
 | 多端兼容 | **是** | iOS 13+ / Android 8+ 布局与字体回退（NF3） |
 
-→ 命中「安全 / 无障碍 / 多端兼容」→ **标准档**（含 `## 非功能需求` + verification.md + 文件头文档状态 + README 索引）。单模块（Flutter app 内 `lib/ui/settings/` + `lib/demo/` + `test/`），不跨模块。
+→ 命中「安全 / 无障碍 / 多端兼容」→ **标准档**（含 `## 非功能需求` + verification.md + 文件头文档状态 + README 索引）。文件变更仍在单个 Flutter app 模块内，不跨顶层 package。

@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：定稿
 ---
 
 # 任务列表：settings-screen
@@ -16,16 +16,19 @@ graph LR
   T2 --> T3[T3 加密只读行+媒体红线文案]
   T2 --> T4[T4 主题/外观选择器接回调]
   T2 --> T5[T5 开关/导航行回调上抬]
-  T3 --> T6[T6 demo + Debug Home 入口]
+  T3 --> T6[T6 路由接入 + 返回]
   T4 --> T6
   T5 --> T6
+  T3 --> T7[T7 demo + Debug Home 入口]
+  T4 --> T7
+  T5 --> T7
 ```
 
 并行组：
 - Group A：T1
 - Group B：T2（依赖 T1）
 - Group C：T3、T4、T5（并行，均依赖 T2）
-- Group D：T6（依赖 T3/T4/T5）
+- Group D：T6、T7（均依赖 T3/T4/T5，可并行）
 
 （整屏一体、无可独立部署/演示的中间切点 → 不设里程碑。）
 
@@ -205,15 +208,52 @@ graph LR
 
 -----
 
-- [ ] T6 · 设置屏 demo + 挂 Debug Home 入口
+- [ ] T6 · 真路由接入 + 返回行为（Routes.settings → SettingsScreen）
 
-**同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** `ui-shell-navigation：theme_controller（接 onPickTheme/onPickMode 演示换肤；demo 可用最小本地 ChangeNotifier 降级）` ｜ **关联需求：** R7, NF1 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/demo/settings_screen_demo.dart`、`lib/demo/demo_entry.dart`
+**同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** `ui-shell-navigation：Routes.settings/app_router.dart/theme_controller` ｜ **关联需求：** R1, R7, NF4 ｜ **依据设计：** D8, D9 ｜ **可改文件：** `lib/ui/shell/app_router.dart`、`lib/ui/shell/theme_controller.dart`、`lib/app.dart`
 
 ### 背景
-Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`onPickTheme/onPickMode` 接到控制器以真机看换肤、开关/导航回调打 toast/log 观测，两条红线文案可读。真机调试走 demo 页是项目约定（CLAUDE.md「Debug Home demo 入口模式」）。
+把真产品入口接到本屏：`Routes.settings` 当前是 `PlaceholderScreen`，本任务只替换 settings 自己的 builder 并完成最小入参接线。由于 `app_router.dart` 的 builder 需要读取当前主题选择与调用 `setTheme/setMode`，若现有树内没有 `ThemeController` 读取入口，则在 `theme_controller.dart` 增加最小 `ThemeControllerScope`，并在 `DayZApp` 包裹 `MaterialApp.router`。返回行为归本任务验收：设置屏顶栏返回优先 `pop`，栈底回 `Routes.timeline`。
 
 ### 实施
-1. `settings_screen_demo.dart`：构造假 `accountStats`，用一个最小 `ChangeNotifier`（持 themeName/mode）接 `onPickTheme/onPickMode` → 包一层主题切换观察换肤；开关/导航回调打 toast 或 log。
+1. `theme_controller.dart`：必要时新增 `ThemeControllerScope extends InheritedNotifier<ThemeController>` 与 `ThemeControllerScope.of(context)`，不改变 `ThemeController` 持久化策略、不引入第三方状态库。
+2. `app.dart`：用 `ThemeControllerScope(controller: _themeController, child: MaterialApp.router(...))` 包裹，使 route builder 可读当前主题控制器；保持现有 `ListenableBuilder` 与 `theme/darkTheme/themeMode` 行为。
+3. `app_router.dart`：仅替换 `Routes.settings` 对应 builder，导入 `SettingsScreen`，从 `ThemeControllerScope.of(context)` 读取 `choice.themeName/mode` 与 `setTheme/setMode`；账户统计、App 锁、草稿恢复若真实来源未接，使用显式占位 / 内存默认入参，MUST NOT 直连 data/security。
+4. 返回按钮：`SettingsScreen` 默认 `onBack` 为 `context.canPop() ? context.pop() : context.goNamed(Routes.timeline)`；测试可注入或经真实 router 验证。
+5. 「本地备份」「导出」导航回调若目标页未就绪，必须有可见反馈或跳 placeholder，MUST NOT 静默无响应。
+
+### 验收标准（做完即止）
+- 经 `Routes.settings` 导航后渲染 `SettingsScreen`，不再是 `PlaceholderScreen`（自动）。
+- 修改只影响 `Routes.settings` builder；其它 placeholder route 仍保持原 builder（自动：抽查 `Routes.calendar` / `Routes.trash` 仍为占位或原行为）（自动）。
+- 点设置屏返回：有上一页时 pop 回来源页；直接落到 `/settings` 时回 `Routes.timeline`（自动，R7）。
+- 主题色 / 外观 picker 经真 `ThemeControllerScope` 接线后能更新全树主题与行右侧显示（自动，R2/R3 路由态端到端）。
+- 本任务不 import `lib/data`/`lib/security`、不写真实偏好/统计落库（自动：见 verification 边界核验）（NF4）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/settings/settings_route_test.dart
+  ```
+  （pump `DayZApp`，`goNamed(Routes.settings)` 断言真实 `SettingsScreen`；点返回验证 pop/fallback；点 picker 断言 `ThemeController` 与渲染色变化；抽查其它路由未被替换；断行为，不 grep）
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：N/A
+```
+
+-----
+
+- [ ] T7 · 设置屏 demo + 挂 Debug Home 入口
+
+**同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** `ui-shell-navigation：theme_controller（接 onPickTheme/onPickMode 演示换肤；demo 可用最小本地 ChangeNotifier 降级）` ｜ **关联需求：** R8, NF1 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/demo/settings_screen_demo.dart`、`lib/demo/demo_entry.dart`
+
+### 背景
+Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`onPickTheme/onPickMode` 接到控制器以真机看换肤；`appLockEnabled`/`draftRecoveryEnabled` 在 demo 内持本地状态，开关回调必须回写视觉状态；导航回调打 toast/log 观测，两条红线文案可读。真机调试走 demo 页是项目约定（CLAUDE.md「Debug Home demo 入口模式」）。
+
+### 实施
+1. `settings_screen_demo.dart`：构造假 `accountStats`，用一个最小 `ChangeNotifier`（持 themeName/mode、`appLockEnabled`、`draftRecoveryEnabled`）接 `onPickTheme/onPickMode` 与开关回调；开关回调必须更新本地状态并重渲染，避免点击后视觉弹回；导航回调打 toast 或 log。
 2. `demo_entry.dart` 的 `demos` 列表**末尾追加一行**（不插中间、不改 `DemoEntry` 字段）。
 3. 新文件加 MPL-2.0 头注。
 
@@ -224,6 +264,7 @@ Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`on
 ### 验收标准（做完即止）
 - `demos` 末尾新增项指向 `settings_screen_demo`，Debug Home 可进入（自动，widget test：构建 demo 列表 `find` 到该项并可 pump 进入）。
 - demo 内切主题色/外观 → 经最小控制器换肤生效（自动：pump demo，tap 选择器选项后断言主题切换可观测，如 `context.dayz.accent` 变）。
+- demo 内拨「App 锁」/「恢复未完成的编辑」→ 对应 `DayzSwitch.value` 视觉状态随本地状态更新（自动）。
 - demo 内两条红线文案可见（自动：`find.text(l10n.settingsDbEncryptedValue)` + `find.text(l10n.settingsMediaNotLockedByPassword)`）。
 - 六套主题/明暗下 demo 渲染人工目视符合设计稿 settings.html（人工，@Ray）。
 
@@ -232,7 +273,7 @@ Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`on
   ```bash
   flutter test test/demo/settings_screen_demo_test.dart
   ```
-  （构建 demo 列表 find 到入口、pump 进入、tap 选择器断言换肤、find 红线文案；**不** grep 源文本）
+  （构建 demo 列表 find 到入口、pump 进入、tap 选择器断言换肤、拨开关断言视觉状态更新、find 红线文案；**不** grep 源文本）
 - 人工：
   - 真机/模拟器进设置屏 demo，六套（3 主题×明暗）对照 settings.html 无明显偏差、两条红线文案清晰可读，@Ray 确认。
 

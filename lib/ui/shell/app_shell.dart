@@ -44,6 +44,7 @@ class AppShell extends StatelessWidget {
     final colors = context.dayz;
     final l10n = AppLocalizations.of(context);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
+    final route = currentRoute ?? _getRouteName(context);
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -62,7 +63,7 @@ class AppShell extends StatelessWidget {
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             DayzGlassAppBar(
-              title: Text(_getTitle(context, l10n)),
+              title: Text(_getTitle(route, l10n)),
               leading: Builder(
                 builder: (context) {
                   return Semantics(
@@ -95,32 +96,18 @@ class AppShell extends StatelessWidget {
                 },
               ),
               actions: [
-                Semantics(
-                  button: true,
-                  label: l10n.search,
-                  child: SizedBox.square(
-                    dimension: 44,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 44,
-                        height: 44,
-                      ),
-                      tooltip: l10n.search,
-                      icon: SvgPicture.string(
-                        _svg(DayzIcons.searchPath),
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                          colors.ink,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {
-                        context.pushNamed(Routes.search);
-                      },
-                    ),
+                if (route == Routes.timeline)
+                  _buildActionButton(
+                    label: l10n.onThisDay,
+                    path: DayzIcons.historyClockPath,
+                    colors: colors,
+                    onPressed: () => onNavigate(Routes.onthisday),
                   ),
+                _buildActionButton(
+                  label: l10n.search,
+                  path: DayzIcons.searchPath,
+                  colors: colors,
+                  onPressed: () => onNavigate(Routes.search),
                 ),
               ],
             ),
@@ -135,8 +122,7 @@ class AppShell extends StatelessWidget {
     );
   }
 
-  String _getTitle(BuildContext context, AppLocalizations l10n) {
-    final route = currentRoute ?? _getRouteName(context);
+  String _getTitle(String? route, AppLocalizations l10n) {
     switch (route) {
       case Routes.timeline:
         return l10n.timeline;
@@ -165,9 +151,37 @@ class AppShell extends StatelessWidget {
     }
   }
 
+  Widget _buildActionButton({
+    required String label,
+    required String path,
+    required DayzColors colors,
+    required VoidCallback onPressed,
+  }) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: SizedBox.square(
+        dimension: 44,
+        child: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+          tooltip: label,
+          icon: SvgPicture.string(
+            _svg(path),
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(colors.ink, BlendMode.srcIn),
+          ),
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+
   String? _getRouteName(BuildContext context) {
     try {
-      return GoRouterState.of(context).name;
+      return GoRouterState.of(context).topRoute?.name ??
+          GoRouterState.of(context).name;
     } catch (_) {
       return null;
     }

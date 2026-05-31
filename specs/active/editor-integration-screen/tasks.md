@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：定稿
 ---
 
 # 任务列表：editor-integration-screen
@@ -34,7 +34,7 @@ graph LR
 
 -----
 
-- [ ] T0 · 跨 spec 依赖的测试 fake（验收基建）
+- [x] T0 · 跨 spec 依赖的测试 fake（验收基建）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `editor-json-contract：EditorDocCodec/extractPlainText 接口形态`、`media-storage：MediaStore 接口形态`、`auto-save-draft：DraftCoordinator plain payload 接口`、`data-layer：Repository 接口形态` ｜ **关联需求：** （支撑 R3/R7/R8/NF1 的可测性）｜ **依据设计：** D9 ｜ **可改文件：** `test/ui/editor/fakes/`（codec/MediaStore/DraftCoordinator/Repository 的内存 fake）
 
@@ -60,14 +60,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/editor/fakes_smoke_test.dart` 通过（00:00 +1: All tests passed!）
 人工：N/A
 ```
 
 -----
 
-- [ ] T1 · 屏体骨架 + 三状态 + 顶栏 / 无边框标题 / compose-meta chip
+- [x] T1 · 屏体骨架 + 三状态 + 顶栏 / 无边框标题 / compose-meta chip
 
 **同 spec 依赖：** T0 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzFonts/DayzTextTheme/六套ThemeData`、`ui-kit-components：DayzGlassAppBar/DayzButton/DayzTextField/DayzTag/dayz_icons`、`ui-shell-navigation：Routes.editor/PlaceholderScreen`、`i18n-localization：gen-l10n` ｜ **关联需求：** R2, R9, R10, NF3, NF4 ｜ **依据设计：** D2, D4, D8, D10 ｜ **可改文件：** `lib/ui/editor/editor_screen.dart`、`lib/ui/editor/editor_meta_bar.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/editor/fakes/`（T0 产出，复用）
 
@@ -98,14 +98,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/editor/editor_screen_test.dart` 通过（00:01 +5: All tests passed!）；`flutter test test/ui/editor/fakes_smoke_test.dart test/ui/editor/editor_screen_test.dart` 回归通过（00:00 +6: All tests passed!）
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · editor_style：AppFlowy EditorStyle 从 token 注入
+- [-] T2 · editor_style：AppFlowy EditorStyle 从 token 注入
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzFonts/DayzTextTheme（t-diary/t-h*/行高）` ｜ **关联需求：** R1, NF4 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/ui/editor/editor_style.dart`、`lib/ui/editor/editor_screen.dart`（接入 AppFlowyEditor + 注入 style）｜ **验收基建：** 无（用 `test/ui/editor/fakes/`，T0）
 

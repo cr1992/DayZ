@@ -128,8 +128,136 @@
   "journalNameLabel": "日记本名称",
   "journalColorLabel": "日记本颜色",
   "settings": "设置",
+  "settingsTitle": "设置",
+  "settingsGroupPrivacy": "隐私与加密",
+  "settingsGroupBackup": "备份与导出",
+  "settingsGroupAppearance": "外观",
+  "settingsGroupWriting": "书写",
+  "settingsAccountStats": "{count, plural, other{{count} 篇}} · 本地库 {size}",
+  "@settingsAccountStats": {
+    "description": "设置页账户头卡统计",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "218"
+      },
+      "size": {
+        "type": "String",
+        "example": "41.2 MB"
+      }
+    }
+  },
+  "settingsAppLockTitle": "App 锁",
+  "settingsAppLockSubtitle": "Face ID / 密码解锁",
+  "settingsDbEncryptionTitle": "数据库加密",
+  "settingsDbEncryptionSubtitle": "SQLCipher · 始终开启",
+  "settingsDbEncryptedValue": "已加密",
+  "settingsMediaNotLockedByPassword": "设置主密码不会加密照片，照片始终用设备密钥保护",
+  "settingsBackupTitle": "本地备份",
+  "settingsBackupSubtitle": "上次 · 今天 08:30",
+  "settingsExportTitle": "导出",
+  "settingsExportSubtitle": "PDF · Markdown · JSON",
+  "settingsThemeTitle": "主题色",
+  "settingsThemeSubtitle": "雾紫 / 暖黄 / 雾绿",
+  "settingsAppearanceModeTitle": "外观模式",
+  "settingsAppearanceModeSubtitle": "跟随系统",
+  "settingsDraftRecoveryTitle": "恢复未完成的编辑",
+  "settingsDraftRecoverySubtitle": "启动时提示残留草稿",
+  "settingsThemePurple": "雾紫",
+  "settingsThemeAmber": "暖黄",
+  "settingsThemeSage": "雾绿",
+  "settingsModeSystem": "跟随系统",
+  "settingsModeLight": "浅色",
+  "settingsModeDark": "深色",
+  "settingsBackSemanticLabel": "返回",
+  "settingsAppLockSemanticLabel": "App 锁开关",
+  "settingsDraftRecoverySemanticLabel": "恢复未完成的编辑开关",
+  "settingsActionUnavailableToast": "功能稍后支持",
   "timeline": "时间线",
   "reader": "阅读",
+  "readerMetaDate": "日期",
+  "readerMetaWeather": "天气",
+  "readerMetaPlace": "地点",
+  "readerMetaMood": "心情",
+  "readerMetaTags": "标签",
+  "readerDateSemantic": "日记日期：{date}",
+  "@readerDateSemantic": {
+    "description": "阅读页日期语义标签",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "2026年5月31日"
+      }
+    }
+  },
+  "readerWeatherSemantic": "天气：{weather}",
+  "@readerWeatherSemantic": {
+    "description": "阅读页天气语义标签",
+    "placeholders": {
+      "weather": {
+        "type": "String",
+        "example": "晴"
+      }
+    }
+  },
+  "readerPlaceSemantic": "地点：{place}",
+  "@readerPlaceSemantic": {
+    "description": "阅读页地点语义标签",
+    "placeholders": {
+      "place": {
+        "type": "String",
+        "example": "上海"
+      }
+    }
+  },
+  "readerMoodSemantic": "心情：{mood}",
+  "@readerMoodSemantic": {
+    "description": "阅读页心情语义标签",
+    "placeholders": {
+      "mood": {
+        "type": "String",
+        "example": "平静"
+      }
+    }
+  },
+  "readerTagSemantic": "标签：{tag}",
+  "@readerTagSemantic": {
+    "description": "阅读页标签语义标签",
+    "placeholders": {
+      "tag": {
+        "type": "String",
+        "example": "家庭"
+      }
+    }
+  },
+  "readerActionsSemantic": "阅读页操作",
+  "readerActionEdit": "编辑",
+  "readerActionShare": "分享",
+  "readerActionMoveToJournal": "移到日记本",
+  "readerActionFavorite": "收藏",
+  "readerActionUnfavorite": "取消收藏",
+  "readerActionDelete": "删除",
+  "readerDeleteTitle": "删除这篇日记？",
+  "readerDeleteMessage": "删除后会移到回收站，可在回收站恢复。",
+  "readerDeleteConfirm": "移到回收站",
+  "readerEmptyTitle": "没有找到这篇日记",
+  "readerEmptyDescription": "它可能已被删除，或不在当前日记本中。",
+  "readerToastFavoriteAdded": "已收藏",
+  "readerToastFavoriteRemoved": "已取消收藏",
+  "readerToastDeleted": "已移到回收站",
+  "readerToastRestored": "已恢复",
+  "readerToastMovedToJournal": "已移到「{journalName}」",
+  "@readerToastMovedToJournal": {
+    "description": "阅读页移本成功 toast",
+    "placeholders": {
+      "journalName": {
+        "type": "String",
+        "example": "生活"
+      }
+    }
+  },
+  "readerToastSharePending": "分享功能稍后支持",
+  "readerToastActionFailed": "操作失败，请重试",
   "editor": "编辑",
   "onThisDay": "往年今日",
   "calendar": "日历",
@@ -137,5 +265,47 @@
   "trash": "回收站",
   "memoryCardExport": "回忆卡导出",
   "debugHome": "Debug Home",
-  "notFound": "未找到"
+  "notFound": "未找到",
+
+  "editorTitleNew": "新日记",
+  "editorTitleDraftSaved": "草稿已存",
+  "editorTitlePlaceholder": "标题",
+  "editorBodyPlaceholderEmpty": "写点什么吧……",
+  "editorBodyPlaceholderWriting": "在这里继续写下今天的故事",
+  "editorDone": "完成",
+  "editorCloseSemanticLabel": "关闭编辑页",
+  "editorDoneSemanticLabel": "完成并返回",
+  "editorMetaMood": "心情",
+  "editorMetaWeather": "天气",
+  "editorMetaLocation": "地点",
+  "editorMetaTags": "标签",
+  "editorMetaPlaceholderSheet": "选择器将在后续规格中接入",
+  "editorDateKickerToday": "今天 · {date} {weekday}",
+  "@editorDateKickerToday": {
+    "description": "编辑页今天日期 kicker",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "5月29日"
+      },
+      "weekday": {
+        "type": "String",
+        "example": "周五"
+      }
+    }
+  },
+  "editorDateKicker": "{date} {weekday}",
+  "@editorDateKicker": {
+    "description": "编辑页非今天日期 kicker",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "5月29日"
+      },
+      "weekday": {
+        "type": "String",
+        "example": "周五"
+      }
+    }
+  }
 }

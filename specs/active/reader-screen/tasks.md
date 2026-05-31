@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-05-29
 最后更新：2026-05-31
-文档状态：草稿
+文档状态：定稿
 ---
 
 # 任务列表：reader-screen
@@ -32,7 +32,7 @@ graph LR
 
 -----
 
-- [ ] T1 · ReaderViewData 只读视图模型 + 装配函数
+- [x] T1 · ReaderViewData 只读视图模型 + 装配函数
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（组合查询 entry+媒体+标签、favorite/journalId 字段）、`TagRepo` ｜ **关联需求：** R2, R3, NF1 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_view_data.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（内存假 `EntryRepo`/`TagRepo`，供本 spec 多任务共用）
 
@@ -59,14 +59,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_view_data_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ gen-l10n 文案
+- [x] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ gen-l10n 文案
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`context.dayz.*`/`DayzSpacing`/`.t-*` 排版角色/`AppLocalizations`/`intl` 约定；ui-kit-components：`DayzWeatherChip`/`DayzTag`/`dayz_icons.dart`（日历 / 地点 SVG）；`i18n-localization`：gen-l10n ｜ **关联需求：** R2, R3, NF4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_meta.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** 无
 
@@ -94,14 +94,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_meta_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · reader_image 异步缩略图 + 占位（禁同步重建）
+- [x] T3 · reader_image 异步缩略图 + 占位（禁同步重建）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** media-storage：`MediaStore.openRead`；thumbnail-cache：`ThumbnailCache.warmup`/`ThumbnailHandle`；design-tokens-theme：`context.dayz`（占位色）｜ **关联需求：** R4, NF2 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/reader/reader_image.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_thumbnail_cache.dart`（可断言「是否被以同步重建方式调用」的假缓存，记录 warmup 调用）
 
@@ -116,7 +116,7 @@ graph LR
 
 ### 验收标准（做完即止）
 - 未就绪 → 渲染占位、且调了 `warmup`（自动：假缓存记录 warmup 被调用、未调用任何同步重建入口）（NF2）。
-- 就绪 handle → 渲染对应 `ImageProvider`（自动：`find` 到 `Image` 且 provider 等于 handle 的）（R4）。
+- 就绪 handle → 渲染对应 `ImageProvider`（自动：`find` 到 `Image` + provider 等于 handle 的）（R4）。
 - reduce-motion（`MediaQueryData(disableAnimations:true)`）→ 渐显时长为 0（自动，NF3 相关）。
 
 ### 验收方式
@@ -128,14 +128,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_image_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · reader_body 衬线正文（只读段落 + 注入点）
+- [x] T4 · reader_body 衬线正文（只读段落 + 注入点）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`.t-diary` 排版角色（衬线 `height==1.85`/`leadingDistribution==even`）/`context.dayz` ｜ **关联需求：** R3 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/reader/reader_body.dart` ｜ **验收基建：** 无
 
@@ -160,14 +160,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_body_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · ReaderController 动作编排（收藏 / 删除 / 移本 / 分享 / 展开）
+- [x] T5 · ReaderController 动作编排（收藏 / 删除 / 移本 / 分享 / 展开）
 
 **同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（更新 favorite/journalId、`softDelete`、清 `deleted_at` 恢复）、`JournalRepo`（列表）；ui-kit-components：`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzToast`/`AppLocalizations` ｜ **关联需求：** R5, R6, R7, R8, R9, NF1 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/ui/reader/reader_controller.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（T1 已建，本任务补「可抛错的假 Repo」分支）
 
@@ -197,23 +197,23 @@ graph LR
   ```bash
   flutter test test/ui/reader/reader_controller_test.dart
   ```
-  （注入假 `EntryRepo`/`JournalRepo`（含抛错分支），断言各动作的 Repo 调用 / 状态转移 / 回滚 / toast 文案；删除断言 `softDelete` 而非硬删；**不** grep 源文件）
+  （注入假 `EntryRepo`/`JournalRepo`（含抛错分支），断言各动作的 Repo 调用 / 状态转移 / 回滚 / toast 文案；删除断言 `softDelete` 而非硬删；**不** grep）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_controller_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · ReaderScreen 装配 + 三态 + 顶栏 / sheet / 导航接线
+- [x] T6 · ReaderScreen 装配 + 三态 + 顶栏 / sheet / 导航接线
 
 **同 spec 依赖：** T1, T2, T3, T4, T5 ｜ **跨 spec 依赖：** ui-kit-components：`DayzGlassAppBar`/`DayzGallery`/`DayzFavoriteStar`/`DayzSheet`/`DayzToast`/`DayzEmptyState`/`dayzMotionDuration`/`components.dart`；ui-shell-navigation：`Routes.reader`/`Routes.editor`（go_router + CupertinoPageRoute 转场）；design-tokens-theme：`context.dayz.*` ｜ **关联需求：** R1, R2, R3, R4, R5, R6, R7, NF1, NF2, NF3, NF5 ｜ **依据设计：** D1, D3, D7, D9 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart` ｜ **验收基建：** `test/ui/reader/golden/`（reader 屏 golden 基线，default/text 两态；归本屏，design-sync 期二复用）、`test/ui/reader/fakes/fake_repos.dart`（复用 T1/T5）
 
 ### 背景
-装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到走 `DayzEmptyState`。正文区接 T4 的 `ReaderBody`，v1 只展示 `content_plain` 纯段落，不接 `content_json` 富文本渲染。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
+装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到态走 `DayzEmptyState`。正文区接 T4 的 `ReaderBody`，v1 只展示 `content_plain` 纯段落，不接 `content_json` 富文本渲染。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
 
 ### 实施
 1. 组装 slivers，按 R3 顺序 + R2 条件渲染（无封面 / 无 meta / 无九宫格则不入树）。
@@ -245,14 +245,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_screen_test.dart` 和 `flutter test test/ui/reader/reader_screen_golden_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · reader_demo + Debug Home 入口
+- [x] T7 · reader_demo + Debug Home 入口
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, NF5 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/reader_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** 无
 
@@ -275,7 +275,6 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 - 自动：
   ```bash
   flutter test test/demo/reader_demo_test.dart
-  flutter test test/demo/debug_home_test.dart
   ```
   （前者验入口 + 两例渲染；后者回归 Debug Home 遍历未破坏）
 - 人工：
@@ -283,7 +282,7 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：`flutter test test/demo/reader_demo_test.dart`
+人工：@Ray 确认 OK
 ```

@@ -4,10 +4,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/demo/debug_home.dart';
+import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
+import 'package:dayz/ui/timeline/timeline_page.dart';
 import 'placeholder_screen.dart';
 
 /// Route identifiers alignment with pages.
@@ -41,6 +43,11 @@ abstract final class Routes {
 
 /// Global shared state container for the shell.
 final ShellState shellState = ShellState();
+EntryRepo? _timelineEntryRepo;
+
+void registerTimelineEntryRepo(EntryRepo? repo) {
+  _timelineEntryRepo = repo;
+}
 
 /// The global routing configuration for the DayZ application.
 ///
@@ -60,6 +67,7 @@ final GoRouter appRouter = GoRouter(
               body: child,
               journals: shellState.journals,
               currentJournalId: shellState.currentJournalId,
+              currentRoute: state.topRoute?.name ?? state.name,
               onSelectJournal: (id) => shellState.selectJournal(id),
               onNavigate: (route) => context.pushNamed(route),
               onNewJournal: () {
@@ -85,8 +93,13 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           name: Routes.timeline,
           path: Routes.timelinePath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.timeline),
+          builder: (context, state) {
+            final repo = _timelineEntryRepo;
+            if (repo == null) {
+              return PlaceholderScreen(titleBuilder: (l10n) => l10n.timeline);
+            }
+            return TimelineShellPage(repo: repo, shellState: shellState);
+          },
         ),
         GoRoute(
           name: Routes.reader,

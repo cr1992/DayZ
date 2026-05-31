@@ -39,7 +39,7 @@ void main() {
     await pumpAppFrame(tester);
 
     // Verify it landed on Timeline placeholder screen (our initialLocation)
-    expect(find.text(testL10n.timeline), findsOneWidget);
+    expect(find.text(testL10n.timeline).first, findsOneWidget);
     expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
 
     // Verify DebugHome is NOT the immediate child (since we use GoRouter)
@@ -74,7 +74,7 @@ void main() {
       await pumpAppFrame(tester);
 
       final BuildContext contextBefore = tester.element(
-        find.text(testL10n.timeline),
+        find.text(testL10n.timeline).first,
       );
       expect(contextBefore.dayz.accent, DayzColors.purpleLight.accent);
 
@@ -83,7 +83,7 @@ void main() {
       await pumpAppFrame(tester);
 
       final BuildContext contextAfter = tester.element(
-        find.text(testL10n.timeline),
+        find.text(testL10n.timeline).first,
       );
       expect(contextAfter.dayz.accent, DayzColors.amberLight.accent);
     },

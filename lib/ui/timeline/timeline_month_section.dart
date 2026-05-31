@@ -155,41 +155,43 @@ ValueKey<String> timelineEntryCardTestKey(String id) {
   return ValueKey<String>('timeline-entry-card-$id');
 }
 
-List<Widget> buildTimelineMonthSlivers({
+Widget buildTimelineMonthSliverGroup({
   required MonthSection section,
   required GlobalKey headerKey,
   Widget Function(TimelineEntry entry)? cardBuilder,
   VoidCallback? headerOnTap,
   bool headerExpanded = false,
 }) {
-  return [
-    SliverPersistentHeader(
-      pinned: true,
-      delegate: TimelineMonthHeaderDelegate(
-        section: section,
-        headerKey: headerKey,
-        onTap: headerOnTap,
-        expanded: headerExpanded,
+  return SliverMainAxisGroup(
+    slivers: [
+      SliverPersistentHeader(
+        pinned: true,
+        delegate: TimelineMonthHeaderDelegate(
+          section: section,
+          headerKey: headerKey,
+          onTap: headerOnTap,
+          expanded: headerExpanded,
+        ),
       ),
-    ),
-    SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        final entry = section.entries[index];
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            DayzSpacing.s4,
-            index == 0 ? DayzSpacing.s2 : 0,
-            DayzSpacing.s4,
-            DayzSpacing.s4,
-          ),
-          child: KeyedSubtree(
-            key: timelineEntryCardTestKey(entry.id),
-            child: cardBuilder?.call(entry) ?? buildTimelineEntryCard(entry),
-          ),
-        );
-      }, childCount: section.entries.length),
-    ),
-  ];
+      SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final entry = section.entries[index];
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              DayzSpacing.s4,
+              index == 0 ? DayzSpacing.s2 : 0,
+              DayzSpacing.s4,
+              DayzSpacing.s4,
+            ),
+            child: KeyedSubtree(
+              key: timelineEntryCardTestKey(entry.id),
+              child: cardBuilder?.call(entry) ?? buildTimelineEntryCard(entry),
+            ),
+          );
+        }, childCount: section.entries.length),
+      ),
+    ],
+  );
 }
 
 Widget buildTimelineEntryCard(TimelineEntry entry, {VoidCallback? onTap}) {

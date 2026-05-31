@@ -2,12 +2,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
+import 'package:dayz/ui/shell/shell_state.dart';
 import 'package:dayz/ui/util/dayz_motion.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
@@ -18,10 +22,75 @@ import 'timeline_controller.dart';
 import 'timeline_loader.dart';
 import 'timeline_month_section.dart';
 
+class TimelineShellPage extends StatefulWidget {
+  const TimelineShellPage({
+    super.key,
+    required this.repo,
+    required this.shellState,
+  });
+
+  final EntryRepo repo;
+  final ShellState shellState;
+
+  @override
+  State<TimelineShellPage> createState() => _TimelineShellPageState();
+}
+
+class _TimelineShellPageState extends State<TimelineShellPage> {
+  late final TimelineController _controller;
+  String? _activeJournalId;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TimelineController(repo: widget.repo);
+    _activeJournalId = widget.shellState.currentJournalId;
+    widget.shellState.addListener(_handleShellJournalChanged);
+    unawaited(_controller.loadInitial(_activeJournalId));
+  }
+
+  @override
+  void didUpdateWidget(covariant TimelineShellPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shellState != widget.shellState) {
+      oldWidget.shellState.removeListener(_handleShellJournalChanged);
+      _activeJournalId = widget.shellState.currentJournalId;
+      widget.shellState.addListener(_handleShellJournalChanged);
+      unawaited(_controller.switchJournal(_activeJournalId));
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.shellState.removeListener(_handleShellJournalChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TimelinePage(controller: _controller, showAppBar: false);
+  }
+
+  void _handleShellJournalChanged() {
+    final nextJournalId = widget.shellState.currentJournalId;
+    if (nextJournalId == _activeJournalId) {
+      return;
+    }
+    _activeJournalId = nextJournalId;
+    unawaited(_controller.switchJournal(nextJournalId));
+  }
+}
+
 class TimelinePage extends StatefulWidget {
-  const TimelinePage({super.key, required this.controller});
+  const TimelinePage({
+    super.key,
+    required this.controller,
+    this.showAppBar = true,
+  });
 
   final TimelineController controller;
+  final bool showAppBar;
 
   @override
   State<TimelinePage> createState() => _TimelinePageState();
@@ -31,6 +100,7 @@ class _TimelinePageState extends State<TimelinePage> {
   late final ScrollController _scrollController;
   final Map<TimelineMonthKey, GlobalKey> _headerKeys =
       <TimelineMonthKey, GlobalKey>{};
+  int _headerKeyEpoch = 0;
   TimelineMonthKey? _expandedCalendarMonth;
   TimelineMonthKey? _pendingScrollMonth;
 
@@ -53,6 +123,7 @@ class _TimelinePageState extends State<TimelinePage> {
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (context, _) {
+        _syncHeaderKeysEpoch();
         final contentKey = ValueKey<String>(
           'timeline-content-${widget.controller.contentEpoch}-${widget.controller.journalId ?? 'all'}',
         );
@@ -66,13 +137,14 @@ class _TimelinePageState extends State<TimelinePage> {
                 CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                    DayzGlassAppBar(
-                      scrollController: _scrollController,
-                      title: Text(
-                        l10n.timeline,
-                        key: ValueKey<String>('timeline-page-title'),
+                    if (widget.showAppBar)
+                      DayzGlassAppBar(
+                        scrollController: _scrollController,
+                        title: Text(
+                          l10n.timeline,
+                          key: const ValueKey<String>('timeline-page-title'),
+                        ),
                       ),
-                    ),
                     ..._buildBodySlivers(context, l10n),
                   ],
                 ),
@@ -152,7 +224,7 @@ class _TimelinePageState extends State<TimelinePage> {
 
     return [
       for (final section in widget.controller.sections)
-        ...buildTimelineMonthSlivers(
+        buildTimelineMonthSliverGroup(
           section: section,
           headerKey: _headerKeyFor(section.key),
           headerOnTap: () => _toggleCalendar(section.key),
@@ -176,6 +248,16 @@ class _TimelinePageState extends State<TimelinePage> {
       key,
       () => GlobalKey(debugLabel: 'timeline-header-${key.year}-${key.month}'),
     );
+  }
+
+  void _syncHeaderKeysEpoch() {
+    final currentEpoch = widget.controller.contentEpoch;
+    if (_headerKeyEpoch == currentEpoch) {
+      return;
+    }
+
+    _headerKeyEpoch = currentEpoch;
+    _headerKeys.clear();
   }
 
   void _openEntry(BuildContext context, String entryId) {
@@ -263,12 +345,7 @@ class _TimelinePageState extends State<TimelinePage> {
     final desiredTop = MediaQuery.paddingOf(context).top + kToolbarHeight;
     final currentTop = renderObject.localToGlobal(Offset.zero).dy;
     final delta = currentTop - desiredTop;
-    final pinnedAdjustment =
-        widget.controller.sections.isNotEmpty &&
-            widget.controller.sections.first.key != key
-        ? TimelineMonthHeaderDelegate.extent
-        : 0.0;
-    final targetOffset = (_scrollController.offset + delta + pinnedAdjustment)
+    final targetOffset = (_scrollController.offset + delta)
         .clamp(0.0, _scrollController.position.maxScrollExtent);
     final duration = dayzMotionDuration(context);
 
