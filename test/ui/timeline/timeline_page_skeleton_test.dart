@@ -7,8 +7,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:dayz/ui/timeline/timeline_controller.dart';
 import 'package:dayz/ui/timeline/timeline_month_section.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
@@ -101,10 +101,7 @@ class _TimelineHarness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
-      home: Scaffold(body: TimelinePage(controller: controller)),
-    );
+    return localizedTestApp(child: TimelinePage(controller: controller));
   }
 }
 

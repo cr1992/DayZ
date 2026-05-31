@@ -20,7 +20,7 @@ UI 还原三层（token → 组件 → 屏）的**中间层**：在 `design-toke
 - **屏幕级页面实现**（时间线/阅读/编辑/往年今日/搜索/设置等整屏）—— 各页面级 spec；本 spec 只交付它们拼装用的零件与外壳。
 - **路由 / 抽屉实体内容 / FAB 接真实创建动作 / 取代 `DebugHome` 的真外壳** —— 归 `ui-shell-navigation`。本 spec 的 `DayzGlassAppBar`、底部 sheet、FAB 视觉外形是**无状态/无路由的纯展示与回调**组件，MUST NOT 在本 spec 内接 `go_router` / Navigator / 抽屉导航树 / 真实数据写入。
 - **取数与持久化** —— 组件 MUST NOT 直接读写数据；只接受入参与回调（见 NF4）。真实数据装配归页面级 spec，经 `data-layer` 的 Repository。
-- **token 数值、主题、字体、`AppStrings` 基础设施的"建立"** —— 归 `design-tokens-theme`（本 spec 是其消费者）。本 spec **创建** `AppStrings` 文件并录入本组件层用到的中文文案条目（落实 D4 约定「文案集中可验收」首个落点），但 token 值/主题装配不在此。
+- **token 数值、主题、字体、`AppLocalizations` 基础设施的"建立"** —— 归 `design-tokens-theme` / `i18n-localization`（本 spec 是其消费者）。本 spec 只补组件层用到的 zh/en ARB 文案 key，并通过 `AppLocalizations.of(context)` 使用；不得新增或追加静态文案常量桶。
 - **参数对齐 / 布局几何抽取 harness、SSIM 兜底、`element-map.yaml`** —— 归 `design-sync-automation`（跨 spec 依赖）；本 spec 的几何/样式断言用 Flutter 原生 `tester.getRect` / 解析 widget 属性，不重造 harness。
 - **AppFlowy 编辑器内核与富文本块渲染** —— `.toolbar` 组件只做按钮条的**视觉外壳 + 激活态 + 回调**，能力对接（粗体/列表/引用等真实 editor 命令）归编辑器集成的页面级 spec 与 `editor-json-contract`。
 - **真实照片来源（相册/相机）** —— 九宫格 `.gallery` 组件只接受 `ImageProvider` 列表 + 回调，相册链路归 media-picker 页面级 spec。
@@ -39,7 +39,7 @@ UI 还原三层（token → 组件 → 屏）的**中间层**：在 `design-toke
 系统 SHALL 实现 `DESIGN-REF.md §3b` 登记的跨端页面级复用组件（时间线年月吸顶头 `.tl-month`、往年今日年份分隔 `.year-sep`、设置分组列表 `.set-*` 行/分组/头卡、搜索头 `.search-head` 的可复用部分等），作为页面级 spec 拼装单元。
 - 前提：在挂了主题的 widget 树内。
 - 操作：以入参（如月份文案、篇数、是否展开）实例化组件。
-- 结果：渲染结构与样式参数符合 DESIGN-REF §3b 对应类名设计值；文案经 `AppStrings`/`intl`，无裸中文与裸日期拼接。
+- 结果：渲染结构与样式参数符合 DESIGN-REF §3b 对应类名设计值；文案经 `AppLocalizations`/`intl`，无裸中文与裸日期拼接。
 
 > §3b 真源是 `spec.css`；§3c 屏内专属（`.cal-*`/`.empty`/`.suggest-row`/`.topsearch`/`.nj-*` 等）多数随对应页面级 spec 落地。本 spec **纳入** §3c 中明确"跨屏复用"的件——空状态 `.empty`（多屏共用的兜底插画态）；其余屏内一次性件留给对应屏 spec。空状态归属点见 design D7。
 
@@ -92,7 +92,7 @@ UI 还原三层（token → 组件 → 屏）的**中间层**：在 `design-toke
 组件在六套主题下，其承载的文本/有意义 UI 对比度遵循 `design-tokens-theme` NF1 的分族口径（正文/着色文字/实色底文字 ≥ 4.5:1；聚焦/选中边/选中图标 ≥ 3.0:1）。本 spec **不重算** token 对比度（那是 tokens-theme 的 contrast_test 职责），但 MUST NOT 因组件层用错 token（如正文误用 `--ink-3`、把着色文字放到非 soft 底）而引入新的不达标渲染对——以组件级断言核验"用对了 token 语义"。
 
 ### NF3 · 无障碍：Semantics 标签
-所有图标钮、无文字或仅图标的可交互件、开关、收藏星 MUST 提供 `Semantics` 语义标签（文案经 `AppStrings`），可被 `find.bySemanticsLabel` 定位、被屏幕阅读器朗读；纯装饰图标 MUST 标 `excludeSemantics` / `ExcludeSemantics` 不污染语义树。
+所有图标钮、无文字或仅图标的可交互件、开关、收藏星 MUST 提供 `Semantics` 语义标签（文案经 `AppLocalizations`），可被 `find.bySemanticsLabel` 定位、被屏幕阅读器朗读；纯装饰图标 MUST 标 `excludeSemantics` / `ExcludeSemantics` 不污染语义树。
 
 ### NF4 · 无障碍：尊重系统减弱动态效果（reduce-motion）
 组件的进出场/展开动效（toast 进出、sheet 滑入、FAB 展开、顶栏过渡）MUST 在系统开启「减弱动态效果」（`MediaQuery.disableAnimations == true` / `MediaQuery.accessibleNavigation`）时降级为无动效或近瞬时切换，MUST NOT 强制播放位移/缩放动画。

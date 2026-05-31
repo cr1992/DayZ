@@ -33,20 +33,20 @@ graph LR
 
 - [ ] T1 · TrashEntryView 屏用 DTO + 30 天倒计时派生
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme`：`intl`（SDK 传递依赖）、`AppStrings`/`DayzMotion` 约定 ｜ **关联需求：** R1, R6 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/ui/trash/trash_entry_view.dart`、`lib/ui/trash/trash_strings.dart` ｜ **验收基建：** 无（测试文件 `test/ui/trash/trash_entry_view_test.dart` 由白名单 hook 自动放行）
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme`：`intl`（SDK 传递依赖）、`AppLocalizations`/`DayzMotion` 约定；`i18n-localization`：gen-l10n ｜ **关联需求：** R1, R6 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/ui/trash/trash_entry_view.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** 无（测试文件 `test/ui/trash/trash_entry_view_test.dart` 由白名单 hook 自动放行）
 
 ### 背景
-屏用 DTO `TrashEntryView`（id / 标题 / 删除日期 `deletedAt` / 摘要 / 派生属性），**不暴露任何 Drift 行类型**（NF5 由 controller 映射，本任务只定义纯数据 + 派生逻辑）。30 天阈值常量 `kTrashRetentionDays=30`（D6，标注须与后台清理对齐）。`trash_strings.dart` 集中本屏中文文案 + intl 模板（「删除于 {n} 天前 · {n} 天后清除」「N 天后清除」等带数字插值），屏内禁裸中文。
+屏用 DTO `TrashEntryView`（id / 标题 / 删除日期 `deletedAt` / 摘要 / 派生属性），**不暴露任何 Drift 行类型**（NF5 由 controller 映射，本任务只定义纯数据 + 派生逻辑）。30 天阈值常量 `kTrashRetentionDays=30`（D6，标注须与后台清理对齐）。本屏文案与 intl/ICU 模板（「删除于 {n} 天前 · {n} 天后清除」「N 天后清除」等带数字插值）补入 zh/en ARB，屏内禁裸中文。
 归属：本任务建纯数据/派生 + 文案；controller 与 EntryRepo 取数归 T4，不在此。
 
 ### 实施
 1. `TrashEntryView`：不可变字段 id / title / excerpt / deletedAt（`DateTime`）；派生 getter：`purgeAt = deletedAt + Duration(days: kTrashRetentionDays)`、`daysUntilPurge(now)`、`daysSinceDeleted(now)`。
-2. 删除日期与相对时间**走 `intl`**（`DateFormat` 中文 locale；剩余/已过天数用 `inDays` 计算），文案模板进 `trash_strings.dart`，MUST NOT 自拼中文日期串。
-3. `trash_strings.dart`（`abstract final class`-同构 `static const`）：录入本屏文案（顶栏「回收站」「清空」、卡片「恢复」「彻底删除」、sheet「永久删除？/这篇日记将被彻底删除，无法再恢复。/彻底删除」「清空回收站？/回收站里的所有日记将被永久删除，无法恢复。/清空回收站」、toast「『{title}』已恢复到时间线」「已永久删除」「回收站已清空」「回收站已经是空的」、空态「回收站是空的」「删除的日记会先来这里待一阵，给你反悔的时间。」、提示条「回收站里的日记在删除 30 天后自动永久清除，期间随时可以恢复。」、intl 数字插值模板）。文案/常量值对齐源屏 `trash.html`。
+2. 删除日期与相对时间**走 `intl`**（按当前 locale；剩余/已过天数用 `inDays` 计算），文案模板进 ARB，MUST NOT 自拼中文日期串。
+3. 在 `app_zh.arb` / `app_en.arb` 录入本屏文案（顶栏「回收站」「清空」、卡片「恢复」「彻底删除」、sheet「永久删除？/这篇日记将被彻底删除，无法再恢复。/彻底删除」「清空回收站？/回收站里的所有日记将被永久删除，无法恢复。/清空回收站」、toast「『{title}』已恢复到时间线」「已永久删除」「回收站已清空」「回收站已经是空的」、空态「回收站是空的」「删除的日记会先来这里待一阵，给你反悔的时间。」、提示条「回收站里的日记在删除 30 天后自动永久清除，期间随时可以恢复。」、intl/ICU 数字插值模板），两份 key 集合一致并跑 `flutter gen-l10n`。文案值对齐源屏 `trash.html`；不得新增本屏 strings 类或静态文案常量。
 
 ### 验收标准（做完即止）
 - 给定固定 `deletedAt` 与 `now`，`daysUntilPurge` / `daysSinceDeleted` / `purgeAt` 计算正确（自动，单测）。
-- 删除日期与相对天数文案由 `intl` + `trash_strings` 模板产出（断言格式化结果值，非自拼）（自动）。
+- 删除日期与相对天数文案由 `intl` + ARB/ICU 模板产出（断言格式化结果值，非自拼）（自动）。
 - `kTrashRetentionDays == 30`（自动，断言常量值；并在注释/测试说明须与后台清理阈值一致）。
 
 ### 验收方式
@@ -67,17 +67,17 @@ graph LR
 
 - [ ] T2 · trash_banner（30 天清除提示条）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing`/`DayzRadii`；`ui-kit-components`：`flutter_svg` + `dayz_icons`（时钟图标）、`AppStrings` ｜ **关联需求：** R6, NF7, NF4 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/trash/trash_banner.dart` ｜ **验收基建：** 无
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing`/`DayzRadii`；`ui-kit-components`：`flutter_svg` + `dayz_icons`（时钟图标）、`AppLocalizations` ｜ **关联需求：** R6, NF7, NF4 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/trash/trash_banner.dart` ｜ **验收基建：** 无
 
 ### 背景
-`.trash-banner` 屏内私有件：时钟图标（§5 单色线性 SVG）+ 文案「回收站里的日记在删除 30 天后自动永久清除，期间随时可以恢复。」。视觉对齐源屏：`--bg-2` 底、`--r-md` 圆角、`--ink-2` 文本、图标 `--ink-3`、内外间距走 `DayzSpacing`。文案引 `AppStrings`/`trash_strings`，禁裸中文。
+`.trash-banner` 屏内私有件：时钟图标（§5 单色线性 SVG）+ 文案「回收站里的日记在删除 30 天后自动永久清除，期间随时可以恢复。」。视觉对齐源屏：`--bg-2` 底、`--r-md` 圆角、`--ink-2` 文本、图标 `--ink-3`、内外间距走 `DayzSpacing`。文案引 `AppLocalizations`，禁裸中文。
 
 ### 实施
 1. 行布局：图标 + 文案，间距/内边距/圆角/底色/文本色全取 token（NF7）。
 2. 图标走 `flutter_svg` + §5 规范（`stroke=currentColor`、着 `--ink-3`）；提示条整体有合理语义标签（NF4）。
 
 ### 验收标准（做完即止）
-- 文案 == `AppStrings`/`trash_strings` 对应常量（自动，`find.text(AppStrings.xxx)`）。
+- 文案 == `AppLocalizations` 对应本地化值（自动，`find.text(l10n.xxx)`）。
 - 底色 == `context.dayz` 的 `--bg-2`、圆角 == `DayzRadii.md`、文本色 == `--ink-2`（自动，解析渲染样式断言；读 token、不硬编码）。
 - 提示条可被语义定位（自动，`find.bySemanticsLabel` 或 Semantics 节点存在）。
 
@@ -99,7 +99,7 @@ graph LR
 
 - [ ] T3 · trash_item_card（.trash-item 私有件 + 移出动效）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing`/`DayzRadii`/`DayzMotion`/`intl`；`ui-kit-components`：`DayzButton`(soft.sm / text.sm + 危险态)、`dayzMotionDuration`、`AppStrings` ｜ **关联需求：** R1, R2, R3, NF2, NF4, NF5, NF7 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `lib/ui/trash/trash_item_card.dart` ｜ **验收基建：** 无
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing`/`DayzRadii`/`DayzMotion`/`intl`；`ui-kit-components`：`DayzButton`(soft.sm / text.sm + 危险态)、`dayzMotionDuration`、`AppLocalizations` ｜ **关联需求：** R1, R2, R3, NF2, NF4, NF5, NF7 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `lib/ui/trash/trash_item_card.dart` ｜ **验收基建：** 无
 
 ### 背景
 单条回收站卡：日期 `.ti-date`（intl）/ 标题 `.ti-h4`（衬线，取 token 排版）/ 两行摘要 `.ti-ex`（`maxLines:2` + `TextOverflow.ellipsis` + `softWrap:true`，对齐 `-webkit-line-clamp:2`）/ 元信息 `.ti-left`（intl「删除于 N 天前 · N 天后清除」）/「恢复」`DayzButton.soft.sm`（回调 `onRestore`）/「彻底删除」`DayzButton.text.sm`+危险态（回调 `onPurge`）。卡接收 `TrashEntryView` + 两回调，纯展示发事件。移出动效（透明 + 右移）经 `dayzMotionDuration`（NF5）。
@@ -181,7 +181,7 @@ graph LR
 
 - [ ] T5 · trash_screen 装配（列表/空态/顶栏清空 + 二次确认 + toast）
 
-**同 spec 依赖：** T2, T3, T4 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzGlassAppBar`/`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`AppStrings`（经 `lib/ui/components.dart`）；`ui-shell-navigation`：`Routes.trash`/`Routes.timeline`/返回；`design-tokens-theme`：`context.dayz.*`/`DayzSpacing` ｜ **关联需求：** R1, R3, R4, R5, R6, R7, NF1, NF2, NF4, NF7 ｜ **依据设计：** D2, D3, D5, D7 ｜ **可改文件：** `lib/ui/trash/trash_screen.dart` ｜ **验收基建：** `test/ui/trash/fake_entry_repo.dart`（T4 已建，本任务复用，用于屏端到端）
+**同 spec 依赖：** T2, T3, T4 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzGlassAppBar`/`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`AppLocalizations`（经 `lib/ui/components.dart`）；`ui-shell-navigation`：`Routes.trash`/`Routes.timeline`/返回；`design-tokens-theme`：`context.dayz.*`/`DayzSpacing` ｜ **关联需求：** R1, R3, R4, R5, R6, R7, NF1, NF2, NF4, NF7 ｜ **依据设计：** D2, D3, D5, D7 ｜ **可改文件：** `lib/ui/trash/trash_screen.dart` ｜ **验收基建：** `test/ui/trash/fake_entry_repo.dart`（T4 已建，本任务复用，用于屏端到端）
 
 ### 背景
 装配整屏：`CustomScrollView`（`DayzGlassAppBar`：返回钮 R7 + 标题「回收站」+ actions「清空」`DayzButton.text` 危险色 → `SliverToBoxAdapter(_TrashBanner)` → `SliverList(_TrashItemCard)`）；空态（`entries.isEmpty`）渲 `DayzEmptyState`（隐列表 + 提示条，R5），顶栏「清空」仍在位。交互编排：彻底删除 / 清空走 `DayzSheet.confirm` 二次确认（R3/R4），确认后经入参回调（来自 `TrashController`）执行；恢复/硬删/清空后弹 `DayzToast`（成功/ danger tone）并按结果切空态。点「清空」先判空 → 空则 toast「回收站已经是空的」不弹 sheet（D7）。
@@ -193,8 +193,8 @@ graph LR
 3. 「彻底删除」：卡 `onPurge` → `DayzSheet.confirm`(永久删除？/说明/「彻底删除」/危险图标) → 确认调 controller `purge(id)` → danger toast「已永久删除」（R3）；取消则不删（R3 If 分支）。
 4. 「清空」：`onEmptyAll` 先判 `entries.isEmpty` → 空则 `DayzToast`「回收站已经是空的」、不弹 sheet（D7）；非空则 `DayzSheet.confirm`(清空回收站？/说明/「清空回收站」/危险图标) → 确认调 controller `emptyAll()` + 转空态 + danger toast「回收站已清空」（R4）。
 5. 「恢复」：卡 `onRestore` → controller `restore(id)` → 成功 toast「『{title}』已恢复到时间线」；列表变空则转空态（R2/R5）。
-6. 空态：`entries.isEmpty` → 仅 `DayzEmptyState`（标题/说明 `AppStrings`），隐列表 + 提示条；顶栏「清空」仍渲染（R5/D7）。
-7. 全程文案 `AppStrings`/`trash_strings`、视觉 token（NF7）、按钮命中盒 ≥44（NF2）、语义标签（NF4）；取数/删除全经 controller→`EntryRepo`，屏不碰 Drift（NF1）。
+6. 空态：`entries.isEmpty` → 仅 `DayzEmptyState`（标题/说明 `AppLocalizations`），隐列表 + 提示条；顶栏「清空」仍渲染（R5/D7）。
+7. 全程文案 `AppLocalizations`、视觉 token（NF7）、按钮命中盒 ≥44（NF2）、语义标签（NF4）；取数/删除全经 controller→`EntryRepo`，屏不碰 Drift（NF1）。
 
 ### 验收标准（做完即止）
 - 默认态：渲染顶栏「回收站」+「清空」+ 提示条 + 每条卡（自动，`find` 顶栏标题/清空/banner/卡片）。

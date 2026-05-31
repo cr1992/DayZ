@@ -14,6 +14,8 @@
 
 DayZ 采用 **Flutter 官方 `flutter gen-l10n` + `.arb`** 的国际化方案：所有用户可见文案走 `.arb` → 生成 `AppLocalizations` → `AppLocalizations.of(context)` 取用；MVP 首发**简体中文（zh）+ 英文（en）双语全量**；日期/数字/复数走 `package:intl` 与 ICU message format。
 
+`AppStrings` 是 gen-l10n 接入前的旧静态中文常量桶，现已废弃：未来 UI / spec **MUST NOT** 新增 `AppStrings` 条目、文件或引用；存量生产引用由 `ui-i18n-migration` 迁入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`。
+
 ## 1. 技术选型
 
 - **工具链 = Flutter 官方 `flutter gen-l10n`**（基于 `l10n.yaml`），**不引第三方**（slang / easy_localization 等）。理由：官方零额外运行期依赖、与 `flutter_localizations` / Material / Cupertino 本地化无缝、生成代码同源依赖 `intl`、社区与文档最厚。
@@ -55,6 +57,7 @@ lib/l10n/
 3. **复数走 ICU**：可数名词/相对时间（「N 篇」「N 年前」等）**MUST** 用 arb `plural`，**MUST NOT** 手拼。
 4. **日期/数字走 intl**：见 §1。
 5. **合规红线文案**（如 settings 的「主密码锁不住照片」「已加密」只读说明）同样入 arb，双语都要有审计落点。
+6. **禁止回退到 `AppStrings`**：`AppStrings` 不再作为 UI 文案基础设施或临时承载；新增/修改 UI spec 的「可改文件」若涉及文案，MUST 列 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` 和对应 `gen-l10n` 产物/生成命令，而不是 `lib/ui/strings/app_strings.dart`。
 
 ## 5. 范围与分期
 

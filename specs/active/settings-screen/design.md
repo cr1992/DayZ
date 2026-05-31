@@ -15,7 +15,7 @@
 - **状态：** 采纳
 - **背景：** DESIGN-REF §3b 的 `.set-*` 列表件（`.set-account` 头卡 + `.set-group`/`.lab` + `.set-row`：`.ic` 图标徽 + `.tx` 主/次 + 右侧 `.switch`/`.val`/`.chev`）与 §3c 的 `.set-row.tappable` 已由 `ui-kit-components` 实现为 `DayzSetRow`（见其 `## 文件变更` 的 `dayz_set_row.dart`，含 `.set-row`/`.set-group`/`.lab`/账户头卡）。本屏是把它们按 settings.html 结构串起来。
 - **选项：** (A) 本 spec 新造一套列表行/分组 widget；(B) 直接组合 `ui-kit-components` 的 `DayzSetRow`/`DayzSetGroup` + `DayzSwitch` + `DayzSheet` + `DayzGlassAppBar`，本屏只写「装配 + 数据/回调绑定 + 屏级文案」；(C) 用 `CupertinoListSection.insetGrouped` 自带分组。
-- **选择：** B。`settings_screen.dart` 只负责：按 settings.html 顺序排账户头卡 + 四个 `DayzSetGroup`，每行喂 `DayzSetRow`（图标徽 SVG path + 主/次文案 `AppStrings` + 尾随件），尾随件按行类型选 `DayzSwitch`（App 锁 / 草稿恢复）、只读 `Text`（已加密）、`.val`+chev（主题色 / 外观模式 / 备份 / 导出）。**不**用 Cupertino 分组件（范围外，C 的视觉/分隔/内边距与设计稿 `.set-group` 不一致，且会绕过 token）。
+- **选择：** B。`settings_screen.dart` 只负责：按 settings.html 顺序排账户头卡 + 四个 `DayzSetGroup`，每行喂 `DayzSetRow`（图标徽 SVG path + 主/次文案 `AppLocalizations` + 尾随件），尾随件按行类型选 `DayzSwitch`（App 锁 / 草稿恢复）、只读 `Text`（已加密）、`.val`+chev（主题色 / 外观模式 / 备份 / 导出）。**不**用 Cupertino 分组件（范围外，C 的视觉/分隔/内边距与设计稿 `.set-group` 不一致，且会绕过 token）。
 - **理由：** 守方法论 §1「组件层落一次、屏只组合」与 §3「跨屏外壳/复用件不在屏里重写一份」；本屏复杂度全在装配，零新组件。
 - **代价：** 强依赖 `ui-kit-components` 的 `DayzSetRow` API 已就绪；未就绪时降级见已知风险（READY 门按 README 依赖管控）。
 
@@ -23,7 +23,7 @@
 - **状态：** 采纳
 - **背景：** 设置行有四类尾随件（switch / 只读 val / val+chev / 不可交互），且部分行的状态（账户统计、当前主题色名、当前外观模式、开关初值）来自外部、动作是回调上抬（R6）。
 - **选项：** (A) 每行硬写一段 `DayzSetRow(...)`，状态散在 build 里；(B) 定义一个屏内 `_SettingsRowSpec`（不可变值类：行类型 + 图标 path + 主/次文案 key + 尾随件类型 + 可选 onTap/onChanged），build 时 map 成 `DayzSetRow`；(C) 把行清单做成可配置数据源放到外部。
-- **选择：** B。`settings_screen.dart` 内私有声明式清单（图标 path 引 `dayz_icons.dart`/本屏图标常量，文案引 `AppStrings`，状态/回调由 `SettingsScreen` 的构造入参注入：`accountStats`、`currentThemeName`、`currentMode`、`appLockEnabled`/`onAppLockChanged`、`draftRecoveryEnabled`/`onDraftRecoveryChanged`、`onTapBackup`/`onTapExport`、`onPickTheme`/`onPickMode`）。**数据库加密行**在清单里标记为不可交互（无 onTap/onChanged，尾随 = 只读「已加密」）。
+- **选择：** B。`settings_screen.dart` 内私有声明式清单（图标 path 引 `dayz_icons.dart`/本屏图标常量，文案引 `AppLocalizations`，状态/回调由 `SettingsScreen` 的构造入参注入：`accountStats`、`currentThemeName`、`currentMode`、`appLockEnabled`/`onAppLockChanged`、`draftRecoveryEnabled`/`onDraftRecoveryChanged`、`onTapBackup`/`onTapExport`、`onPickTheme`/`onPickMode`）。**数据库加密行**在清单里标记为不可交互（无 onTap/onChanged，尾随 = 只读「已加密」）。
 - **理由：** 声明式清单让「行结构 == 设计稿」一目了然、widget test 易逐行断言；入参/回调注入让本屏可用假数据独立 pump（NF4：本屏不持 Repo，统计与偏好由外壳经 Repo/控制器喂入）。
 - **代价：** 多一个屏内值类；但换来可测性与「结构对齐设计稿」的清晰，值。
 
@@ -45,19 +45,19 @@
 
 ### D5 · 媒体红线文案的落点（R5）
 - **状态：** 采纳
-- **背景：** R5 要「主密码锁不住照片」显形，但 settings.html 当前没有独立的「主密码」行（最简范围下主密码切换 UI 归 key-management 页面级 spec）。须为这条文案选一个**当前屏就有**的可见落点，且文案进 `AppStrings`（D6）。
+- **背景：** R5 要「主密码锁不住照片」显形，但 settings.html 当前没有独立的「主密码」行（最简范围下主密码切换 UI 归 key-management 页面级 spec）。须为这条文案选一个**当前屏就有**的可见落点，且文案进 `AppLocalizations`（D6）。
 - **选项：** (A) 加一行专门的「主密码」`DayzSetRow` 并把说明放其次文案 / help；(B) 在「隐私与加密」分组底部加一条 `.set-list` 下的 help/脚注文本（`DayzSetGroup` 支持的分组脚注，若 `DayzSetGroup` 无脚注槽则用一条不可交互的说明行）承载这条说明；(C) 把说明并入「数据库加密」行的次文案。
-- **选择：** B（分组脚注/说明文案），**不**在本最简 spec 造完整「主密码」切换行（那是 key-management 页面级 spec 的事，本屏只做说明显形）。文案：`AppStrings.settingsMediaNotLockedByPassword` = 「设置主密码不会加密照片，照片始终用设备密钥保护」。若 `ui-kit-components` 的 `DayzSetGroup` 未提供分组脚注槽，则以一条 `DayzSetRow`（无尾随件、`tappable=false`、次文案承载说明）渲染——**实现时按 `DayzSetRow`/`DayzSetGroup` 实际 API 定，记为待确认**。C 被否：并入「数据库加密」行会把 DB 加密与媒体加密两件不同的事混为一谈，误导。
+- **选择：** B（分组脚注/说明文案），**不**在本最简 spec 造完整「主密码」切换行（那是 key-management 页面级 spec 的事，本屏只做说明显形）。文案：`l10n.settingsMediaNotLockedByPassword` = 「设置主密码不会加密照片，照片始终用设备密钥保护」。若 `ui-kit-components` 的 `DayzSetGroup` 未提供分组脚注槽，则以一条 `DayzSetRow`（无尾随件、`tappable=false`、次文案承载说明）渲染——**实现时按 `DayzSetRow`/`DayzSetGroup` 实际 API 定，记为待确认**。C 被否：并入「数据库加密」行会把 DB 加密与媒体加密两件不同的事混为一谈，误导。
 - **理由：** 在不扩屏结构的前提下让红线文案显形；放「隐私与加密」分组语义最贴。
 - **代价：** 落点依赖 `DayzSetGroup` 是否有脚注槽（待确认）；退路（说明行）不引入新组件，可接受。
 
-### D6 · 屏内文案集中到 AppStrings（落实 tokens-theme D4 / ui-kit D10）
+### D6 · 屏内文案集中到 AppLocalizations（落实 docs/design/11）
 - **状态：** 采纳
-- **背景：** tokens-theme D4 拍板「文案集中 `AppStrings` + 日期/数字走 `intl`」，`ui-kit-components` D10 已**创建** `lib/ui/strings/app_strings.dart`（首建、各屏增补）。本屏有大量可见文案（分组标题、各行主/次文案、两条红线文案、选择器项名、账户副行模板）。
-- **选项：** (A) 本屏新建独立文案类；(B) 向 `ui-kit-components` 已建的 `lib/ui/strings/app_strings.dart` **追加** settings 屏文案条目（`settingsTitle` / `settingsGroupPrivacy` / `settingsDbEncryptedValue` / `settingsMediaNotLockedByPassword` / `settingsThemePurple|Amber|Sage` / `settingsModeSystem|Light|Dark` …）。
-- **选择：** B。屏内**禁裸中文**，一律引 `AppStrings.*`；账户副行「N 篇 · 本地库 X MB」的篇数/容量走 `package:intl`（`NumberFormat`，`intl` 是 SDK 传递依赖，无需新增 pubspec 条目），MUST NOT 自拼 `'218 篇'`。widget 测试用 `find.text(AppStrings.xxx)` 而非裸中文。
-- **理由：** `AppStrings` 归属在 README/ui-kit 已拍板「ui-kit 创建、各屏增补」（ui-kit D10 代价段），本屏直接追加、不另建，避免两处各建。两条红线文案进 `AppStrings` → 红线文案有单一可审计落点（tokens-theme D4 已点名 settings 两条红线文案纳入 `AppStrings`）。
-- **代价：** `app_strings.dart` 是跨 spec 共享文件（白名单外），须在本 spec `## 文件变更` 显式列出并归入本屏任务白名单（引用既有归属、不重复创建）。
+- **背景：** UI 文案唯一来源是 zh/en ARB。本屏有大量可见文案（分组标题、各行主/次文案、两条红线文案、选择器项名、账户副行模板）。
+- **选项：** (A) 本屏新建独立文案类；(B) 在 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb` 补 settings 屏文案 key（`settingsTitle` / `settingsGroupPrivacy` / `settingsDbEncryptedValue` / `settingsMediaNotLockedByPassword` / `settingsThemePurple|Amber|Sage` / `settingsModeSystem|Light|Dark` …）。
+- **选择：** B。屏内**禁裸中文**，一律经 `AppLocalizations.of(context)` / `l10n.xxx` 取用；账户副行「N 篇 · 本地库 X MB」的篇数/容量走 `package:intl` / ARB ICU，MUST NOT 自拼 `'218 篇'`。widget 测试用 `find.text(l10n.xxx)` 而非裸中文。
+- **理由：** 两条红线文案进 ARB → 红线文案有单一可审计落点；并满足 en locale。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 共享文件，须保持 zh/en key 集合一致并跑 `gen-l10n`。
 
 ### D7 · Debug Home 入口（本 spec 自己的 demo）
 - **状态：** 采纳
@@ -70,11 +70,11 @@
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppStrings] --> SS
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppLocalizations] --> SS
   KIT[ui-kit-components: DayzSetRow/DayzSetGroup / DayzSwitch / DayzSheet.picker / DayzGlassAppBar / dayz_icons / dayzMotionDuration] --> SS
   SS[lib/ui/settings/settings_screen.dart · 装配 + 行清单 + 入参/回调]
   ICO[lib/ui/settings/settings_icons.dart · settings 专属 SVG path] --> SS
-  STR[lib/ui/strings/app_strings.dart · 追加 settings 文案] --> SS
+  STR[lib/l10n/arb/app_zh.arb + app_en.arb · settings 文案 key] --> SS
   SS -. onPickTheme/onPickMode 上抛 .-> TC[ui-shell-navigation: theme_controller.setTheme/setMode]
   SS -. onTapBackup/onTapExport 导航上抛 .-> R[ui-shell-navigation: Routes.* / GoRouter]
   SS -. accountStats 入参（外壳经 JournalRepo 取，NF4 禁直连）.-> REPO[data-layer: JournalRepo]
@@ -90,8 +90,9 @@ graph TD
 - `lib/ui/settings/settings_screen.dart`        新建（设置屏：账户头卡 + 四分组装配 + 声明式行清单 + 入参/回调，D1/D2/D3/D5）
 - `lib/ui/settings/settings_icons.dart`          新建（settings 专属单色 SVG path 常量，`flutter_svg` 渲染，D4）
 
-**屏级文案（跨 spec 共享文件，白名单外，向 ui-kit 既有文件追加，不新建）**
-- `lib/ui/strings/app_strings.dart`              修改（**追加** settings 屏文案条目，归属＝ui-kit 创建/各屏增补；D6）
+**gen-l10n 文案**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`              修改（补 settings 屏 zh/en 文案 key，D6）
+- `lib/l10n/gen/app_localizations*.dart`                           修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/settings_screen_demo.dart`           新建（假数据 + 最小控制器演示换肤/回调，D7）
@@ -107,13 +108,13 @@ graph TD
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 / READY 门管控）**：
-  - `design-tokens-theme`（README 依赖列）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings` 约定、对比度判定族。**强依赖**，未定稿则本 spec 阻塞。
-  - `ui-kit-components`（README 依赖列）：`DayzSetRow`/`DayzSetGroup`（账户头卡 + `.set-group`/`.lab`/`.set-row` + 右侧 switch/val/chev + tappable）、`DayzSwitch`、`DayzSheet.picker`、`DayzGlassAppBar`、`dayz_icons.dart`、`dayzMotionDuration`、`app_strings.dart`（既有）。**强依赖**——本屏几乎全是组合它们。**待确认**：`DayzSetRow`/`DayzSetGroup` 的确切 API（尾随件槽、tappable、分组脚注槽 D5、val+chev 复合右件）以 ui-kit 定稿为准；与设计稿 `.set-*` 不符处，回 ui-kit 增量、不在本屏自造列表件。未就绪时本 spec 阻塞（不降级自造，避免与 ui-kit 撞归属）。
+  - `design-tokens-theme`（README 依赖列）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations` 约定、对比度判定族。**强依赖**，未定稿则本 spec 阻塞。
+  - `ui-kit-components`（README 依赖列）：`DayzSetRow`/`DayzSetGroup`（账户头卡 + `.set-group`/`.lab`/`.set-row` + 右侧 switch/val/chev + tappable）、`DayzSwitch`、`DayzSheet.picker`、`DayzGlassAppBar`、`dayz_icons.dart`、`dayzMotionDuration`、`app_zh.arb` / `app_en.arb`（既有）。**强依赖**——本屏几乎全是组合它们。**待确认**：`DayzSetRow`/`DayzSetGroup` 的确切 API（尾随件槽、tappable、分组脚注槽 D5、val+chev 复合右件）以 ui-kit 定稿为准；与设计稿 `.set-*` 不符处，回 ui-kit 增量、不在本屏自造列表件。未就绪时本 spec 阻塞（不降级自造，避免与 ui-kit 撞归属）。
   - `ui-shell-navigation`（README 依赖列）：`Routes.settings`、`theme_controller.setTheme/setMode`（`settheme/setmode` 上抛换肤的接收端）、外壳脚手架/`DayzGlassAppBar` 装配。**本屏只暴露 `onPickTheme/onPickMode/onTap*` 回调**，接到 `theme_controller`/`GoRouter` 的接线在 demo 与真外壳一侧；未就绪时 demo 用最小本地控制器演示换肤（D7）。
   - `key-management`（README 依赖列）：R4「DB 恒加密只读已加密」、R5「主密码锁不住照片」的产品行为来源（D7 `getDeviceMediaKey`、`app_password_mode`、媒体 key 独立不参与 rekey）。**本屏只渲染合规文案，不调任何密钥/ rekey 接口**（NF4）。App 锁开关在本屏只做 `onChanged` 上抬展示态，真实启停 / 生物识别授权归 key-management 页面级 spec。
   - `data-layer`（**非直接依赖、明确禁连** NF4）：账户头卡的「篇数 / 本地库大小」需 `JournalRepo`/统计查询，但本屏 MUST NOT 直连——经入参 `accountStats` 注入，取数编排归外壳；data-layer 未就绪时 demo/外壳喂假统计。
   - `backup-full-snapshot` / `auto-save-draft`：「本地备份」「导出」「恢复未完成的编辑」三项的真实业务归彼处；本屏只渲染状态 + 导航/回调上抬，**不实现备份执行 / 导出生成 / 草稿偏好落库**。
-- **媒体红线文案落点待确认（D5）**：依赖 `DayzSetGroup` 是否有分组脚注槽；无则用不可交互说明行承载，实现时按 ui-kit 实际 API 定，文案 MUST 进 `AppStrings`、MUST 显形（不可省）。
+- **媒体红线文案落点待确认（D5）**：依赖 `DayzSetGroup` 是否有分组脚注槽；无则用不可交互说明行承载，实现时按 ui-kit 实际 API 定，文案 MUST 进 `AppLocalizations`、MUST 显形（不可省）。
 - **换肤端到端效果分层**：本屏 widget test 只验「选择器出现 + 选中触发 `onPickTheme/onPickMode` + 传值」；真正「全树 rebuild 换肤」效果由 demo/真外壳接 `theme_controller` 后在 verification 验（经 demo 接线的端到端场景）。
 - **golden 跨主题**：六套主题 golden 兜栅格属 advisory（design-sync-automation 期二接 SSIM）；本 spec 先建 light/purple 一套 golden 基线作回归锁，多主题/SSIM 不在本 spec 重造 harness（依赖 design-sync-automation，非 README 依赖、仅验证基建关系）。
 - **无持久化 schema 变更 → 无数据迁移/回滚要素**（本屏不碰 DB；偏好/统计经外壳与底层 spec）。

@@ -3,8 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -46,6 +46,7 @@ class DayzSetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final typography = context.dayzText;
     final effectiveOnTap = enabled ? onTap ?? _switchTap : null;
     final row = ConstrainedBox(
@@ -87,7 +88,7 @@ class DayzSetRow extends StatelessWidget {
       button: effectiveOnTap != null && !_hasSwitch,
       toggled: _hasSwitch ? switchValue : null,
       value: _hasSwitch
-          ? (switchValue! ? AppStrings.switchOn : AppStrings.switchOff)
+          ? (switchValue! ? l10n.switchOn : l10n.switchOff)
           : null,
       enabled: enabled,
       child: Material(

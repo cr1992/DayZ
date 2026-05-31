@@ -1,8 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/widgets/dayz_empty_state.dart';
 import 'package:dayz/ui/widgets/dayz_month_header.dart';
 import 'package:dayz/ui/widgets/dayz_search_field.dart';
@@ -17,10 +16,7 @@ import 'package:intl/intl.dart';
 /// Author: @Ray
 void main() {
   Widget wrap(Widget child) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
-      home: Scaffold(body: child),
-    );
+    return localizedTestApp(child: child, locale: const Locale('en'));
   }
 
   testWidgets('month header formats month/count and handles tap/icon state', (
@@ -31,10 +27,7 @@ void main() {
     final month = DateTime(2026, 5);
     final count = 1234;
     final monthText = DateFormat.MMM(locale).format(month);
-    final countText = AppStrings.entryCount(count).replaceFirst(
-      count.toString(),
-      NumberFormat.decimalPattern(locale).format(count),
-    );
+    final countText = testEnL10n.entryCount(count);
     final metaText = '${DateFormat.y(locale).format(month)} · $countText';
 
     await tester.pumpWidget(
@@ -92,10 +85,7 @@ void main() {
     const year = 2024;
     final expectedYear = DateFormat.y(locale).format(DateTime(year));
     final yearsAgo = 2;
-    final expectedAgo = AppStrings.yearsAgo(yearsAgo).replaceFirst(
-      yearsAgo.toString(),
-      NumberFormat.decimalPattern(locale).format(yearsAgo),
-    );
+    final expectedAgo = testEnL10n.yearsAgo(yearsAgo);
 
     await tester.pumpWidget(
       wrap(
@@ -163,14 +153,14 @@ void main() {
     expect(switchValue, false);
   });
 
-  testWidgets('empty state renders illustration and AppStrings copy', (
+  testWidgets('empty state renders illustration and localized copy', (
     tester,
   ) async {
     await tester.pumpWidget(wrap(const DayzEmptyState()));
 
     expect(find.byKey(DayzEmptyState.illustrationKey), findsOneWidget);
-    expect(find.text(AppStrings.emptyTitle), findsOneWidget);
-    expect(find.text(AppStrings.emptyDescription), findsOneWidget);
+    expect(find.text(testEnL10n.emptyTitle), findsOneWidget);
+    expect(find.text(testEnL10n.emptyDescription), findsOneWidget);
   });
 
   testWidgets('search field handles typing, clear, and cancel callbacks', (
@@ -192,8 +182,8 @@ void main() {
       ),
     );
 
-    expect(find.text(AppStrings.search), findsOneWidget);
-    expect(find.text(AppStrings.cancel), findsOneWidget);
+    expect(find.text(testEnL10n.search), findsOneWidget);
+    expect(find.text(testEnL10n.cancel), findsOneWidget);
 
     await tester.enterText(find.byKey(DayzSearchField.inputKey), 'plum');
     await tester.pump();

@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
@@ -91,6 +91,7 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -104,14 +105,14 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
         children: [
           // Title
           Text(
-            AppStrings.newJournal,
+            l10n.newJournal,
             style: textTheme.h2.copyWith(color: colors.ink),
           ),
           const SizedBox(height: DayzSpacing.s3),
 
           // Name Input Field
           Text(
-            AppStrings.journalNameLabel,
+            l10n.journalNameLabel,
             style: textTheme.overline.copyWith(color: colors.ink2),
           ),
           const SizedBox(height: DayzSpacing.s1),
@@ -120,7 +121,7 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
             autofocus: true,
             style: textTheme.body.copyWith(color: colors.ink),
             decoration: InputDecoration(
-              hintText: AppStrings.journalNameInputPlaceholder,
+              hintText: l10n.journalNameInputPlaceholder,
               hintStyle: textTheme.body.copyWith(color: colors.ink3),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: DayzSpacing.s3,
@@ -140,7 +141,7 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
 
           // Color Selector Title
           Text(
-            AppStrings.journalColorLabel,
+            l10n.journalColorLabel,
             style: textTheme.overline.copyWith(color: colors.ink2),
           ),
           const SizedBox(height: DayzSpacing.s2),
@@ -216,7 +217,7 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
                     ),
                   ),
                   child: Text(
-                    AppStrings.sheetCancel,
+                    l10n.sheetCancel,
                     style: textTheme.body.copyWith(
                       color: colors.ink2,
                       fontWeight: FontWeight.w500,
@@ -248,7 +249,7 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
                     elevation: 0,
                   ),
                   child: Text(
-                    AppStrings.sheetConfirm,
+                    l10n.sheetConfirm,
                     style: textTheme.body.copyWith(
                       color: _canSubmit ? colors.onAccent : colors.ink3,
                       fontWeight: FontWeight.bold,

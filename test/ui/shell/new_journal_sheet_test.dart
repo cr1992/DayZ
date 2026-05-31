@@ -6,8 +6,7 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 
 void main() {
   void ignoreSubmit(String name, String color) {}
@@ -16,8 +15,7 @@ void main() {
     required void Function(String name, String color) onSubmit,
     bool disableAnimations = false,
   }) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
+    return localizedMaterialApp(
       home: MediaQuery(
         data: const MediaQueryData().copyWith(
           disableAnimations: disableAnimations,
@@ -44,9 +42,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Title and input fields are rendered
-    expect(find.text(AppStrings.newJournal), findsOneWidget);
-    expect(find.text(AppStrings.journalNameLabel), findsOneWidget);
-    expect(find.text(AppStrings.journalColorLabel), findsOneWidget);
+    expect(find.text(testL10n.newJournal), findsOneWidget);
+    expect(find.text(testL10n.journalNameLabel), findsOneWidget);
+    expect(find.text(testL10n.journalColorLabel), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
 
     // Verify 6 color palette buttons are rendered
@@ -55,8 +53,8 @@ void main() {
     }
 
     // Verify Cancel and Confirm buttons are rendered
-    expect(find.text(AppStrings.sheetCancel), findsOneWidget);
-    expect(find.text(AppStrings.sheetConfirm), findsOneWidget);
+    expect(find.text(testL10n.sheetCancel), findsOneWidget);
+    expect(find.text(testL10n.sheetConfirm), findsOneWidget);
   });
 
   testWidgets('selecting a color updates selection state', (tester) async {
@@ -113,7 +111,7 @@ void main() {
       // Confirm button is initially disabled because name is empty
       final confirmButton = tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text(AppStrings.sheetConfirm),
+          of: find.text(testL10n.sheetConfirm),
           matching: find.byType(ElevatedButton),
         ),
       );
@@ -126,21 +124,21 @@ void main() {
       // Confirm button should now be enabled
       final confirmButtonEnabled = tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text(AppStrings.sheetConfirm),
+          of: find.text(testL10n.sheetConfirm),
           matching: find.byType(ElevatedButton),
         ),
       );
       expect(confirmButtonEnabled.onPressed, isNotNull);
 
       // Tap Confirm
-      await tester.tap(find.text(AppStrings.sheetConfirm));
+      await tester.tap(find.text(testL10n.sheetConfirm));
       await tester.pumpAndSettle();
 
       // Verify onSubmit callback parameter correctness and sheet closure
       expect(submitFired, true);
       expect(submittedName, 'Personal Thoughts');
       expect(submittedColor, kJournalColorPalette.first);
-      expect(find.text(AppStrings.newJournal), findsNothing);
+      expect(find.text(testL10n.newJournal), findsNothing);
     },
   );
 
@@ -158,12 +156,12 @@ void main() {
     await tester.pumpAndSettle();
 
     // Click Cancel
-    await tester.tap(find.text(AppStrings.sheetCancel));
+    await tester.tap(find.text(testL10n.sheetCancel));
     await tester.pumpAndSettle();
 
     // Verify sheet closed and no submission
     expect(submitFired, false);
-    expect(find.text(AppStrings.newJournal), findsNothing);
+    expect(find.text(testL10n.newJournal), findsNothing);
   });
 
   testWidgets('color item hit area >= 44px', (tester) async {
@@ -186,6 +184,6 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pump();
 
-    expect(find.text(AppStrings.newJournal), findsOneWidget);
+    expect(find.text(testL10n.newJournal), findsOneWidget);
   });
 }

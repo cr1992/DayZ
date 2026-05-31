@@ -5,9 +5,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/ui/util/dayz_motion.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
@@ -48,6 +48,8 @@ class _TimelinePageState extends State<TimelinePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (context, _) {
@@ -66,12 +68,12 @@ class _TimelinePageState extends State<TimelinePage> {
                   slivers: [
                     DayzGlassAppBar(
                       scrollController: _scrollController,
-                      title: const Text(
-                        AppStrings.timeline,
+                      title: Text(
+                        l10n.timeline,
                         key: ValueKey<String>('timeline-page-title'),
                       ),
                     ),
-                    ..._buildBodySlivers(context),
+                    ..._buildBodySlivers(context, l10n),
                   ],
                 ),
                 _buildCalendarOverlay(context),
@@ -132,16 +134,16 @@ class _TimelinePageState extends State<TimelinePage> {
     );
   }
 
-  List<Widget> _buildBodySlivers(BuildContext context) {
+  List<Widget> _buildBodySlivers(BuildContext context, AppLocalizations l10n) {
     if (widget.controller.sections.isEmpty && widget.controller.reachedEnd) {
-      return const [
+      return [
         SliverFillRemaining(
           hasScrollBody: false,
           child: Padding(
-            padding: EdgeInsets.only(top: DayzSpacing.s16),
+            padding: const EdgeInsets.only(top: DayzSpacing.s16),
             child: DayzEmptyState(
-              title: AppStrings.timelineEmptyTitle,
-              description: AppStrings.timelineEmptyDescription,
+              title: l10n.timelineEmptyTitle,
+              description: l10n.timelineEmptyDescription,
             ),
           ),
         ),

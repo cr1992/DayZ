@@ -85,7 +85,7 @@ If 查询抛出异常（如取数入口失败），then 搜索屏 SHALL 进入 e
 ### NF1 · 无障碍
 - **点击目标 ≥ 44px**：取消钮、建议行、标签 chip、筛选 chip 的去除叉 `.x`、结果卡片可点区，命中盒 MUST ≥ 44×44 逻辑像素。
 - **对比度 ≥ WCAG AA**：高亮文字（`--accent-ink` 落 `--accent-soft-2`）、`.search-stat` 计数文本、空态文案对其背景 MUST ≥ 4.5:1（普通文本）；占位/辅助态 ≥ 3.0:1 仅限纯装饰。对比度真源沿用 `design-tokens-theme` 的 `test/ui/theme/contrast_xfail.yaml`，本屏不另立阈值、不重复造表。
-- **Semantics 标签**：取消钮（「取消」）、输入框（「搜索日记」）、结果卡片（含标题语义）、空态、重试钮 MUST 有可被屏幕阅读器识别的 `Semantics` 标签（取自 `AppStrings`）。
+- **Semantics 标签**：取消钮（「取消」）、输入框（「搜索日记」）、结果卡片（含标题语义）、空态、重试钮 MUST 有可被屏幕阅读器识别的 `Semantics` 标签（取自 `AppLocalizations`）。
 - **reduce-motion**：输入光标 `.caret` 闪烁（设计稿 `dz-caret` 动画）与任何切态过渡 MUST 在系统「减弱动态效果」(`MediaQuery.disableAnimations`) 下降级为静止/瞬时（经 `ui-kit-components` 的 `dayzMotionDuration` 门，不在本屏自判）。
 
 ### NF2 · Repository 边界（硬红线）

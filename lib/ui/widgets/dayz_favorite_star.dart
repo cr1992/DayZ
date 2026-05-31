@@ -3,8 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import 'dayz_icons.dart';
 
@@ -26,8 +26,9 @@ class DayzFavoriteStar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final color = isFavorite ? colors.favorite : colors.ink3;
-    final label = isFavorite ? AppStrings.unfavorite : AppStrings.favorite;
+    final label = isFavorite ? l10n.unfavorite : l10n.favorite;
 
     return Semantics(
       button: onPressed != null,

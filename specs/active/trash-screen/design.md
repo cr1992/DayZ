@@ -7,7 +7,7 @@
 
 # 设计：trash-screen
 
-> 视觉与映射依据：源屏真源 [`ui-design/current/pages/screens/trash.html`](../../../ui-design/current/pages/screens/trash.html)（`?state=default`/`?state=empty` + 屏内 `.trash-*` 私有样式 + 恢复/彻底删/清空脚本）；组件类名与降级 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.btn`/toast/sheet/`.empty`）/ §3c（屏内一次性件 `.trash-*` 不登记不复用）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（「回收站 `trash.html` → 按 `deleted_at` 筛选查询；恢复 = 清 `deleted_at`，彻底删 = 真 DELETE；30 天后台清理」`showModalBottomSheet`/`ScaffoldMessenger`/`CupertinoPageRoute`）；四闸验证口径 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §4/§11。复用词汇来自 `ui-kit-components`（`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`DayzGlassAppBar`/`AppStrings`/`dayzMotionDuration`，经 `lib/ui/components.dart` barrel）、`ui-shell-navigation`（`Routes.trash`/`Routes.timeline`、抽屉「浏览组」入口）、`design-tokens-theme`（`context.dayz.*`/`DayzSpacing`/`DayzRadii`/`DayzMotion`/`intl`）、`data-layer`（`EntryRepo`）。
+> 视觉与映射依据：源屏真源 [`ui-design/current/pages/screens/trash.html`](../../../ui-design/current/pages/screens/trash.html)（`?state=default`/`?state=empty` + 屏内 `.trash-*` 私有样式 + 恢复/彻底删/清空脚本）；组件类名与降级 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.btn`/toast/sheet/`.empty`）/ §3c（屏内一次性件 `.trash-*` 不登记不复用）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（「回收站 `trash.html` → 按 `deleted_at` 筛选查询；恢复 = 清 `deleted_at`，彻底删 = 真 DELETE；30 天后台清理」`showModalBottomSheet`/`ScaffoldMessenger`/`CupertinoPageRoute`）；四闸验证口径 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §4/§11。复用词汇来自 `ui-kit-components`（`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`DayzGlassAppBar`/`AppLocalizations`/`dayzMotionDuration`，经 `lib/ui/components.dart` barrel）、`ui-shell-navigation`（`Routes.trash`/`Routes.timeline`、抽屉「浏览组」入口）、`design-tokens-theme`（`context.dayz.*`/`DayzSpacing`/`DayzRadii`/`DayzMotion`/`intl`）、`data-layer`（`EntryRepo`）。
 
 ## 技术决策
 
@@ -55,8 +55,8 @@
 ### D6 · 30 天倒计时与日期格式化走 `intl`（不自拼）
 - **状态：** 采纳
 - **背景：** 源屏元信息「5月 24 · 周六」「删除于 3 天前 · 27 天后清除」是日期 + 相对时间格式化高频区；tokens-theme D4 / ui-kit D10 拍板「日期/数字走 `package:intl`，MUST NOT 自拼 `'2026年5月'`」。30 天清除阈值 = `deletedAt + Duration(days:30)`，剩余天数 = 阈值 - now。
-- **选项：** (A) 手拼字符串；(B) `intl` `DateFormat` 格式日期 + 自算剩余天数 + `AppStrings` 模板拼相对文案。
-- **选择：** B。删除日期用 `DateFormat`（中文 locale，月/日/周）；「N 天前 / N 天后清除」的「N」由 `(now - deletedAt).inDays` / `(threshold - now).inDays` 计算，文案模板（「删除于 {n} 天前 · {n} 天后清除」「N 天后清除」）进 `AppStrings`（带数字插值）；30 天阈值常量 = `kTrashRetentionDays = 30`（本屏常量，**与后台清理任务的同名阈值须一致**，记已知风险/待确认）。
+- **选项：** (A) 手拼字符串；(B) `intl` `DateFormat` 格式日期 + 自算剩余天数 + `AppLocalizations` 模板拼相对文案。
+- **选择：** B。删除日期用 `DateFormat`（中文 locale，月/日/周）；「N 天前 / N 天后清除」的「N」由 `(now - deletedAt).inDays` / `(threshold - now).inDays` 计算，文案模板（「删除于 {n} 天前 · {n} 天后清除」「N 天后清除」）进 `AppLocalizations`（带数字插值）；30 天阈值常量 = `kTrashRetentionDays = 30`（本屏常量，**与后台清理任务的同名阈值须一致**，记已知风险/待确认）。
 - **理由：** 落实「集中可验收」，避免散落硬编码日期；阈值集中常量便于与后台清理对齐。
 - **代价：** 阈值在两处（本屏显示 + 后台清理）须保持一致——若 data-layer/后台清理给出权威常量则本屏引用之（待确认），否则本屏自持并标注须对齐。
 
@@ -71,7 +71,7 @@
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppStrings / intl] --> SCREEN
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppLocalizations / intl] --> SCREEN
   KIT[ui-kit-components: DayzButton / DayzSheet.confirm / DayzToast / DayzEmptyState / DayzGlassAppBar / dayzMotionDuration · 经 components.dart barrel] --> SCREEN
   subgraph SCREEN[trash-screen · lib/ui/trash/]
     PAGE[trash_screen.dart · CustomScrollView 列表/空态 + 顶栏 + 提示条]
@@ -79,7 +79,7 @@ graph TD
     BANNER[trash_banner.dart · .trash-banner 30 天提示条]
     VIEW[trash_entry_view.dart · 屏用 DTO + 30 天倒计时派生]
     CTRL[trash_controller.dart · ChangeNotifier 经 EntryRepo 取数/恢复/硬删/刷新]
-    STR[trash_strings.dart · 本屏中文文案 → AppStrings 同构/追加]
+    STR[ARB · 本屏 zh/en 文案 → AppLocalizations]
   end
   CTRL -- 列回收站条目 / 恢复 / softDelete / hardDelete --> REPO[data-layer · EntryRepo]
   CTRL -. 映射 .-> VIEW
@@ -102,7 +102,8 @@ graph TD
 - `lib/ui/trash/trash_banner.dart`         新建（`.trash-banner` 30 天提示条：时钟图标 + 文案，走 token，R6/D1）
 - `lib/ui/trash/trash_entry_view.dart`     新建（屏用 DTO：id/标题/删除日期/摘要/`deletedAt` + 派生「N 天后清除」；不暴露 Drift 行，D5/D6）
 - `lib/ui/trash/trash_controller.dart`     新建（`ChangeNotifier`：经 `EntryRepo` 列回收站条目/恢复/硬删/清空并刷新；映射到 `TrashEntryView`，D5，NF5）
-- `lib/ui/trash/trash_strings.dart`        新建（本屏中文文案集中：「回收站」「清空」「恢复」「彻底删除」「永久删除？」「清空回收站？」及 intl 模板等。**待确认**：若 `ui-kit-components` 的 `AppStrings` 单类已落地，则改为向其追加而非新建——归属随 ui-kit/shell `AppStrings` 协调，见已知风险）
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`        修改（补本屏 zh/en 文案与 ICU key：「回收站」「清空」「恢复」「彻底删除」「永久删除？」「清空回收站？」及相对时间模板等）
+- `lib/l10n/gen/app_localizations*.dart`                     修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/trash_screen_demo.dart`        新建（内存假 `TrashEntryView` 列表 + mock 回调，可切默认态/空态，演示恢复/彻底删/清空，R8）
@@ -121,11 +122,11 @@ graph TD
 - **删除链路端到端依赖多 spec（D3）**：reader/onthisday 等屏的删除发起按钮 + 可撤销 toast 归各自 spec；「软删 → 落回收站 → 恢复 → 回时间线」的完整闭环只有在那些 spec + 本 spec + data-layer 全就绪后才能端到端验证。本 spec 单独验证范围 = 「给定软删数据 → 列表渲染 / 恢复 / 硬删 / 清空 / 空态」；端到端串联记入 verification「跨屏说明」，不在本 spec 单任务验收强求。
 - **媒体级联清理不在本屏（范围外）**：「彻底删除」只调 `EntryRepo.hardDelete(id)`；条目关联媒体文件的级联硬删 / 文件清理归 `media-storage` / 后台清理（媒体 key 独立、文件 IO 不在 DB 事务内等红线见 `docs/design/06/09`）。本屏 MUST NOT 直接删媒体文件或写媒体表。
 - **跨 spec 依赖未就绪的降级（按交付物名引用，可能尚未实现）**：
-  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、`AppStrings` 约定、`intl`、六套主题。**强依赖**，未定稿则本屏被阻塞。
-  - `ui-kit-components`（README 依赖列已登记）：`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`DayzGlassAppBar`/`dayzMotionDuration`/`AppStrings` 单类落点（经 `lib/ui/components.dart`）。**未就绪时降级**：sheet 用裸 `showModalBottomSheet`、toast 用裸 `ScaffoldMessenger`、顶栏用内联占位（走 token）、空态内联——但优先等其就绪以免造同义物（shell D9 同款降级思路）。
+  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、`AppLocalizations` 约定、`intl`、六套主题。**强依赖**，未定稿则本屏被阻塞。
+  - `ui-kit-components`（README 依赖列已登记）：`DayzButton`/`DayzSheet.confirm`/`DayzToast`/`DayzEmptyState`/`DayzGlassAppBar`/`dayzMotionDuration`（经 `lib/ui/components.dart`）。**未就绪时降级**：sheet 用裸 `showModalBottomSheet`、toast 用裸 `ScaffoldMessenger`、顶栏用内联占位（走 token）、空态内联——但优先等其就绪以免造同义物（shell D9 同款降级思路）。
   - `ui-shell-navigation`（README 依赖列已登记）：`Routes.trash`（进入本屏的路由名）、`Routes.timeline`（恢复/返回回时间线）、抽屉「浏览组 → 回收站」入口。**未就绪时降级**：demo 直接构造本屏、返回用 `Navigator.pop`；真接线待 shell 就绪。
   - `data-layer`（README 依赖列已登记，且见上「交付物缺口」）：`EntryRepo`（列回收站条目 / 恢复 / `hardDelete`）。**未就绪时降级**：controller 用内存假数据 + mock 回调，不接真 Repo。**MUST NOT 为赶进度在屏/controller 直接写 Drift/SQL**（NF5 红线）。
   - `design-sync-automation`（**非 README 依赖**，仅验证基建关系）：参数/几何抽取 harness、`element-map.yaml`、区域化 SSIM 兜底属其交付物；本屏的样式参数 / 几何断言用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；需「对设计稿源屏 `trash.html` 比框 / SSIM」的部分留给 design-sync 期二，不在本 spec 重造。golden 基线本 spec 自带（任务「验收基建」预批）。
-- **`AppStrings` 落点二义（D1/D6，待确认）**：tokens-theme D4 拍板「单个 `AppStrings` 类」，ui-kit D10 首建该文件。本屏文案应**向 ui-kit 的 `AppStrings` 追加**而非新建；若执行时 ui-kit `AppStrings` 已就绪，则 `trash_strings.dart` 改为「向 `lib/ui/strings/app_strings.dart` 追加本屏条目」——但**追加别 spec 的文件属白名单外**，须在 README/ui-kit 协调归属后，把该文件列入本 spec 任务白名单或由 ui-kit 侧增补。当前先以本屏 `trash_strings.dart`（同构常量类）承载，标待确认。
+- **ARB 合并风险（D1/D6）**：本屏补 `app_zh.arb` / `app_en.arb` key，MUST 保持 zh/en key 集合一致并跑 `gen-l10n`；不得新增本屏 strings 类或静态文案常量。
 - **截断/行钳制须进参数闸（方法论 §4 ②）**：摘要 `.ti-ex` 是 `-webkit-line-clamp:2` + `overflow:hidden`，Flutter 对应 `maxLines:2` + `overflow: TextOverflow.ellipsis` + `softWrap:true`——这是「样式全对但该截没截」的真 bug 高发点，验收须断言这三参数（verification 样式参数闸），不只断块高。
 - **无持久化 schema 变更**：本屏不新增/改 DB schema（软删字段 `deleted_at` 由 data-layer 既有 schema 提供，本屏只读/经 Repo 改），→ 无数据迁移/回滚要素。

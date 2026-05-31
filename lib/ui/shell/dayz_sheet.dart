@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../util/dayz_motion.dart';
@@ -76,14 +76,15 @@ abstract final class DayzSheet {
   static Future<T?> actions<T>(
     BuildContext context, {
     required List<DayzSheetItem> items,
-    String cancelLabel = AppStrings.sheetCancel,
+    String? cancelLabel,
   }) {
+    final l10n = AppLocalizations.of(context);
     return _show<T>(
       context,
       _DayzSheetItems(
         items: items,
         showSelectedCheck: false,
-        cancelLabel: cancelLabel,
+        cancelLabel: cancelLabel ?? l10n.sheetCancel,
       ),
     );
   }
@@ -114,24 +115,28 @@ abstract final class DayzSheet {
     BuildContext context, {
     required String title,
     String? desc,
-    String primaryLabel = AppStrings.sheetConfirm,
-    String cancelLabel = AppStrings.sheetCancel,
+    String? primaryLabel,
+    String? cancelLabel,
     VoidCallback? onConfirm,
     VoidCallback? onCancel,
     bool keepOpen = false,
   }) {
+    final l10n = AppLocalizations.of(context);
     return _show<bool>(
       context,
       _DayzSheetConfirm(
         title: title,
         desc: desc,
         primary: DayzSheetAction(
-          label: primaryLabel,
+          label: primaryLabel ?? l10n.sheetConfirm,
           onPressed: onConfirm,
           tone: DayzSheetTone.danger,
           keepOpen: keepOpen,
         ),
-        cancel: DayzSheetAction(label: cancelLabel, onPressed: onCancel),
+        cancel: DayzSheetAction(
+          label: cancelLabel ?? l10n.sheetCancel,
+          onPressed: onCancel,
+        ),
       ),
     );
   }
@@ -300,7 +305,9 @@ class _DayzSheetCancelButton extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14), // padding: 14px
+              padding: const EdgeInsets.symmetric(
+                vertical: 14,
+              ), // padding: 14px
               alignment: Alignment.center,
               child: Text(
                 label,
@@ -330,6 +337,7 @@ class _DayzSheetItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final itemColor = _toneColor(colors, item.tone);
     final onTap = item.onTap == null ? null : () => _handleTap(context);
 
@@ -339,7 +347,7 @@ class _DayzSheetItemTile extends StatelessWidget {
       enabled: item.onTap != null,
       selected: item.selected,
       label: item.label,
-      value: item.selected ? AppStrings.sheetSelected : null,
+      value: item.selected ? l10n.sheetSelected : null,
       child: ExcludeSemantics(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: DayzSpacing.s1),

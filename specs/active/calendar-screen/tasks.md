@@ -14,7 +14,7 @@
 graph LR
   T1[T1 日期数学纯函数] --> T2[T2 月视图自绘 DayzCalendarMonth]
   T1 --> T3[T3 calendar_controller + EntryRepo 接缝]
-  T6[T6 AppStrings 追加文案] --> T2
+  T6[T6 gen-l10n 文案] --> T2
   T6 --> T4
   T2 --> T4[T4 calendar_screen 组装屏]
   T3 --> T4
@@ -75,11 +75,11 @@ graph LR
 归属：日格三态视觉、命中区、Semantics 全在本任务；月标题/导航钮在屏壳（T4）。
 
 ### 实施
-1. 周一表头（一二三四五六日，文案经 `AppStrings`，T6 提供）。
+1. 周一表头（一二三四五六日，文案经 `AppLocalizations`，T6 提供）。
 2. 占位格（`leadingPadCount`）不可见不可点（对应 `.cm-day.pad`）。
 3. 日格三态（全走 token，NF1）：`has`（有条目）→ 可点 + 底部 accent 圆点（`context.dayz.accent`）；`today` → accent 环（`BoxShadow`/`Border` 模拟 inset ring，色 `accent`）；`sel`（选中且有条目）→ accent 实底 + `on-accent` 文字；无条目日 → 不可点 + `ink-4`。
 4. 命中区 ≥ 44（NF3）：日格虽 `aspect-ratio:1/1` 视觉小，用 padding / `Semantics` 包裹保证可点格命中盒 ≥ 44×44。
-5. Semantics（NF4）：每个可点日格 `Semantics(label: AppStrings.calendarDaySemantics(...))`，含「日期 + 有/无条目 + 今日/选中」信息。
+5. Semantics（NF4）：每个可点日格 `Semantics(label: l10n.calendarDaySemantics(...))`，含「日期 + 有/无条目 + 今日/选中」信息。
 6. 过渡（选中切换）经 `dayzMotionDuration(context, base)` 取时长，reduce-motion 下为瞬时（NF6）。
 7. 新文件加 MPL-2.0 头注。
 
@@ -166,13 +166,13 @@ graph LR
 1. 顶栏：复用 `DayzGlassAppBar`（未就绪用 token 占位顶栏）：leading 返回（`Navigator.pop`）、title 标题、actions 「回到今天」钮（调 `controller.goToday`）；全部钮命中区 ≥44 + Semantics（NF3/NF4，文案 T6）。
 2. 月头：上个月/下个月钮（调 `controller.prevMonth/nextMonth`）+ 月标题（`intl` 格式化 view.y/m，NF1 禁自拼，R2）。
 3. 月视图：放 `DayzCalendarMonth`，`onDaySelected` → `controller.selectDay`（R1/R4）。
-4. 选中日区：日期头「M 月 D 日」+「周X · N 篇」（`intl`+`AppStrings`，R4）；有条目 → `DayzEntryCard` 列表（紧凑变体；退路私有简版行），点项 → `Routes.reader(entryId)` 导航（R4）；无条目 → 空态文案 / `DayzEmptyState`（R5）。
+4. 选中日区：日期头「M 月 D 日」+「周X · N 篇」（`intl`+`AppLocalizations`，R4）；有条目 → `DayzEntryCard` 列表（紧凑变体；退路私有简版行），点项 → `Routes.reader(entryId)` 导航（R4）；无条目 → 空态文案 / `DayzEmptyState`（R5）。
 5. 加载/失败态（D4/R6）：pending → 区域占位（导航不冻结）；error → 错误文案 + 重试钮（`controller.retry`）。
 6. 视觉全走 token（NF1）；窄屏 360dp 月视图 7 列不溢出（NF7）；动效经 `dayzMotionDuration`（NF6）。
 7. 新文件加 MPL-2.0 头注。
 
 ### 验收标准（做完即止）
-- 默认进屏：月标题 = 今日所在月（`find.text(AppStrings/intl 格式化串)`）、月视图 + 今日选中区渲染（自动）（R1）。
+- 默认进屏：月标题 = 今日所在月（`find.text(l10n / intl 格式化串)`）、月视图 + 今日选中区渲染（自动）（R1）。
 - 点上/下月 → 月标题与月视图刷新、选中日不变（自动）（R2）。
 - 点「回到今天」→ 归位今日月 + 今日选中区（自动）（R3）。
 - 点有条目日 → 选中日区出现 `DayzEntryCard` 列表；点某条目 → 触发 `Routes.reader` 导航并携 entryId（自动，用 mock router/observer 断言导航目标与参数）（R4）。
@@ -242,28 +242,27 @@ Debug Home 入口：用内存 fake `EntryRepo`（T3 所建，覆盖有条目月 
 
 -----
 
-- [ ] T6 · AppStrings 追加本屏文案 + Semantics 标签
+- [ ] T6 · gen-l10n 补本屏文案 + Semantics 标签
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `ui-kit-components`：`lib/ui/strings/app_strings.dart` 单类（D10 拍板 ui-kit 首建、各屏追加；本任务向其追加，不重建）｜ **关联需求：** R2, R4, R5, R6, NF4 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/ui/strings/app_strings.dart` ｜ **验收基建：** `test/ui/calendar/app_strings_calendar_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `i18n-localization`：gen-l10n 基础设施 ｜ **关联需求：** R2, R4, R5, R6, NF4 ｜ **依据设计：** D6 ｜ **可改文件：** `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/calendar/app_localizations_calendar_test.dart`
 
 ### 背景
-向 ui-kit 所建的 `AppStrings` 单类**追加**本屏用到的中文文案与 Semantics 标签（屏内禁裸中文）。日期/篇数等动态串走 `intl`，本任务只录入**静态文案与可参数化标签生成器**（如 `calendarDaySemantics(...)`）；纯 `intl` 格式化不进 `AppStrings`。
-归属：文案常量在本任务集中；屏/月视图（T2/T4）引用这些常量。`AppStrings` 文件由 ui-kit 首建，本任务**只追加** calendar 段、不改既有条目、不重建文件。
+补本屏用到的 zh/en 文案与 Semantics 标签，屏内禁裸中文。日期/篇数等动态串走 `intl` 或 ARB ICU；运行期通过 `AppLocalizations.of(context)` 取用。
 
 ### 实施
-1. 追加静态文案：屏标题「日历」、回到今天/上个月/下个月/返回的语义标签、空态「这一天没有记录…」、加载/错误/重试文案、周一起始表头（一~日）。
-2. 追加可参数化语义生成器：`calendarDaySemantics(year,month,day,{hasEntries,isToday,isSelected})`（拼日期 + 状态，内部可用 `intl`）。
-3. 全部为 `static const`（或 const 工厂方法），中文集中此处。
-4. 若执行时 ui-kit 尚未建 `app_strings.dart` → **停下**按 D10/README 归属确认（不擅自重建），见已知风险。
+1. 在 `app_zh.arb` / `app_en.arb` 补静态文案：屏标题、回到今天/上个月/下个月/返回的语义标签、空态、加载/错误/重试文案、周一起始表头。
+2. 补可参数化语义 key：`calendarDaySemantics(...)`（日期 + 有/无条目 + 今日/选中状态，必要时用 ICU `select`）。
+3. 两份 ARB key 集合保持一致，跑 `flutter gen-l10n` 更新 `lib/l10n/gen/`。
+4. 不新增或追加屏内 strings 类或静态文案常量。
 
 ### 验收标准（做完即止）
-- 本屏所需文案条目存在且为中文常量（自动，widget test 经 `find.text(AppStrings.calendarXxx)` 在 T2/T4 渲染中命中——本任务测试断言常量非空且类型正确，行为命中由 T2/T4 测试覆盖）。
+- 本屏所需文案条目存在且 zh/en 均可经 `AppLocalizations` 取值（自动，widget test 经 `find.text(l10n.calendarXxx)` 在 T2/T4 渲染中命中）。
 - `calendarDaySemantics` 对给定入参产出含日期 + 状态信息的非空标签（自动）（NF4）。
 
 ### 验收方式
 - 自动：
   ```bash
-  flutter test test/ui/calendar/app_strings_calendar_test.dart
+  flutter test test/ui/calendar/app_localizations_calendar_test.dart
   ```
   （断言追加的常量非空 + 语义生成器对样例入参输出符合预期**值**；**不** grep 被改文件自身——断言运行时返回值而非源码文本）
 

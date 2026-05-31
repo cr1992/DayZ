@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -16,8 +16,8 @@ import 'dayz_icons.dart';
 class DayzEmptyState extends StatelessWidget {
   const DayzEmptyState({
     super.key,
-    this.title = AppStrings.emptyTitle,
-    this.description = AppStrings.emptyDescription,
+    this.title,
+    this.description,
     this.illustration,
     this.action,
   });
@@ -26,15 +26,18 @@ class DayzEmptyState extends StatelessWidget {
     'dayz-empty-state-illustration',
   );
 
-  final String title;
-  final String description;
+  final String? title;
+  final String? description;
   final Widget? illustration;
   final Widget? action;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = context.dayz;
     final typography = context.dayzText;
+    final effectiveTitle = title ?? l10n.emptyTitle;
+    final effectiveDescription = description ?? l10n.emptyDescription;
 
     return Center(
       child: Padding(
@@ -70,7 +73,7 @@ class DayzEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: DayzSpacing.s4),
             Text(
-              title,
+              effectiveTitle,
               textAlign: TextAlign.center,
               style: typography.h2.copyWith(
                 color: colors.ink,
@@ -83,7 +86,7 @@ class DayzEmptyState extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 240),
               child: Text(
-                description,
+                effectiveDescription,
                 textAlign: TextAlign.center,
                 style: typography.caption.copyWith(
                   color: colors.ink3,

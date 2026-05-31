@@ -7,7 +7,7 @@
 
 # 设计：memory-card-export
 
-> 视觉与映射依据：源屏 [`ui-design/current/pages/screens/memory.html`](../../../ui-design/current/pages/screens/memory.html)（`.mc`/`.mc.paper`/`.mc.photo`/`.lc`/`.mem-stage`/`.mem-dock` 版式与切换 JS）、[`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.segmented` / `.btn` / 图标约定）/§3c 末行（`.mc` 标为屏内一次性件，写在该屏 `<style>`）、[`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`memory.html` → `RepaintBoundary.toImage()` → PNG → `share_plus` / 存相册；画幅 / 风格 = widget 参数）、方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §3/§4/§9（W3/W4 依附件）/§10/§11；媒体红线 [`docs/design/06`](../../../docs/design/06-encryption-and-security-policy.md)（主密码不保护照片）与缩略图 / 重活红线 [`docs/design/05`](../../../docs/design/05-backup-and-restore-architecture.md)（CLAUDE.md「重活进 isolate / 缩略图只暴露异步 warmup」指针）。token / `context.dayz.*` / `AppStrings` / `intl` 约定来自 `design-tokens-theme`（D1/D4）；`DayzButton`/`DayzSegmented`/`DayzToast`/`dayzMotionDuration` 来自 `ui-kit-components`；`Routes` 常量来自 `ui-shell-navigation`。
+> 视觉与映射依据：源屏 [`ui-design/current/pages/screens/memory.html`](../../../ui-design/current/pages/screens/memory.html)（`.mc`/`.mc.paper`/`.mc.photo`/`.lc`/`.mem-stage`/`.mem-dock` 版式与切换 JS）、[`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.segmented` / `.btn` / 图标约定）/§3c 末行（`.mc` 标为屏内一次性件，写在该屏 `<style>`）、[`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`memory.html` → `RepaintBoundary.toImage()` → PNG → `share_plus` / 存相册；画幅 / 风格 = widget 参数）、方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §3/§4/§9（W3/W4 依附件）/§10/§11；媒体红线 [`docs/design/06`](../../../docs/design/06-encryption-and-security-policy.md)（主密码不保护照片）与缩略图 / 重活红线 [`docs/design/05`](../../../docs/design/05-backup-and-restore-architecture.md)（CLAUDE.md「重活进 isolate / 缩略图只暴露异步 warmup」指针）。token / `context.dayz.*` / `AppLocalizations` / `intl` 约定来自 `design-tokens-theme`（D1/D4）；`DayzButton`/`DayzSegmented`/`DayzToast`/`dayzMotionDuration` 来自 `ui-kit-components`；`Routes` 常量来自 `ui-shell-navigation`。
 
 ## 技术决策
 
@@ -62,19 +62,19 @@
 - **理由：** 二值 / 三值低频本地 UI 状态，`setState` 足够（与 tokens-theme 示例「二值低频 setState 足够」同调）；联动规则单点在屏 state 内，易 widget test 断言（切长图后风格段 `enabled==false`）。
 - **代价：** 状态在屏内、不跨屏；本屏是叶子导出屏无需跨屏共享，恰当。
 
-### D7 · 文案集中 `AppStrings` + 日期 / 数字走 `intl`（落实 tokens-theme D4）
+### D7 · 文案集中 `AppLocalizations` + 日期 / 数字走 `intl`（落实 docs/design/11）
 - **状态：** 采纳
-- **背景：** tokens-theme D4：UI 文案集中 `AppStrings`、屏内禁裸中文、日期 / 数字走 `intl`；`ui-kit-components` D10 已**创建** `lib/ui/strings/app_strings.dart`（`AppStrings` 单类，后续屏向其追加条目）。本屏文案：标题「回忆卡片」、画幅 / 风格分段项名（竖版 / 方形 / 长图 / 纸感 / 大图压字）、保存 / 分享、各 toast、返回 / 各项 Semantics 标签、字标 `DayZ`。
-- **选项：** (A) 屏内裸中文字面量；(B) 向 `ui-kit-components` 的 `AppStrings` 单类**追加**本屏条目（屏内引 `AppStrings.xxx`）。
-- **选择：** B。向 `lib/ui/strings/app_strings.dart` 追加 `static const` 中文条目（归属：`ui-kit-components` 创建该文件、各屏增补，见 README / ui-kit D10——本屏把它列入白名单是「向既有共享文件追加」，不重复创建）；往年段 / 年份 / 「N 段回忆」/「写过 N 篇」等日期 / 计数文案走 `package:intl`（`intl` 为 Flutter SDK 传递依赖，无需新增 pubspec 条目），且在 D5 的装配处格式化（屏只收成品文案），不在屏内自拼 `'2021年5月'` / `'共 2 段'`。widget 测试用 `find.text(AppStrings.xxx)` 而非裸中文。
+- **背景：** UI 文案唯一来源是 zh/en ARB。本屏文案：标题「回忆卡片」、画幅 / 风格分段项名（竖版 / 方形 / 长图 / 纸感 / 大图压字）、保存 / 分享、各 toast、返回 / 各项 Semantics 标签、字标 `DayZ`。
+- **选项：** (A) 屏内裸中文字面量；(B) 在 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb` 补本屏 key（屏内经 `l10n.xxx` 取用）。
+- **选择：** B。补 zh/en ARB key 并跑 `gen-l10n`；往年段 / 年份 / 「N 段回忆」/「写过 N 篇」等日期 / 计数文案走 `package:intl` / ARB ICU，且在 D5 的装配处格式化（屏只收成品文案），不在屏内自拼 `'2021年5月'` / `'共 2 段'`。widget 测试用 `find.text(l10n.xxx)` 而非裸中文。
 - **理由：** 与全项目文案策略一致、自带「只引常量」回归护栏；日期 / 计数走 intl 把高频散落点收敛。
-- **代价：** 与 `ui-kit-components` 共享 `AppStrings` 文件（跨 spec 追加）——归属已在 ui-kit D10 / README 拍板，本屏只追加不新建，避免两处各建。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 文件，需保持 key 集合一致并跑 `gen-l10n`。
 
 ### D8 · 安全 / 权限红线落地（NF6 / R5 / R6）
 - **状态：** 采纳
 - **背景：** NF6：导出 = 把（可能受主密码语义保护的）日记文字 + 照片以**明文 PNG** 外发到相册 / 系统分享；媒体 key 独立于主密码、主密码本就不保护照片（docs/design/06）。R5/R6：相册写入 / 分享有失败 / 取消路径，MUST NOT 静默吞错。
 - **选项：** (A) 不提示、自动导出；(B) 导出仅由显式点击触发，失败 / 拒权有 toast 反馈，UI 不出现「导出物仍受保护 / 加密」字样，必要处一句中性说明导出为明文外发。
-- **选择：** B。① **无自动导出**：保存 / 分享只在用户点按时触发；② **失败显形**：相册权限被拒 / 写入失败 / 生成失败 → 失败 toast（`AppStrings`，`DayzToast` tone=danger），分享取消属正常、静默回屏；③ **导出进行中防重入**：导出期间按钮 disable（接 NF7「防重复触发」），避免连点生成多份；④ UI 文案 MUST NOT 暗示导出物受保护 / 加密；是否再加一句「图片将以明文保存 / 分享」说明 → **待确认**（@Ray 决定是否需要，避免过度打扰；红线本身是「不误导」，不强制必须有提示）。
+- **选择：** B。① **无自动导出**：保存 / 分享只在用户点按时触发；② **失败显形**：相册权限被拒 / 写入失败 / 生成失败 → 失败 toast（`AppLocalizations`，`DayzToast` tone=danger），分享取消属正常、静默回屏；③ **导出进行中防重入**：导出期间按钮 disable（接 NF7「防重复触发」），避免连点生成多份；④ UI 文案 MUST NOT 暗示导出物受保护 / 加密；是否再加一句「图片将以明文保存 / 分享」说明 → **待确认**（@Ray 决定是否需要，避免过度打扰；红线本身是「不误导」，不强制必须有提示）。
 - **理由：** 把 docs/design/06 的「主密码锁不住照片、且导出是明文外发」如实落到 UI 行为（显式、不误导、失败显形），不在 UI 写出违反加密策略的暗示。
 - **代价：** 失败路径与防重入多写若干分支与状态；安全红线的应有成本，且都可 widget test（注入失败的假 exporter 断言 toast）。
 
@@ -89,8 +89,8 @@
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii / AppStrings / intl 约定]
-  KIT[ui-kit-components: DayzButton / DayzSegmented / DayzToast / dayzMotionDuration / AppStrings 单类]
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii / AppLocalizations / intl 约定]
+  KIT[ui-kit-components: DayzButton / DayzSegmented / DayzToast / dayzMotionDuration / `AppLocalizations` 生成类]
   SHELL[ui-shell-navigation: Routes 常量 / 返回顶栏壳]
   OTD[onthisday-screen: 入口拉起本屏 + 装配 MemoryCardData/MemoryDayData]
   REPO[data-layer: EntryRepo.onThisDay / 单条取 entry · MediaRepo 元数据]
@@ -137,8 +137,9 @@ graph TD
 - `lib/ui/memory_card_export/memory_card_data.dart`            新建（`MemoryCardData`/`MemoryDayData`/`MemorySegment` 纯数据模型 + `MemoryCardRatio`/`MemoryCardStyle` 枚举，D5）
 - `lib/ui/memory_card_export/memory_card_exporter.dart`        新建（`MemoryCardExporter`：离屏 `RepaintBoundary`→`toImage(pixelRatio)`→PNG→相册 / 分享；定义可被假实现替换的接口，D3/D4/D8）
 
-**共享文案（向既有文件追加，归属 ui-kit-components D10）`lib/ui/strings/`**
-- `lib/ui/strings/app_strings.dart`                            修改（**仅追加**本屏 `static const` 条目：屏标题 / 画幅 / 风格项名 / 保存 / 分享 / 各 toast / Semantics 标签 / `DayZ` 字标；不改既有条目，D7）
+**gen-l10n 文案**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`                            修改（补本屏 zh/en 文案与 Semantics key，D7）
+- `lib/l10n/gen/app_localizations*.dart`                                           修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/memory_card_export_demo.dart`                      新建（假数据 + 假 exporter 渲染本屏，D9）
@@ -157,8 +158,8 @@ graph TD
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，多数尚未实现 / 未定稿；本屏照实声明、不假装已存在）**：
-  - `design-tokens-theme`（README 依赖）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings`/`intl` 约定、`glassSurface`/`fabGradient`（本屏顶栏沿用外壳，不直接用 glass）。未定稿则本屏被阻塞（READY 门）。
-  - `ui-kit-components`（README 依赖）：`DayzButton`/`DayzSegmented`/`DayzToast`/`dayzMotionDuration`/`AppStrings` 单类落点。**未就绪降级**：分段 / 按钮 / toast 用最小内联占位（走 token），文案先在屏内 const 暂存——但 MUST 在 ui-kit 就绪后并入，不固化裸中文（标为待确认）。
+  - `design-tokens-theme`（README 依赖）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations`/`intl` 约定、`glassSurface`/`fabGradient`（本屏顶栏沿用外壳，不直接用 glass）。未定稿则本屏被阻塞（READY 门）。
+  - `ui-kit-components`（README 依赖）：`DayzButton`/`DayzSegmented`/`DayzToast`/`dayzMotionDuration`。**未就绪降级**：分段 / 按钮 / toast 用最小内联占位（走 token），文案仍走 ARB / `AppLocalizations`，MUST NOT 用屏内 const 或静态文案常量暂存。
   - `ui-shell-navigation`（README 依赖）：返回顶栏壳、`Routes`（本屏作为可被路由到的叶子屏，路由名待 shell 在 `Routes` 加常量；归属在 shell / README 协调）。未就绪降级用最小内联返回顶栏。
   - `onthisday-screen`（README 依赖，**尚未立项**）：本屏的**入口拉起方**与 `MemoryCardData`/`MemoryDayData` 装配方（把 `EntryRepo.onThisDay`/`MediaRepo` 结果 + 封面 provider 经 `intl` 映射成模型）。**待确认**：装配适配器代码归 `onthisday-screen` 还是本屏——倾向归入口 spec（本屏只收纯模型）；若入口 spec 决定不承载，则需回填本 spec `## 文件变更` 增一个装配文件并复核归属。未立项期，本屏只能跑 demo 假数据。
   - `data-layer`（**非依赖、明确禁连**，R7/NF5）：`EntryRepo.onThisDay(month,day)` / 单条取 entry、`MediaRepo` 元数据是装配方的取数入口；本屏 widget MUST NOT import `lib/data` 或持 Drift 句柄，verification 留静态核验。

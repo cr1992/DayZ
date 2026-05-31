@@ -4,11 +4,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
 import 'package:dayz/ui/shell/fab_speed_dial.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 
@@ -42,6 +42,7 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     return Scaffold(
@@ -61,12 +62,12 @@ class AppShell extends StatelessWidget {
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             DayzGlassAppBar(
-              title: Text(_getTitle(context)),
+              title: Text(_getTitle(context, l10n)),
               leading: Builder(
                 builder: (context) {
                   return Semantics(
                     button: true,
-                    label: AppStrings.menu,
+                    label: l10n.menu,
                     child: SizedBox.square(
                       dimension: 44,
                       child: IconButton(
@@ -75,7 +76,7 @@ class AppShell extends StatelessWidget {
                           width: 44,
                           height: 44,
                         ),
-                        tooltip: AppStrings.menu,
+                        tooltip: l10n.menu,
                         icon: SvgPicture.string(
                           _svg(DayzIcons.menuPath),
                           width: 24,
@@ -96,7 +97,7 @@ class AppShell extends StatelessWidget {
               actions: [
                 Semantics(
                   button: true,
-                  label: AppStrings.search,
+                  label: l10n.search,
                   child: SizedBox.square(
                     dimension: 44,
                     child: IconButton(
@@ -105,7 +106,7 @@ class AppShell extends StatelessWidget {
                         width: 44,
                         height: 44,
                       ),
-                      tooltip: AppStrings.search,
+                      tooltip: l10n.search,
                       icon: SvgPicture.string(
                         _svg(DayzIcons.searchPath),
                         width: 24,
@@ -134,31 +135,31 @@ class AppShell extends StatelessWidget {
     );
   }
 
-  String _getTitle(BuildContext context) {
+  String _getTitle(BuildContext context, AppLocalizations l10n) {
     final route = currentRoute ?? _getRouteName(context);
     switch (route) {
       case Routes.timeline:
-        return AppStrings.timeline;
+        return l10n.timeline;
       case Routes.reader:
-        return AppStrings.reader;
+        return l10n.reader;
       case Routes.editor:
-        return AppStrings.editor;
+        return l10n.editor;
       case Routes.onthisday:
-        return AppStrings.onThisDay;
+        return l10n.onThisDay;
       case Routes.search:
-        return AppStrings.search;
+        return l10n.search;
       case Routes.settings:
-        return AppStrings.settings;
+        return l10n.settings;
       case Routes.calendar:
-        return AppStrings.calendar;
+        return l10n.calendar;
       case Routes.favorites:
-        return AppStrings.favorites;
+        return l10n.favorites;
       case Routes.trash:
-        return AppStrings.trash;
+        return l10n.trash;
       case Routes.memory:
-        return AppStrings.memoryCardExport;
+        return l10n.memoryCardExport;
       case Routes.debugHome:
-        return AppStrings.debugHome;
+        return l10n.debugHome;
       default:
         return '';
     }

@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:dayz/ui/strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 
 class TimelineLoader extends StatelessWidget {
@@ -21,9 +21,8 @@ class TimelineLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = reachedEnd
-        ? AppStrings.reachedOldest
-        : AppStrings.loadingEarlier;
+    final l10n = AppLocalizations.of(context);
+    final text = reachedEnd ? l10n.reachedOldest : l10n.loadingEarlier;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

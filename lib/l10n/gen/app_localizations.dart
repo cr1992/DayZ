@@ -139,6 +139,396 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'语言设置'**
   String get languageSetting;
+
+  /// No description provided for @toastDefault.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示'**
+  String get toastDefault;
+
+  /// No description provided for @toastUndo.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get toastUndo;
+
+  /// No description provided for @toastView.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看'**
+  String get toastView;
+
+  /// No description provided for @toastRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get toastRetry;
+
+  /// No description provided for @toastDismiss.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get toastDismiss;
+
+  /// No description provided for @sheetCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get sheetCancel;
+
+  /// No description provided for @sheetDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get sheetDelete;
+
+  /// No description provided for @sheetConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认'**
+  String get sheetConfirm;
+
+  /// No description provided for @sheetSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择'**
+  String get sheetSelected;
+
+  /// No description provided for @emptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'这里还没有内容'**
+  String get emptyTitle;
+
+  /// No description provided for @emptyDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'写下第一篇日记后，它会出现在这里。'**
+  String get emptyDescription;
+
+  /// No description provided for @favorite.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get favorite;
+
+  /// No description provided for @unfavorite.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消收藏'**
+  String get unfavorite;
+
+  /// No description provided for @menu.
+  ///
+  /// In zh, this message translates to:
+  /// **'菜单'**
+  String get menu;
+
+  /// No description provided for @more.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多'**
+  String get more;
+
+  /// No description provided for @close.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get close;
+
+  /// No description provided for @search.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get search;
+
+  /// No description provided for @searchCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消搜索'**
+  String get searchCancel;
+
+  /// No description provided for @clear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除'**
+  String get clear;
+
+  /// No description provided for @remove.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除'**
+  String get remove;
+
+  /// No description provided for @add.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get add;
+
+  /// No description provided for @edit.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get edit;
+
+  /// No description provided for @delete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get delete;
+
+  /// No description provided for @confirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认'**
+  String get confirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get cancel;
+
+  /// No description provided for @selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选中'**
+  String get selected;
+
+  /// No description provided for @unselected.
+  ///
+  /// In zh, this message translates to:
+  /// **'未选中'**
+  String get unselected;
+
+  /// No description provided for @switchOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get switchOn;
+
+  /// No description provided for @switchOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'已关闭'**
+  String get switchOff;
+
+  /// No description provided for @previous.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一项'**
+  String get previous;
+
+  /// No description provided for @next.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一项'**
+  String get next;
+
+  /// No description provided for @showMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示更多'**
+  String get showMore;
+
+  /// No description provided for @camera.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get camera;
+
+  /// No description provided for @voice.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音'**
+  String get voice;
+
+  /// No description provided for @plainText.
+  ///
+  /// In zh, this message translates to:
+  /// **'纯文字'**
+  String get plainText;
+
+  /// 画廊折叠时剩余图片数
+  ///
+  /// In zh, this message translates to:
+  /// **'+{count}'**
+  String galleryMoreCount(int count);
+
+  /// 条目数量
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{{count} 篇}}'**
+  String entryCount(int count);
+
+  /// No description provided for @loadingEarlier.
+  ///
+  /// In zh, this message translates to:
+  /// **'载入更早...'**
+  String get loadingEarlier;
+
+  /// No description provided for @reachedOldest.
+  ///
+  /// In zh, this message translates to:
+  /// **'已经到最早的一篇了'**
+  String get reachedOldest;
+
+  /// No description provided for @timelineEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'这里还没有日记'**
+  String get timelineEmptyTitle;
+
+  /// No description provided for @timelineEmptyDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻点右下角，写下第一页。'**
+  String get timelineEmptyDescription;
+
+  /// No description provided for @jumpToDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳转到日期'**
+  String get jumpToDate;
+
+  /// No description provided for @backToToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到今天'**
+  String get backToToday;
+
+  /// No description provided for @drawerProfileName.
+  ///
+  /// In zh, this message translates to:
+  /// **'DayZ'**
+  String get drawerProfileName;
+
+  /// No description provided for @drawerProfileInitial.
+  ///
+  /// In zh, this message translates to:
+  /// **'D'**
+  String get drawerProfileInitial;
+
+  /// No description provided for @drawerProfileStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地 · 已加密'**
+  String get drawerProfileStatus;
+
+  /// No description provided for @shellPlaceholderSuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'待页面级 spec 实现'**
+  String get shellPlaceholderSuffix;
+
+  /// No description provided for @allJournals.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部日记'**
+  String get allJournals;
+
+  /// No description provided for @journalSectionHeader.
+  ///
+  /// In zh, this message translates to:
+  /// **'日记本'**
+  String get journalSectionHeader;
+
+  /// No description provided for @browseSectionHeader.
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览'**
+  String get browseSectionHeader;
+
+  /// No description provided for @newJournal.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建日记本'**
+  String get newJournal;
+
+  /// No description provided for @journalNameInputPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入日记本名称'**
+  String get journalNameInputPlaceholder;
+
+  /// No description provided for @journalNameLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'日记本名称'**
+  String get journalNameLabel;
+
+  /// No description provided for @journalColorLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'日记本颜色'**
+  String get journalColorLabel;
+
+  /// No description provided for @settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置'**
+  String get settings;
+
+  /// No description provided for @timeline.
+  ///
+  /// In zh, this message translates to:
+  /// **'时间线'**
+  String get timeline;
+
+  /// No description provided for @reader.
+  ///
+  /// In zh, this message translates to:
+  /// **'阅读'**
+  String get reader;
+
+  /// No description provided for @editor.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get editor;
+
+  /// No description provided for @onThisDay.
+  ///
+  /// In zh, this message translates to:
+  /// **'往年今日'**
+  String get onThisDay;
+
+  /// No description provided for @calendar.
+  ///
+  /// In zh, this message translates to:
+  /// **'日历'**
+  String get calendar;
+
+  /// No description provided for @favorites.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get favorites;
+
+  /// No description provided for @trash.
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站'**
+  String get trash;
+
+  /// No description provided for @memoryCardExport.
+  ///
+  /// In zh, this message translates to:
+  /// **'回忆卡导出'**
+  String get memoryCardExport;
+
+  /// No description provided for @debugHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'Debug Home'**
+  String get debugHome;
+
+  /// No description provided for @notFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到'**
+  String get notFound;
 }
 
 class _AppLocalizationsDelegate

@@ -2,9 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:dayz/ui/shell/dayz_toast.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,11 +17,11 @@ void main() {
   ) async {
     final context = await _pumpToastHost(tester);
 
-    DayzToast.show(context, AppStrings.toastDefault, DayzToastTone.danger);
+    DayzToast.show(context, testL10n.toastDefault, DayzToastTone.danger);
     await _pumpToastIn(tester);
 
-    expect(find.text(AppStrings.toastDefault), findsOneWidget);
-    expect(find.bySemanticsLabel(AppStrings.toastDefault), findsOneWidget);
+    expect(find.text(testL10n.toastDefault), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.toastDefault), findsOneWidget);
 
     final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
     expect(snackBar.behavior, SnackBarBehavior.floating);
@@ -38,7 +37,7 @@ void main() {
   testWidgets('favorite tone uses favorite icon color', (tester) async {
     final context = await _pumpToastHost(tester);
 
-    DayzToast.show(context, AppStrings.favorite, DayzToastTone.fav);
+    DayzToast.show(context, testL10n.favorite, DayzToastTone.fav);
     await _pumpToastIn(tester);
 
     final icon = tester.widget<Icon>(
@@ -53,18 +52,18 @@ void main() {
 
     DayzToast.show(
       context,
-      AppStrings.toastDefault,
+      testL10n.toastDefault,
       DayzToastTone.ok,
-      DayzToastAction(label: AppStrings.toastUndo, onPressed: () => taps += 1),
+      DayzToastAction(label: testL10n.toastUndo, onPressed: () => taps += 1),
     );
     await _pumpToastIn(tester);
 
     final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
     expect(snackBar.duration, DayzToast.actionDuration);
     expect(snackBar.action, isNotNull);
-    expect(find.text(AppStrings.toastUndo), findsOneWidget);
+    expect(find.text(testL10n.toastUndo), findsOneWidget);
 
-    await tester.tap(find.text(AppStrings.toastUndo));
+    await tester.tap(find.text(testL10n.toastUndo));
     await tester.pump();
 
     expect(taps, 1);
@@ -73,13 +72,13 @@ void main() {
   testWidgets('no-action toast closes on content tap', (tester) async {
     final context = await _pumpToastHost(tester);
 
-    DayzToast.show(context, AppStrings.toastDismiss, DayzToastTone.info);
+    DayzToast.show(context, testL10n.toastDismiss, DayzToastTone.info);
     await _pumpToastIn(tester);
 
-    await tester.tap(find.text(AppStrings.toastDismiss));
+    await tester.tap(find.text(testL10n.toastDismiss));
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.toastDismiss), findsNothing);
+    expect(find.text(testL10n.toastDismiss), findsNothing);
   });
 
   testWidgets('rapid calls keep at most three SnackBars mounted', (
@@ -87,10 +86,10 @@ void main() {
   ) async {
     final context = await _pumpToastHost(tester, disableAnimations: true);
 
-    DayzToast.show(context, '${AppStrings.toastDefault} 1', DayzToastTone.info);
-    DayzToast.show(context, '${AppStrings.toastDefault} 2', DayzToastTone.info);
-    DayzToast.show(context, '${AppStrings.toastDefault} 3', DayzToastTone.info);
-    DayzToast.show(context, '${AppStrings.toastDefault} 4', DayzToastTone.info);
+    DayzToast.show(context, '${testL10n.toastDefault} 1', DayzToastTone.info);
+    DayzToast.show(context, '${testL10n.toastDefault} 2', DayzToastTone.info);
+    DayzToast.show(context, '${testL10n.toastDefault} 3', DayzToastTone.info);
+    DayzToast.show(context, '${testL10n.toastDefault} 4', DayzToastTone.info);
     await tester.pump();
 
     expect(find.byType(SnackBar).evaluate().length, lessThanOrEqualTo(3));
@@ -104,8 +103,7 @@ Future<BuildContext> _pumpToastHost(
   late BuildContext hostContext;
 
   await tester.pumpWidget(
-    MaterialApp(
-      theme: DayzThemes.purpleLight,
+    localizedMaterialApp(
       home: MediaQuery(
         data: MediaQueryData(disableAnimations: disableAnimations),
         child: Scaffold(

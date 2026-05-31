@@ -4,6 +4,8 @@
 
 > **编辑器选型 = A (AppFlowy Editor)** — 2026-05-29 @Ray 拍板（见 [archive/2026-05-29-editor-research](archive/2026-05-29-editor-research/)）。后续编辑器集成、JSON 契约、PDF 导出均以方案 A 为准。
 
+> **UI 文案默认走 gen-l10n**：未来 UI / 屏幕 spec 新增或修改用户可见文案，统一写入 `lib/l10n/arb/app_zh.arb` + `app_en.arb`，运行期通过 `AppLocalizations.of(context)` 取用并跑 `gen-l10n`。`AppStrings` 已废弃，不得新增或追加；存量引用由 [ui-i18n-migration](active/ui-i18n-migration/) 迁移。
+
 ## 进行中
 
 | 功能 | 优先级 | 状态 | 依赖 | 负责人 | 创建 |
@@ -11,6 +13,7 @@
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
+| [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
 | [timeline-screen](active/timeline-screen/) | P2 | 待实现 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [reader-screen](active/reader-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [editor-integration-screen](active/editor-integration-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-05-29 |

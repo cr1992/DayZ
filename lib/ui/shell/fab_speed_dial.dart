@@ -5,8 +5,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
@@ -93,6 +93,7 @@ class _FabSpeedDialState extends State<FabSpeedDial> {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
 
     return GestureDetector(
       onTapDown: _handleTapDown,
@@ -100,7 +101,7 @@ class _FabSpeedDialState extends State<FabSpeedDial> {
       onTapCancel: _handleTapCancel,
       child: Semantics(
         button: true,
-        label: AppStrings.edit,
+        label: l10n.edit,
         child: SizedBox.square(
           dimension: 56,
           child: Container(
@@ -206,23 +207,24 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
 
     // We align secondary buttons exactly above the original FAB offset
     final double fabTopY = widget.fabOffset.dy;
 
     final actions = [
       _ActionItem(
-        label: AppStrings.plainText,
+        label: l10n.plainText,
         iconPath: DayzIcons.plusPath,
         type: 'text',
       ),
       _ActionItem(
-        label: AppStrings.voice,
+        label: l10n.voice,
         iconPath: DayzIcons.micPath,
         type: 'voice',
       ),
       _ActionItem(
-        label: AppStrings.camera,
+        label: l10n.camera,
         iconPath: DayzIcons.imagePath,
         type: 'camera',
       ),
@@ -234,7 +236,7 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
         GestureDetector(
           onTap: _handleClose,
           child: Semantics(
-            label: AppStrings.close,
+            label: l10n.close,
             button: true,
             child: AnimatedBuilder(
               animation: _fadeAnimation,

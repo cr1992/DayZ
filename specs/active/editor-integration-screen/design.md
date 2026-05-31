@@ -7,7 +7,7 @@
 
 # 设计：editor-integration-screen
 
-> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层：屏依赖组件依赖 token）/§3（逐屏映射立场 + 网页取巧降级 + 重活/加密/IO 红线对 UI 生效）/§4（四闸：token/样式参数/布局几何/栅格观感）/§9（页面级 W2）/§10（动 lib/ui 前红线）/§11（验收口径）；屏源真源 [`ui-design/current/pages/screens/editor.html`](../../../ui-design/current/pages/screens/editor.html)（状态 `?state=empty|writing|rich`）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3「编辑器工具栏 `.toolbar`」/§3b「编辑页 `.compose-*`」/§3c「编辑器富格式块 `.cb-*`」/§5（图标）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（富文本编辑器 → AppFlowy Editor；固定头；`?state=`→状态管理）。组件词汇复用 `ui-kit-components`（`DayzGlassAppBar`/`DayzButton`/`DayzTextField`/`DayzTag`/`DayzToolbar`/`DayzSheet`/`AppStrings`/`dayzMotionDuration`），路由词汇复用 `ui-shell-navigation`（`Routes.editor` + FAB 创建意图入参 + `PlaceholderScreen` 替换）。
+> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层：屏依赖组件依赖 token）/§3（逐屏映射立场 + 网页取巧降级 + 重活/加密/IO 红线对 UI 生效）/§4（四闸：token/样式参数/布局几何/栅格观感）/§9（页面级 W2）/§10（动 lib/ui 前红线）/§11（验收口径）；屏源真源 [`ui-design/current/pages/screens/editor.html`](../../../ui-design/current/pages/screens/editor.html)（状态 `?state=empty|writing|rich`）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3「编辑器工具栏 `.toolbar`」/§3b「编辑页 `.compose-*`」/§3c「编辑器富格式块 `.cb-*`」/§5（图标）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（富文本编辑器 → AppFlowy Editor；固定头；`?state=`→状态管理）。组件词汇复用 `ui-kit-components`（`DayzGlassAppBar`/`DayzButton`/`DayzTextField`/`DayzTag`/`DayzToolbar`/`DayzSheet`/`AppLocalizations`/`dayzMotionDuration`），路由词汇复用 `ui-shell-navigation`（`Routes.editor` + FAB 创建意图入参 + `PlaceholderScreen` 替换）。
 
 ## 技术决策
 
@@ -42,7 +42,7 @@
 - **状态：** 采纳
 - **背景：** editor.html 的 `empty/writing/rich` 是原型 `?state=` 显隐（PROTOTYPE-ARCH §3）；§6 映射为「页面入参 + 状态管理，同一 Widget 按 state 渲染」。三状态的差异其实是**文档内容差异**（empty=空文档、writing=一段正文、rich=多块），不是三套独立 UI。
 - **选项：** (A) 三个独立 Widget；(B) 一个 `EditorScreen`，按入参（新建 vs 加载的 `Document` 内容）自然呈现三态——empty=空 `Document` + 占位、writing/rich=非空 `Document`；顶栏标题（「新日记」/「草稿已存」）由「是否新建 / 是否已有草稿落库」派生。
-- **选择：** B。`EditorScreen({entryId?, initialDraft?, createIntent?})`：无 entryId 且无草稿 = empty；有内容 = writing/rich（rich 仅是 writing 的富块超集，同一渲染路径）。顶栏标题文案由状态派生（empty→`AppStrings.editorTitleNew`「新日记」、有草稿→`AppStrings.editorTitleDraftSaved`「草稿已存」）。
+- **选择：** B。`EditorScreen({entryId?, initialDraft?, createIntent?})`：无 entryId 且无草稿 = empty；有内容 = writing/rich（rich 仅是 writing 的富块超集，同一渲染路径）。顶栏标题文案由状态派生（empty→`l10n.editorTitleNew`「新日记」、有草稿→`l10n.editorTitleDraftSaved`「草稿已存」）。
 - **理由：** 三态本质是数据态，用一套 widget + 状态最省、最贴 §6 映射；避免三份重复布局。
 - **代价：** 「草稿已存」标题需与 `auto-save-draft` 的保存状态联动（首次成功 flush 后才显「草稿已存」）；联动点写进 R8 接线与 verification。
 
@@ -85,12 +85,12 @@
 - **理由：** 解耦「页面可独立验证」与「底层全就绪」，符合 ui-shell D1/D3 的同款降级思路。
 - **代价：** 需维护一组测试用 fake；属验收基建（在 tasks 预批），可接受。
 
-### D10 · 文案集中 AppStrings、日期走 intl（落实 tokens-theme D4 / ui-kit D10）
+### D10 · 文案集中 AppLocalizations、日期走 intl（落实 docs/design/11）
 - **状态：** 采纳
-- **背景：** tokens-theme D4 + ui-kit D10 拍板「文案集中 `AppStrings` 单类、屏内禁裸中文、日期/数字走 `intl`」；`AppStrings` 实体由 `ui-kit-components` 首建，各屏**向其追加**条目（不另建）。
-- **选择：** 本屏用到的文案（顶栏「新日记」/「草稿已存」/「完成」/「关闭」、标题占位「标题」、正文占位「写点什么吧……」/「在这里继续写下今天的故事」、chip「心情/天气/地点/标签」、工具栏各 aria-label、媒体合规说明若有）**追加到 `ui-kit-components` 的 `lib/ui/strings/app_strings.dart`**（跨 spec 共享文件，归属在 ui-kit、本屏追加；列入本屏白名单时引用此归属，见 `## 文件变更` 与已知风险）。日期 kicker「今天 · 5月29日 周五」经 `package:intl`（`DateFormat`，中文 locale），MUST NOT 自拼。
-- **理由：** 单一可审计文案落点；测试用 `find.text(AppStrings.xxx)` 自带「只引常量」回归护栏。
-- **代价：** 向 ui-kit 的共享 `AppStrings` 追加属跨 spec 文件触碰，须在本屏白名单显式列出该文件并注明「仅追加本屏条目、不改他屏条目」。
+- **背景：** `docs/design/11` 拍板 UI 文案唯一来源为 zh/en ARB；屏内禁裸中文，日期/数字走 `intl`。
+- **选择：** 本屏用到的文案（顶栏「新日记」/「草稿已存」/「完成」/「关闭」、标题占位「标题」、正文占位「写点什么吧……」/「在这里继续写下今天的故事」、chip「心情/天气/地点/标签」、工具栏各 aria-label、媒体合规说明若有）补入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`，运行期经 `AppLocalizations.of(context)` / `l10n.xxx` 取用。日期 kicker「今天 · 5月29日 周五」经 `package:intl`（`DateFormat`，当前 locale），MUST NOT 自拼。
+- **理由：** 单一可审计文案落点；测试用 `find.text(l10n.xxx)` 自带「只引常量」回归护栏。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 文件，需保持 zh/en key 集合一致并跑 `gen-l10n`。
 
 ## 架构
 
@@ -134,8 +134,9 @@ graph TD
 - `lib/ui/editor/editor_image_inserter.dart`    新建（image_picker → MediaStore.put → MediaRepo.addMeta → image node，D5/R7）
 - `lib/ui/editor/editor_meta_bar.dart`          新建（`compose-meta` 四 chip 触发钮 + 已选态回显 + 触发占位 sheet，R10；取数经 Repository 入参，NF1）
 
-**跨 spec 共享文件（已在前置 spec 拍板归属，本屏仅按归属追加/替换一行）**
-- `lib/ui/strings/app_strings.dart`             修改（**归属 ui-kit-components**；本屏仅**追加**编辑页文案条目，不改他屏条目，D10）
+**gen-l10n 文案**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`             修改（补编辑页 zh/en 文案与 aria-label key，D10）
+- `lib/l10n/gen/app_localizations*.dart`                          修改（`flutter gen-l10n` 生成产物）
 - `lib/ui/shell/app_router.dart`                修改（**归属 ui-shell-navigation**；本屏仅把 `Routes.editor` 的 `builder` 从 `PlaceholderScreen` **替换为** `EditorScreen` 一行，不改路由表其余项；归属在 README/各屏协调）
 
 **共享依赖**
@@ -153,8 +154,8 @@ graph TD
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，多数尚未定稿；READY 门 = 全部前置「已完成」）**：
-  - `design-tokens-theme`（README 依赖列）：`context.dayz.*`、`DayzFonts`/`DayzTextTheme`、六套 ThemeData、`AppStrings` 约定、`dayzMotionDuration` 上游约定。**强依赖**，未定稿则本屏阻塞。
-  - `ui-kit-components`（README 依赖列）：`DayzGlassAppBar`/`DayzButton`/`DayzTextField`/`DayzTag`/`DayzToolbar`（仅作目标观感参照，本屏工具栏用 AppFlowy 体系实现）/`DayzSheet`/`AppStrings` 单类落点/`dayzMotionDuration` 门/`dayz_icons`(§5 SVG)。未就绪降级见 D8/D9。**`DayzTextField` 是否支持无边框（borderless）待确认**——若不支持，标题用裸 `TextField` + `InputDecoration.collapsed` 走 token（记此处）。
+  - `design-tokens-theme`（README 依赖列）：`context.dayz.*`、`DayzFonts`/`DayzTextTheme`、六套 ThemeData、`AppLocalizations` 约定、`dayzMotionDuration` 上游约定。**强依赖**，未定稿则本屏阻塞。
+  - `ui-kit-components`（README 依赖列）：`DayzGlassAppBar`/`DayzButton`/`DayzTextField`/`DayzTag`/`DayzToolbar`（仅作目标观感参照，本屏工具栏用 AppFlowy 体系实现）/`DayzSheet`/`dayzMotionDuration` 门/`dayz_icons`(§5 SVG)。未就绪降级见 D8/D9。**`DayzTextField` 是否支持无边框（borderless）待确认**——若不支持，标题用裸 `TextField` + `InputDecoration.collapsed` 走 token（记此处）。
   - `ui-shell-navigation`（README 依赖列）：`Routes.editor`、FAB 创建意图入参（新建/拍照入口）、`PlaceholderScreen`（本屏替换其 builder）。替换 `app_router.dart` 一行的归属在 README/各屏协调，**待确认**该行由本屏改还是 ui-shell 预留 hook。
   - `editor-json-contract`（README 依赖列）：`EditorDocCodec.encode/decode`(+docVersion)、`extractPlainText`、`block_types`、`editor_block_registry`、`ImageUrlResolver`、image 节点的 `media.id` 落点（**D2 未拍板**：`data.media_id` vs 自定义 url scheme，以该 spec 首任务结论为准）。本屏的 codec/插块/渲染全经其交付物，**MUST NOT 自行解析/拼 content_json**。
   - `media-storage`（README 依赖列）：`MediaStore.put(stream, kind)` / `openRead`、`DMED` 容器、独立设备媒体 key（HKDF，不随主密码/rekey）。

@@ -15,7 +15,7 @@
 | 场景 | 操作 | 预期结果 | 关联需求 | 方式 |
 |------|------|----------|----------|------|
 | 正文是 AppFlowy | pump 编辑页 | 正文区为 `AppFlowyEditor`，非 TextField | R1 | 自动 |
-| 无边框标题 | 聚焦标题输入 | 标题无可见边框（聚焦也不显描边），占位==AppStrings | R2 | 自动 |
+| 无边框标题 | 聚焦标题输入 | 标题无可见边框（聚焦也不显描边），占位==AppLocalizations | R2 | 自动 |
 | 加载解 docVersion | 喂 content_json(docVersion=1) | 解码出 Document 渲染进编辑器 | R3 | 自动 |
 | 保存产双产物 | 点「完成」 | encode 出 content_json(带 docVersion) + extractPlainText 出 content_plain(首行=标题) | R3 | 自动 |
 | 工具栏走 AppFlowy 体系 | 聚焦编辑器 | 工具栏由 AppFlowy mobile_toolbar 渲染、绑定 EditorState、editor-dock 能力齐备 | R4 | 自动 |
@@ -23,7 +23,7 @@
 | 高亮态派生自选区 | 选区移入/移出粗体 | B item 随选区实际格式即时亮/灭，非本地布尔 | R6 | 自动 |
 | 图片插入加密链路 | 选一张图 | image_picker→MediaStore.put(DMED,独立媒体key)→MediaRepo.addMeta→插 image 块(media.id)；content_json 无真实路径 | R7, NF2 | 自动 |
 | 自动保存对接 | 编辑后停顿 / 退出 | onChanged 翻 plain payload 喂 DraftCoordinator；退出/完成 forceFlush | R8 | 自动 |
-| 三状态呈现 | 以 empty/writing/rich 进入 | 占位/正文/顶栏标题文案与 editor.html 对应态一致(经 AppStrings)，日期 kicker 经 intl | R9 | 自动 |
+| 三状态呈现 | 以 empty/writing/rich 进入 | 占位/正文/顶栏标题文案与 editor.html 对应态一致(经 AppLocalizations)，日期 kicker 经 intl | R9 | 自动 |
 | 顶栏与 chip | 点「完成」/点 chip | 完成走保存(R3/R8)后返回；chip 点开占位选择并 .on 回显 | R10 | 自动 |
 
 ## 专项检查
@@ -35,13 +35,13 @@
 
 ### 安全 / 媒体密钥独立（NF2，安全 · 跨任务）
 - [ ] 插入图片后 `content_json` 内**无真实文件路径**、只含 `media.id`（路径变化不破坏文档）— 自动：`flutter test test/ui/editor/editor_image_inserter_test.dart`（断言序列化文本不含路径分隔/绝对路径、含 media.id）
-- [ ] 本屏图片/隐私文案不暗示「主密码锁住照片」（媒体走独立设备 key，不随主密码/rekey）— 人工（@Ray）（核 AppStrings 内本屏相关文案口径，与 settings 屏红线文案单一来源一致）
+- [ ] 本屏图片/隐私文案不暗示「主密码锁住照片」（媒体走独立设备 key，不随主密码/rekey）— 人工（@Ray）（核 AppLocalizations 内本屏相关文案口径，与 settings 屏红线文案单一来源一致）
 
 ### 权限（NF5 之一，权限 · 真机 · 跨任务）
 - [ ] `image_picker` 在 iOS 13+ / Android 8+ 触发相册/相机系统权限并能取图 — 人工（@Ray，真机各一次）
 
 ### 无障碍（NF3 · 跨任务）
-- [ ] 工具栏每个 item、顶栏关闭/完成、四 chip 均有 `Semantics` 标签（对齐 editor.html aria-label，经 AppStrings）— 自动：`flutter test test/ui/editor/editor_a11y_test.dart`（`find.bySemanticsLabel(AppStrings.xxx)` 逐项命中）
+- [ ] 工具栏每个 item、顶栏关闭/完成、四 chip 均有 `Semantics` 标签（对齐 editor.html aria-label，经 AppLocalizations）— 自动：`flutter test test/ui/editor/editor_a11y_test.dart`（`find.bySemanticsLabel(l10n.xxx)` 逐项命中）
 - [ ] 所有可点目标命中区 ≥ 44×44 px（含横向滚动工具栏 item）— 自动：同上（`tester.getSize` 断言 ≥ Size(44,44)）
 - [ ] 正文/标题文本对底对比度 ≥ WCAG AA（4.5:1），着色元素（accent 日期 kicker / chip 选中）按 tokens-theme NF1 分族口径达标 — 自动：`flutter test test/ui/editor/editor_contrast_test.dart`（按本屏实际渲染对算相对亮度比，六套主题逐项；沿用 tokens-theme token，不新造色；遇 tokens-theme 已登记的 expected-fail 项以其 `contrast_xfail.yaml` 为准、阻塞报 @Ray，不静默通过）
 - [ ] 动效尊重「减弱动态效果」：注入 `MediaQueryData(disableAnimations: true)`，工具栏/chip/sheet 动效时长降为近瞬时（经 `dayzMotionDuration`）— 自动：`flutter test test/ui/editor/editor_reduce_motion_test.dart`（断言 disableAnimations 下动效 Duration≈0）

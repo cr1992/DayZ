@@ -7,8 +7,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/timeline/timeline_controller.dart';
 import 'package:dayz/ui/timeline/timeline_month_section.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
@@ -30,7 +29,7 @@ void main() {
       await tester.pumpWidget(_Harness(controller: controller));
 
       expect(find.byType(DayzEmptyState), findsOneWidget);
-      expect(find.text(AppStrings.timelineEmptyTitle), findsOneWidget);
+      expect(find.text(testL10n.timelineEmptyTitle), findsOneWidget);
       expect(
         find.byKey(const ValueKey<String>('timeline-loader')),
         findsNothing,
@@ -62,7 +61,7 @@ void main() {
         find.byKey(const ValueKey<String>('timeline-loader')),
         findsOneWidget,
       );
-      expect(find.text(AppStrings.loadingEarlier), findsOneWidget);
+      expect(find.text(testL10n.loadingEarlier), findsOneWidget);
 
       gate.complete();
       await initialLoad;
@@ -87,7 +86,7 @@ void main() {
 
       await tester.pumpWidget(_Harness(controller: controller));
 
-      expect(find.text(AppStrings.reachedOldest), findsOneWidget);
+      expect(find.text(testL10n.reachedOldest), findsOneWidget);
     });
 
     testWidgets('switchJournal fades content and respects disableAnimations', (
@@ -149,8 +148,7 @@ class _Harness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
+    return localizedMaterialApp(
       home: MediaQuery(
         data: MediaQueryData(disableAnimations: disableAnimations),
         child: Scaffold(body: TimelinePage(controller: controller)),

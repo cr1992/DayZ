@@ -7,7 +7,7 @@
 
 # 设计：ui-kit-components
 
-> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层）/§3（跨屏外壳抽组件 + 网页取巧降级）/§4（四闸）/§9（W1）/§11（验收口径）；组件类名与最小 HTML 真源 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3 / §3b / §3c / §4 / §5；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6；token / `context.dayz.*` / `AppStrings` / `intl` 约定来自 `design-tokens-theme`（D1/D4）。
+> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层）/§3（跨屏外壳抽组件 + 网页取巧降级）/§4（四闸）/§9（W1）/§11（验收口径）；组件类名与最小 HTML 真源 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3 / §3b / §3c / §4 / §5；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6；token / `context.dayz.*` / `AppLocalizations` / `intl` 约定来自 `design-tokens-theme`（D1/D4）。
 
 ## 技术决策
 
@@ -63,9 +63,9 @@
 - **状态：** 采纳
 - **背景：** `.empty`（§3c）虽在 screen.css，但多屏（时间线空/搜索无结果/收藏空/回收站空）都要兜底插画态，是事实上的跨屏复用件；若散在各屏会各画一遍。
 - **选项：** (A) 留各屏自己实现；(B) 收进组件层 `DayzEmptyState(illustration, title, message)`。
-- **选择：** B。`DayzEmptyState` 接受插画（§5 单色线性 SVG 经 `flutter_svg`）+ 标题 + 说明（均 `AppStrings`），中性暖底圆徽。
+- **选择：** B。`DayzEmptyState` 接受插画（§5 单色线性 SVG 经 `flutter_svg`）+ 标题 + 说明（均 `AppLocalizations`），中性暖底圆徽。
 - **理由：** 跨屏复用、统一空态观感；插画图标走 §5 规范。
-- **代价：** 各屏空态文案仍各异（由各屏传 `AppStrings` 条目），组件只统一骨架——可接受。
+- **代价：** 各屏空态文案仍各异（由各屏传 `AppLocalizations` 条目），组件只统一骨架——可接受。
 - ⚠️ §3c 其余屏内一次性件（`.cal-*` 日历、`.suggest-row`、`.topsearch`、`.nj-*` 选色、`.trash-*`/`.cm-*`/`.mc` 等）**不进本 spec**，留对应页面级 spec；本 spec 只收 `.empty` 这一个明确跨屏件。
 
 ### D8 · widgetbook 多状态画廊
@@ -84,12 +84,12 @@
 - **理由：** 直接复用设计稿 path 字符串，零重绘歧义；`colorFilter`/`currentColor` 让图标随主题；与 tokens-theme「不写死颜色」一致。
 - **代价：** 引 `flutter_svg` 依赖 + 维护一组 path 常量（收藏星等规范 path 集中一个 `dayz_icons.dart` 常量文件）；可接受。
 
-### D10 · 文案集中 `AppStrings` 与 `intl`（落实 tokens-theme D4）
+### D10 · 文案集中 `AppLocalizations` 与 `intl`（落实 tokens-theme D4）
 - **状态：** 采纳
-- **背景：** tokens-theme D4 拍板「文案集中 `AppStrings` + 日期/数字走 `intl`」，但**只确立约定、不建空文件**——`AppStrings` 文件随 `ui-kit-components` / 各屏首次落地。本 spec 是首个有真实可见文案的 UI 层。
-- **选择：** 本 spec **创建** `lib/ui/strings/app_strings.dart`（`abstract final class AppStrings`，`static const` 中文字面量），录入本组件层用到的文案（toast 默认/撤销/查看、sheet 取消/删除/确认、空状态通用标题、收藏星/菜单等 Semantics 标签等）；组件内**禁裸中文**，一律引 `AppStrings`；月份头/年份分隔等日期文案走 `package:intl`（`intl` 是 Flutter SDK 传递依赖，无需新增 pubspec 条目）。widget 测试用 `find.text(AppStrings.xxx)` 而非裸中文。
-- **理由：** 把"集中可验收"在组件层落第一笔，后续屏 spec 直接追加条目；测试引常量自带"只引常量"回归护栏。
-- **代价：** `AppStrings` 文件归属本 spec 后，后续屏 spec 会向同一文件追加条目（跨 spec 共享文件）——在 README 已拍板归属（本 spec 创建、各屏增补），各屏 spec 把它列入自己白名单时引用此处归属，不重复创建。
+- **背景：** i18n 基础设施已由 `i18n-localization` 建立；组件层用户可见文案不得再落到静态中文常量桶。
+- **选择：** 本 spec 需要的组件层文案（toast 默认/撤销/查看、sheet 取消/删除/确认、空状态通用标题、收藏星/菜单等 Semantics 标签等）统一补入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`，运行期通过 `AppLocalizations.of(context)` / `l10n.xxx` 取用；月份头/年份分隔等日期、数字、复数文案走 `package:intl` 与 ARB ICU。
+- **理由：** 与 `docs/design/11` 的唯一文案真源一致；测试通过 locale wrapper 取 `l10n` 文案，自带双语与禁裸文案回归护栏。
+- **代价：** 组件默认文案需要在 build/show 时拿到 `BuildContext` 或由调用方传入本地化字符串；存量静态文案引用由 `ui-i18n-migration` 迁移。
 
 ### D11 · reduce-motion 统一收敛到一个动效门
 - **状态：** 采纳
@@ -102,13 +102,13 @@
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppStrings 约定] --> KIT
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppLocalizations 约定] --> KIT
   subgraph KIT[ui-kit-components]
     BASE[lib/ui/widgets/* · §3 基础件\nDayzButton/TextField/Switch/Segmented/Tag/Mood/Weather/EntryCard/Gallery ...]
     PAGE[lib/ui/widgets/* · §3b 页面级件\nDayzMonthHeader/YearSeparator/SetRow/EmptyState ...]
     SHELL[lib/ui/shell/* · 跨屏外壳\nDayzGlassAppBar/DayzToast/DayzSheet/DayzFab]
     ICON[lib/ui/widgets/dayz_icons.dart + DayzFavoriteStar · flutter_svg + §5 path]
-    STR[lib/ui/strings/app_strings.dart]
+    STR[lib/l10n/arb/app_zh.arb + app_en.arb]
     MO[dayz_motion_helper · reduce-motion 门]
     BAR[lib/ui/components.dart · barrel]
   end
@@ -158,7 +158,7 @@ graph TD
 - `lib/ui/shell/dayz_fab.dart`                 新建（FAB 速拨外形：轻点/长按展开/scrim/立体渐变，R6，纯外形+回调）
 
 **支撑 `lib/ui/`**
-- `lib/ui/strings/app_strings.dart`            新建（`AppStrings` 中文文案集中类，本 spec 首建，D10）
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`            修改（补组件层 zh/en 文案 key，D10）
 - `lib/ui/util/dayz_motion.dart`               新建（`dayzMotionDuration` reduce-motion 门，D11）
 - `lib/ui/components.dart`                     新建（barrel：导出全部组件 + 外壳，供页面级 spec 单点 import，D1）
 
@@ -181,7 +181,7 @@ graph TD
 - **toast 堆叠退化（D3）**：`ScaffoldMessenger` 默认排队、非同屏堆叠 3；本 spec 取"排队 + 上限 3"近似，与原型"可堆叠 3"有视觉差。若产品强需同屏堆叠，后续用 `OverlayEntry` 增强（另起改动），本 spec 不强求。
 - **saturate 玻璃像素差（D6/NF7）**：`BackdropFilter` 无 saturate，降级保 blur+叠色两参数确定性，饱和度差进 golden/SSIM advisory（design-sync-automation 期二），不阻塞放行。玻璃不透明度/blur sigma 的精确值待 `design-sync-automation` 参数抽取核定；本 spec 先用 tokens-theme `glassSurface` 系数，**标为待确认**。
 - **跨 spec 依赖（按交付物名引用，可能尚未实现）**：
-  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion/DayzFonts`、六套 `ThemeData`、`AppStrings` 约定（D4）、`glassSurface`/`fabGradient` helper 与系数——本 spec 全部消费，若 tokens-theme 未定稿则本 spec 被阻塞（READY 门）。
+  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion/DayzFonts`、六套 `ThemeData`、`AppLocalizations` 约定（D4）、`glassSurface`/`fabGradient` helper 与系数——本 spec 全部消费，若 tokens-theme 未定稿则本 spec 被阻塞（READY 门）。
   - `design-sync-automation`（**非 README 依赖**，仅验证基建关系）：参数/几何抽取 harness、`element-map.yaml`、SSIM 兜底属其交付物；本 spec 的几何/样式断言用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；需 harness 的"对设计稿源屏比框"部分留给 design-sync 期二，不在本 spec 重造。
   - `data-layer`（**非依赖、明确禁连**，NF5）：`JournalRepo/EntryRepo/MediaRepo/TagRepo/EditingSessionRepo` 是页面级 spec 的取数入口；本 spec 组件 MUST NOT import `lib/data` 或持 Drift 句柄，verification 留静态核验。
   - `editor-json-contract` / 编辑器集成页面级 spec：`.toolbar` 真实富文本能力（粗体/列表/引用/图片等命令）与只读渲染器归彼处；本 spec 的 `DayzToolbar` 只做按钮条外形 + 激活态 + 回调，**不接 AppFlowy 命令**。

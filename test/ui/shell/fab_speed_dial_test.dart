@@ -6,8 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/fab_speed_dial.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 
 void main() {
   late GoRouter testRouter;
@@ -40,9 +39,8 @@ void main() {
   });
 
   Widget buildTestApp({bool disableAnimations = false}) {
-    return MaterialApp.router(
+    return localizedRouterTestApp(
       routerConfig: testRouter,
-      theme: DayzThemes.purpleLight,
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(
@@ -59,7 +57,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap FAB
-    final fab = find.bySemanticsLabel(AppStrings.edit);
+    final fab = find.bySemanticsLabel(testL10n.edit);
     expect(fab, findsOneWidget);
     await tester.tap(fab);
     await tester.pumpAndSettle();
@@ -79,26 +77,26 @@ void main() {
     await tester.pumpWidget(buildTestApp());
     await tester.pumpAndSettle();
 
-    final fab = find.bySemanticsLabel(AppStrings.edit);
+    final fab = find.bySemanticsLabel(testL10n.edit);
 
     // Tap down (start press)
     final gesture = await tester.startGesture(tester.getCenter(fab));
 
     // Wait for 300ms (below 340ms threshold)
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.bySemanticsLabel(AppStrings.close), findsNothing);
+    expect(find.bySemanticsLabel(testL10n.close), findsNothing);
 
     // Wait for another 50ms (crosses 340ms threshold)
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.bySemanticsLabel(AppStrings.close), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.close), findsOneWidget);
 
     await gesture.up();
     await tester.pumpAndSettle();
 
     // Verify all actions are visible after animation completes
-    expect(find.bySemanticsLabel(AppStrings.plainText), findsOneWidget);
-    expect(find.bySemanticsLabel(AppStrings.voice), findsOneWidget);
-    expect(find.bySemanticsLabel(AppStrings.camera), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.plainText), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.voice), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.camera), findsOneWidget);
   });
 
   testWidgets(
@@ -108,20 +106,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // Long press to open menu
-      final fab = find.bySemanticsLabel(AppStrings.edit);
+      final fab = find.bySemanticsLabel(testL10n.edit);
       final gesture = await tester.startGesture(tester.getCenter(fab));
       await tester.pump(const Duration(milliseconds: 350));
       await gesture.up();
       await tester.pumpAndSettle();
 
-      expect(find.bySemanticsLabel(AppStrings.close), findsOneWidget);
+      expect(find.bySemanticsLabel(testL10n.close), findsOneWidget);
 
-      // Tap scrim (which has AppStrings.close semantics label)
-      await tester.tap(find.bySemanticsLabel(AppStrings.close));
+      // Tap scrim (which has testL10n.close semantics label)
+      await tester.tap(find.bySemanticsLabel(testL10n.close));
       await tester.pumpAndSettle();
 
       // Verify overlay closed
-      expect(find.bySemanticsLabel(AppStrings.close), findsNothing);
+      expect(find.bySemanticsLabel(testL10n.close), findsNothing);
       expect(find.textContaining('Editor Page'), findsNothing);
     },
   );
@@ -133,20 +131,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // Long press to open menu
-      final fab = find.bySemanticsLabel(AppStrings.edit);
+      final fab = find.bySemanticsLabel(testL10n.edit);
       final gesture = await tester.startGesture(tester.getCenter(fab));
       await tester.pump(const Duration(milliseconds: 350));
       await gesture.up();
       await tester.pumpAndSettle();
 
       // Click Camera action
-      final cameraAction = find.bySemanticsLabel(AppStrings.camera);
+      final cameraAction = find.bySemanticsLabel(testL10n.camera);
       expect(cameraAction, findsOneWidget);
       await tester.tap(cameraAction);
       await tester.pumpAndSettle();
 
       // Verify overlay closed and navigated with camera type parameter
-      expect(find.bySemanticsLabel(AppStrings.close), findsNothing);
+      expect(find.bySemanticsLabel(testL10n.close), findsNothing);
       expect(find.text('Editor Page Content: camera'), findsOneWidget);
       expect(testRouter.canPop(), true);
     },
@@ -158,7 +156,7 @@ void main() {
     await tester.pumpWidget(buildTestApp());
     await tester.pumpAndSettle();
 
-    final fab = find.bySemanticsLabel(AppStrings.edit);
+    final fab = find.bySemanticsLabel(testL10n.edit);
     final fabSize = tester.getSize(fab);
     expect(fabSize.width, greaterThanOrEqualTo(44.0));
     expect(fabSize.height, greaterThanOrEqualTo(44.0));
@@ -169,7 +167,7 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
 
-    final textAction = find.bySemanticsLabel(AppStrings.plainText);
+    final textAction = find.bySemanticsLabel(testL10n.plainText);
     final textSize = tester.getSize(textAction);
     expect(textSize.width, greaterThanOrEqualTo(44.0));
     expect(textSize.height, greaterThanOrEqualTo(44.0));
@@ -181,7 +179,7 @@ void main() {
     await tester.pumpWidget(buildTestApp(disableAnimations: true));
     await tester.pumpAndSettle();
 
-    final fab = find.bySemanticsLabel(AppStrings.edit);
+    final fab = find.bySemanticsLabel(testL10n.edit);
     final gesture = await tester.startGesture(tester.getCenter(fab));
     await tester.pump(const Duration(milliseconds: 350));
     await gesture.up();
@@ -189,6 +187,6 @@ void main() {
     // With disableAnimations, it should be in the final open state in just 1 frame (pump)
     await tester.pump();
 
-    expect(find.bySemanticsLabel(AppStrings.close), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.close), findsOneWidget);
   });
 }

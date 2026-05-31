@@ -2,10 +2,10 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
@@ -85,6 +85,7 @@ class _ShellNavDemoState extends State<ShellNavDemo> {
   Widget _buildBody(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
 
     if (_currentRoute == 'timeline' || _currentRoute == '/timeline') {
       return Container(
@@ -97,7 +98,7 @@ class _ShellNavDemoState extends State<ShellNavDemo> {
               children: [
                 Text(
                   _selectedJournalId == null
-                      ? AppStrings.allJournals
+                      ? l10n.allJournals
                       : _journals
                             .firstWhere((j) => j.id == _selectedJournalId)
                             .name,
@@ -116,7 +117,7 @@ class _ShellNavDemoState extends State<ShellNavDemo> {
       );
     }
 
-    final String title = _getRouteTitle(_currentRoute);
+    final String title = _getRouteTitle(_currentRoute, l10n);
     return Container(
       color: colors.bg,
       child: Center(
@@ -143,26 +144,26 @@ class _ShellNavDemoState extends State<ShellNavDemo> {
     );
   }
 
-  String _getRouteTitle(String route) {
+  String _getRouteTitle(String route, AppLocalizations l10n) {
     switch (route) {
       case 'reader':
-        return AppStrings.reader;
+        return l10n.reader;
       case 'onthisday':
-        return AppStrings.onThisDay;
+        return l10n.onThisDay;
       case 'favorites':
-        return AppStrings.favorites;
+        return l10n.favorites;
       case 'calendar':
-        return AppStrings.calendar;
+        return l10n.calendar;
       case 'trash':
-        return AppStrings.trash;
+        return l10n.trash;
       case 'settings':
-        return AppStrings.settings;
+        return l10n.settings;
       case 'memory':
-        return AppStrings.memoryCardExport;
+        return l10n.memoryCardExport;
       case 'search':
-        return AppStrings.search;
+        return l10n.search;
       case 'editor':
-        return AppStrings.editor;
+        return l10n.editor;
       default:
         return route;
     }

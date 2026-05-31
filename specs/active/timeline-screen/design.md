@@ -7,7 +7,7 @@
 
 # 设计：timeline-screen
 
-> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/timeline.html`](../../../ui-design/current/pages/screens/timeline.html)（+ `pages/assets/timeline.{css,js}`、多状态 `?state=default|drawer|empty`）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`SliverAppBar(pinned)`/`SliverPersistentHeader(pinned)`/`BackdropFilter`/无限滚动 + 月份计数 + **pinned 头 × 跳任意项不易兼得→日历跳转降级到月级**）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry`/`.gallery`）/§3b（`.tl-month`）/§3c（`.cal-*`/`.tl-loader`/`.pg`+`--top-h`/`.empty`）/§4（抽屉/FAB）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1/§3/§4/§9（W2 页面级）/§10/§11。组件本体来自 `ui-kit-components`、外壳/路由来自 `ui-shell-navigation`、token/`AppStrings`/`intl` 约定来自 `design-tokens-theme`、取数交付物来自 `data-layer`（均按交付物名引用，见 `## 已知风险`「跨 spec 依赖」）。
+> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/timeline.html`](../../../ui-design/current/pages/screens/timeline.html)（+ `pages/assets/timeline.{css,js}`、多状态 `?state=default|drawer|empty`）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`SliverAppBar(pinned)`/`SliverPersistentHeader(pinned)`/`BackdropFilter`/无限滚动 + 月份计数 + **pinned 头 × 跳任意项不易兼得→日历跳转降级到月级**）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry`/`.gallery`）/§3b（`.tl-month`）/§3c（`.cal-*`/`.tl-loader`/`.pg`+`--top-h`/`.empty`）/§4（抽屉/FAB）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1/§3/§4/§9（W2 页面级）/§10/§11。组件本体来自 `ui-kit-components`、外壳/路由来自 `ui-shell-navigation`、token/`AppLocalizations`/`intl` 约定来自 `design-tokens-theme`、取数交付物来自 `data-layer`（均按交付物名引用，见 `## 已知风险`「跨 spec 依赖」）。
 
 ## 技术决策
 
@@ -72,12 +72,12 @@
 - **理由：** 假 Repo 注入让 demo 与 widget test 共用同一注入点，不碰真实 DB；满足 Debug Home 约定 + R8 可独立 pump。
 - **代价：** 维护一份假 `EntryRepo`（放 demo/test 共享 helper，由 `验收基建` 预批）；可接受。
 
-### D9 · 文案集中 `AppStrings` + 日期走 `intl`（落实 tokens-theme D4 / ui-kit D10）
+### D9 · 文案集中 `AppLocalizations` + 日期走 `intl`（落实 docs/design/11）
 - **状态：** 采纳
-- **背景：** NF8：屏内禁裸中文，日期/数字走 `intl`。`AppStrings` 单类由 `ui-kit-components`（D10）首建、各屏向其追加（README 已拍板归属）。
-- **选择：** 本屏用到的新文案（空状态标题/引导、loader「载入更早…」/「已经到最早的一篇了」、日历「跳转到日期」/「回到今天」/星期/月名兜底、各 Semantics 标签如「打开日记」「跳转到日期」「写日记」等）**追加到 `ui-kit-components` 的 `lib/ui/strings/app_strings.dart`**（跨 spec 共享文件，归属在该 spec、本屏增补，列入本 spec 白名单时引用此归属，不新建第二个文案类）；月份头「YYYY · N 篇」、卡片日期列（日/英文月缩写 `MAY`/周几）、日历标题（「YYYY 年 M 月」）经 `package:intl`（`DateFormat`/`NumberFormat`）格式化。
-- **理由：** 单一文案落点可审计；测试用 `find.text(AppStrings.xxx)` / intl 结果，自带「只引常量」回归护栏。
-- **代价：** 向 ui-kit 的共享文件追加条目（跨 spec 写同一文件），归属已拍板、按段追加不冲突；可接受。
+- **背景：** NF8：屏内禁裸中文，日期/数字走 `intl`。UI 文案唯一来源是 zh/en ARB。
+- **选择：** 本屏用到的新文案（空状态标题/引导、loader「载入更早…」/「已经到最早的一篇了」、日历「跳转到日期」/「回到今天」/星期/月名兜底、各 Semantics 标签如「打开日记」「跳转到日期」「写日记」等）补入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`，运行期经 `AppLocalizations.of(context)` / `l10n.xxx` 取用；月份头「YYYY · N 篇」、卡片日期列（日/英文月缩写 `MAY`/周几）、日历标题（「YYYY 年 M 月」）经 `package:intl` / ARB ICU 格式化。
+- **理由：** 单一文案落点可审计；测试用 `find.text(l10n.xxx)` / intl 结果，自带「只引常量」回归护栏。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 共享文件，需和其他 UI spec 合并 key；改完要跑 `gen-l10n`。
 
 ## 架构
 
@@ -98,7 +98,7 @@ graph TD
   MH -->|点击| CAL[timeline_calendar_panel · PopupRoute 自绘日历]
   CAL -->|选日/月| JUMP[GlobalKey + Scrollable.ensureVisible · 月级定位]
   EC -->|点击| RDR[context.go Routes.reader · entryId]
-  TOK[design-tokens-theme: context.dayz / AppStrings / intl] -.-> TP
+  TOK[design-tokens-theme: context.dayz / AppLocalizations / intl] -.-> TP
   DEMO[lib/demo/timeline_demo.dart · 内存假 EntryRepo] --> TP
   DEMO --> DH[lib/demo/demo_entry.dart · 末尾追加一行]
 ```
@@ -114,8 +114,9 @@ graph TD
 - `lib/ui/timeline/timeline_calendar_panel.dart`  新建（日期跳转日历面板：`PopupRoute` 下落 + 自绘月/年视图 `GridView`（`.cal-*` 各态）+ scrim + `role=dialog`/「跳转到日期」语义，D5）
 - `lib/ui/timeline/timeline_loader.dart`          新建（尾部 loader sliver：`载入更早…` 转圈 / `已经到最早的一篇了` 终态，走 token + intl 无关纯文案，D3）
 
-**文案（向 ui-kit 共享文件追加，归属 = ui-kit-components）**
-- `lib/ui/strings/app_strings.dart`               修改（**仅追加**本屏文案常量；该文件由 `ui-kit-components` 创建并拥有，本屏按段追加、不重定义已有键、不改其结构，D9）
+**文案（gen-l10n ARB）**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`               修改（补本屏 zh/en 文案与 Semantics / ICU key，D9）
+- `lib/l10n/gen/app_localizations*.dart`                            修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home `lib/demo/`**
 - `lib/demo/timeline_demo.dart`                   新建（内存假 `EntryRepo` 注入 + 设备框内渲染 `TimelinePage`，D8）
@@ -128,18 +129,18 @@ graph TD
 - `test/ui/timeline/timeline_params.fixture.json`  新建（**验收基建**：从源屏 `timeline.html` 抽取的样式参数清单 fixture，供样式参数闸断言；几何/SSIM harness 归 `design-sync-automation`，本 spec 只用其产出的 fixture）
 - `test/ui/timeline/goldens/`                     新建（**验收基建**：栅格观感 golden 基线，区域化 SSIM 兜底归 design-sync-automation）
 
-> ⚠️ `lib/ui/strings/app_strings.dart` 是**跨 spec 共享文件**：由 `ui-kit-components` 创建并拥有，本 spec 仅**追加**条目。列入本 spec 白名单是为「按段追加」放行；若执行时 ui-kit 尚未创建该文件，**停下**与 ui-kit 协调归属（不抢先创建空文件、不在本屏另建第二个文案类），见已知风险。
+> ⚠️ `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` 是**跨 spec 共享文件**：本 spec 只补本屏 key，并保持 zh/en key 集合一致；不得新增屏内临时 strings 类或静态文案常量。
 
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 → 就绪前降级）：**
-  - `design-tokens-theme`（README 依赖）：`context.dayz.*`（中性色/强调色/阴影）、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings` 约定、日期走 `intl`。**强依赖**，未定稿则本屏阻塞（READY 门）。
-  - `ui-kit-components`（README 依赖）：`DayzGlassAppBar`（sliver 形态 + `overlapsContent` 阴影 + 毛玻璃配方/降级）、`DayzMonthHeader`（吸顶月份头触发器 + `.tl-caret`）、`DayzEntryCard`、`DayzGallery`、`DayzFavoriteStar`、`DayzEmptyState`、`DayzToast`、`dayzMotionDuration`（reduce-motion 门，NF6）、`AppStrings` 单类落点（D9）、`components.dart` barrel。**未就绪时降级**：本屏所需组件用最小内联占位（走 token），并标 TODO 待替换——但 R8 demo 与多数 widget 测试仍可在占位上跑结构/分页逻辑。
+  - `design-tokens-theme`（README 依赖）：`context.dayz.*`（中性色/强调色/阴影）、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations` 约定、日期走 `intl`。**强依赖**，未定稿则本屏阻塞（READY 门）。
+  - `ui-kit-components`（README 依赖）：`DayzGlassAppBar`（sliver 形态 + `overlapsContent` 阴影 + 毛玻璃配方/降级）、`DayzMonthHeader`（吸顶月份头触发器 + `.tl-caret`）、`DayzEntryCard`、`DayzGallery`、`DayzFavoriteStar`、`DayzEmptyState`、`DayzToast`、`dayzMotionDuration`（reduce-motion 门，NF6）、`components.dart` barrel。**未就绪时降级**：本屏所需组件用最小内联占位（走 token），并标 TODO 待替换——但 R8 demo 与多数 widget 测试仍可在占位上跑结构/分页逻辑。
   - `ui-shell-navigation`（README 依赖）：`app_shell`（drawer+FAB+SafeArea 让位的脚手架，D7）、`Routes.timeline/reader/editor/search/onthisday` 常量、`ShellState`（当前 journalId + 切本事件流）、FAB speed-dial。**未就绪时降级**：demo 用本屏自带最小 Scaffold 包裹（仅 demo 路径），生产 `Routes.timeline` 接线等 shell 就绪。
   - `data-layer`（README 依赖）：`EntryRepo.timeline({cursor, limit=30})`（已在 data-layer T8 交付清单，返回页 + 下一页 cursor）、`EntryRepo.byId` —— 已有；**`EntryRepo.monthCounts(journalId)`（按月计数）与 `EntryRepo.entryDaysInMonth(journalId, year, month)`（有条目日集合）= 当前 data-layer 交付清单中没有的新增依赖项（D4）**。**待确认（须 @Ray / data-layer owner 拍板）**：是否在 data-layer 补这两个交付物，还是本屏长期用「已加载分页就地累计」降级（远期未加载月的篇数/有条目标记不完整）。在其就绪前本屏按 D4 降级，月份头未加载月篇数显示「—」、日历仅对已加载月给 `.has`。
   - `thumbnail-cache` / `media-storage`（**非 README 依赖、NF2 红线相关**）：`DayzGallery` 只接 `ImageProvider` 列表 + 占位；真实缩略图经异步 `warmup`，本屏 build 路径 MUST NOT 同步重建缩略图。未就绪时一律占位灰块。
   - `design-sync-automation`（**非 README 依赖，仅验证基建关系**）：样式参数清单抽取 harness、`element-map.yaml`、区域化 SSIM 兜底属其交付物；本 spec 的几何/样式断言用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；`timeline_params.fixture.json` 由其抽取产出（本 spec 消费），需「对设计稿源屏比框」的部分留给它、不在本 spec 重造。
-- **`AppStrings` 落点二义**：D9 向 ui-kit 的 `app_strings.dart` 追加；若执行时 ui-kit 未创建该文件，停下协调归属，不抢先建空文件、不在本屏另起第二个文案类（见 `## 文件变更` ⚠️）。
+- **ARB 合并风险**：D9 修改 `app_zh.arb` / `app_en.arb`；合并时必须保持 zh/en key 集合一致并跑 `gen-l10n`，不得以屏内 strings 文件或静态文案常量绕过。
 - **跳很远过去月需连续 `loadMore`（D6）**：可能短暂多取几页直到加载到目标月；月级定位（非到日）是 PROTOTYPE-ARCH §6 已接受的降级，记此不另处理。
 - **毛玻璃 + 吸顶头并成一条磨砂的像素差**：`DayzGlassAppBar` 的 `saturate` 降级（无原生等价）属 ui-kit D6 已知风险，本屏只复用其配方，饱和度差进 golden/SSIM advisory（design-sync-automation），不阻塞。
 - **toast 堆叠退化**：切本/分页失败提示用 `DayzToast`，其「排队 vs 同屏堆叠 3」差异属 ui-kit D3 已知风险，本屏不重复处理。

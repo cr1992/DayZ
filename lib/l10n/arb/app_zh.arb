@@ -46,5 +46,96 @@
   "languageSetting": "语言设置",
   "@languageSetting": {
     "description": "语言设置标题"
-  }
+  },
+
+  "toastDefault": "提示",
+  "toastUndo": "撤销",
+  "toastView": "查看",
+  "toastRetry": "重试",
+  "toastDismiss": "关闭",
+
+  "sheetCancel": "取消",
+  "sheetDelete": "删除",
+  "sheetConfirm": "确认",
+  "sheetSelected": "已选择",
+
+  "emptyTitle": "这里还没有内容",
+  "emptyDescription": "写下第一篇日记后，它会出现在这里。",
+
+  "favorite": "收藏",
+  "unfavorite": "取消收藏",
+  "menu": "菜单",
+  "more": "更多",
+  "close": "关闭",
+  "search": "搜索",
+  "searchCancel": "取消搜索",
+  "clear": "清除",
+  "remove": "移除",
+  "add": "添加",
+  "edit": "编辑",
+  "delete": "删除",
+  "confirm": "确认",
+  "cancel": "取消",
+  "selected": "已选中",
+  "unselected": "未选中",
+  "switchOn": "已开启",
+  "switchOff": "已关闭",
+  "previous": "上一项",
+  "next": "下一项",
+  "showMore": "显示更多",
+  "camera": "拍照",
+  "voice": "语音",
+  "plainText": "纯文字",
+
+  "galleryMoreCount": "+{count}",
+  "@galleryMoreCount": {
+    "description": "画廊折叠时剩余图片数",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "entryCount": "{count, plural, other{{count} 篇}}",
+  "@entryCount": {
+    "description": "条目数量",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "loadingEarlier": "载入更早...",
+  "reachedOldest": "已经到最早的一篇了",
+  "timelineEmptyTitle": "这里还没有日记",
+  "timelineEmptyDescription": "轻点右下角，写下第一页。",
+  "jumpToDate": "跳转到日期",
+  "backToToday": "回到今天",
+
+  "drawerProfileName": "DayZ",
+  "drawerProfileInitial": "D",
+  "drawerProfileStatus": "本地 · 已加密",
+  "shellPlaceholderSuffix": "待页面级 spec 实现",
+  "allJournals": "全部日记",
+  "journalSectionHeader": "日记本",
+  "browseSectionHeader": "浏览",
+  "newJournal": "新建日记本",
+  "journalNameInputPlaceholder": "请输入日记本名称",
+  "journalNameLabel": "日记本名称",
+  "journalColorLabel": "日记本颜色",
+  "settings": "设置",
+  "timeline": "时间线",
+  "reader": "阅读",
+  "editor": "编辑",
+  "onThisDay": "往年今日",
+  "calendar": "日历",
+  "favorites": "收藏",
+  "trash": "回收站",
+  "memoryCardExport": "回忆卡导出",
+  "debugHome": "Debug Home",
+  "notFound": "未找到"
 }

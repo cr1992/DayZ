@@ -7,8 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 
 void main() {
   final mockJournals = [
@@ -35,8 +34,7 @@ void main() {
     required ValueChanged<String> onNavigate,
     required VoidCallback onNewJournal,
   }) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
+    return localizedMaterialApp(
       home: Scaffold(
         drawer: ShellDrawer(
           journals: journals,
@@ -80,17 +78,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify all journals are rendered
-    expect(find.text(AppStrings.drawerProfileName), findsOneWidget);
-    expect(find.text(AppStrings.drawerProfileStatus), findsOneWidget);
-    expect(find.text(AppStrings.browseSectionHeader), findsOneWidget);
+    expect(find.text(testL10n.drawerProfileName), findsOneWidget);
+    expect(find.text(testL10n.drawerProfileStatus), findsOneWidget);
+    expect(find.text(testL10n.browseSectionHeader), findsOneWidget);
     expect(find.text('Work Journal'), findsOneWidget);
     expect(find.text('Life Snippets'), findsOneWidget);
-    expect(find.text(AppStrings.allJournals), findsOneWidget);
+    expect(find.text(testL10n.allJournals), findsOneWidget);
 
     // Verify entry counts are rendered
-    expect(find.text(AppStrings.entryCount(17)), findsOneWidget);
-    expect(find.text(AppStrings.entryCount(12)), findsOneWidget);
-    expect(find.text(AppStrings.entryCount(5)), findsOneWidget);
+    expect(find.text(testL10n.entryCount(17)), findsOneWidget);
+    expect(find.text(testL10n.entryCount(12)), findsOneWidget);
+    expect(find.text(testL10n.entryCount(5)), findsOneWidget);
   });
 
   testWidgets('renders injected all journals and favorite counts', (
@@ -110,8 +108,8 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.entryCount(218)), findsOneWidget);
-    expect(find.text(AppStrings.entryCount(19)), findsOneWidget);
+    expect(find.text(testL10n.entryCount(218)), findsOneWidget);
+    expect(find.text(testL10n.entryCount(19)), findsOneWidget);
   });
 
   testWidgets('clicking new journal icon calls onNewJournal callback', (
@@ -130,7 +128,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    final newJournalBtn = find.bySemanticsLabel(AppStrings.newJournal);
+    final newJournalBtn = find.bySemanticsLabel(testL10n.newJournal);
     expect(newJournalBtn, findsOneWidget);
 
     await tester.tap(newJournalBtn);
@@ -156,7 +154,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap Favorites
-    await tester.tap(find.bySemanticsLabel(AppStrings.favorites));
+    await tester.tap(find.bySemanticsLabel(testL10n.favorites));
     await tester.pumpAndSettle();
     expect(navigatedRoute, Routes.favorites);
 
@@ -165,7 +163,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap Trash
-    await tester.tap(find.bySemanticsLabel(AppStrings.trash));
+    await tester.tap(find.bySemanticsLabel(testL10n.trash));
     await tester.pumpAndSettle();
     expect(navigatedRoute, Routes.trash);
   });
@@ -250,7 +248,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final actionSize = tester.getSize(
-      find.bySemanticsLabel(AppStrings.newJournal),
+      find.bySemanticsLabel(testL10n.newJournal),
     );
 
     expect(actionSize.width, greaterThanOrEqualTo(44.0));
@@ -270,6 +268,6 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    expect(find.bySemanticsLabel(AppStrings.search), findsNothing);
+    expect(find.bySemanticsLabel(testL10n.search), findsNothing);
   });
 }

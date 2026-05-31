@@ -65,21 +65,21 @@ graph LR
 
 - [ ] T2 · FavoritesCountHeader（计数头屏内私有组件）
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz / dayz_text_theme 衬线大字角色 / DayzSpacing / intl 约定`、`ui-kit-components：DayzFavoriteStar(或 dayz_icons 收藏星 path) / AppStrings` ｜ **关联需求：** R2, NF2, NF3, NF4 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/favorites/favorites_count_header.dart`、`lib/ui/strings/app_strings.dart`（仅追加收藏屏文案条目，归属 ui-kit，见 design D4/文件变更） ｜ **验收基建：** `test/ui/favorites/favorites_count_header_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz / dayz_text_theme 衬线大字角色 / DayzSpacing / intl 约定`、`ui-kit-components：DayzFavoriteStar(或 dayz_icons 收藏星 path)`、`i18n-localization：gen-l10n` ｜ **关联需求：** R2, NF2, NF3, NF4 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/favorites/favorites_count_header.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/favorites/favorites_count_header_test.dart`
 
 ### 背景
-屏内私有计数头：overline 行（收藏星着 `--favorite` + 「收藏」着 `--accent-ink`）+ 衬线大标题「{N} 篇值得再读的」+ 副标题（`--ink-2`）。视觉一律 token（NF2），文案集中 `AppStrings`（NF3），N 经 `intl.NumberFormat`（NF3）。
-归属：本任务向 `AppStrings` **追加**收藏屏文案条目（顶栏标题/overline/计数模板/副标题/空态/占位文案与 Semantics 标签一并加，供 T2/T3 共用，集中一处加），不改既有条目；该文件归属 ui-kit-components（D10），各屏向其追加。
+屏内私有计数头：overline 行（收藏星着 `--favorite` + 「收藏」着 `--accent-ink`）+ 衬线大标题「{N} 篇值得再读的」+ 副标题（`--ink-2`）。视觉一律 token（NF2），文案集中 `AppLocalizations`（NF3），N 经 `intl.NumberFormat`（NF3）。
+归属：本任务补收藏屏 ARB 文案 key（顶栏标题/overline/计数模板/副标题/空态/占位文案与 Semantics 标签一并加，供 T2/T3 共用），保持 zh/en key 集合一致并跑 `gen-l10n`；不得新增屏内 strings 类或静态文案常量。
 
 ### 实施
 1. `FavoritesCountHeader(int count)`：`Column`(overline `Row` + 衬线大标题 `Text` + 副标题 `Text`)。
-2. overline：`DayzFavoriteStar`(或 `dayz_icons` 收藏星 path) 着 `context.dayz.favorite` + 「收藏」`Text(AppStrings.favoritesOverline)` 着 `context.dayz.accentInk`，排版用 `.t-overline` 角色。
-3. 大标题：`Text(AppStrings.favoritesCountTitle(NumberFormat.decimalPattern().format(count)))`——`AppStrings` 提供模板方法（如 `'$n 篇值得再读的'`），count 先经 `intl` 格式化再代入；衬线大字角色取自 `dayz_text_theme`（D4：25px 取最接近角色，标红给设计侧，见已知风险）。
-4. 副标题：`Text(AppStrings.favoritesSubtitle)` 着 `context.dayz.ink2`。
+2. overline：`DayzFavoriteStar`(或 `dayz_icons` 收藏星 path) 着 `context.dayz.favorite` + 「收藏」`Text(l10n.favoritesOverline)` 着 `context.dayz.accentInk`，排版用 `.t-overline` 角色。
+3. 大标题：`Text(l10n.favoritesCountTitle(NumberFormat.decimalPattern().format(count)))`——`AppLocalizations` 提供模板方法（如 `'$n 篇值得再读的'`），count 先经 `intl` 格式化再代入；衬线大字角色取自 `dayz_text_theme`（D4：25px 取最接近角色，标红给设计侧，见已知风险）。
+4. 副标题：`Text(l10n.favoritesSubtitle)` 着 `context.dayz.ink2`。
 5. 大标题 `Text` 加 Semantics（朗读完整「N 篇值得再读的」）。
 
 ### 验收标准（做完即止）
-- count=19 → 渲染出经 `intl` 格式化的「19 篇值得再读的」（用 `find.text(AppStrings.favoritesCountTitle('19'))`，断言可见；不裸中文）（自动，R2/NF3）。
+- count=19 → 渲染出经 `intl` 格式化的「19 篇值得再读的」（用 `find.text(l10n.favoritesCountTitle('19'))`，断言可见；不裸中文）（自动，R2/NF3）。
 - overline/大标题/副标题文本颜色解析后 == 对应 token（`favorite`/`accentInk`、`ink`、`ink2`），无硬编码色（自动，样式参数闸，NF2）。
 - 大标题字族为衬线（`fontFamily` 来自 `dayz_text_theme` 衬线角色）（自动，NF2）。
 - 计数头有可朗读 Semantics（自动，NF4）。
@@ -102,24 +102,24 @@ graph LR
 
 - [ ] T3 · FavoritesScreen 屏骨架（顶栏 + 列表 + 空态 + 四态渲染）
 
-**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `ui-kit-components：DayzGlassAppBar / DayzEntryCard(星只读+ImageProvider+点击回调) / DayzEmptyState / components.dart barrel / dayzMotionDuration / AppStrings`、`ui-shell-navigation：Routes.reader(携 entryId 导航)`、`design-tokens-theme：context.dayz / DayzSpacing` ｜ **关联需求：** R1, R3, R4, R5, R6, NF1, NF2, NF4, NF6 ｜ **依据设计：** D1, D2, D6 ｜ **可改文件：** `lib/ui/favorites/favorites_screen.dart` ｜ **验收基建：** `test/ui/favorites/favorites_screen_test.dart`、`test/ui/favorites/favorites_screen_geometry_test.dart`、`test/ui/favorites/goldens/`（golden 基线，default/empty 两屏 × 代表主题）、`test/ui/favorites/fakes/fake_entry_repo.dart`（T1 建，本任务复用）
+**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `ui-kit-components：DayzGlassAppBar / DayzEntryCard(星只读+ImageProvider+点击回调) / DayzEmptyState / components.dart barrel / dayzMotionDuration / AppLocalizations`、`ui-shell-navigation：Routes.reader(携 entryId 导航)`、`design-tokens-theme：context.dayz / DayzSpacing` ｜ **关联需求：** R1, R3, R4, R5, R6, NF1, NF2, NF4, NF6 ｜ **依据设计：** D1, D2, D6 ｜ **可改文件：** `lib/ui/favorites/favorites_screen.dart` ｜ **验收基建：** `test/ui/favorites/favorites_screen_test.dart`、`test/ui/favorites/favorites_screen_geometry_test.dart`、`test/ui/favorites/goldens/`（golden 基线，default/empty 两屏 × 代表主题）、`test/ui/favorites/fakes/fake_entry_repo.dart`（T1 建，本任务复用）
 
 ### 背景
-屏骨架：`CustomScrollView`，sliver 1 = `DayzGlassAppBar`（返回钮 `Navigator.pop`/`context.pop` + 标题 `AppStrings.favoritesTitle`，无右侧操作），sliver 2 = `SliverList`：首项 `FavoritesCountHeader(count)`，其余逐条 `DayzEntryCard`（星只读、封面 `ImageProvider` 由 controller 的 entry 视图模型给、点击→`Routes.reader` 携 entryId）。按 `FavoritesController` 四态渲染同一骨架：`data`→计数头+列表、`empty`→`DayzEmptyState`、`loading`→克制占位、`error`→非崩溃错误占位（文案 `AppStrings`）。朴素列表，**不**引入月份吸顶头/日历/无限滚动（D1）。
+屏骨架：`CustomScrollView`，sliver 1 = `DayzGlassAppBar`（返回钮 `Navigator.pop`/`context.pop` + 标题 `l10n.favoritesTitle`，无右侧操作），sliver 2 = `SliverList`：首项 `FavoritesCountHeader(count)`，其余逐条 `DayzEntryCard`（星只读、封面 `ImageProvider` 由 controller 的 entry 视图模型给、点击→`Routes.reader` 携 entryId）。按 `FavoritesController` 四态渲染同一骨架：`data`→计数头+列表、`empty`→`DayzEmptyState`、`loading`→克制占位、`error`→非崩溃错误占位（文案 `AppLocalizations`）。朴素列表，**不**引入月份吸顶头/日历/无限滚动（D1）。
 
 ### 实施
 1. `FavoritesScreen({required EntryRepo repo})`：内建 `FavoritesController(repo)`，`initState` 调 `load()`，`AnimatedBuilder`/监听重建。
-2. `CustomScrollView` + `DayzGlassAppBar`(title=`AppStrings.favoritesTitle`，leading=返回钮带 Semantics「返回」) + 按态 sliver。
+2. `CustomScrollView` + `DayzGlassAppBar`(title=`l10n.favoritesTitle`，leading=返回钮带 Semantics「返回」) + 按态 sliver。
 3. `data` 态：`SliverList`，首 item `FavoritesCountHeader`，后续 `DayzEntryCard`（`onTap` → 导航 `Routes.reader`(entryId)；星只读）。
-4. `empty` 态：`DayzEmptyState`(收藏星空心插画 + `AppStrings.favoritesEmptyTitle` + `AppStrings.favoritesEmptyBody`)。
-5. `loading`/`error` 态：克制占位，动效经 `dayzMotionDuration`（NF4）；error 文案 `AppStrings`。
+4. `empty` 态：`DayzEmptyState`(收藏星空心插画 + `l10n.favoritesEmptyTitle` + `l10n.favoritesEmptyBody`)。
+5. `loading`/`error` 态：克制占位，动效经 `dayzMotionDuration`（NF4）；error 文案 `AppLocalizations`。
 6. 视觉一律 `context.dayz.*` + `DayzSpacing`（NF2）；本文件 MUST NOT `import lib/data/` 实现 / 持 Drift（NF1）；MUST NOT 触发缩略图生成（NF6，封面只接 `ImageProvider`）。
 
 ### 验收标准（做完即止）
 - 有数据：fake 返回 N 条 → 可见计数头 + N 张 `DayzEntryCard`，顺序与 controller `entries` 一致（自动，R1）。
-- 空：fake 返回 0 → 不可见计数头与 `DayzEntryCard`、可见 `DayzEmptyState`（`find.text(AppStrings.favoritesEmptyTitle)`）（自动，R3）。
+- 空：fake 返回 0 → 不可见计数头与 `DayzEntryCard`、可见 `DayzEmptyState`（`find.text(l10n.favoritesEmptyTitle)`）（自动，R3）。
 - 失败：fake 抛异常 → 可见错误占位、无异常抛出/无白屏（自动，R6）。
-- 顶栏：可见标题 `AppStrings.favoritesTitle`、返回钮 `find.bySemanticsLabel('返回'/AppStrings.back)`，点返回触发 pop（自动，R4）。
+- 顶栏：可见标题 `l10n.favoritesTitle`、返回钮 `find.bySemanticsLabel('返回'/l10n.back)`，点返回触发 pop（自动，R4）。
 - 点卡片：点第一张 `DayzEntryCard` → 触发一次 `Routes.reader` 导航并携该 entryId（自动，用 mock router/导航观察者断言目标路由与参数，R5）。
 - 几何：返回钮命中盒 ≥44×44、卡片可点命中盒 ≥44×44（`tester.getRect`）；计数头在第一张卡片**之上**（顺序断言）、列表项不溢出视口宽（自动，布局几何闸，NF4/§4 fixed-geometry 用尺寸断言、content-driven 卡片只断顺序/包含/不溢出）。
 - golden：default 屏与 empty 屏在代表主题下 golden 通过（自动，栅格观感兜底）。

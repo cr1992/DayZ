@@ -12,7 +12,7 @@
 
 ```mermaid
 graph LR
-  T1[T1 数据模型+枚举+AppStrings] --> T2[T2 单卡 DayzMemoryCard]
+  T1[T1 数据模型+枚举+AppLocalizations] --> T2[T2 单卡 DayzMemoryCard]
   T1 --> T3[T3 长图 DayzMemoryLongCard]
   T1 --> T4[T4 底栏 memory_dock]
   T5[T5 exporter + 包/权限]
@@ -33,23 +33,22 @@ graph LR
 
 -----
 
-- [ ] T1 · 导出源数据模型 + 枚举 + AppStrings 文案追加
+- [ ] T1 · 导出源数据模型 + 枚举 + gen-l10n 文案
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `ui-kit-components`：`lib/ui/strings/app_strings.dart`（`AppStrings` 单类，本任务向其追加条目，归属见 ui-kit D10）；`design-tokens-theme`：`intl` / `AppStrings` 约定 ｜ **关联需求：** R1, R4, R7 ｜ **依据设计：** D5, D7 ｜ **可改文件：** `lib/ui/memory_card_export/memory_card_data.dart`、`lib/ui/strings/app_strings.dart`（仅追加本屏条目，不改既有） ｜ **验收基建：** `test/ui/memory_card_export/memory_card_data_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `i18n-localization`：gen-l10n；`design-tokens-theme`：`intl` / `AppLocalizations` 约定 ｜ **关联需求：** R1, R4, R7 ｜ **依据设计：** D5, D7 ｜ **可改文件：** `lib/ui/memory_card_export/memory_card_data.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/memory_card_export/memory_card_data_test.dart`
 
 ### 背景
-定义屏 / 卡片消费的**纯展示数据模型**与画幅 / 风格枚举（D5），并把本屏中文文案追加进 `ui-kit-components` 已建的 `AppStrings` 单类（D7）。模型不含任何 Drift / Repo 类型（R7）。
-归属：`AppStrings` 文件由 `ui-kit-components` 创建、各屏增补（README / ui-kit D10 已拍板）；本任务**只追加**本屏条目、不改既有条目，不重复创建该文件。
+定义屏 / 卡片消费的**纯展示数据模型**与画幅 / 风格枚举（D5），并把本屏文案补入 zh/en ARB（D7）。模型不含任何 Drift / Repo 类型（R7）。
 
 ### 实施
 1. `memory_card_data.dart`：`MemoryCardData{ String overline, String title, String excerpt, String? location, ImageProvider? coverImage }`；`MemoryDayData{ String monthDayLabel, int count, List<MemorySegment> segments }`；`MemorySegment{ String yearLabel, String agoLabel, String title, String body, ImageProvider? photo }`；枚举 `MemoryCardRatio{ portrait916, square11, long }`、`MemoryCardStyle{ paper, photo }`。封面 / 配图字段是 `ImageProvider`（不是路径，NF6）。日期 / 计数文案字段（`overline`/`yearLabel`/`agoLabel`/`monthDayLabel`）是**已格式化成品字符串**（由屏外装配处用 `intl` 生成，模型不自拼）。
-2. `app_strings.dart` 追加 `static const`：屏标题、画幅项名（竖版 / 方形 / 长图）、风格项名（纸感 / 大图压字）、保存 / 分享、保存成功 / 长图保存成功 / 分享 / 长图分享 / 失败各 toast、返回及各分段项 / 按钮的 Semantics 标签、`DayZ` 字标。屏内 / 卡片内**禁裸中文**，一律引这些常量。
+2. `app_zh.arb` / `app_en.arb` 补 key：屏标题、画幅项名（竖版 / 方形 / 长图）、风格项名（纸感 / 大图压字）、保存 / 分享、保存成功 / 长图保存成功 / 分享 / 长图分享 / 失败各 toast、返回及各分段项 / 按钮的 Semantics 标签、`DayZ` 字标；两份 key 集合一致并跑 `flutter gen-l10n`。屏内 / 卡片内**禁裸中文**，一律通过 `AppLocalizations.of(context)` 取用。
 3. 全部新建 Dart 文件加 MPL-2.0 头注。
 
 ### 验收标准（做完即止）
 - 构造 `MemoryCardData` / `MemoryDayData` / `MemorySegment`，字段读取与默认 / 可空语义正确（自动）。
 - 两枚举值齐全（`portrait916`/`square11`/`long`、`paper`/`photo`）（自动）。
-- 新增 `AppStrings` 条目可被引用且为中文非空字面量（自动：断言关键条目值非空且为预期文案）。
+- 新增 `AppLocalizations` key 可被引用且 zh/en 非空（自动：断言关键本地化值非空且为预期文案）。
 - `memory_card_data.dart` 不 import `package:.../data/` 或 Drift（自动，R7：解析 import 断言不含数据层 / Drift 包）。
 
 ### 验收方式
@@ -57,7 +56,7 @@ graph LR
   ```bash
   flutter test test/ui/memory_card_export/memory_card_data_test.dart
   ```
-  （构造模型断言字段 / 枚举；断言 `AppStrings` 新条目值；用源码 import 解析断言不依赖 data 层——断言行为 / 取值，不 grep 被改文件自身文本）
+  （构造模型断言字段 / 枚举；断言 `AppLocalizations` 新条目值；用源码 import 解析断言不依赖 data 层——断言行为 / 取值，不 grep 被改文件自身文本）
 
 ### 验收记录
 ```
@@ -79,15 +78,15 @@ graph LR
 1. `paper` 版式：`Column`[照片区 `Expanded`(有图 `Image(coverImage)` cover / 无图 `accent-soft` 占位) , 正文区 `Padding`(往年段 + 衬线标题 + 摘要 `Text(maxLines: ratio==square11?2:3, overflow: ellipsis)` + 页脚)]，外层 `--r-lg` 圆角 + clip + 卡片投影。
 2. `photo` 版式：`Stack`[`Image` cover 满幅 , 底部渐变 `DecoratedBox(LinearGradient 透明→rgba(20,16,12,0.82))` , 底部 `Positioned` 正文(往年段 / 白标题 / 白摘要 2 行 / 白页脚)]。
 3. `aspectRatio`：`portrait916`→9/16、`square11`→1/1（用 `AspectRatio`）。
-4. `_MemoryCardFooter`：`Z` 方徽(accent 底 / on-accent 字，photo 款白底深字) + `DayZ`(`AppStrings`) + 右侧地点 meta(图标 + 文本)。
-5. 文案引 `AppStrings`、地点 / 往年段取 `data` 字段；全程 token。
+4. `_MemoryCardFooter`：`Z` 方徽(accent 底 / on-accent 字，photo 款白底深字) + `DayZ`(`AppLocalizations`) + 右侧地点 meta(图标 + 文本)。
+5. 文案引 `AppLocalizations`、地点 / 往年段取 `data` 字段；全程 token。
 
 ### 验收标准（做完即止）
 - `ratio==portrait916` 渲染出 9:16、`square11` 出 1:1（自动：`tester.getRect` 断言宽高比，fixed-geometry 容差 ≤2px）。
 - `style==paper` 出正文区与照片区两块、`photo` 出 `Stack` 满幅图 + 渐变 + 压字（自动：按 key / 类型定位断言结构存在）。
 - 摘要行钳制：方形 `maxLines==2`、竖版 `maxLines==3`，`overflow==ellipsis`（自动，对应 ②样式参数闸的截断族）。
 - 颜色 / 圆角 / 间距取自 `context.dayz.*` / `DayzRadii` / `DayzSpacing`（自动：解析渲染后样式断言 == token 值，如圆角 == `DayzRadii.lg`、纸感底 == `context.dayz.surface`）。
-- 标题 / 摘要文案经 `find.text(AppStrings.xxx)` 或 `data` 字段定位，屏内无裸中文（自动）。
+- 标题 / 摘要文案经 `find.text(l10n.xxx)` 或 `data` 字段定位，屏内无裸中文（自动）。
 - golden 兜栅格（六主题抽查 / 两风格两画幅）（自动，回归锁）。
 
 ### 禁止
@@ -114,12 +113,12 @@ graph LR
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*` / `DayzSpacing`/`DayzRadii` / 排版 ｜ **关联需求：** R2, R4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/memory_card_export/memory_long_card.dart` ｜ **验收基建：** `test/ui/memory_card_export/memory_long_card_test.dart`、`test/ui/memory_card_export/golden/`
 
 ### 背景
-实现 `DayzMemoryLongCard({required MemoryDayData data})`（D2，对应源屏 `.lc`）：顶 `lc-top`(`accent-soft` 底 + 往年今日 M月D日 段 + 「这一天，你写过 N 篇」) + 逐段 `lc-item`(年份标 `accent-ink` + 可选 16:10 配图 + 衬线小标题 + 正文) + 页脚 `lc-foot`(`Z` 徽 + `DayZ` + 「M月D日 · 共 N 段回忆」)。段间 `--hairline` 分割。整卡是**内容驱动高度**（不固定高），段数 == `data.segments.length`。文案 / 计数走 `data` 字段（已 intl 格式化）+ `AppStrings`，禁裸中文 / 禁裸拼接。
+实现 `DayzMemoryLongCard({required MemoryDayData data})`（D2，对应源屏 `.lc`）：顶 `lc-top`(`accent-soft` 底 + 往年今日 M月D日 段 + 「这一天，你写过 N 篇」) + 逐段 `lc-item`(年份标 `accent-ink` + 可选 16:10 配图 + 衬线小标题 + 正文) + 页脚 `lc-foot`(`Z` 徽 + `DayZ` + 「M月D日 · 共 N 段回忆」)。段间 `--hairline` 分割。整卡是**内容驱动高度**（不固定高），段数 == `data.segments.length`。文案 / 计数走 `data` 字段（已 intl 格式化）+ `AppLocalizations`，禁裸中文 / 禁裸拼接。
 
 ### 实施
 1. `Column`(`mainAxisSize: min`)[`lc-top` , `...segments.map(_segment)` , `lc-foot`]，外层 `--r-lg` 圆角 + clip + 卡片投影 + `surface` 底。
 2. `_segment`：年份标 + （有 `photo` 则 16:10 `AspectRatio` cover 图 + `--r-sm` 圆角）+ 衬线标题 + 正文 `Text`（`text-wrap: pretty` 无 Flutter 等价 → 普通换行，不钳制行数：长图正文要看全貌）。
-3. 计数 / 日期文案取 `data.count` / `data.monthDayLabel`（成品串）+ `AppStrings` 模板拼装（如「写过 N 篇」的「篇」「这一天，你」固定词走 `AppStrings`、N 是 `data.count`）。
+3. 计数 / 日期文案取 `data.count` / `data.monthDayLabel`（成品串）+ `AppLocalizations` 模板拼装（如「写过 N 篇」的「篇」「这一天，你」固定词走 `AppLocalizations`、N 是 `data.count`）。
 4. 全程 token；新文件加 MPL-2.0 头注。
 
 ### 验收标准（做完即止）
@@ -156,9 +155,9 @@ graph LR
 归属：长图 ↔ 风格禁用的**联动逻辑**归 T6 屏 state；本件只按 `styleEnabled` 入参渲染禁用态、不自己判 `ratio==long`。
 
 ### 实施
-1. 画幅 `DayzSegmented`(items=竖版 / 方形 / 长图，selected=ratio，onChanged=onRatioChanged)，标签「画幅」(`AppStrings`)。
+1. 画幅 `DayzSegmented`(items=竖版 / 方形 / 长图，selected=ratio，onChanged=onRatioChanged)，标签「画幅」(`AppLocalizations`)。
 2. 风格 `DayzSegmented`(items=纸感 / 大图压字，selected=style，enabled=styleEnabled，onChanged=onStyleChanged)，标签「风格」；`!styleEnabled` 时整行 `Opacity(0.4)` + 忽略点击（对应 `.row.dim`）。
-3. 按钮行：`DayzButton.soft`(保存，图标 + `AppStrings.save`，onPressed=onSave) + `DayzButton.primary`(分享，图标 + `AppStrings.share`，onPressed=onShare)，各 `Expanded`；动效经 `dayzMotionDuration`。
+3. 按钮行：`DayzButton.soft`(保存，图标 + `l10n.save`，onPressed=onSave) + `DayzButton.primary`(分享，图标 + `l10n.share`，onPressed=onShare)，各 `Expanded`；动效经 `dayzMotionDuration`。
 4. 全程 token；图标走 `dayz_icons` 或内联规范 SVG（§5）。
 5. 新文件加 MPL-2.0 头注。
 
@@ -241,8 +240,8 @@ graph LR
 2. 预览区：`_ratio==long` 且 `day!=null` → `DayzMemoryLongCard(day)`；否则 `DayzMemoryCard(ratio:_ratio, style:_style, data:card)`；外层 `SingleChildScrollView` 居中，切换后 `scrollController.jumpTo(0)`。
 3. `MemoryDock`：传 `_ratio`/`_style`/`styleEnabled:!_isLong` + 回调（`onRatioChanged` 改 `_ratio`、`onStyleChanged` 改 `_style`、`onSave`/`onShare` 调 exporter）。
 4. 导出：点保存 / 分享 → `setState(_exporting=true)` → `exporter.saveToGallery/share(当前卡片 widget)` → 据 `ExportResult` 出 `DayzToast`（成功 / 失败 tone=danger / 取消静默）→ `_exporting=false`；`_exporting` 时按钮 disable（防重入，NF7）。
-5. 返回顶栏：用 shell 顶栏壳（未就绪最小内联：返回钮 + 标题，走 token + `AppStrings` + Semantics）。
-6. 全程 token / `AppStrings`；新文件加 MPL-2.0 头注；**不 import `lib/data` / Drift**（R7）。
+5. 返回顶栏：用 shell 顶栏壳（未就绪最小内联：返回钮 + 标题，走 token + `AppLocalizations` + Semantics）。
+6. 全程 token / `AppLocalizations`；新文件加 MPL-2.0 头注；**不 import `lib/data` / Drift**（R7）。
 
 ### 验收标准（做完即止）
 - 初始：竖版 + 纸感单卡可见（自动，R1/R2/R3）。

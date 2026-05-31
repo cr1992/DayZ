@@ -13,7 +13,7 @@
 ```mermaid
 graph LR
   T1[T1 ReaderViewData + 装配] --> T5[T5 ReaderController 编排]
-  T2[T2 reader_meta + AppStrings 追加] --> T6[T6 ReaderScreen 装配/三态/接线]
+  T2[T2 reader_meta + gen-l10n 文案] --> T6[T6 ReaderScreen 装配/三态/接线]
   T3[T3 reader_image 异步缩略图] --> T6
   T4[T4 reader_body 衬线正文] --> T6
   T1 --> T6
@@ -23,7 +23,7 @@ graph LR
 ```
 
 并行组：
-- Group A：T1、T2、T3、T4（彼此独立，可并行；T2 顺带建立本 spec 的 AppStrings 文案条目）
+- Group A：T1、T2、T3、T4（彼此独立，可并行；T2 顺带建立本 spec 的 AppLocalizations 文案条目）
 - Group B：T5（依赖 T1、T2）
 - Group C：T6（依赖 T1/T2/T3/T4/T5）
 - Group D：T7（依赖 T6）
@@ -66,16 +66,16 @@ graph LR
 
 -----
 
-- [ ] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ AppStrings 追加
+- [ ] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ gen-l10n 文案
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`context.dayz.*`/`DayzSpacing`/`.t-*` 排版角色/`AppStrings`/`intl` 约定；ui-kit-components：`DayzWeatherChip`/`DayzTag`/`dayz_icons.dart`（日历 / 地点 SVG）/`AppStrings` 单类落点 ｜ **关联需求：** R2, R3, NF4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_meta.dart`、`lib/ui/strings/app_strings.dart`（仅追加 reader 条目，不改既有）｜ **验收基建：** 无
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`context.dayz.*`/`DayzSpacing`/`.t-*` 排版角色/`AppLocalizations`/`intl` 约定；ui-kit-components：`DayzWeatherChip`/`DayzTag`/`dayz_icons.dart`（日历 / 地点 SVG）；`i18n-localization`：gen-l10n ｜ **关联需求：** R2, R3, NF4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_meta.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** 无
 
 ### 背景
 渲染 `.r-kicker`（日历图标 + 日期）、`.r-meta`（weather-chip + tag + 地点 meta）、`.r-tags`（标签组），全部**数据驱动条件渲染**：字段为空则该元素不入 widget 树（R2）。日期经 `package:intl` 格式化（NF4），禁裸拼。
-归属（本 spec 共享文件单点）：本任务负责向 `ui-kit-components` 拥有的 `lib/ui/strings/app_strings.dart` **追加** reader 屏全部文案条目（动作菜单各项「编辑/分享/移到日记本/收藏/取消收藏/删除」、删除确认「删除这篇日记？」「将移到回收站，30 天内可恢复。」「移到回收站」、toast「已收藏/已取消收藏/已移到回收站/已恢复/已移到「X」/已生成分享链接」、Semantics「收藏/更多/返回」、空态文案等），供 T5/T6 引用；**不新建第二个文案类、不改既有条目**（design 已知风险）。
+本任务负责补 reader 屏全部 zh/en 文案 key（动作菜单各项、删除确认标题 / 说明 / 确认钮、toast 文案、Semantics 标签、空态文案等），供 T5/T6 引用；不新增本屏 strings 类或静态文案常量。
 
 ### 实施
-1. 在 `app_strings.dart` 追加 reader 文案 `static const`（带「已移到「X」」这类含占位的用 `intl`/插值约定，不在文案里写死本名）。
+1. 在 `app_zh.arb` / `app_en.arb` 补 reader 文案 key，含占位的用 ARB placeholder / ICU 约定，不在文案里写死本名；跑 `flutter gen-l10n`。
 2. `reader_meta.dart`：kicker 行（`dayz_icons` 日历 SVG + `intl` 格式化日期文本）；`r-meta` 行用 `Wrap`，按 `weather!=null`/`place!=null`/`mood!=null` 条件加 `DayzWeatherChip`/地点 meta/心情 meta；`r-tags` 按 `tags.isNotEmpty` 渲染 `DayzTag` 列表。
 3. 视觉全走 token（`context.dayz.*`/`DayzSpacing`），排版角色用 caption / 次要文本；屏内禁裸中文、禁硬编码色 / 字号 / 间距。
 
@@ -83,14 +83,14 @@ graph LR
 - 全字段视图模型 → kicker / weather-chip / tag / 地点 / 标签组都能 `find` 到（自动）。
 - 空字段视图模型（无 weather/place/mood/tags）→ 对应元素 `find` 不到、`r-meta` 行不出现（自动，R2）。
 - 日期文本 == `intl` 格式化结果（断言与手工拼接不同源；用 `find.text(intl 格式化期望值)`）（自动，NF4）。
-- 屏内文本经 `AppStrings`（测试用 `find.text(AppStrings.xxx)` 定位，不用裸中文）（自动，NF4）。
+- 屏内文本经 `AppLocalizations`（测试用 `find.text(l10n.xxx)` 定位，不用裸中文）（自动，NF4）。
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/ui/reader/reader_meta_test.dart
   ```
-  （pump 两组视图模型，断言元素存在 / 不存在 + 日期 intl 文本 + 引 AppStrings）
+  （pump 两组视图模型，断言元素存在 / 不存在 + 日期 intl 文本 + 引 AppLocalizations）
 
 ### 验收记录
 ```
@@ -169,7 +169,7 @@ graph LR
 
 - [ ] T5 · ReaderController 动作编排（收藏 / 删除 / 移本 / 分享 / 展开）
 
-**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（更新 favorite/journalId、`softDelete`、清 `deleted_at` 恢复）、`JournalRepo`（列表）；ui-kit-components：`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzToast`/`AppStrings` ｜ **关联需求：** R5, R6, R7, R8, R9, NF1 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/ui/reader/reader_controller.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（T1 已建，本任务补「可抛错的假 Repo」分支）
+**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（更新 favorite/journalId、`softDelete`、清 `deleted_at` 恢复）、`JournalRepo`（列表）；ui-kit-components：`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzToast`/`AppLocalizations` ｜ **关联需求：** R5, R6, R7, R8, R9, NF1 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/ui/reader/reader_controller.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（T1 已建，本任务补「可抛错的假 Repo」分支）
 
 ### 背景
 `ReaderController extends ChangeNotifier` 持 `ReaderViewData` + `favorite` + `galleryExpanded`；编排动作（D6/D7）：
@@ -219,7 +219,7 @@ graph LR
 1. 组装 slivers，按 R3 顺序 + R2 条件渲染（无封面 / 无 meta / 无九宫格则不入树）。
 2. 顶栏 actions 接 `DayzFavoriteStar`（读 controller.favorite，点击 `toggleFavorite`）+ ⋯ 钮（`DayzSheet.actions`，条目顺序对齐 T5/screen.js，「编辑」→ `Routes.editor`）。
 3. 九宫格用 `DayzGallery`（provider 来自 `ReaderImage`），`expanded` 绑 controller，`+N` 回调翻转。
-4. 三态渲染；找不到态用 `DayzEmptyState`（文案引 `AppStrings`）。
+4. 三态渲染；找不到态用 `DayzEmptyState`（文案引 `AppLocalizations`）。
 
 ### 验收标准（做完即止）
 - 进屏（go_router 推 `Routes.reader`，带 entryId）→ 经 `CupertinoPageRoute` 转场入场、返回钮 pop（自动：widget test 断言路由进入 / pop；转场类型由 shell 提供，断言 route 为 Cupertino 系）（R1）。
@@ -228,7 +228,7 @@ graph LR
 - text 态（纯文字篇）→ 无 read-hero / 无 weather / 无地点 / 无九宫格元素（`find` 不到），无空槽（自动）（R2）。
 - 点收藏星 → 星态切换 + toast（自动，经 controller）（R6）；点 ⋯ → 弹六项动作菜单含分隔 + 删除 danger（自动，`find` 菜单项 + 顺序）（R7）。
 - 点九宫格 `+N` → 展开露全部、当前路由不变（自动：展开后图数增加 + 路由栈深度不变）（R5）。
-- 收藏星 / ⋯ / 返回有 Semantics 标签、命中盒 ≥44（自动：`find.bySemanticsLabel(AppStrings.xxx)` + `tester.getRect` 尺寸）（NF3）。
+- 收藏星 / ⋯ / 返回有 Semantics 标签、命中盒 ≥44（自动：`find.bySemanticsLabel(l10n.xxx)` + `tester.getRect` 尺寸）（NF3）。
 
 ### 验收方式
 - 自动：

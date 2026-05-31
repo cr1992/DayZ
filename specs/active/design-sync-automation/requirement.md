@@ -21,7 +21,7 @@
 
 - `gen_tokens.dart` 本体 —— 归 `design-tokens-theme`；本 spec 只**调用 + hook 化**（同源校验前置 + 不漂移 CI）。
 - 各屏 widget / `element-map.yaml` 具体内容 / golden 基线 —— 随各页面级 spec 落（本 spec 定**格式与契约**）。
-- `AppStrings` / i18n 文件 —— 归 `ui-kit-components` 及各屏。
+- gen-l10n / ARB 规则 —— 归 [`docs/design/11`](../../../docs/design/11-internationalization-and-localization.md)；旧文案迁移归 `ui-i18n-migration`；各屏按任务补 zh/en ARB key 并更新生成产物。
 - 设计稿源同步本身（拉取/解压/`rsync --delete`/重建 standalone）—— 已由 `dayz-design-sync` skill 解决；本 spec 从「`current/` 已是最新」起步。
 
 ## 功能需求

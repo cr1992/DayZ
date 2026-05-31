@@ -29,7 +29,7 @@
 > 按渲染断言可观测值，不 grep 源文件。
 
 - [ ] 全部可交互件（按钮/图标钮/开关/勾选/分段/标签删除叉/sheet item/FAB/star/设置可点行）命中区 ≥ 44×44 — 自动：`flutter test test/ui/`（`tester.getRect` 断命中盒尺寸）
-- [ ] 图标钮/无文字件/开关/收藏星有可定位 `Semantics` 标签（`AppStrings`）、装饰图标被 `ExcludeSemantics` — 自动：`flutter test test/ui/`（`find.bySemanticsLabel` 命中 + 装饰件不在语义树）
+- [ ] 图标钮/无文字件/开关/收藏星有可定位 `Semantics` 标签（`AppLocalizations`）、装饰图标被 `ExcludeSemantics` — 自动：`flutter test test/ui/`（`find.bySemanticsLabel` 命中 + 装饰件不在语义树）
 - [ ] 组件未误用 token 引入新不达标渲染对（正文不用 `--ink-3`、着色文字落 soft 底、实色底文字用 `--on-accent`）— 自动：`flutter test test/ui/`（断组件文本/UI 用对 token 角色；对比度数值本身由 tokens-theme `contrast_test` 负责，本项只验"用对语义"）
 - [ ] toast/sheet/FAB/顶栏动效在 `MediaQuery.disableAnimations==true` 时降级为无动效/瞬时 — 自动：`flutter test test/ui/`（注入 `MediaQueryData(disableAnimations:true)` 断动效时长为 0，经 `dayzMotionDuration` 单点门）
 
@@ -47,7 +47,7 @@
 ## 回归检查
 - [ ] Debug Home 仍可正常构建与遍历（画廊追加未破坏既有 demo）— 自动：`flutter test test/demo/debug_home_test.dart`（回归）
 - [ ] `flutter analyze` 无新增告警 — 自动：`flutter analyze`（回归）
-- [ ] 屏内禁裸中文：组件层用户可见文案均经 `AppStrings`，widget 测试以 `find.text(AppStrings.xxx)` 命中（回归护栏，落实 tokens-theme D4）— 自动：`flutter test test/ui/`（测试只引 `AppStrings` 常量即自带"只引常量"回归；裸中文会致测试无法用常量命中）
+- [ ] 屏内禁裸中文：组件层用户可见文案均经 `AppLocalizations`，widget 测试以 `find.text(l10n.xxx)` 命中（回归护栏，落实 tokens-theme D4）— 自动：`flutter test test/ui/`（测试只引 `AppLocalizations` 常量即自带"只引常量"回归；裸中文会致测试无法用常量命中）
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，任一不通过则 verification 未定稿。

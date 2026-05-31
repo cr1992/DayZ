@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -26,7 +26,7 @@ class DayzTag extends StatelessWidget {
     this.onTap,
     this.onRemove,
     this.semanticLabel,
-    this.removeSemanticLabel = AppStrings.remove,
+    this.removeSemanticLabel,
   });
 
   final Widget child;
@@ -34,13 +34,15 @@ class DayzTag extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onRemove;
   final String? semanticLabel;
-  final String removeSemanticLabel;
+  final String? removeSemanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final text = context.dayzText;
+    final l10n = AppLocalizations.of(context);
     final interactive = onTap != null || onRemove != null;
+    final effectiveRemoveSemanticLabel = removeSemanticLabel ?? l10n.remove;
     final border = variant == DayzTagVariant.outline
         ? Border.all(color: colors.hairline2)
         : null;
@@ -82,7 +84,7 @@ class DayzTag extends StatelessWidget {
             const SizedBox(width: 2),
             Semantics(
               button: true,
-              label: removeSemanticLabel,
+              label: effectiveRemoveSemanticLabel,
               child: SizedBox.square(
                 dimension: 44,
                 child: IconButton(
@@ -91,7 +93,7 @@ class DayzTag extends StatelessWidget {
                     width: 44,
                     height: 44,
                   ),
-                  tooltip: removeSemanticLabel,
+                  tooltip: effectiveRemoveSemanticLabel,
                   onPressed: onRemove,
                   icon: SvgPicture.string(
                     _svg(DayzIcons.closePath),

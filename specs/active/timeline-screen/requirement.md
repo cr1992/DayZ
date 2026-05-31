@@ -90,7 +90,7 @@ While 列表滚动 / 分页追加，the 系统 SHALL NOT 同步重建缩略图�
 本屏所有文本（月份头标题/篇数、卡片标题/摘要/日期列/meta、空状态标题/说明、loader 文案、日历面板文字）在六套主题（purple/amber/sage × light/dark）下对底色对比度 MUST 遵循 `design-tokens-theme` NF1 的分族口径（正文/次要文本 ≥ 4.5:1、有意义 UI ≥ 3.0:1）；本屏只**消费** token、MUST NOT 自定义颜色，已知 token 级 expected-fail 由 `design-tokens-theme` 负责，本屏不重复改 token。
 
 ### NF5 · Semantics 语义标签
-顶栏菜单/搜索/往年今日钮、FAB、月份头触发器（含展开/收起态）、收藏星、日历面板（dialog 角色 + 「跳转到日期」标签）、空状态 MUST 提供可被屏幕阅读器识别的 `Semantics` 标签（文案集中 `AppStrings`）；卡片 MUST 暴露「打开日记」语义。
+顶栏菜单/搜索/往年今日钮、FAB、月份头触发器（含展开/收起态）、收藏星、日历面板（dialog 角色 + 「跳转到日期」标签）、空状态 MUST 提供可被屏幕阅读器识别的 `Semantics` 标签（文案集中 `AppLocalizations`）；卡片 MUST 暴露「打开日记」语义。
 
 ### NF6 · reduce-motion
 切本刷新淡入、日历面板落下/收起、FAB 展开、顶栏滚动渐显等动效 MUST 在系统「减弱动态效果」（`MediaQuery.disableAnimations == true`）下降级为瞬时（duration→0），统一经 `ui-kit-components` 的 `dayzMotionDuration` 门取时长，本屏 MUST NOT 自写裸 `Duration`。
@@ -99,7 +99,7 @@ While 列表滚动 / 分页追加，the 系统 SHALL NOT 同步重建缩略图�
 SHALL 在 iOS 13+ 与 Android 8+（minSdk 26）正常滚动与渲染；毛玻璃顶栏在低端 Android 允许降级为半透实色 + 细分割线（降级在 `DayzGlassAppBar` 组件侧，本屏不另写）。
 
 ### NF8 · 文案集中 + 日期走 intl
-本屏用户可见文案 MUST 引 `AppStrings` 常量（屏内禁裸中文）；月份头「YYYY · N 篇」、卡片日期列（日/英文月缩写/周几）、日历标题等日期/数字 MUST 经 `package:intl` 格式化（`intl` 为 Flutter SDK 传递依赖），MUST NOT 自拼 `'2026 · 12 篇'` / `'周五'`。widget 测试用 `find.text(AppStrings.xxx)` / intl 格式化结果，MUST NOT 断言裸中文字面量。
+本屏用户可见文案 MUST 引 `AppLocalizations` 常量（屏内禁裸中文）；月份头「YYYY · N 篇」、卡片日期列（日/英文月缩写/周几）、日历标题等日期/数字 MUST 经 `package:intl` 格式化（`intl` 为 Flutter SDK 传递依赖），MUST NOT 自拼 `'2026 · 12 篇'` / `'周五'`。widget 测试用 `find.text(l10n.xxx)` / intl 格式化结果，MUST NOT 断言裸中文字面量。
 
 ## 专项维度逐维表态（选档依据）
 

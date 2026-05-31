@@ -7,7 +7,7 @@
 
 # 设计：reader-screen
 
-> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层：本屏属屏幕层，只引下层）/§3（逐屏映射 + 红线：缩略图只异步 warmup、媒体 key 独立于主密码）/§4（②样式参数闸 + ③布局几何闸分治）/§9（W2 页面级）/§10（动 lib/ui 前红线）/§11（验收口径）；屏源真源 [`ui-design/current/pages/screens/reader.html`](../../../ui-design/current/pages/screens/reader.html)（`?state=default` / `?state=text` 两态）；版式组件 `.reader` / `.read-hero` / `.r-kicker` / `.r-meta` / `.r-body` / `.r-tags` 见 [`DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3b；九宫格 `.gallery`（列数随张数 / `+N` 蒙层 / 阅读页就地展开 `.expanded`）§3、收藏星唯一 path §5、动作菜单 / 移到日记本 / 删除确认 / toast 撤销的业务编排见 `pages/assets/screen.js` 的 `openEntryMenu` / `openMoveSheet` / `confirmDelete`；HTML→Flutter 机制映射 [`PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6。复用组件与外壳词汇来自 `ui-kit-components`（`DayzGlassAppBar` / `DayzGallery` / `DayzWeatherChip` / `DayzTag` / `DayzFavoriteStar` / `DayzToast` / `DayzSheet`（`.actions`/`.picker`/`.confirm` 工厂 + `DayzSheetItem`）/ `DayzEmptyState` / `AppStrings` / `dayzMotionDuration` / `components.dart` barrel / `dayz_icons.dart`）与 `ui-shell-navigation`（`Routes.*` 常量、`go_router` + `CupertinoPageRoute` 转场）；数据交付物来自 `data-layer`（`EntryRepo`/`MediaRepo`/`JournalRepo`/`TagRepo`）、`media-storage`（`MediaStore.openRead`、`DMED` 加密容器、设备媒体密钥）、`thumbnail-cache`（`ThumbnailCache.warmup`/`ThumbnailHandle`）。token / `context.dayz.*` / `AppStrings` / `intl` 约定来自 `design-tokens-theme`（D1/D4）。
+> 视觉与映射依据：[`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层：本屏属屏幕层，只引下层）/§3（逐屏映射 + 红线：缩略图只异步 warmup、媒体 key 独立于主密码）/§4（②样式参数闸 + ③布局几何闸分治）/§9（W2 页面级）/§10（动 lib/ui 前红线）/§11（验收口径）；屏源真源 [`ui-design/current/pages/screens/reader.html`](../../../ui-design/current/pages/screens/reader.html)（`?state=default` / `?state=text` 两态）；版式组件 `.reader` / `.read-hero` / `.r-kicker` / `.r-meta` / `.r-body` / `.r-tags` 见 [`DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3b；九宫格 `.gallery`（列数随张数 / `+N` 蒙层 / 阅读页就地展开 `.expanded`）§3、收藏星唯一 path §5、动作菜单 / 移到日记本 / 删除确认 / toast 撤销的业务编排见 `pages/assets/screen.js` 的 `openEntryMenu` / `openMoveSheet` / `confirmDelete`；HTML→Flutter 机制映射 [`PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6。复用组件与外壳词汇来自 `ui-kit-components`（`DayzGlassAppBar` / `DayzGallery` / `DayzWeatherChip` / `DayzTag` / `DayzFavoriteStar` / `DayzToast` / `DayzSheet`（`.actions`/`.picker`/`.confirm` 工厂 + `DayzSheetItem`）/ `DayzEmptyState` / `AppLocalizations` / `dayzMotionDuration` / `components.dart` barrel / `dayz_icons.dart`）与 `ui-shell-navigation`（`Routes.*` 常量、`go_router` + `CupertinoPageRoute` 转场）；数据交付物来自 `data-layer`（`EntryRepo`/`MediaRepo`/`JournalRepo`/`TagRepo`）、`media-storage`（`MediaStore.openRead`、`DMED` 加密容器、设备媒体密钥）、`thumbnail-cache`（`ThumbnailCache.warmup`/`ThumbnailHandle`）。token / `context.dayz.*` / `AppLocalizations` / `intl` 约定来自 `design-tokens-theme`（D1/D4）。
 
 ## 技术决策
 
@@ -81,7 +81,7 @@
 ### D9 · reduce-motion 与无障碍统一经 ui-kit 既有门
 - **状态：** 采纳
 - **背景：** NF3 要求点击目标 ≥44 / Semantics / reduce-motion；ui-kit 已交付 `dayzMotionDuration`（reduce-motion 门，D11）且基础件自带命中盒 ≥44 + Semantics。
-- **选择：** 本屏自身的动效（九宫格展开过渡、加载渐显）经 `dayzMotionDuration` 取时长；顶栏返回 / 收藏星 / ⋯ 钮的命中盒 ≥44 与 Semantics 标签由 ui-kit 组件保证，本屏只传 `AppStrings` 标签；本屏不另造动效门、不在屏内硬编码 duration / 命中盒尺寸。
+- **选择：** 本屏自身的动效（九宫格展开过渡、加载渐显）经 `dayzMotionDuration` 取时长；顶栏返回 / 收藏星 / ⋯ 钮的命中盒 ≥44 与 Semantics 标签由 ui-kit 组件保证，本屏只传 `AppLocalizations` 标签；本屏不另造动效门、不在屏内硬编码 duration / 命中盒尺寸。
 - **理由：** 单点收敛，杜绝逐处漏判；与 ui-kit 一致。
 - **代价：** 无。
 
@@ -111,7 +111,7 @@ graph TD
 
 ## 文件变更
 
-> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 加 MPL-2.0 头注。**不列入** `lib/ui/theme/`（tokens-theme）、`lib/ui/widgets/`·`lib/ui/shell/`（ui-kit / shell）、`lib/data/`（data-layer）、`lib/media/`·`lib/thumbnails/`（media / thumbnail）、`lib/ui/strings/app_strings.dart`（由 ui-kit 创建、本 spec 仅**追加** reader 文案——见下「共享文件」说明）等其它 spec 拥有的文件。
+> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 加 MPL-2.0 头注。**不列入** `lib/ui/theme/`（tokens-theme）、`lib/ui/widgets/`·`lib/ui/shell/`（ui-kit / shell）、`lib/data/`（data-layer）、`lib/media/`·`lib/thumbnails/`（media / thumbnail）等其它 spec 拥有的文件；文案仅补 zh/en ARB 与 gen-l10n 产物。
 
 **屏体 `lib/ui/reader/`**
 - `lib/ui/reader/reader_screen.dart`          新建（屏装配：Scaffold + CustomScrollView + DayzGlassAppBar + 版式，三态渲染，D1/D3）
@@ -125,8 +125,9 @@ graph TD
 - `lib/demo/reader_demo.dart`                  新建（reader 屏 demo：四例假数据 + 主题切换走查，D8）
 - `lib/demo/demo_entry.dart`                   修改（**仅末尾追加一行**，不插中间、不改 `DemoEntry` 字段）
 
-**共享文件（白名单外，显式列出 + 归属说明）**
-- `lib/ui/strings/app_strings.dart`           修改（**仅追加** reader 屏文案条目：动作菜单各项、删除确认标题 / 说明 / 确认钮、toast 文案、Semantics 标签等；该文件由 `ui-kit-components` 创建并拥有，各屏 spec 向其**追加**条目——归属已在 ui-kit D10 / README 拍板，本 spec 不重新创建、不改既有条目）
+**gen-l10n 文案**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`           修改（补 reader 屏 zh/en 文案条目：动作菜单各项、删除确认标题 / 说明 / 确认钮、toast 文案、Semantics 标签等）
+- `lib/l10n/gen/app_localizations*.dart`                        修改（`flutter gen-l10n` 生成产物）
 
 **测试目录（白名单 hook 对 `test/**/*_test.dart` 自动放行；非 `_test.dart` 的共享基建由任务 `验收基建` 字段预批）**
 - `test/ui/reader/`                            新建（屏 / controller / 版式 / 图加载 widget test 目录）
@@ -135,8 +136,8 @@ graph TD
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 → READY 门 / 降级）：**
-  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings` 约定、`.t-diary`/`.t-h1` 排版角色。**强依赖**，未定稿则本屏阻塞。
-  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`AppStrings`/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；2026-05-31 已按当前代码确认 `DayzGallery(images, expanded, onMoreTap)`、`DayzSheet.actions/picker/confirm`、`DayzGlassAppBar` 与 `components.dart` barrel 均存在。若后续 ui-kit API 再变更，先回填本设计与任务白名单，再改 reader 屏实现。
+  - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations` 约定、`.t-diary`/`.t-h1` 排版角色。**强依赖**，未定稿则本屏阻塞。
+  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；2026-05-31 已按当前代码确认 `DayzGallery(images, expanded, onMoreTap)`、`DayzSheet.actions/picker/confirm`、`DayzGlassAppBar` 与 `components.dart` barrel 均存在。若后续 ui-kit API 再变更，先回填本设计与任务白名单，再改 reader 屏实现。
   - `ui-shell-navigation`（已登记）：`Routes.reader`/`Routes.editor` 常量、`go_router` 的 `CupertinoPageRoute` 转场配置。**强依赖**；路由名是跨 spec 契约，引常量不写裸字符串。本屏被某来源屏跳转（时间线 / 搜索 / 收藏 / 往年今日）= 那些屏在其元素上接 `Routes.reader` 导航（归各来源屏 spec），本 spec 只负责「进入本屏后」与「从本屏导航编辑 / 返回」。
   - `data-layer`（已登记）：`EntryRepo`（组合查询 entry+媒体+标签 D6、`softDelete`/`hardDelete` D7、更新 favorite / journalId / 时区三件套封装 D5）、`MediaRepo`（媒体元数据）、`JournalRepo`（日记本列表）、`TagRepo`。**取数唯一入口（NF1 红线）**。未就绪时本屏用内存假 `ReaderViewData` / 假 Repo（demo + 测试），真接线作为依赖就绪后的后续，**MUST NOT 为赶进度在屏内直连 Drift / 写 SQL**。
   - `media-storage`（已登记）：`MediaStore.openRead(rel_path) → Stream<List<int>>`、`DMED` 加密容器、设备媒体密钥（独立于主密码、不参与 rekey）。本屏只消费读取入口。
@@ -145,7 +146,7 @@ graph TD
   - `design-sync-automation`（**非 README 依赖**，仅验证基建关系）：参数 / 几何抽取 harness、`element-map.yaml`（reader 屏映射 + fixed/content 标签）、SSIM 兜底属其交付物；本屏的样式参数闸（②）与布局几何闸（③）用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；「对设计稿源屏 `reader.html` 比框 / 比像素」的部分留给 design-sync 期二，不在本 spec 重造。golden 基线归本屏 `test/ui/reader/`（任务 `验收基建` 预批）。
 - **乐观 UI 写失败回滚（D6）**：收藏 / 移本乐观更新后若 Repo 写抛错，须回滚本地态并弹错误 toast；删除若 `softDelete` 失败则不返回、保留当前篇并提示。验证用注入「抛错的假 Repo」断言回滚。
 - **正文为纯段落（D5）**：第一版正文不渲染行内格式 / 列表 / 引用 / 行内图，待只读渲染器接入补齐；与设计稿 `.r-body p` 的纯段落示意一致，不算还原缺陷。reader-screen v1 的验收只覆盖 `content_plain` 段落渲染与阅读版式，不覆盖 `content_json` 富文本效果。
-- **`AppStrings` 追加而非新建**：本 spec 向 `ui-kit-components` 拥有的 `lib/ui/strings/app_strings.dart` **追加** reader 文案条目，MUST NOT 新建第二个文案类、MUST NOT 改既有条目；该共享文件已在 `## 文件变更` 显式列出并归入对应任务白名单（避免清单外越界写）。
+- **ARB 合并风险**：本 spec 补 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` reader 文案 key，MUST 保持 zh/en key 集合一致并跑 `gen-l10n`；MUST NOT 新增第二套文案类或屏内 strings 常量。
 - **九宫格 `+N` 与 ≤9 张布局**：列数随张数（1/2/3/4/≥5）与第 9 格 `+N` 蒙层规则由 `DayzGallery` 承载，本屏只传图列表与展开态；张数 / 列数对应关系以 DESIGN-REF §3 与 ui-kit `DayzGallery` 定稿为准，本 spec 不重写网格算法。
 - **新文件加 MPL-2.0 头注**：`lib/ui/reader/*.dart`、`lib/demo/reader_demo.dart` 全部新建 Dart 文件 MUST 在顶部加 MPL-2.0 头注（模板见 README「License」/ AGENTS.md）。
 - **无持久化 schema 变更**：本屏不新增 / 改 DB schema（软删除 / favorite / journalId 字段均由 data-layer 既有 schema 提供，本屏只调 Repo 方法）→ 无数据迁移 / 回滚要素。

@@ -3,9 +3,8 @@
 
 import 'dart:typed_data';
 
-import 'package:dayz/ui/strings/app_strings.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:dayz/ui/widgets/dayz_button.dart';
 import 'package:dayz/ui/widgets/dayz_dialog.dart';
 import 'package:dayz/ui/widgets/dayz_entry_card.dart';
@@ -71,7 +70,7 @@ void main() {
             DayzButton.icon(
               key: iconKey,
               icon: const Icon(Icons.more_horiz),
-              semanticLabel: AppStrings.more,
+              semanticLabel: testL10n.more,
               onPressed: () => taps += 1,
             ),
           ],
@@ -99,12 +98,12 @@ void main() {
       expect(decorationFor(dangerKey).color, Colors.transparent);
       expect(decorationFor(disabledKey).color, DayzColors.purpleLight.bg2);
 
-      expect(find.bySemanticsLabel(AppStrings.more), findsOneWidget);
+      expect(find.bySemanticsLabel(testL10n.more), findsOneWidget);
       expect(tester.getSize(find.byKey(iconKey)), const Size.square(44));
 
       await tester.tap(find.text('Primary'));
       await tester.tap(find.text('Disabled'));
-      await tester.tap(find.bySemanticsLabel(AppStrings.more));
+      await tester.tap(find.bySemanticsLabel(testL10n.more));
       await tester.pump();
 
       expect(taps, 2);
@@ -265,7 +264,7 @@ void main() {
       ),
     );
 
-    expect(find.bySemanticsLabel(AppStrings.remove), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.remove), findsOneWidget);
     expect(find.bySemanticsLabel('Bold'), findsOneWidget);
     expect(
       tester.getSize(find.bySemanticsLabel('Bold')),
@@ -273,7 +272,7 @@ void main() {
     );
     expect(find.text('Delete entry'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel(AppStrings.remove));
+    await tester.tap(find.bySemanticsLabel(testL10n.remove));
     await tester.tap(find.text('Happy'));
     await tester.tap(find.text('Sunny 26C'));
     await tester.tap(find.bySemanticsLabel('Bold'));
@@ -330,6 +329,7 @@ void main() {
 
     await _pumpDayz(
       tester,
+      locale: const Locale('en'),
       SizedBox(
         width: 360,
         child: DayzEntryCard(
@@ -355,7 +355,7 @@ void main() {
     expect(find.text('Shanghai'), findsOneWidget);
 
     await tester.tap(find.text('May rain'));
-    await tester.tap(find.bySemanticsLabel(AppStrings.favorite));
+    await tester.tap(find.bySemanticsLabel(testEnL10n.favorite));
     await tester.pump();
 
     expect(opened, isTrue);
@@ -363,15 +363,17 @@ void main() {
   });
 }
 
-Future<void> _pumpDayz(WidgetTester tester, Widget child) async {
+Future<void> _pumpDayz(
+  WidgetTester tester,
+  Widget child, {
+  Locale locale = const Locale('zh'),
+}) async {
   await tester.pumpWidget(
-    MaterialApp(
-      theme: DayzThemes.purpleLight,
-      home: Scaffold(
-        body: Align(
-          alignment: Alignment.topLeft,
-          child: SingleChildScrollView(child: child),
-        ),
+    localizedTestApp(
+      locale: locale,
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: SingleChildScrollView(child: child),
       ),
     ),
   );

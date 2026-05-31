@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -18,7 +18,7 @@ class DayzSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hintText = AppStrings.search,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.onClear,
@@ -35,7 +35,7 @@ class DayzSearchField extends StatefulWidget {
 
   final TextEditingController? controller;
   final FocusNode? focusNode;
-  final String hintText;
+  final String? hintText;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onClear;
@@ -81,9 +81,11 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = context.dayz;
     final typography = context.dayzText;
     final hasQuery = _controller.text.isNotEmpty;
+    final effectiveHintText = widget.hintText ?? l10n.search;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -137,7 +139,7 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
                           decoration: InputDecoration(
                             isDense: true,
                             border: InputBorder.none,
-                            hintText: widget.hintText,
+                            hintText: effectiveHintText,
                             hintStyle: typography.body.copyWith(
                               color: colors.ink3,
                               fontSize: 15,
@@ -151,7 +153,7 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
                         IconButton(
                           key: DayzSearchField.clearButtonKey,
                           onPressed: widget.enabled ? _clear : null,
-                          tooltip: AppStrings.clear,
+                          tooltip: l10n.clear,
                           constraints: const BoxConstraints.tightFor(
                             width: 44,
                             height: 44,
@@ -188,7 +190,7 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
                   letterSpacing: 0,
                 ),
               ),
-              child: const Text(AppStrings.cancel),
+              child: Text(l10n.cancel),
             ),
           ],
         ],

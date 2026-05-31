@@ -7,7 +7,7 @@
 
 # 设计：favorites-screen
 
-> 视觉与映射依据：屏源 [`ui-design/current/pages/screens/favorites.html`](../../../ui-design/current/pages/screens/favorites.html)（`?state=default|empty`）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层）/§3（朴素列表、跨屏外壳复用）/§4（四闸）/§9（页面级·W2）/§10（动 lib/ui 红线）/§11（验收口径）；组件类名与最小 HTML 真源 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry`/`.timeline`）/§3c（`.empty`/`.pg`/`.app-top` 骨架）/§5（收藏星唯一 path）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`?state=` 多状态 / `.app-top`+`.app-scroll` / 覆盖式毛玻璃顶栏 / `go_router`）。复用契约来自：`ui-kit-components`（`DayzEntryCard` / `DayzFavoriteStar` / `DayzEmptyState` / `DayzGlassAppBar` / `components.dart` barrel / `AppStrings` / `dayzMotionDuration`）、`ui-shell-navigation`（`Routes.favorites` / `Routes.reader` / `app_router.dart`）、`data-layer`（`EntryRepo`）、`design-tokens-theme`（`context.dayz.*` / `DayzSpacing` / `dayz_text_theme` / `intl` 约定）。
+> 视觉与映射依据：屏源 [`ui-design/current/pages/screens/favorites.html`](../../../ui-design/current/pages/screens/favorites.html)（`?state=default|empty`）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（分层）/§3（朴素列表、跨屏外壳复用）/§4（四闸）/§9（页面级·W2）/§10（动 lib/ui 红线）/§11（验收口径）；组件类名与最小 HTML 真源 [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry`/`.timeline`）/§3c（`.empty`/`.pg`/`.app-top` 骨架）/§5（收藏星唯一 path）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`?state=` 多状态 / `.app-top`+`.app-scroll` / 覆盖式毛玻璃顶栏 / `go_router`）。复用契约来自：`ui-kit-components`（`DayzEntryCard` / `DayzFavoriteStar` / `DayzEmptyState` / `DayzGlassAppBar` / `components.dart` barrel / `AppLocalizations` / `dayzMotionDuration`）、`ui-shell-navigation`（`Routes.favorites` / `Routes.reader` / `app_router.dart`）、`data-layer`（`EntryRepo`）、`design-tokens-theme`（`context.dayz.*` / `DayzSpacing` / `dayz_text_theme` / `intl` 约定）。
 
 ## 技术决策
 
@@ -38,8 +38,8 @@
 ### D4 · 计数头 `FavoritesCountHeader`：屏内私有组件，不进 DESIGN-REF / ui-kit
 - **状态：** 采纳
 - **背景：** favorites.html 的计数头（overline「★ 收藏」+ 衬线大标题「19 篇值得再读的」+ 副标题）是**收藏屏专属**、DESIGN-REF §3/§3b **未登记为可复用组件**（其样式在 favorites.html 内联 `style=`，属屏内私有值）。方法论 §3 + ui-kit D7 边界：只跨屏复用件进 ui-kit，屏内一次性件留各屏。
-- **选项：** (A) 把它升级为 ui-kit 跨屏件（无第二屏复用，过度）；(B) 作为本屏私有 widget `FavoritesCountHeader` 落 `lib/ui/favorites/`，视觉走 token、文案走 `AppStrings`、计数走 `intl`。
-- **选择：** B。`FavoritesCountHeader(count)`：overline 行（`DayzFavoriteStar`/规范星 path 着 `--favorite` + 「收藏」着 `--accent-ink`）+ 衬线大标题（`dayz_text_theme` 的衬线大字角色 + `intl.NumberFormat` 格式化 count + `AppStrings` 模板）+ 副标题（`--ink-2`）。**屏内私有视觉值**（如大标题 25px/600、上下间距）从 favorites.html 的内联 CSS 核定，反查 token；不在 token 里的硬编码值按方法论 §4 标红给设计侧、就近用最接近的排版角色/间距档对齐（记入已知风险）。
+- **选项：** (A) 把它升级为 ui-kit 跨屏件（无第二屏复用，过度）；(B) 作为本屏私有 widget `FavoritesCountHeader` 落 `lib/ui/favorites/`，视觉走 token、文案走 `AppLocalizations`、计数走 `intl`。
+- **选择：** B。`FavoritesCountHeader(count)`：overline 行（`DayzFavoriteStar`/规范星 path 着 `--favorite` + 「收藏」着 `--accent-ink`）+ 衬线大标题（`dayz_text_theme` 的衬线大字角色 + `intl.NumberFormat` 格式化 count + `AppLocalizations` 模板）+ 副标题（`--ink-2`）。**屏内私有视觉值**（如大标题 25px/600、上下间距）从 favorites.html 的内联 CSS 核定，反查 token；不在 token 里的硬编码值按方法论 §4 标红给设计侧、就近用最接近的排版角色/间距档对齐（记入已知风险）。
 - **理由：** 无跨屏复用证据，升 ui-kit 是 scope creep；屏内私有件落本屏符合「屏内一次性件留各屏」。
 - **代价：** 若日后另有屏需同款计数头，再升 ui-kit（独立小改）；当前不预造。
 
@@ -72,23 +72,24 @@ graph TD
   LIST --> CARD[ui-kit · DayzEntryCard + DayzFavoriteStar\n星只读, 点卡片→Routes.reader]
   SCR --> EMPTY[ui-kit · DayzEmptyState\n空态: 还没有收藏]
   TOK[design-tokens-theme · context.dayz / dayz_text_theme / DayzSpacing] -.视觉.-> SCR
-  STR[ui-kit · AppStrings + intl] -.文案/计数.-> SCR
+  STR[gen-l10n · AppLocalizations + intl] -.文案/计数.-> SCR
   MO[ui-kit · dayzMotionDuration] -.reduce-motion.-> SCR
   DEMO[lib/demo/favorites_demo.dart · Debug Home 入口\n用 fake EntryRepo] --> SCR
 ```
 
 ## 文件变更
 
-> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 加 MPL-2.0 头注。本屏文件落 `lib/ui/favorites/` 与 `test/ui/favorites/`；不列入别的模块/别的 spec 文件，**唯一例外**是 D5 授权的 `app_router.dart` 一行 builder 替换与 `AppStrings` 条目追加，二者均显式标注归属与范围。
+> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 加 MPL-2.0 头注。本屏文件落 `lib/ui/favorites/` 与 `test/ui/favorites/`；不列入别的模块/别的 spec 文件，**例外**是 D5 授权的 `app_router.dart` 一行 builder 替换，以及本屏 zh/en ARB key + gen-l10n 产物。
 
 **屏体 `lib/ui/favorites/`（本 spec 新建）**
 - `lib/ui/favorites/favorites_screen.dart`        新建（屏骨架：`CustomScrollView` + `DayzGlassAppBar` + 计数头 + `SliverList`(`DayzEntryCard`) / `DayzEmptyState`；按 `FavoritesState` 四态渲染；点卡片→`Routes.reader`）
 - `lib/ui/favorites/favorites_controller.dart`    新建（`ChangeNotifier` + `FavoritesState`(loading/data/empty/error)；构造注入 `EntryRepo`；调收藏过滤列表 + 计数）
-- `lib/ui/favorites/favorites_count_header.dart`   新建（屏内私有 `FavoritesCountHeader`：overline + 衬线大标题(intl 计数) + 副标题，视觉走 token、文案走 `AppStrings`，D4）
+- `lib/ui/favorites/favorites_count_header.dart`   新建（屏内私有 `FavoritesCountHeader`：overline + 衬线大标题(intl 计数) + 副标题，视觉走 token、文案走 `AppLocalizations`，D4）
 
 **跨 spec 协调（按对应 spec 授权机制改，范围锁定）**
 - `lib/ui/shell/app_router.dart`                  修改（**仅** `Routes.favorites` 那一条路由的 `builder`：`PlaceholderScreen` → `FavoritesScreen`，加必要 import；不动 `Routes` 常量、不动其他屏 builder、不动 not-found。归属 `ui-shell-navigation`，依 shell D1 授权页面级 spec 替换自己那一行，D5）
-- `lib/ui/strings/app_strings.dart`               修改（**仅追加**收藏屏文案条目：顶栏标题「收藏」、overline「收藏」、计数头标题模板「{N} 篇值得再读的」、副标题、空态标题/说明、加载/错误占位文案、相关 Semantics 标签；不改既有条目。归属 `ui-kit-components`（D10 首建），各屏向其追加，README 已拍板此归属）
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`               修改（补收藏屏 zh/en 文案 key：顶栏标题、overline、计数头标题模板、副标题、空态标题/说明、加载/错误占位文案、相关 Semantics 标签）
+- `lib/l10n/gen/app_localizations*.dart`                            修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/favorites_demo.dart`                  新建（用内存 fake `EntryRepo` 渲染收藏屏，可切 default/empty/loading/error 四态走查；真机看收藏屏的唯一入口，data-layer/shell 未全就绪时也能跑）
@@ -102,7 +103,7 @@ graph TD
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 → 降级/待确认）**：
-  - `ui-kit-components`（README 依赖列已登记）：`DayzEntryCard`（星只读配置 + `ImageProvider` 封面 + 点击回调）、`DayzFavoriteStar`、`DayzEmptyState`、`DayzGlassAppBar`（返回钮 + 标题）、`components.dart` barrel、`AppStrings`（D10 单类，本屏向其追加）、`dayzMotionDuration`。**强依赖**——若未定稿本 spec 阻塞（READY 门）。`DayzEntryCard` 是否暴露「星只读」「点击回调」「meta 可选」恰当入参 **待确认**（与 ui-kit 接线时核对其 API，必要时回填）。
+  - `ui-kit-components`（README 依赖列已登记）：`DayzEntryCard`（星只读配置 + `ImageProvider` 封面 + 点击回调）、`DayzFavoriteStar`、`DayzEmptyState`、`DayzGlassAppBar`（返回钮 + 标题）、`components.dart` barrel、`dayzMotionDuration`。**强依赖**——若未定稿本 spec 阻塞（READY 门）。`DayzEntryCard` 是否暴露「星只读」「点击回调」「meta 可选」恰当入参 **待确认**（与 ui-kit 接线时核对其 API，必要时回填）。
   - `ui-shell-navigation`（README 依赖列已登记）：`Routes.favorites`/`Routes.reader` 常量、`app_router.dart` 占位 builder 与「页面级 spec 替换自己那一行」机制（D5）。**未就绪时降级**：路由替换延后，先经 `lib/demo/favorites_demo.dart` 可达；`Routes.reader` 携 entryId 的导航参数形态 **待确认**（与 shell/reader 对齐）。
   - `data-layer`（README 依赖列已登记）：`EntryRepo` 的「收藏过滤列表（未删 + `is_favorite` + 倒序 + 卡片视图模型含首图 `ImageProvider`/meta）」与「收藏计数」两项能力（D3）。**方法名/DTO 待确认**（与 data-layer 定稿对齐，本 spec MUST NOT 擅自写 Drift 兜底）；**未就绪时降级**：demo + widget test 用内存 fake `EntryRepo`，落库接线后只接线不返工。
   - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing`/`DayzRadii`/`DayzMotion`、`dayz_text_theme` 衬线大字角色、`intl` 约定、对比度 NF1 真源。**强依赖**。

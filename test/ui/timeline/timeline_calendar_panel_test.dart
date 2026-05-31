@@ -5,8 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/timeline/timeline_controller.dart';
 import 'package:dayz/ui/timeline/timeline_month_section.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
@@ -72,7 +71,7 @@ void main() {
       await tester.tap(find.byKey(timelineMonthHeaderTestKey(2026, 6)));
       await tester.pumpAndSettle();
 
-      expect(find.bySemanticsLabel(AppStrings.jumpToDate), findsOneWidget);
+      expect(find.bySemanticsLabel(testL10n.jumpToDate), findsOneWidget);
 
       final mayButton = find.byKey(
         const ValueKey<String>('timeline-calendar-month-2026-5'),
@@ -121,8 +120,7 @@ class _Harness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
+    return localizedMaterialApp(
       home: Align(
         alignment: Alignment.topLeft,
         child: SizedBox(

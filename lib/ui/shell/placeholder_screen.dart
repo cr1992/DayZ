@@ -2,20 +2,22 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
+
+typedef PlaceholderTitleBuilder = String Function(AppLocalizations l10n);
 
 /// A placeholder screen used during UI routing setup.
 ///
 /// Author: @Ray
 class PlaceholderScreen extends StatelessWidget {
-  final String title;
+  final PlaceholderTitleBuilder titleBuilder;
   final bool showAppBar;
 
   const PlaceholderScreen({
-    required this.title,
+    required this.titleBuilder,
     this.showAppBar = false,
     super.key,
   });
@@ -24,6 +26,8 @@ class PlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
+    final title = titleBuilder(l10n);
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -54,7 +58,7 @@ class PlaceholderScreen extends StatelessWidget {
                   ),
                 const SizedBox(height: DayzSpacing.s2),
                 Text(
-                  AppStrings.shellPlaceholderSuffix,
+                  l10n.shellPlaceholderSuffix,
                   style: textTheme.body.copyWith(color: colors.ink2),
                   textAlign: TextAlign.center,
                 ),

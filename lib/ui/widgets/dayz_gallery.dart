@@ -2,8 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -44,6 +44,7 @@ class DayzGallery extends StatelessWidget {
     }
 
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final text = context.dayzText;
     final total = images.length;
     final showCollapsedOverlay = total >= 10 && !expanded;
@@ -71,7 +72,7 @@ class DayzGallery extends StatelessWidget {
                 ? null
                 : () => onImageTap!(i),
             moreLabel: i == 8 && showCollapsedOverlay
-                ? AppStrings.galleryMoreCount(total - 9)
+                ? l10n.galleryMoreCount(total - 9)
                 : null,
             colors: colors,
             text: text,

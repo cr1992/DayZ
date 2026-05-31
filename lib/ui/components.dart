@@ -1,7 +1,6 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-export 'strings/app_strings.dart';
 export 'shell/dayz_fab.dart';
 export 'shell/dayz_glass_app_bar.dart';
 export 'shell/dayz_sheet.dart';

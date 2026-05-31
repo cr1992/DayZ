@@ -2,8 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../util/dayz_motion.dart';
@@ -26,10 +26,10 @@ class DayzSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final duration = dayzMotionDuration(context);
     final enabled = onChanged != null;
-    final label =
-        semanticLabel ?? (value ? AppStrings.switchOn : AppStrings.switchOff);
+    final label = semanticLabel ?? (value ? l10n.switchOn : l10n.switchOff);
 
     final control = SizedBox(
       width: 46,

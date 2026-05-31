@@ -10,6 +10,8 @@ import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../l10n/localized_test_app.dart';
+
 /// Widget tests for [WidgetGalleryDemo].
 ///
 /// Author: @Ray
@@ -22,11 +24,8 @@ void main() {
     expect(entry.builder, isNotNull);
   });
 
-
   testWidgets('Debug Home can navigate to widget gallery', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(theme: DayzThemes.purpleLight, home: const DebugHome()),
-    );
+    await tester.pumpWidget(localizedTestApp(child: const DebugHome()));
 
     expect(find.text('UI Kit 组件画廊'), findsOneWidget);
 
@@ -47,12 +46,7 @@ void main() {
   testWidgets('widget gallery shows design source labels for each section', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const WidgetGalleryDemo(),
-      ),
-    );
+    await tester.pumpWidget(localizedTestApp(child: const WidgetGalleryDemo()));
 
     expect(find.textContaining('真源：docs/DESIGN-REF.md:117'), findsOneWidget);
 
@@ -70,12 +64,7 @@ void main() {
   });
 
   testWidgets('widget gallery choice controls update in place', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const WidgetGalleryDemo(),
-      ),
-    );
+    await tester.pumpWidget(localizedTestApp(child: const WidgetGalleryDemo()));
 
     Future<void> tapVisible(Finder finder) async {
       await tester.ensureVisible(finder);
@@ -114,12 +103,7 @@ void main() {
   testWidgets('dialog cancel action uses outlined button variant', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const WidgetGalleryDemo(),
-      ),
-    );
+    await tester.pumpWidget(localizedTestApp(child: const WidgetGalleryDemo()));
 
     await tester.scrollUntilVisible(
       find.text('弹窗'),
@@ -130,7 +114,7 @@ void main() {
 
     final cancelButton = tester.widget<DayzButton>(
       find.ancestor(
-        of: find.text(AppStrings.cancel),
+        of: find.text(testL10n.cancel),
         matching: find.byType(DayzButton),
       ),
     );
@@ -138,14 +122,13 @@ void main() {
     expect(cancelButton.variant, DayzButtonVariant.ghost);
   });
 
-
   testWidgets('a gallery use case renders with selected DayZ theme', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      localizedTestApp(
         theme: DayzThemes.amberLight,
-        home: Builder(
+        child: Builder(
           builder: (context) {
             return Scaffold(
               body: Center(

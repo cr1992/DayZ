@@ -5,9 +5,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:intl/intl.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -40,13 +40,14 @@ class DayzMonthHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final typography = context.dayzText;
     final localeTag = locale ?? _localeTagOf(context);
     final normalizedMonth = DateTime(month.year, month.month);
     final monthLabel = DateFormat.MMM(localeTag).format(normalizedMonth);
     final metaLabel = [
       DateFormat.y(localeTag).format(normalizedMonth),
-      _entryCountLabel(entryCount, localeTag),
+      l10n.entryCount(entryCount),
     ].join(' · ');
 
     final content = ConstrainedBox(
@@ -128,12 +129,6 @@ class DayzMonthHeader extends StatelessWidget {
       ),
     );
   }
-}
-
-String _entryCountLabel(int count, String localeTag) {
-  final raw = AppStrings.entryCount(count);
-  final formatted = NumberFormat.decimalPattern(localeTag).format(count);
-  return raw.replaceFirst(count.toString(), formatted);
 }
 
 String _localeTagOf(BuildContext context) {

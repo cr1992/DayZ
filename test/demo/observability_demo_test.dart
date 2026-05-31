@@ -8,6 +8,8 @@ import 'package:dayz/demo/demo_entry.dart';
 import 'package:dayz/demo/observability_demo.dart';
 import 'package:dayz/observability/observability.dart';
 
+import '../l10n/localized_test_app.dart';
+
 void main() {
   group('ObservabilityDemo Registration & Widget Tests', () {
     test('demos list has Observability entry', () {
@@ -25,7 +27,9 @@ void main() {
     ) async {
       AppLogger.instance.setLevel(LogLevel.info);
 
-      await tester.pumpWidget(const MaterialApp(home: ObservabilityDemo()));
+      await tester.pumpWidget(
+        localizedTestApp(child: const ObservabilityDemo()),
+      );
 
       expect(find.text('可观测性演示'), findsOneWidget);
       expect(find.text('日志级别：INFO'), findsOneWidget);
@@ -53,7 +57,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(const MaterialApp(home: ObservabilityDemo()));
+      await tester.pumpWidget(
+        localizedTestApp(child: const ObservabilityDemo()),
+      );
 
       expect(find.text('可观测性演示'), findsOneWidget);
       expect(tester.takeException(), isNull);

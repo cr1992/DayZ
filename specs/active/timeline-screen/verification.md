@@ -37,7 +37,7 @@
 ### 无障碍（NF3, NF4, NF5, NF6）
 - [ ] 点击目标 ≥ 44×44：月份头触发器 / 卡片 / 收藏星 / 日历日格·月格 / loader 可点项 — 自动：`flutter test test/ui/timeline/timeline_a11y_test.dart`（`tester.getRect` 断言各命中区尺寸 ≥44，NF3）
 - [ ] 六套主题（purple/amber/sage × light/dark）下本屏文本对底对比度遵循 tokens-theme NF1 分族口径 — 自动：`flutter test test/ui/timeline/timeline_contrast_test.dart`（按当前 `ThemeData` 解析本屏文本/背景实际取色算相对亮度比，分族断言；已知 token 级 expected-fail 读 `test/ui/theme/contrast_xfail.yaml` 单一真源、xfail 放行，不在本屏改 token，NF4）
-- [ ] Semantics：菜单/搜索/往年今日钮、FAB、月份头(展开/收起态)、收藏星、日历面板(dialog+「跳转到日期」)、空状态可被屏幕阅读器标签定位 — 自动：`flutter test test/ui/timeline/timeline_a11y_test.dart`（`find.bySemanticsLabel(AppStrings.xxx)`，NF5）
+- [ ] Semantics：菜单/搜索/往年今日钮、FAB、月份头(展开/收起态)、收藏星、日历面板(dialog+「跳转到日期」)、空状态可被屏幕阅读器标签定位 — 自动：`flutter test test/ui/timeline/timeline_a11y_test.dart`（`find.bySemanticsLabel(l10n.xxx)`，NF5）
 - [ ] reduce-motion：`MediaQueryData(disableAnimations:true)` 下切本淡入 / 日历落下 / FAB 展开 / 顶栏滚动渐显时长为 0 — 自动：`flutter test test/ui/timeline/timeline_reduce_motion_test.dart`（注入 disableAnimations 断言动效时长经 `dayzMotionDuration` 归零，NF6）
 
 ### 样式参数闸（②，确定性）

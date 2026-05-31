@@ -39,7 +39,7 @@
 
 ### 无障碍（NF2, NF3, NF4）
 - [ ] 返回钮/更多钮/可点卡片命中区 ≥ 44×44 px — 自动：`flutter test test/ui/onthisday/onthisday_a11y_test.dart`（`tester.getSize` 断言）
-- [ ] 返回/更多/收藏星/可点卡片有 Semantics 标签 — 自动：同上（`find.bySemanticsLabel(AppStrings.*)`）
+- [ ] 返回/更多/收藏星/可点卡片有 Semantics 标签 — 自动：同上（`find.bySemanticsLabel(l10n.xxx)`）
 - [ ] reduce-motion：`MediaQueryData(disableAnimations: true)` 下顶栏渐显/配图淡入/ sheet 动效时长为 0（经 `dayzMotionDuration` 门）— 自动：`onthisday_a11y_test.dart` + `onthisday_empty_image_test.dart`
 
 ### 对比度（NF1）

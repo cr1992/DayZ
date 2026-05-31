@@ -3,8 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
@@ -52,6 +52,7 @@ class ShellDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
     final totalCount =
         allJournalCount ??
         journals.fold<int>(0, (sum, journal) => sum + journal.count);
@@ -69,16 +70,12 @@ class ShellDrawer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // --- Group 1: Journals ---
-                    _buildSectionHeader(
-                      context,
-                      AppStrings.newJournal,
-                      onNewJournal,
-                    ),
+                    _buildSectionHeader(context, l10n.newJournal, onNewJournal),
 
                     // "All Journals" sentinel row
                     _buildDrawerItem(
                       context: context,
-                      label: AppStrings.allJournals,
+                      label: l10n.allJournals,
                       isSelected: currentJournalId == null,
                       onTap: () => onSelectJournal(null),
                       leading: _buildSvgIcon(
@@ -86,7 +83,7 @@ class ShellDrawer extends StatelessWidget {
                         colors.ink,
                       ),
                       trailing: Text(
-                        AppStrings.entryCount(totalCount),
+                        l10n.entryCount(totalCount),
                         style: textTheme.caption.copyWith(color: colors.ink3),
                       ),
                     ),
@@ -99,7 +96,7 @@ class ShellDrawer extends StatelessWidget {
                         isSelected: currentJournalId == journal.id,
                         onTap: () => onSelectJournal(journal.id),
                         trailing: Text(
-                          AppStrings.entryCount(journal.count),
+                          l10n.entryCount(journal.count),
                           style: textTheme.caption.copyWith(color: colors.ink3),
                         ),
                         leading: _buildColorDot(journal.color),
@@ -111,10 +108,10 @@ class ShellDrawer extends StatelessWidget {
 
                     // --- Group 2: Browse ---
                     const SizedBox(height: DayzSpacing.s2),
-                    _buildSectionLabel(context, AppStrings.browseSectionHeader),
+                    _buildSectionLabel(context, l10n.browseSectionHeader),
                     _buildDrawerItem(
                       context: context,
-                      label: AppStrings.onThisDay,
+                      label: l10n.onThisDay,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.onthisday),
                       leading: _buildSvgIcon(
@@ -124,7 +121,7 @@ class ShellDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      label: AppStrings.favorites,
+                      label: l10n.favorites,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.favorites),
                       leading: _buildSvgIcon(
@@ -134,7 +131,7 @@ class ShellDrawer extends StatelessWidget {
                       trailing: favoriteCount == null
                           ? null
                           : Text(
-                              AppStrings.entryCount(favoriteCount!),
+                              l10n.entryCount(favoriteCount!),
                               style: textTheme.caption.copyWith(
                                 color: colors.ink3,
                               ),
@@ -142,7 +139,7 @@ class ShellDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      label: AppStrings.calendar,
+                      label: l10n.calendar,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.calendar),
                       leading: _buildSvgIcon(
@@ -152,7 +149,7 @@ class ShellDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      label: AppStrings.trash,
+                      label: l10n.trash,
                       isSelected: false,
                       onTap: () => onNavigate(Routes.trash),
                       leading: _buildSvgIcon(DayzIcons.trashPath, colors.ink),
@@ -168,7 +165,7 @@ class ShellDrawer extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: DayzSpacing.s2),
               child: _buildDrawerItem(
                 context: context,
-                label: AppStrings.settings,
+                label: l10n.settings,
                 isSelected: false,
                 onTap: () => onNavigate(Routes.settings),
                 leading: _buildSvgIcon(DayzIcons.settingsPath, colors.ink),
@@ -183,6 +180,7 @@ class ShellDrawer extends StatelessWidget {
   Widget _buildProfileHeader(BuildContext context) {
     final colors = context.dayz;
     final textTheme = context.dayzText;
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -203,7 +201,7 @@ class ShellDrawer extends StatelessWidget {
               boxShadow: colors.shadowSm,
             ),
             child: Text(
-              AppStrings.drawerProfileInitial,
+              l10n.drawerProfileInitial,
               style: textTheme.h3.copyWith(color: colors.onAccent),
             ),
           ),
@@ -214,7 +212,7 @@ class ShellDrawer extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  AppStrings.drawerProfileName,
+                  l10n.drawerProfileName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.body.copyWith(
@@ -223,7 +221,7 @@ class ShellDrawer extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  AppStrings.drawerProfileStatus,
+                  l10n.drawerProfileStatus,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.caption.copyWith(color: colors.ink3),
@@ -242,6 +240,7 @@ class ShellDrawer extends StatelessWidget {
     VoidCallback onAction,
   ) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -254,7 +253,7 @@ class ShellDrawer extends StatelessWidget {
           Expanded(
             child: _buildSectionLabel(
               context,
-              AppStrings.journalSectionHeader,
+              l10n.journalSectionHeader,
               padding: EdgeInsets.zero,
             ),
           ),

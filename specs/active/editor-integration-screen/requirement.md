@@ -44,7 +44,7 @@
 标题区 SHALL 是一个独立 `TextField`（`compose-title`），样式 border:none（无边框、无填充框线），与正文 AppFlowyEditor 分离。
 - 前提：在编辑页。
 - 操作：聚焦标题输入文字。
-- 结果：标题不带可见边框（聚焦也不显描边框），占位文案为 `AppStrings` 的「标题」；标题文本作为条目标题来源（与 `editor-json-contract` content_plain 首行约定协同，见 design D）。
+- 结果：标题不带可见边框（聚焦也不显描边框），占位文案为 `AppLocalizations` 的「标题」；标题文本作为条目标题来源（与 `editor-json-contract` content_plain 首行约定协同，见 design D）。
 
 ### R3 · 加载与保存走 editor-json-contract codec（解 docVersion）
 加载既有条目时系统 SHALL 经 `EditorDocCodec.decode(content_json)` 拿到 `(docVersion, Document)` 喂编辑器；保存时 SHALL 经 `EditorDocCodec.encode(Document)` 产出 `content_json`，并经 `extractPlainText(Document)` 产出 `content_plain`。
@@ -86,7 +86,7 @@
 本屏 SHALL 覆盖 editor.html 的三个状态：`empty`（空白新建：标题占位 + 正文占位「写点什么吧……」+ 顶栏标题「新日记」）、`writing`（书写中：有标题与一段正文 + 顶栏标题「草稿已存」）、`rich`（富格式：含标题/待办/引用等多块 + 顶栏标题「草稿已存」）。
 - 前提：以某状态进入编辑页（新建 = empty；加载有内容草稿 = writing/rich）。
 - 操作：渲染该状态。
-- 结果：标题占位/正文占位/顶栏标题文案与 editor.html 对应状态一致（文案经 `AppStrings`，禁裸中文）；日期 kicker（「今天 · 5月29日 周五」）经 `package:intl` 格式化。
+- 结果：标题占位/正文占位/顶栏标题文案与 editor.html 对应状态一致（文案经 `AppLocalizations`，禁裸中文）；日期 kicker（「今天 · 5月29日 周五」）经 `package:intl` 格式化。
 
 ### R10 · 顶栏关闭/完成 + 元数据 chip 触发钮
 顶栏 SHALL 有「关闭」钮（`data-nav-back`，返回）与「完成」主按钮（`btn-primary btn-sm`，保存并返回）；元数据区 SHALL 有心情/天气/地点/标签四个 chip 触发钮（`compose-meta`，`chip-btn`，已选态 `.on`）。
@@ -100,10 +100,10 @@
 本屏 UI 取数/写数 MUST 只经 `JournalRepo / EntryRepo / MediaRepo / TagRepo / EditingSessionRepo`（经外壳/状态层注入或入参），MUST NOT `import 'package:.../lib/data/...'` 的 Drift 句柄、MUST NOT 在本屏写 SQL / Drift 查询。媒体写入只经 `MediaStore` + `MediaRepo`。
 
 ### NF2 · 媒体密钥独立、主密码锁不住照片（合规文案）
-插入的图片走**独立设备媒体 key**（HKDF 派生，不随主密码、不参与 rekey，见 `media-storage` D3 / `docs/design/06`）。本屏涉及图片/隐私的文案 MUST NOT 暗示「设了主密码照片就被锁住」；若本屏需呈现该说明，文案走 `AppStrings`（与 settings 屏红线文案单一来源协同，tokens-theme D4）。
+插入的图片走**独立设备媒体 key**（HKDF 派生，不随主密码、不参与 rekey，见 `media-storage` D3 / `docs/design/06`）。本屏涉及图片/隐私的文案 MUST NOT 暗示「设了主密码照片就被锁住」；若本屏需呈现该说明，文案走 `AppLocalizations`（与 settings 屏红线文案单一来源协同，tokens-theme D4）。
 
 ### NF3 · 无障碍
-- 工具栏每个按钮、顶栏关闭/完成、chip 钮 MUST 有 `Semantics` 标签（对齐 editor.html 各 `aria-label`，经 `AppStrings`）。
+- 工具栏每个按钮、顶栏关闭/完成、chip 钮 MUST 有 `Semantics` 标签（对齐 editor.html 各 `aria-label`，经 `AppLocalizations`）。
 - 所有可点目标命中区 MUST ≥ 44×44 px（含横向滚动工具栏的 `.tb` 钮）。
 - 正文/标题文本与底的对比度 MUST ≥ WCAG AA（4.5:1）；着色元素（accent 的日期 kicker / chip 选中态）按 tokens-theme NF1 分族口径达标（沿用六套主题 token，不在本屏新造色）。
 - 动效（工具栏出现/chip 选中/sheet 弹出）MUST 尊重系统「减弱动态效果」：经 `ui-kit-components` 的 `dayzMotionDuration` 门，`disableAnimations` 时降为近瞬时。

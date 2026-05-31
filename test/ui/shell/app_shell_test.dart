@@ -6,8 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 
 void main() {
   late GoRouter testRouter;
@@ -44,10 +43,7 @@ void main() {
   });
 
   Widget buildTestApp() {
-    return MaterialApp.router(
-      routerConfig: testRouter,
-      theme: DayzThemes.purpleLight,
-    );
+    return localizedRouterTestApp(routerConfig: testRouter);
   }
 
   testWidgets('AppShell renders body and can open drawer via menu button', (
@@ -60,16 +56,16 @@ void main() {
     expect(find.byKey(const ValueKey('timeline-content')), findsOneWidget);
 
     // Drawer is closed initially
-    expect(find.text(AppStrings.allJournals), findsNothing);
+    expect(find.text(testL10n.allJournals), findsNothing);
 
     // Tap menu button
-    final menuButton = find.bySemanticsLabel(AppStrings.menu);
+    final menuButton = find.bySemanticsLabel(testL10n.menu);
     expect(menuButton, findsOneWidget);
     await tester.tap(menuButton);
     await tester.pumpAndSettle();
 
     // Drawer should open and display stub text
-    expect(find.text(AppStrings.allJournals), findsOneWidget);
+    expect(find.text(testL10n.allJournals), findsOneWidget);
   });
 
   testWidgets(
@@ -78,8 +74,8 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final menuButtonFinder = find.bySemanticsLabel(AppStrings.menu);
-      final searchButtonFinder = find.bySemanticsLabel(AppStrings.search);
+      final menuButtonFinder = find.bySemanticsLabel(testL10n.menu);
+      final searchButtonFinder = find.bySemanticsLabel(testL10n.search);
 
       expect(menuButtonFinder, findsOneWidget);
       expect(searchButtonFinder, findsOneWidget);
@@ -101,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Click search button
-    final searchButton = find.bySemanticsLabel(AppStrings.search);
+    final searchButton = find.bySemanticsLabel(testL10n.search);
     await tester.tap(searchButton);
     await tester.pumpAndSettle();
 

@@ -3,10 +3,11 @@
 
 import 'package:dayz/ui/components.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../l10n/localized_test_app.dart';
 
 /// Widget tests for [DayzFavoriteStar].
 ///
@@ -21,9 +22,8 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const Row(
+      localizedTestApp(
+        child: const Row(
           textDirection: TextDirection.ltr,
           children: [
             DayzFavoriteStar(isFavorite: true),
@@ -56,15 +56,12 @@ void main() {
     var taps = 0;
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: Scaffold(
-          body: DayzFavoriteStar(isFavorite: false, onPressed: () => taps += 1),
-        ),
+      localizedTestApp(
+        child: DayzFavoriteStar(isFavorite: false, onPressed: () => taps += 1),
       ),
     );
 
-    expect(find.bySemanticsLabel(AppStrings.favorite), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.favorite), findsOneWidget);
     expect(
       tester.getSize(find.byType(DayzFavoriteStar)),
       const Size.square(44),
@@ -78,12 +75,9 @@ void main() {
 
   testWidgets('filled state uses unfavorite semantics label', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: const Scaffold(body: DayzFavoriteStar(isFavorite: true)),
-      ),
+      localizedTestApp(child: const DayzFavoriteStar(isFavorite: true)),
     );
 
-    expect(find.bySemanticsLabel(AppStrings.unfavorite), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.unfavorite), findsOneWidget);
   });
 }

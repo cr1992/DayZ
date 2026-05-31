@@ -23,14 +23,14 @@
 | ⋯ 动作菜单 | 点 ⋯ 钮 | 弹「编辑 / 分享 / 移到日记本 / 收藏 / —分隔— / 删除(danger)」六项；编辑导航 `Routes.editor` | R7 | 自动 |
 | 删除 = 软删 + 撤销 | ⋯→删除→确认「移到回收站」 | `EntryRepo.softDelete`（非硬删）+ toast 撤销→恢复（清 deleted_at）+ pop | R8 | 自动 |
 | 移到日记本 | ⋯→移到日记本→选目标 | `JournalRepo` 列表（色点 + 篇数 + 当前打勾）；`EntryRepo` 更新 journalId + toast「已移到「X」」 | R9 | 自动 |
-| 找不到态 | entryId 无对应数据 | 渲染 `DayzEmptyState`（文案引 AppStrings） | R2 | 自动 |
+| 找不到态 | entryId 无对应数据 | 渲染 `DayzEmptyState`（文案引 AppLocalizations） | R2 | 自动 |
 
 ## 专项检查
 > 对应 requirement 的 NF 编号。
 
 ### 无障碍（NF3）
 - [ ] 返回钮 / 收藏星 / ⋯ 钮 / 九宫格 `+N` / sheet 行命中目标 ≥ 44×44 — 自动：`flutter test test/ui/reader/reader_screen_test.dart`（`tester.getRect` 断尺寸）
-- [ ] 收藏星 / ⋯ / 返回有 Semantics 标签（来自 `AppStrings`）— 自动：同上（`find.bySemanticsLabel(AppStrings.xxx)`）
+- [ ] 收藏星 / ⋯ / 返回有 Semantics 标签（来自 `AppLocalizations`）— 自动：同上（`find.bySemanticsLabel(l10n.xxx)`）
 - [ ] 收藏星暴露选中态（toggled / pressed）— 自动：同上（断言 Semantics 选中态随 favorite 翻转）
 - [ ] 正文 / 标题 / 元数据对底对比度 ≥ WCAG AA — 由 `design-tokens-theme` NF1 在 token 层保证；本屏只引 `context.dayz.*`，**本项核验「屏内无硬编码色 / 字号 / 间距，一律取 token」** — 自动：`flutter test test/ui/reader/reader_screen_test.dart` + `flutter test test/ui/reader/reader_body_test.dart`（解析渲染后样式断言取值来自当前 ThemeData/DayzColors，而非屏内常量）
 - [ ] reduce-motion（`MediaQueryData(disableAnimations:true)`）下九宫格展开 / 图渐显时长为 0 — 自动：`flutter test test/ui/reader/reader_image_test.dart`（注入 disableAnimations 断言时长 0，经 `dayzMotionDuration`）
@@ -54,7 +54,7 @@
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，任一不通过则 verification 未定稿。
-- [ ] 正向：R1（推入/返回）、R2（数据驱动/空字段折叠）、R3（版式/排版角色）、R4（媒体异步缩略图）、R5（九宫格展开）、R6（收藏同步）、R7（动作菜单）、R8（软删+撤销）、R9（移本）、NF1（Repository 边界专项）、NF2（媒体红线专项）、NF3（无障碍专项）、NF4（文案/intl，在 T2 任务内验，端到端「找不到态文案引 AppStrings」复盖）、NF5（多端专项）均有对应场景 / 专项检查覆盖，无孤儿需求。
+- [ ] 正向：R1（推入/返回）、R2（数据驱动/空字段折叠）、R3（版式/排版角色）、R4（媒体异步缩略图）、R5（九宫格展开）、R6（收藏同步）、R7（动作菜单）、R8（软删+撤销）、R9（移本）、NF1（Repository 边界专项）、NF2（媒体红线专项）、NF3（无障碍专项）、NF4（文案/intl，在 T2 任务内验，端到端「找不到态文案引 AppLocalizations」复盖）、NF5（多端专项）均有对应场景 / 专项检查覆盖，无孤儿需求。
 - [ ] 反向：各验证项「关联需求」均指向真实 R/NF；回归项（Debug Home / analyze / golden）已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）

@@ -2,8 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -52,11 +52,10 @@ class DayzOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final text = context.dayzText;
     final duration = dayzMotionDuration(context);
-    final label =
-        semanticLabel ??
-        (selected ? AppStrings.selected : AppStrings.unselected);
+    final label = semanticLabel ?? (selected ? l10n.selected : l10n.unselected);
 
     final row = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 44),

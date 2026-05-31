@@ -34,19 +34,19 @@ When 收藏屏加载且存在收藏条目, the 收藏屏 SHALL 经 `EntryRepo` �
 While 处于有内容态, the 收藏屏 SHALL 在列表上方渲染计数头：overline 行（收藏星图标 + 「收藏」字样，着色文字走 `--accent-ink`、星用 `--favorite`）+ 衬线大标题「{N} 篇值得再读的」+ 副标题说明。
 - 前提：有内容态，收藏数 = N。
 - 操作：渲染计数头。
-- 结果：标题中的 N 等于 `EntryRepo` 返回的收藏总数；N 经 `package:intl`（`NumberFormat`）格式化、MUST NOT 自拼字符串；overline / 标题 / 副标题文案取自 `AppStrings`，屏内禁裸中文。
+- 结果：标题中的 N 等于 `EntryRepo` 返回的收藏总数；N 经 `package:intl`（`NumberFormat`）格式化、MUST NOT 自拼字符串；overline / 标题 / 副标题文案取自 `AppLocalizations`，屏内禁裸中文。
 
 ### R3 · 空态
 If 收藏屏加载且不存在任何收藏条目, then the 收藏屏 SHALL 隐藏列表与计数头，居中渲染 `DayzEmptyState`（收藏星空心插画 + 标题「还没有收藏」+ 引导「在某篇日记里点亮星标，它就会留在这里。」）。
 - 前提：库中收藏条目数为 0。
 - 操作：导航到 `Routes.favorites`。
-- 结果：不渲染计数头与任何 `DayzEntryCard`；可见 `DayzEmptyState`，其标题与说明取自 `AppStrings`。
+- 结果：不渲染计数头与任何 `DayzEntryCard`；可见 `DayzEmptyState`，其标题与说明取自 `AppLocalizations`。
 
 ### R4 · 顶栏（返回 + 标题）
 系统 SHALL 在收藏屏顶部渲染带返回钮的顶栏：左侧返回钮（`Routes` 栈 `pop`）、居中标题「收藏」、右侧无操作位。
 - 前提：从抽屉「浏览 › 收藏」或其他入口下钻进入。
 - 操作：点返回钮。
-- 结果：返回上一屏（`Navigator.pop` / `context.pop`）；顶栏标题文案取自 `AppStrings`，返回钮带 Semantics 标签「返回」。
+- 结果：返回上一屏（`Navigator.pop` / `context.pop`）；顶栏标题文案取自 `AppLocalizations`，返回钮带 Semantics 标签「返回」。
 > 顶栏视觉外观（毛玻璃、滚动浮起、覆盖状态栏）由 `ui-kit-components` 的 `DayzGlassAppBar` 承载；本屏只装配它并接返回回调与标题，不重造毛玻璃。
 
 ### R5 · 进入阅读页
@@ -56,7 +56,7 @@ When 用户点击任一收藏卡片, the 收藏屏 SHALL 导航到对应条目�
 - 结果：触发一次到 `Routes.reader` 的导航并传入该 entryId；本屏不实现阅读屏内容（reader spec 负责）。
 
 ### R6 · 加载与失败的工程态（设计稿未画，工程必需）
-While `EntryRepo` 查询进行中, the 收藏屏 SHALL 显示一个克制的加载占位（不闪烁、不堆砌）；If 查询失败, then 收藏屏 SHALL 显示一个非崩溃的错误占位（含可读文案，文案取自 `AppStrings`），MUST NOT 抛未捕获异常致白屏。
+While `EntryRepo` 查询进行中, the 收藏屏 SHALL 显示一个克制的加载占位（不闪烁、不堆砌）；If 查询失败, then 收藏屏 SHALL 显示一个非崩溃的错误占位（含可读文案，文案取自 `AppLocalizations`），MUST NOT 抛未捕获异常致白屏。
 - 理由：设计稿 `?state=` 只给 `default`/`empty`，但真实数据驱动屏必有 loading/error 中间态（PROTOTYPE-ARCH §6「`?state=` 多状态 → 同一 Widget 按 state 渲染」）。把这两态显式建为屏内状态，避免「未定义态 → 白屏 / 异常」。
 
 ## 非功能需求
@@ -68,7 +68,7 @@ While `EntryRepo` 查询进行中, the 收藏屏 SHALL 显示一个克制的加�
 收藏屏与其屏内私有组件（计数头等）MUST NOT 硬编码颜色 / 字号 / 间距 / 圆角 / 阴影；一律经 `context.dayz.*` + `DayzSpacing` / `DayzRadii` / `DayzMotion` 等取值（`design-tokens-theme` 交付）。计数头大标题用衬线排版角色（`.t-h2`/`.t-h1` 量级，`design-tokens-theme` 的 `dayz_text_theme`）。
 
 ### NF3 · 文案集中 + 国际化就绪
-屏内用户可见中文 MUST 集中到 `AppStrings`（`ui-kit-components` 首建、本 spec 追加条目），屏内禁裸中文；计数（N 篇）MUST 经 `package:intl`（`NumberFormat`），MUST NOT 自拼数字字符串。widget 测试 MUST 用 `find.text(AppStrings.xxx)` / 断言渲染后的格式化串，而非裸中文字面量。
+屏内用户可见文案 MUST 写入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`，并经 `AppLocalizations.of(context)` / `l10n.xxx` 取用；屏内禁裸中文；计数（N 篇）MUST 经 `package:intl` / ARB ICU，MUST NOT 自拼数字字符串。widget 测试 MUST 用 `find.text(l10n.xxx)` / 断言渲染后的格式化串，而非裸中文字面量。
 
 ### NF4 · 无障碍
 - **点击目标 ≥ 44px**：顶栏返回钮、可点击卡片命中区 MUST ≥ 44×44 逻辑像素。

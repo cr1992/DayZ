@@ -4,9 +4,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:intl/intl.dart';
 
-import '../strings/app_strings.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -29,6 +29,7 @@ class DayzYearSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
+    final l10n = AppLocalizations.of(context);
     final typography = context.dayzText;
     final localeTag = locale ?? _localeTagOf(context);
     final yearsAgo = math.max(0, (referenceDate ?? DateTime.now()).year - year);
@@ -54,7 +55,7 @@ class DayzYearSeparator extends StatelessWidget {
           ),
           const SizedBox(width: DayzSpacing.s3),
           Text(
-            _yearsAgoLabel(yearsAgo, localeTag),
+            l10n.yearsAgo(yearsAgo),
             maxLines: 1,
             style: typography.caption.copyWith(
               color: colors.ink3,
@@ -75,12 +76,6 @@ class DayzYearSeparator extends StatelessWidget {
       ),
     );
   }
-}
-
-String _yearsAgoLabel(int years, String localeTag) {
-  final raw = AppStrings.yearsAgo(years);
-  final formatted = NumberFormat.decimalPattern(localeTag).format(years);
-  return raw.replaceFirst(years.toString(), formatted);
 }
 
 String _localeTagOf(BuildContext context) {

@@ -69,32 +69,32 @@ graph LR
 
 - [ ] T1 · 屏体骨架 + 三状态 + 顶栏 / 无边框标题 / compose-meta chip
 
-**同 spec 依赖：** T0 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzFonts/DayzTextTheme/六套ThemeData`、`ui-kit-components：DayzGlassAppBar/DayzButton/DayzTextField/DayzTag/AppStrings/dayz_icons`、`ui-shell-navigation：Routes.editor/PlaceholderScreen` ｜ **关联需求：** R2, R9, R10, NF3, NF4 ｜ **依据设计：** D2, D4, D8, D10 ｜ **可改文件：** `lib/ui/editor/editor_screen.dart`、`lib/ui/editor/editor_meta_bar.dart`、`lib/ui/strings/app_strings.dart`（**归属 ui-kit，仅追加编辑页条目**）｜ **验收基建：** `test/ui/editor/fakes/`（T0 产出，复用）
+**同 spec 依赖：** T0 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzFonts/DayzTextTheme/六套ThemeData`、`ui-kit-components：DayzGlassAppBar/DayzButton/DayzTextField/DayzTag/dayz_icons`、`ui-shell-navigation：Routes.editor/PlaceholderScreen`、`i18n-localization：gen-l10n` ｜ **关联需求：** R2, R9, R10, NF3, NF4 ｜ **依据设计：** D2, D4, D8, D10 ｜ **可改文件：** `lib/ui/editor/editor_screen.dart`、`lib/ui/editor/editor_meta_bar.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/editor/fakes/`（T0 产出，复用）
 
 ### 背景
-搭 `EditorScreen({entryId?, initialDraft?, createIntent?})` 骨架：`DayzGlassAppBar` 壳（关闭钮 + 顶栏标题派生 + 完成钮 `DayzButton.primary` small）、无边框标题 `DayzTextField`（不支持 borderless 则裸 `TextField`+`InputDecoration.collapsed` 走 token，见 D2 已知风险）、日期 kicker（`intl` 格式化）、`compose-meta` 四 chip 触发钮（`editor_meta_bar.dart`，已选态 `.on` 回显，触发占位 sheet）。正文区**先放占位**（AppFlowyEditor 接入归后续任务，本任务用占位容器保留布局）。三状态由入参/数据态派生（empty/writing/rich，D4）。文案追加到 ui-kit 的 `AppStrings`（仅本屏条目，D10）。
-归属：`app_strings.dart` 归 ui-kit、本任务仅追加；正文编辑器装配归 T2/T3，本任务不接 AppFlowy。
+搭 `EditorScreen({entryId?, initialDraft?, createIntent?})` 骨架：`DayzGlassAppBar` 壳（关闭钮 + 顶栏标题派生 + 完成钮 `DayzButton.primary` small）、无边框标题 `DayzTextField`（不支持 borderless 则裸 `TextField`+`InputDecoration.collapsed` 走 token，见 D2 已知风险）、日期 kicker（`intl` 格式化）、`compose-meta` 四 chip 触发钮（`editor_meta_bar.dart`，已选态 `.on` 回显，触发占位 sheet）。正文区**先放占位**（AppFlowyEditor 接入归后续任务，本任务用占位容器保留布局）。三状态由入参/数据态派生（empty/writing/rich，D4）。文案补入 zh/en ARB 并通过 `AppLocalizations.of(context)` 取用（D10）。
+归属：本任务只补编辑页 ARB key 与生成产物；正文编辑器装配归 T2/T3，本任务不接 AppFlowy。
 
 ### 实施
 1. `EditorScreen` 布局：顶栏（关闭/标题/完成）+ 日期 kicker + 标题输入 + meta chip 行 + 正文占位 + 底部 has-dock 留白。
-2. 顶栏标题派生：empty→`AppStrings.editorTitleNew`、有草稿→`AppStrings.editorTitleDraftSaved`。
+2. 顶栏标题派生：empty→`l10n.editorTitleNew`、有草稿→`l10n.editorTitleDraftSaved`。
 3. 标题无边框：聚焦也不显描边（用 token 着色，禁硬编码）。
 4. `editor_meta_bar.dart`：四 chip（心情/天气/地点/标签）经 `DayzTag`/`DayzButton` 外形 + Semantics 标签 + 已选 `.on` 态；取数经入参（Repository，NF1）；点击打开占位 `DayzSheet`。
 5. 日期 kicker 走 `DateFormat`（中文 locale），禁裸拼接。
 
 ### 验收标准（做完即止）
-- 三状态各 pump：empty 显标题占位「标题」+ 正文占位文案 + 顶栏「新日记」；writing/rich 顶栏「草稿已存」（自动，`find.text(AppStrings.xxx)`，R9）。
+- 三状态各 pump：empty 显标题占位「标题」+ 正文占位文案 + 顶栏「新日记」；writing/rich 顶栏「草稿已存」（自动，`find.text(l10n.xxx)`，R9）。
 - 标题控件无可见边框：聚焦前后均无 border 描边（自动，断言 `InputDecoration` border 为 none/collapsed，R2）。
-- 顶栏关闭钮/完成钮/四 chip 均可 `find.bySemanticsLabel(AppStrings.xxx)` 定位（自动，NF3）。
+- 顶栏关闭钮/完成钮/四 chip 均可 `find.bySemanticsLabel(l10n.xxx)` 定位（自动，NF3）。
 - 关闭钮、完成钮、每个 chip 命中区 ≥ 44×44（自动，`tester.getSize` ≥ Size(44,44)，NF3）。
-- 屏内无裸中文：可见文案全经 `AppStrings`（自动，测试只用 `find.text(AppStrings.xxx)` 命中，裸中文测试不命中即证；R9/D10）。
+- 屏内无裸中文：可见文案全经 `AppLocalizations`（自动，测试只用 `find.text(l10n.xxx)` 命中，裸中文测试不命中即证；R9/D10）。
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/ui/editor/editor_screen_test.dart
   ```
-  （pump 三状态、断言顶栏/占位文案==AppStrings、标题无边框、Semantics 标签可定位、命中区几何 ≥44；**不** grep 屏源）
+  （pump 三状态、断言顶栏/占位文案==AppLocalizations、标题无边框、Semantics 标签可定位、命中区几何 ≥44；**不** grep 屏源）
 
 ### 验收记录
 ```
@@ -141,7 +141,7 @@ graph LR
 
 - [ ] T3 · 底部工具栏：AppFlowy mobile_toolbar 装配（停靠/选区高亮交给 AppFlowy）
 
-**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbar(V2)/MobileToolbarStyle/toolbar items（vendored 包，已存在）`、`design-tokens-theme：token（工具栏配色）`、`ui-kit-components：AppStrings（aria-label 文案）/dayzMotionDuration` ｜ **关联需求：** R4, R5, R6, NF3, NF4 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/ui/editor/editor_screen.dart`（装配工具栏）、`lib/ui/strings/app_strings.dart`（**归属 ui-kit，仅追加工具栏 aria-label 条目**）
+**同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbar(V2)/MobileToolbarStyle/toolbar items（vendored 包，已存在）`、`design-tokens-theme：token（工具栏配色）`、`ui-kit-components：dayzMotionDuration`、`i18n-localization：gen-l10n` ｜ **关联需求：** R4, R5, R6, NF3, NF4 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/ui/editor/editor_screen.dart`（装配工具栏）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`
 
 ### 背景
 用 AppFlowy 原生 `MobileToolbar`/`MobileToolbarV2` + toolbar items 落 editor-dock 能力集（H/B/I/U/S/行内代码/颜色高亮/无序·有序·待办列表/引用/链接/分隔线/图片）；用 `MobileToolbarStyle` + token 调外观还原 editor-dock 观感。**停靠随键盘、选区高亮、命令执行全部由 AppFlowy 体系负责**（R5：本屏 MUST NOT 监听 `viewInsets.bottom` 手动顶起；R6：高亮态派生自选区、不自管布尔）。能力对应须读 `packages/appflowy-editor` 源码核实；缺失能力写 AppFlowy 自定义 toolbar item（仍在其体系内）。「插入图片」item 的点击回调接 T5 的 inserter。
@@ -150,14 +150,14 @@ graph LR
 ### 实施
 1. 读 `packages/appflowy-editor/lib/src/editor/toolbar/mobile/` 源码，列出可用 mobile toolbar items 与 editor-dock 能力的映射，缺失项补自定义 item。
 2. `editor_toolbar.dart`：装配 `MobileToolbar(V2)`（绑定 `EditorState`），`MobileToolbarStyle` 配色/分隔/激活态取 token。
-3. 各 item 的 Semantics/aria-label 经 `AppStrings`（对齐 editor.html `aria-label`，NF3）。
+3. 各 item 的 Semantics/aria-label 经 `AppLocalizations`（对齐 editor.html `aria-label`，NF3）。
 4. **不写任何 `MediaQuery.viewInsets.bottom` 顶起逻辑**（R5）；动效经 `dayzMotionDuration`（NF3 reduce-motion）。
 
 ### 验收标准（做完即止）
 - 工具栏由 AppFlowy mobile toolbar 体系渲染、绑定 `EditorState`（自动，命中 AppFlowy mobile toolbar widget，R4）。
 - 选区设为粗体文本 → B item 呈激活态；移出粗体区 → B 灭（自动，构造带 bold 的选区断言 toggled 态，R6——高亮派生自选区）。
 - 本屏代码不含 `viewInsets.bottom` 手动顶起：以行为验——注入不同 `MediaQueryData(viewInsets)` 时本屏不额外平移工具栏（停靠由 AppFlowy 管）（自动，断言屏布局不随本屏代码对 viewInsets 的读取而变；R5）。
-- editor-dock 能力集 item 齐备（H/B/I/U/S/code/color/list×3/quote/link/divider/image 各可 `find.bySemanticsLabel(AppStrings.xxx)` 定位）（自动，R4/NF3）。
+- editor-dock 能力集 item 齐备（H/B/I/U/S/code/color/list×3/quote/link/divider/image 各可 `find.bySemanticsLabel(l10n.xxx)` 定位）（自动，R4/NF3）。
 - 每个 item 命中区 ≥ 44×44（自动，NF3）。
 
 ### 禁止
@@ -192,12 +192,12 @@ graph LR
 1. `editor_draft_bridge.dart`：订阅编辑器变更 → encode → payload → `coordinator.onChanged(payload)`。
 2. `Selection` → cursorPos 映射。
 3. 「完成」/退出（`Navigator` pop 前）调 `coordinator.forceFlush()`。
-4. 顶栏标题：首次 flush 成功回调 → 切 `AppStrings.editorTitleDraftSaved`。
+4. 顶栏标题：首次 flush 成功回调 → 切 `l10n.editorTitleDraftSaved`。
 
 ### 验收标准（做完即止）
 - 编辑触发变更 → fake coordinator 收到一次 `onChanged`，payload 的 `draftJson` 是 `codec.encode(doc)` 的结果、`targetId`/`isNew`/`cursorPos` 正确（自动，R8）。
 - 点「完成」或 pop → fake coordinator 收到 `forceFlush`（自动，R8）。
-- 首次 flush 成功后顶栏标题变「草稿已存」（自动，`find.text(AppStrings.editorTitleDraftSaved)`，D4）。
+- 首次 flush 成功后顶栏标题变「草稿已存」（自动，`find.text(l10n.editorTitleDraftSaved)`，D4）。
 - 本屏不含防抖/Timer 自管逻辑：变更直达 coordinator（由 coordinator 负责防抖）（自动，断言每次变更即 onChanged 调用、本屏不延迟；R8/范围外护栏）。
 
 ### 验收方式

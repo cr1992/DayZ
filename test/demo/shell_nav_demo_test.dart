@@ -5,15 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/demo/demo_entry.dart';
 import 'package:dayz/demo/shell_nav_demo.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../l10n/localized_test_app.dart';
 
 void main() {
   Widget buildTestApp() {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
-      home: const ShellNavDemo(),
-    );
+    return localizedTestApp(child: const ShellNavDemo());
   }
 
   testWidgets(
@@ -23,10 +19,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // AppShell title defaults to "全部日记"
-      expect(find.text(AppStrings.allJournals), findsOneWidget);
+      expect(find.text(testL10n.allJournals), findsOneWidget);
 
       // Open drawer
-      final menuBtn = find.bySemanticsLabel(AppStrings.menu);
+      final menuBtn = find.bySemanticsLabel(testL10n.menu);
       await tester.tap(menuBtn);
       await tester.pumpAndSettle();
 
@@ -44,7 +40,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Open drawer
-    await tester.tap(find.bySemanticsLabel(AppStrings.menu));
+    await tester.tap(find.bySemanticsLabel(testL10n.menu));
     await tester.pumpAndSettle();
 
     // Select "生活随笔"
@@ -62,11 +58,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Open drawer
-    await tester.tap(find.bySemanticsLabel(AppStrings.menu));
+    await tester.tap(find.bySemanticsLabel(testL10n.menu));
     await tester.pumpAndSettle();
 
     // Tap new journal icon
-    await tester.tap(find.bySemanticsLabel(AppStrings.newJournal));
+    await tester.tap(find.bySemanticsLabel(testL10n.newJournal));
     await tester.pumpAndSettle();
 
     // Form sheet should be open. Type a new name
@@ -74,11 +70,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Confirm
-    await tester.tap(find.text(AppStrings.sheetConfirm));
+    await tester.tap(find.text(testL10n.sheetConfirm));
     await tester.pumpAndSettle();
 
     // Open drawer again to verify Travel Journal was added
-    await tester.tap(find.bySemanticsLabel(AppStrings.menu));
+    await tester.tap(find.bySemanticsLabel(testL10n.menu));
     await tester.pumpAndSettle();
 
     expect(find.text('Travel Journal'), findsOneWidget);
@@ -91,10 +87,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: DayzThemes.purpleLight,
-        home: Builder(builder: entry.builder),
-      ),
+      localizedTestApp(child: Builder(builder: entry.builder)),
     );
 
     expect(find.byType(ShellNavDemo), findsOneWidget);

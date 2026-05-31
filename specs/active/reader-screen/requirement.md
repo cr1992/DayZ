@@ -90,12 +90,12 @@ While 九宫格第 9 格为 `+N` 收起态，单篇阅读屏 SHALL 在点击该 
 
 ### NF3 · 无障碍
 - 所有可点击控件（返回钮、收藏星、⋯ 钮、九宫格 `+N`、sheet 行）命中目标 MUST ≥ 44×44 px。
-- 收藏星 / ⋯ 钮 / 返回钮 MUST 有 `Semantics` 标签（来自 `AppStrings`，如「收藏」「更多」「返回」），收藏星 MUST 暴露选中态（`Semantics.toggled` / `aria-pressed` 等价）。
+- 收藏星 / ⋯ 钮 / 返回钮 MUST 有 `Semantics` 标签（来自 `AppLocalizations`，如「收藏」「更多」「返回」），收藏星 MUST 暴露选中态（`Semantics.toggled` / `aria-pressed` 等价）。
 - 正文 / 标题 / 元数据文本对底对比度 MUST ≥ WCAG AA（4.5:1）；本屏只引 `context.dayz.*` token，对比度由 `design-tokens-theme` NF1 在 token 层保证，本屏不引入屏内硬编码色。
 - 动效（sheet 滑入 / 转场 / 九宫格展开）MUST 经 `dayzMotionDuration` 尊重系统「减弱动态效果」（`MediaQuery.disableAnimations`）——开启时动效时长降为 0 / 近瞬时。
 
 ### NF4 · 文案集中与本地化
-屏内用户可见文案 MUST 集中到 `AppStrings`（屏内禁裸中文）；日期（`r-kicker` 的「2026年5月27日 · 周三」）MUST 走 `package:intl` 格式化，MUST NOT 自拼字符串；widget 测试用 `find.text(AppStrings.xxx)` 而非裸中文。
+屏内用户可见文案 MUST 集中到 `AppLocalizations`（屏内禁裸中文）；日期（`r-kicker` 的「2026年5月27日 · 周三」）MUST 走 `package:intl` 格式化，MUST NOT 自拼字符串；widget 测试用 `find.text(l10n.xxx)` 而非裸中文。
 
 ### NF5 · 多端兼容
 SHALL 在 iOS 13+ 与 Android 8+ 上正常工作：`CupertinoPageRoute` 边缘返回在 iOS 生效、Android 用系统返回；中英混排正文走 `fontFamilyFallback`（CJK 系统字），九宫格图解码 / 占位在两端观感可接受。

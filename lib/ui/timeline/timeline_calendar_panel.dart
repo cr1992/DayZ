@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:dayz/ui/strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
@@ -36,10 +36,11 @@ class TimelineCalendarPanel extends StatelessWidget {
     final groupedMonths = _groupMonthsByYear(months);
     final colors = context.dayz;
     final text = context.dayzText;
+    final l10n = AppLocalizations.of(context);
 
     return Semantics(
       key: panelKey,
-      label: AppStrings.jumpToDate,
+      label: l10n.jumpToDate,
       container: true,
       explicitChildNodes: true,
       child: Material(
@@ -62,7 +63,7 @@ class TimelineCalendarPanel extends StatelessWidget {
                     Expanded(
                       child: ExcludeSemantics(
                         child: Text(
-                          AppStrings.jumpToDate,
+                          l10n.jumpToDate,
                           style: text.h2.copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -73,7 +74,7 @@ class TimelineCalendarPanel extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: onToday,
-                      child: const Text(AppStrings.backToToday),
+                      child: Text(l10n.backToToday),
                     ),
                   ],
                 ),
@@ -110,6 +111,7 @@ class TimelineCalendarPanel extends StatelessWidget {
                           month: month,
                           locale: locale,
                           count: monthCountFor(month),
+                          l10n: l10n,
                           selected: month == selectedMonth,
                           onTap: () => onMonthSelected(month),
                         ),
@@ -131,6 +133,7 @@ class _TimelineCalendarMonthButton extends StatelessWidget {
     required this.month,
     required this.locale,
     required this.count,
+    required this.l10n,
     required this.selected,
     required this.onTap,
   });
@@ -138,6 +141,7 @@ class _TimelineCalendarMonthButton extends StatelessWidget {
   final TimelineMonthKey month;
   final String locale;
   final int? count;
+  final AppLocalizations l10n;
   final bool selected;
   final VoidCallback onTap;
 
@@ -175,7 +179,7 @@ class _TimelineCalendarMonthButton extends StatelessWidget {
             ),
             if (count != null)
               Text(
-                AppStrings.entryCount(count!),
+                l10n.entryCount(count!),
                 style: text.caption.copyWith(
                   fontSize: 11,
                   color: selected ? colors.accentInk : colors.ink3,

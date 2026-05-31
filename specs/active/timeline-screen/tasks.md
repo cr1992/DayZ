@@ -142,25 +142,25 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 - [x] T4 · 月份头吸顶阴影 + 卡片字段/收藏星/点击进阅读屏
 
-**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzMonthHeader / DayzEntryCard / DayzGallery / DayzFavoriteStar`；`ui-shell-navigation：Routes.reader`；`design-tokens-theme：context.dayz.shadow* / intl` ｜ **关联需求：** R1, R6, NF8 ｜ **依据设计：** D2, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`, `lib/ui/timeline/timeline_month_section.dart`, `lib/ui/strings/app_strings.dart`
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzMonthHeader / DayzEntryCard / DayzGallery / DayzFavoriteStar`；`ui-shell-navigation：Routes.reader`；`design-tokens-theme：context.dayz.shadow* / intl`；`i18n-localization：gen-l10n` ｜ **关联需求：** R1, R6, NF8 ｜ **依据设计：** D2, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`, `lib/ui/timeline/timeline_month_section.dart`, `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`
 
 ### 背景
-月份头持久头 delegate 仅在 `overlapsContent==true` 时给底部 `BoxShadow`（取 `context.dayz.shadow*`），等价原型 `.stuck`、原生判定无需 scroll listener（D2）。卡片按 entry 视图模型渲染日期列（日/英文月缩写/周几，走 intl）/标题/摘要/九宫格（`DayzGallery` 接 `ImageProvider` 占位）/标签/地点或心情 meta/收藏星（收藏时 `DayzFavoriteStar`）；整卡点击 `context.go(Routes.reader, ...)` 携 entryId（R6）。月份头「YYYY · N 篇」走 intl。本任务向 `app_strings.dart` 追加本屏文案常量（D9，见验收基建）。
+月份头持久头 delegate 仅在 `overlapsContent==true` 时给底部 `BoxShadow`（取 `context.dayz.shadow*`），等价原型 `.stuck`、原生判定无需 scroll listener（D2）。卡片按 entry 视图模型渲染日期列（日/英文月缩写/周几，走 intl）/标题/摘要/九宫格（`DayzGallery` 接 `ImageProvider` 占位）/标签/地点或心情 meta/收藏星（收藏时 `DayzFavoriteStar`）；整卡点击 `context.go(Routes.reader, ...)` 携 entryId（R6）。月份头「YYYY · N 篇」走 intl。本任务补 `app_zh.arb` / `app_en.arb` 本屏文案 key 并跑 `gen-l10n`（D9，见验收基建）。
 
 ### 验收基建（预批共享测试文件）
 - `test/ui/timeline/timeline_params.fixture.json`（样式参数清单 fixture，供月份头/卡片样式参数闸断言；由 design-sync-automation 抽取产出，本任务消费/可补录本屏元素）
 
 ### 实施
 1. 月份头持久头 delegate：`overlapsContent` 为真时叠 `context.dayz` 阴影、为假时无阴影。
-2. 卡片：从 `TimelineEntry` 映射到 `DayzEntryCard`/`DayzGallery`/`DayzFavoriteStar`；日期/篇数经 `package:intl` 格式化；文案引 `AppStrings`。
+2. 卡片：从 `TimelineEntry` 映射到 `DayzEntryCard`/`DayzGallery`/`DayzFavoriteStar`；日期/篇数经 `package:intl` 格式化；文案引 `AppLocalizations`。
 3. 整卡 `onTap` → `context.go(Routes.reader, extra/path: entryId)`（shell 未就绪用占位回调，标 TODO）。
-4. 向 `lib/ui/strings/app_strings.dart` 追加本屏键（**仅追加、不改既有结构**；若文件尚不存在则停下与 ui-kit 协调，见 design 已知风险）。
+4. 向 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` 补本屏 key，两份 key 集合一致，跑 `flutter gen-l10n`；不得新增屏内 strings 类或静态文案常量。
 
 ### 验收标准（做完即止）
 - 月份头吸顶（overlapsContent）时存在底部阴影、未吸顶时无阴影（自动，pump 在吸顶/未吸顶两态断言 delegate 输出含/不含 `BoxShadow`）
 - 收藏 entry 卡片渲染 `DayzFavoriteStar`、非收藏不渲染（自动，按 widget 类型 find）
 - 点击卡片触发导航且携正确 entryId（自动，注入假路由/导航观察器断言收到 `Routes.reader` + entryId）
-- 月份头篇数与卡片日期为 intl 格式化结果，文案用 `find.text(AppStrings.xxx)`（自动，断言 intl 输出而非裸中文）
+- 月份头篇数与卡片日期为 intl 格式化结果，文案用 `find.text(l10n.xxx)`（自动，断言 intl 输出而非裸中文）
 
 ### 禁止
 - 不在卡片 build 路径内同步解码大图 / 触发缩略图重建（NF2，归 T 无——结构上由只接 `ImageProvider` 保证）
@@ -182,7 +182,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 - [ ] T5 · 日期跳转日历面板 + 月级定位
 
-**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `ui-kit-components：dayzMotionDuration`；`design-tokens-theme：context.dayz / DayzRadii / AppStrings / intl` ｜ **关联需求：** R4, R5, NF3, NF5, NF6 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/ui/timeline/timeline_calendar_panel.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/ui/strings/app_strings.dart`
+**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `ui-kit-components：dayzMotionDuration`；`design-tokens-theme：context.dayz / DayzRadii / AppLocalizations / intl` ｜ **关联需求：** R4, R5, NF3, NF5, NF6 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/ui/timeline/timeline_calendar_panel.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`
 
 ### 背景
 点月份头落下日历面板（`PopupRoute` 从顶部下落 + barrier=scrim），自绘月视图（7 列日格，`.has`/`.today`/`.pad` 态）/年视图（3 列月格，`.has`/`.cur` + 篇数），选日/月后 `TimelineController.jumpToMonth` 先补载目标月 → `addPostFrameCallback` 对该月 `GlobalKey` 调 `Scrollable.ensureVisible`（月级定位，D6）。scrim 点击或再点同一月份头关闭。面板 `role=dialog` + 「跳转到日期」语义、「回到今天」按钮（NF5）；落下/收起经 `dayzMotionDuration`（NF6）；日格/月格命中区 ≥44（NF3）。「有条目日/月」取 T1 controller 的 `entryDaysInMonth`/`monthCounts`（D4 降级口径）。
@@ -191,12 +191,12 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 1. `TimelineCalendarPanel`：`PopupRoute` 自定义 transition（顶部下落），barrier 半透 `context.dayz.overlay`。
 2. 月视图自绘 `GridView`（星期行 + 日格），态按 controller 计数数据；年视图 3 列月格。
 3. 选「有条目的日/月」→ 关闭 + `controller.jumpToMonth` → 帧后 `Scrollable.ensureVisible` 该月 `GlobalKey`（alignment 顶对齐，停靠到顶栏下）。
-4. 语义/文案：dialog 标签、回到今天、星期名等走 `AppStrings`/intl；日格命中区 padding 到 ≥44。
+4. 语义/文案：dialog 标签、回到今天、星期名等走 `AppLocalizations`/intl；日格命中区 padding 到 ≥44。
 
 ### 验收标准（做完即止）
 - 点月份头打开面板、点 scrim / 再点同月份头关闭（自动，widget test 断言面板出现/消失）
 - 选远期未加载月后，该月 `MonthSection` 被补载且该月份头滚入视口顶部（停靠顶栏下）（自动，断言滚动后该月头 rect 在顶栏下方）
-- 日历面板 dialog 语义可被 `find.bySemanticsLabel(AppStrings.jumpToDate)` 定位（自动，NF5）
+- 日历面板 dialog 语义可被 `find.bySemanticsLabel(l10n.jumpToDate)` 定位（自动，NF5）
 - 日格/月格命中区 ≥ 44×44（自动，`tester.getRect` 断言尺寸，NF3）
 - `MediaQueryData(disableAnimations:true)` 下面板落下时长为 0（自动，NF6）
 
@@ -217,19 +217,19 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 - [x] T6 · 空状态 + loader 文案态 + 切本刷新淡入
 
-**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzEmptyState / dayzMotionDuration`；`design-tokens-theme：context.dayz / AppStrings` ｜ **关联需求：** R3, R7（切本刷新部分）, NF6 ｜ **依据设计：** D3, D7, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_loader.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/ui/strings/app_strings.dart`
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `ui-kit-components：DayzEmptyState / dayzMotionDuration`；`design-tokens-theme：context.dayz / AppLocalizations` ｜ **关联需求：** R3, R7（切本刷新部分）, NF6 ｜ **依据设计：** D3, D7, D9 ｜ **可改文件：** `lib/ui/timeline/timeline_loader.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`
 
 ### 背景
-三件：① 空态——当前 journalId 条目数 0 时渲染 `DayzEmptyState`（插画 + 标题 +「轻点右下角写第一页」引导），隐藏月份头/列表/loader（R3）。② loader sliver 文案态——加载中「载入更早…」转圈、取尽「已经到最早的一篇了」终态（R2 的可视部分）。③ 切本刷新——`TimelineController.switchJournal` 后列表淡入重演（`AnimatedSwitcher`/`FadeTransition`，经 `dayzMotionDuration`，reduce-motion 下瞬时，NF6）。文案均走 `AppStrings`（追加到共享文件，见 design D9/已知风险）。
+三件：① 空态——当前 journalId 条目数 0 时渲染 `DayzEmptyState`（插画 + 标题 +「轻点右下角写第一页」引导），隐藏月份头/列表/loader（R3）。② loader sliver 文案态——加载中「载入更早…」转圈、取尽「已经到最早的一篇了」终态（R2 的可视部分）。③ 切本刷新——`TimelineController.switchJournal` 后列表淡入重演（`AnimatedSwitcher`/`FadeTransition`，经 `dayzMotionDuration`，reduce-motion 下瞬时，NF6）。文案补 zh/en ARB key，经 `AppLocalizations` 取用，并运行 gen-l10n 更新生成产物（见 design D9/已知风险）。
 
 ### 实施
 1. 空态分支：controller 报告空时渲染 `DayzEmptyState`，列表/loader sliver 不构建。
-2. `timeline_loader.dart`：isLoading→转圈 + 「载入更早…」；reachedEnd→「已经到最早的一篇了」终态（文案 `AppStrings`）。
+2. `timeline_loader.dart`：isLoading→转圈 + 「载入更早…」；reachedEnd→「已经到最早的一篇了」终态（文案 `AppLocalizations`）。
 3. 切本：列表区包 `AnimatedSwitcher`（duration 经 `dayzMotionDuration`），切 journalId 时淡入。
 
 ### 验收标准（做完即止）
 - 空库（假 Repo 空配置）时只渲染 `DayzEmptyState`、不渲染月份头/列表/loader（自动，按 widget 类型 find 断言存在/不存在）
-- 加载中显示 loader 转圈 + `AppStrings.loadingEarlier`、reachedEnd 显示 `AppStrings.reachedOldest`（自动，`find.text`）
+- 加载中显示 loader 转圈 + `l10n.loadingEarlier`、reachedEnd 显示 `l10n.reachedOldest`（自动，`find.text`）
 - 切 journalId 触发淡入；`disableAnimations:true` 时切换时长为 0（自动，NF6）
 
 ### 验收方式

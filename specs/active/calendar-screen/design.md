@@ -7,7 +7,7 @@
 
 # 设计：calendar-screen
 
-> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/calendar.html`](../../../ui-design/current/pages/screens/calendar.html)（`.cm-*` 月视图 + `.cm-detail` 选中日列表，含其 `?state=` 默认态）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（三层还原）/§3（逐屏映射立场 + 网页取巧降级）/§4（验证四闸）/§9（页面级 spec 依赖波次 W2）/§10（动 lib/ui 红线）/§11（验收口径）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry` 条目卡 / 收藏星 §5）/§3c（`.cm-*` 一次性屏内件归各屏 / `.cal-*` 时间线面板）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`calendar.html` → `table_calendar`/自绘 `GridView`、按月计数 = Drift `GROUP BY ym`、当日条目查询）。token/`context.dayz.*`/`AppStrings`/`intl` 约定来自 `design-tokens-theme`（D1/D4/D6）；复用组件来自 `ui-kit-components`（`DayzEntryCard`/`DayzEmptyState`/`DayzFavoriteStar`/`dayzMotionDuration`）；路由/外壳来自 `ui-shell-navigation`（`Routes.calendar`/`Routes.reader`/毛玻璃顶栏壳）。
+> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/calendar.html`](../../../ui-design/current/pages/screens/calendar.html)（`.cm-*` 月视图 + `.cm-detail` 选中日列表，含其 `?state=` 默认态）；方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1（三层还原）/§3（逐屏映射立场 + 网页取巧降级）/§4（验证四闸）/§9（页面级 spec 依赖波次 W2）/§10（动 lib/ui 红线）/§11（验收口径）；组件类名与最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3（`.entry` 条目卡 / 收藏星 §5）/§3c（`.cm-*` 一次性屏内件归各屏 / `.cal-*` 时间线面板）；HTML→Flutter 机制映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6（`calendar.html` → `table_calendar`/自绘 `GridView`、按月计数 = Drift `GROUP BY ym`、当日条目查询）。token/`context.dayz.*`/`AppLocalizations`/`intl` 约定来自 `design-tokens-theme`（D1/D4/D6）；复用组件来自 `ui-kit-components`（`DayzEntryCard`/`DayzEmptyState`/`DayzFavoriteStar`/`dayzMotionDuration`）；路由/外壳来自 `ui-shell-navigation`（`Routes.calendar`/`Routes.reader`/毛玻璃顶栏壳）。
 
 ## 技术决策
 
@@ -39,7 +39,7 @@
 - **状态：** 采纳
 - **背景：** `EntryRepo` 查询异步，R6 要求 pending 非阻塞、失败可重试、不崩。原型是同步内存数据无此态。
 - **选项：** (A) 全屏 spinner 遮挡（阻塞导航，差）；(B) 区域化占位——月视图区 pending 时网格用骨架/半透、列表区 pending 时占位行；失败时该区显错误条 + 重试钮；(C) 不处理（违 R6）。
-- **选择：** B。控制器暴露 `AsyncValue`-风格状态（`loading/data/error`，本 spec 用最小 sealed/枚举实现，不预设 Riverpod）；月视图与列表区各自按状态渲染：pending → 占位（导航钮仍可点）、error → `AppStrings` 错误文案 + 重试钮（再次调 `EntryRepo`）。错误态文案集中 `AppStrings`。
+- **选择：** B。控制器暴露 `AsyncValue`-风格状态（`loading/data/error`，本 spec 用最小 sealed/枚举实现，不预设 Riverpod）；月视图与列表区各自按状态渲染：pending → 占位（导航钮仍可点）、error → `AppLocalizations` 错误文案 + 重试钮（再次调 `EntryRepo`）。错误态文案集中 `AppLocalizations`。
 - **理由：** 区域化占位满足「非阻塞 + 可重试 + 不崩」，可注入两态做 widget test 断言可观测元素存在。
 - **代价：** 多两个分支渲染 + 两态测试；必要。
 
@@ -51,13 +51,13 @@
 - **理由：** 守 shell「路由名常量单一来源、屏内禁裸路径」；本屏只引 `Routes.reader`（条目点击导航）与 `Routes.calendar`（自身标识），不持路由表。
 - **代价：** 路由接线归属需与 shell 协调（已记待确认）；条目点击导航依赖 `Routes.reader` 携 entry id 的入参约定（shell/reader spec 定，本 spec 调用其约定）。
 
-### D6 · 文案集中 `AppStrings` + 日期/数字走 `intl`
+### D6 · 文案集中 `AppLocalizations` + 日期/数字走 `intl`
 - **状态：** 采纳
-- **背景：** tokens-theme D4 / ui-kit D10 拍板「文案集中 `AppStrings`、日期/数字走 `intl`、屏内禁裸中文、widget 测试用 `find.text(AppStrings.xxx)`」。本屏有月标题、日期头、篇数、空态、错误态、各 Semantics 标签等文案。
-- **选项：** (A) 屏内裸中文（违约定）；(B) 复用 ui-kit 已建的 `lib/ui/strings/app_strings.dart` 单类，向其**追加**本屏条目（静态文案 + 语义标签），日期/篇数走 `package:intl`（`DateFormat`/`NumberFormat`，SDK 传递依赖无需新增 pubspec）。
-- **选择：** B。本屏所有用户可见中文与 Semantics 标签引 `AppStrings.calendar*` 常量；月标题「YYYY 年 M 月」、日期头「M 月 D 日」、「周X」、「N 篇」一律经 `intl`，MUST NOT 自拼。`AppStrings` 单类归属 ui-kit（D10 已拍板「ui-kit 首建、各屏增补」），本 spec 向其追加 → `lib/ui/strings/app_strings.dart` 列入本 spec `## 文件变更`（追加条目，不重建文件）。
+- **背景：** `docs/design/11` 已拍板 UI 文案唯一来源为 zh/en ARB。本屏有月标题、日期头、篇数、空态、错误态、各 Semantics 标签等文案。
+- **选项：** (A) 屏内裸中文（违约定）；(B) 在 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb` 补本屏 key（静态文案 + 语义标签 + ICU 模板），日期/篇数走 `package:intl` / ARB ICU。
+- **选择：** B。本屏所有用户可见文案与 Semantics 标签经 `AppLocalizations.of(context)` / `l10n.calendar*` 取用；月标题「YYYY 年 M 月」、日期头「M 月 D 日」、「周X」、「N 篇」一律经 `intl` 或 ICU，MUST NOT 自拼。两份 ARB key 集合必须一致，改完跑 `gen-l10n`。
 - **理由：** 与全线约定一致；测试引常量自带「只引常量」回归护栏。
-- **代价：** `app_strings.dart` 是跨 spec 共享文件（ui-kit 建、各屏追加），本 spec 仅追加自己的条目；归属已在 D10/README 拍板，不重复创建。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 共享文件，本 spec 仅补自己的 key；需注意与其他 UI spec 并行修改时合并 key。
 
 ### D7 · Debug Home 入口（本屏 demo）
 - **状态：** 采纳
@@ -70,7 +70,7 @@
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppStrings 约定 / intl] --> SCR
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppLocalizations 约定 / intl] --> SCR
   KIT[ui-kit-components: DayzEntryCard / DayzEmptyState / DayzFavoriteStar / dayzMotionDuration / DayzGlassAppBar] --> SCR
   SHELL[ui-shell-navigation: Routes.calendar / Routes.reader / 顶栏壳装配] --> SCR
   subgraph SCR[calendar-screen]
@@ -98,8 +98,8 @@ graph TD
 - `lib/ui/calendar/calendar_controller.dart`     新建（`ChangeNotifier`：`view{y,m}` / `sel{y,m,d}` / 月计数 / 当日条目 / loading-error 态；经注入 `EntryRepo` 取数，**不持 Drift**）
 - `lib/ui/calendar/calendar_date_math.dart`      新建（纯函数：`daysInMonth` / `firstWeekdayMondayStart` / `leadingPadCount` / 月份 ±1 跨年进退位；可单测）
 
-**共享文案（ui-kit 建、本屏追加）`lib/ui/strings/`**
-- `lib/ui/strings/app_strings.dart`              修改（**仅追加** `AppStrings.calendar*` 静态文案 + Semantics 标签条目；不改既有条目、不重建文件；归属见 D6/ui-kit D10）
+**共享文案（gen-l10n ARB）**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`              修改（补 `calendar*` 文案 / Semantics / ICU key；两份 key 集合一致，D6）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/calendar_demo.dart`                  新建（内存 fake `EntryRepo` 渲染 `CalendarScreen`，覆盖有条目/空月/选中无条目/pending/error 与六套主题走查）

@@ -42,13 +42,13 @@
 系统 SHALL 在每个年份段**前插**一行年份分隔（`DayzYearSeparator`，对应 `.year-sep`），显示年份 + 「N 年前」相对文案 + 分隔线。
 - 前提：列表含 ≥1 个年份段。
 - 操作：渲染列表。
-- 结果：每段顶部出现一行 `DayzYearSeparator`，随内容**正常滚动离开视口**（MUST NOT 吸顶停靠）；年份与「N 年前」经 `package:intl` / `AppStrings` 生成，**禁裸中文/裸数字拼接**。
+- 结果：每段顶部出现一行 `DayzYearSeparator`，随内容**正常滚动离开视口**（MUST NOT 吸顶停靠）；年份与「N 年前」经 `package:intl` / `AppLocalizations` 生成，**禁裸中文/裸数字拼接**。
 
 ### R3 · 屏头摘要（kicker + 标题 + 副文案）
 系统 SHALL 在列表顶部渲染屏头：日期 kicker（如「5月29日」，着 `--accent-ink`）、衬线大标题（如「过去的今天，你写过 N 篇」，N = 命中条目总数）、次要副文案。
 - 前提：`default` 态、命中 N (>0) 条。
 - 操作：渲染屏头。
-- 结果：标题中的篇数 N 经 `intl` 数字格式化、随取数结果变化；kicker 日期经 `intl` 格式化；副文案取自 `AppStrings`。
+- 结果：标题中的篇数 N 经 `intl` 数字格式化、随取数结果变化；kicker 日期经 `intl` 格式化；副文案取自 `AppLocalizations`。
 
 ### R4 · 卡片配图（加密媒体 + 异步缩略图）
 Where 某条目带封面媒体，the 系统 SHALL 在 `DayzEntryCard` 的 `.photo` 位渲染封面缩略图，图源经 `MediaRepo` + `thumbnail-cache` 异步获得（解密在外、`ImageProvider` 异步取），并在缩略图就绪前显示占位、就绪后平滑呈现。
@@ -60,7 +60,7 @@ Where 某条目带封面媒体，the 系统 SHALL 在 `DayzEntryCard` 的 `.phot
 If 今天的 month/day **无任何历史条目**，then 系统 SHALL 渲染空态（`DayzEmptyState`，对应 `data-when="empty"`）：居中插画徽 + 标题「今天还没有往事」 + 引导说明，MUST NOT 渲染年份段/屏头摘要。
 - 前提：`EntryRepo.onThisDay` 返回空。
 - 操作：取数完成。
-- 结果：屏显空态插画 + 文案（取自 `AppStrings`），无卡片、无年份分隔。
+- 结果：屏显空态插画 + 文案（取自 `AppLocalizations`），无卡片、无年份分隔。
 
 ### R6 · 收藏星标记
 Where 某条目被收藏，the 系统 SHALL 在该卡片 `.head` 位显示收藏星（`DayzFavoriteStar`，填充态、着 `--favorite`）。
@@ -72,7 +72,7 @@ Where 某条目被收藏，the 系统 SHALL 在该卡片 `.head` 位显示收藏
 系统 SHALL 在顶栏右侧提供「更多」按钮（`data-otd-menu`），点击经 `DayzSheet.actions` 弹出动作菜单，含「生成回忆卡片」（经 `Routes.memory` 导航 memory-card-export 屏）与「分享这一天」两项。
 - 前提：本屏任意态。
 - 操作：点顶栏「更多」→ 弹 sheet → 点「生成回忆卡片」。
-- 结果：经 `Routes.memory` 导航（目标屏未就绪时落 `PlaceholderScreen`）；「分享这一天」触发一条 toast（`DayzToast`）。菜单标题/项文案取自 `AppStrings`。
+- 结果：经 `Routes.memory` 导航（目标屏未就绪时落 `PlaceholderScreen`）；「分享这一天」触发一条 toast（`DayzToast`）。菜单标题/项文案取自 `AppLocalizations`。
 
 ### R8 · 顶栏与返回
 系统 SHALL 以 `DayzGlassAppBar`（覆盖式毛玻璃顶栏）承载标题「往年今日」+ 左侧返回钮 + 右侧更多钮；返回钮经路由出栈返回来源屏。
@@ -99,7 +99,7 @@ Where 某条目被收藏，the 系统 SHALL 在该卡片 `.head` 位显示收藏
 顶栏返回钮、更多钮、可点卡片、sheet 菜单项的**命中区** MUST ≥ 44×44 px（移动端最小点击目标，复用 ui-kit 组件自带命中盒）。
 
 ### NF3 · Semantics 语义标签
-返回钮、更多钮、收藏星、可点卡片 MUST 提供可被屏幕阅读器识别的 Semantics 标签/语义（标签取自 `AppStrings`，如返回/更多/已收藏/打开第 N 篇）；卡片为可点元素须标 `button`/可点语义。
+返回钮、更多钮、收藏星、可点卡片 MUST 提供可被屏幕阅读器识别的 Semantics 标签/语义（标签取自 `AppLocalizations`，如返回/更多/已收藏/打开第 N 篇）；卡片为可点元素须标 `button`/可点语义。
 
 ### NF4 · reduce-motion（尊重系统减弱动态效果）
 本屏一切动效（顶栏滚动渐显、缩略图淡入、sheet 弹出、转场）在系统「减弱动态效果」（`MediaQuery.disableAnimations`）开启时 MUST 降级为瞬时/无过渡，统一经 ui-kit 的 `dayzMotionDuration` 门取时长，MUST NOT 在屏内各自硬编码 `Duration`。
@@ -109,7 +109,7 @@ Where 某条目被收藏，the 系统 SHALL 在该卡片 `.head` 位显示收藏
 - 缩略图 MUST 只经 `ThumbnailCache.warmup`（异步入队）+ 异步 `ImageProvider`；列表滚动 MUST NOT 触发同步缩略图重建（不调任何同步全量重建接口——`thumbnail-cache` 本就不暴露）。
 
 ### NF6 · 视觉一律走 token
-本屏 MUST NOT 硬编码颜色/字号/间距/圆角/阴影；颜色经 `context.dayz.*`、间距/圆角/动效经 `DayzSpacing/DayzRadii/DayzMotion`、字体经 `DayzFonts`/排版角色，文案经 `AppStrings`、日期/数字经 `package:intl`。
+本屏 MUST NOT 硬编码颜色/字号/间距/圆角/阴影；颜色经 `context.dayz.*`、间距/圆角/动效经 `DayzSpacing/DayzRadii/DayzMotion`、字体经 `DayzFonts`/排版角色，文案经 `AppLocalizations`、日期/数字经 `package:intl`。
 
 ### NF7 · 多端兼容
 SHALL 在 iOS 13+ 与 Android 8+ 上正常渲染：毛玻璃顶栏在低端 Android 允许降级为半透实色 + 细分割线（复用 `DayzGlassAppBar` 降级，本屏不另做）；中英混排字体回退正常（复用 tokens 字体栈）。

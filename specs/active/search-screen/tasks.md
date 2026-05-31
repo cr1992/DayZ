@@ -138,26 +138,26 @@ graph LR
 
 - [ ] T4 · search_page 五态渲染（DayzSearchField + 取消 + 朴素 ListView + 高亮卡片）
 
-**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzSearchField`/`DayzEntryCard`/`DayzTag`/`DayzEmptyState`/`dayzMotionDuration`、`AppStrings`（追加条目）；`ui-shell-navigation`：`Routes.reader`（点卡片导航）；`design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Motion`、`intl`（计数/日期）。均 README 依赖列已登记 ｜ **关联需求：** R1, R3, R4, R5, R6, R7, R8, NF1, NF4 ｜ **依据设计：** D1, D3, D4, D7, D8, D9 ｜ **可改文件：** `lib/ui/search/search_page.dart`、`lib/ui/strings/app_strings.dart`（**追加**本屏文案条目，不新建——归属 ui-kit，见 D9）
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzSearchField`/`DayzEntryCard`/`DayzTag`/`DayzEmptyState`/`dayzMotionDuration`；`ui-shell-navigation`：`Routes.reader`（点卡片导航）；`design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Motion`、`intl`（计数/日期）；`i18n-localization`：gen-l10n 基础设施。均 README 依赖列已登记 ｜ **关联需求：** R1, R3, R4, R5, R6, R7, R8, NF1, NF4 ｜ **依据设计：** D1, D3, D4, D7, D8, D9 ｜ **可改文件：** `lib/ui/search/search_page.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`
 
 ### 背景
-屏组合：顶部 `DayzSearchField`（受控接 `SearchController.onQueryChanged`）+ 「取消」`DayzButton`(text)；主体 `switch(controller.state)` 渲染六态——idle（最近搜索 `_SuggestRow` + 标签 `DayzTag` 列）、typing（保留 idle 或轻提示）、querying（loading 指示）、results（`.search-stat` 计数行 + 朴素 `ListView.builder` of `DayzEntryCard`，标题/摘要经 T2 高亮）、empty（`DayzEmptyState`，标题含查询词）、error（错误文案 + 重试钮接 `retry`）。点卡片 → `Routes.reader`（携 id，R7）；取消 → 出栈（R6）。文案全 `AppStrings`、计数/日期走 intl。
+屏组合：顶部 `DayzSearchField`（受控接 `SearchController.onQueryChanged`）+ 「取消」`DayzButton`(text)；主体 `switch(controller.state)` 渲染六态——idle（最近搜索 `_SuggestRow` + 标签 `DayzTag` 列）、typing（保留 idle 或轻提示）、querying（loading 指示）、results（`.search-stat` 计数行 + 朴素 `ListView.builder` of `DayzEntryCard`，标题/摘要经 T2 高亮）、empty（`DayzEmptyState`，标题含查询词）、error（错误文案 + 重试钮接 `retry`）。点卡片 → `Routes.reader`（携 id，R7）；取消 → 出栈（R6）。文案全 `AppLocalizations`、计数/日期走 intl。
 归属：渲染与导航接线归本任务；状态逻辑在 T3、高亮切分在 T2、几何/无障碍专项断言在 T6。`results` 列表用朴素 `ListView`，**不引入** `SliverPersistentHeader` 吸顶 / 日历（D3）。
 
 ### 实施
 1. `search_page.dart`：`AnimatedBuilder`/`ListenableBuilder` 监听 `SearchController`，`switch(state)` 渲六态子树；视觉全走 token（`.search-input` 底/圆角、`.search-stat`、`.hl` 等以 spec.css 解析值标定，NF4）。MPL-2.0 头注。
-2. results：固定计数行（`AppStrings` + `intl` 拼「找到 N 篇 · 按时间倒序」）+ `ListView.builder` → `DayzEntryCard`，标题/摘要用 `Text.rich(buildHighlightedSpans(...))`（命中样式取 `context.dayz.accentSoft2/accentInk`，R3/D4）。
-3. empty：`DayzEmptyState`（标题「没有找到『{query}』」+ 引导文案，均 `AppStrings`/`intl`）。error：错误文案 + 「重试」`DayzButton` → `controller.retry()`。
+2. results：固定计数行（`l10n` + `intl`/ICU 拼「找到 N 篇 · 按时间倒序」）+ `ListView.builder` → `DayzEntryCard`，标题/摘要用 `Text.rich(buildHighlightedSpans(...))`（命中样式取 `context.dayz.accentSoft2/accentInk`，R3/D4）。
+3. empty：`DayzEmptyState`（标题「没有找到『{query}』」+ 引导文案，均 `l10n` / `intl`）。error：错误文案 + 「重试」`DayzButton` → `controller.retry()`。
 4. 取消钮 → `context.pop()`/`Navigator.pop`（R6）；卡片 `onTap` → `Routes.reader`（R7）。
-5. 向 `lib/ui/strings/app_strings.dart` **追加**本屏文案 `static const`（取消/最近搜索/标签/找到/篇·按时间倒序/没有找到/引导/重试/各 Semantics 标签）——若 ui-kit 未建该文件按 D9 ⚠️ 降级、停下协调，不抢建。
-6. **无障碍渲染实现（NF1，供 T6 断言）**：取消钮/输入框/卡片/空态/重试钮挂 `Semantics` 标签（取 `AppStrings`）；取消钮、`_SuggestRow`、标签 chip、筛选去除叉 `.x`、卡片可点区命中盒 ≥44×44（必要时 `minimumSize`/`SizedBox`/`InkWell` 命中扩展）；输入光标闪烁与任何切态过渡时长经 `dayzMotionDuration(context, base)` 取（reduce-motion 下为 0），不在屏内自判 `disableAnimations`。
+5. 向 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` 补本屏文案 key（取消/最近搜索/标签/找到/篇·按时间倒序/没有找到/引导/重试/各 Semantics 标签），两份 key 集合一致，并跑 `flutter gen-l10n`；不得新增屏内 strings 类或静态文案常量。
+6. **无障碍渲染实现（NF1，供 T6 断言）**：取消钮/输入框/卡片/空态/重试钮挂 `Semantics` 标签（取 `l10n`）；取消钮、`_SuggestRow`、标签 chip、筛选去除叉 `.x`、卡片可点区命中盒 ≥44×44（必要时 `minimumSize`/`SizedBox`/`InkWell` 命中扩展）；输入光标闪烁与任何切态过渡时长经 `dayzMotionDuration(context, base)` 取（reduce-motion 下为 0），不在屏内自判 `disableAnimations`。
 
 ### 验收标准（做完即止）
-- 各态渲染：idle 见最近搜索+标签分组；results 见计数行（N==卡片数）+ N 张 `DayzEntryCard`；empty 见 `DayzEmptyState` 且标题含查询词；error 见重试钮（自动，widget test 按 state 驱动 + `find.byType`/`find.text(AppStrings.xxx)`）。
+- 各态渲染：idle 见最近搜索+标签分组；results 见计数行（N==卡片数）+ N 张 `DayzEntryCard`；empty 见 `DayzEmptyState` 且标题含查询词；error 见重试钮（自动，widget test 按 state 驱动 + `find.byType`/`find.text(l10n.xxx)`）。
 - 命中词在卡片标题/摘要高亮：命中 `TextSpan` 背景 == `context.dayz.accentSoft2`、前景 == `context.dayz.accentInk`（自动，解析渲染后的 `Text.rich` span 样式，R3/NF4）。
 - 点卡片 → 路由变 `Routes.reader`（自动：用测试路由断言 location，R7）；点取消 → 路由出栈（自动，R6）。
 - 点重试 → controller 收到 `retry`、state 回 querying（自动，R8）。
-- 屏内无裸中文：可见文案均经 `AppStrings`（自动：测试用 `find.text(AppStrings.xxx)` 命中，裸中文则 find 不到——自带"只引常量"护栏）。
+- 屏内无裸中文：可见文案均经 `AppLocalizations`（自动：测试用 `find.text(l10n.xxx)` 命中，裸中文则 find 不到——自带"只引常量"护栏）。
 
 ### 验收方式
 - 自动：
@@ -224,13 +224,13 @@ graph LR
 归属：渲染本体与无障碍/几何属性的**实现**归 T4；本任务专司这些属性的**专项断言测试**。
 
 ### 实施
-1. Semantics：取消钮（「取消」）/ 输入框（「搜索日记」）/ 结果卡片（含标题）/ 空态 / 重试钮均有 `Semantics` 标签（取 `AppStrings`，NF1）。
+1. Semantics：取消钮（「取消」）/ 输入框（「搜索日记」）/ 结果卡片（含标题）/ 空态 / 重试钮均有 `Semantics` 标签（取 `AppLocalizations`，NF1）。
 2. 命中盒 ≥44：取消钮、`_SuggestRow`、标签 chip、筛选去除叉 `.x`、卡片可点区 `tester.getSize` ≥44×44。
 3. reduce-motion：`MediaQueryData(disableAnimations: true)` 下输入光标闪烁/切态过渡时长经 `dayzMotionDuration` 为 0（NF1）。
 4. 几何：results 卡片纵向顺序 = hits 顺序、不溢出视口（content-driven 不硬断块高，D3/方法论 §4）；计数行在列表上方。
 
 ### 验收标准（做完即止）
-- 取消/输入框/卡片/空态/重试钮均有 `Semantics` 标签，可 `find.bySemanticsLabel(AppStrings.xxx)` 命中（自动，NF1）。
+- 取消/输入框/卡片/空态/重试钮均有 `Semantics` 标签，可 `find.bySemanticsLabel(l10n.xxx)` 命中（自动，NF1）。
 - 取消钮 / 建议行 / 标签 chip / 去除叉 / 卡片可点区命中盒 ≥44×44（自动，`tester.getSize`，NF1）。
 - `disableAnimations: true` 下动效时长 == 0（自动，注入 MediaQuery 断言，NF1）。
 - 高亮文字（`accentInk` on `accentSoft2`）对比度核验沿用 tokens-theme `contrast_xfail.yaml`，无新阈值（自动，复用对比度断言，NF1）。

@@ -35,13 +35,13 @@
 - [ ] 往年段着色文字（`--accent-ink` 落 `--accent-soft`）≥ 4.5:1 — 自动：同上
 - [ ] 大图压字款白字落底部渐变最暗端区域 ≥ 4.5:1 — 自动：同上（按渐变末端 `rgba(20,16,12,0.82)` 对验白字；照片中段局部低对比属设计取舍，记已知像素差不阻塞）
 - [ ] 画幅 / 风格每项、保存 / 分享、返回钮命中区 ≥ 44×44 — 自动：`flutter test test/ui/memory_card_export/`（`getRect` 断命中盒，NF2）
-- [ ] 返回 / 画幅项 / 风格项 / 保存 / 分享有 Semantics 标签，分段选中态经语义暴露 — 自动：`find.bySemanticsLabel(AppStrings.xxx)` + selected 语义（NF3）
+- [ ] 返回 / 画幅项 / 风格项 / 保存 / 分享有 Semantics 标签，分段选中态经语义暴露 — 自动：`find.bySemanticsLabel(l10n.xxx)` + selected 语义（NF3）
 - [ ] 切换 / 长图滚动 / 底栏动效在 `disableAnimations:true` 下时长为 0 — 自动：注入 `MediaQueryData(disableAnimations:true)` 断动效时长为 0（NF4，经 `dayzMotionDuration` 门）
 
 ### 安全 / 权限（NF6, R5, R6）
 - [ ] 无自动导出：未点保存 / 分享时 exporter 不被调用 — 自动：pump 屏不触发交互，断假 exporter 零调用（D8）
 - [ ] 失败 / 拒权显形：假相册 sink 返回拒权 → 失败 toast、不静默 — 自动：屏 test 注入失败 exporter 断 toast（NF6/R5）
-- [ ] UI 不暗示导出物受保护 / 加密：屏内文案集合无「加密 / 受保护 / 安全」类误导词 — 人工（@Ray）：复核 `AppStrings` 本屏条目无暗示导出物仍受保护的措辞（明文外发是有意为之，docs/design/06）
+- [ ] UI 不暗示导出物受保护 / 加密：屏内文案集合无「加密 / 受保护 / 安全」类误导词 — 人工（@Ray）：复核 `AppLocalizations` 本屏条目无暗示导出物仍受保护的措辞（明文外发是有意为之，docs/design/06）
 - [ ] 导出进行中防重入：`_exporting` 时连点保存 / 分享不二次触发 — 自动：连点断 exporter 仅调一次（NF7/D8）
 - [ ] 缩略图红线：预览 / 导出路径不触发缩略图生成 / 重建 — 自动：屏 / exporter 源码不 import 缩略图生成入口、封面只消费传入 `ImageProvider`；静态核验 import + 断不依赖缩略图生成 API（NF6，docs/design/05）
 

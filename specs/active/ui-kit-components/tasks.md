@@ -12,7 +12,7 @@
 
 ```mermaid
 graph LR
-  T1[T1 支撑层: pubspec/AppStrings/motion/icons/star/barrel] --> T2[T2 §3 基础件]
+  T1[T1 支撑层: pubspec/AppLocalizations/motion/icons/star/barrel] --> T2[T2 §3 基础件]
   T1 --> T3[T3 §3b 页面级件 + 空态]
   T1 --> T4[T4 DayzGlassAppBar]
   T1 --> T5[T5 全局 toast]
@@ -37,17 +37,17 @@ graph LR
 
 -----
 
-- [x] T1 · 支撑层：依赖 + AppStrings + reduce-motion 门 + 规范图标/收藏星 + barrel 骨架
+- [x] T1 · 支撑层：依赖 + l10n key + reduce-motion 门 + 规范图标/收藏星 + barrel 骨架
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzMotion` / `AppStrings` 约定 D4 / `glassSurface` 系数 / `DayzColors.favorite`）｜ **关联需求：** R8, NF3, NF4 ｜ **依据设计：** D1, D9, D10, D11 ｜ **可改文件：** `pubspec.yaml`、`pubspec.lock`、`lib/ui/strings/app_strings.dart`、`lib/ui/util/dayz_motion.dart`、`lib/ui/widgets/dayz_icons.dart`、`lib/ui/widgets/dayz_favorite_star.dart`、`lib/ui/components.dart` ｜ **验收基建：** `test/ui/widgets/dayz_favorite_star_test.dart`、`test/ui/util/dayz_motion_test.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzMotion` / `AppLocalizations` 约定 D4 / `glassSurface` 系数 / `DayzColors.favorite`）｜ **关联需求：** R8, NF3, NF4 ｜ **依据设计：** D1, D9, D10, D11 ｜ **可改文件：** `pubspec.yaml`、`pubspec.lock`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/ui/util/dayz_motion.dart`、`lib/ui/widgets/dayz_icons.dart`、`lib/ui/widgets/dayz_favorite_star.dart`、`lib/ui/components.dart` ｜ **验收基建：** `test/ui/widgets/dayz_favorite_star_test.dart`、`test/ui/util/dayz_motion_test.dart`
 
 ### 背景
-本 spec 的公共地基：引入 `flutter_svg`+`widgetbook` 依赖；首建 `AppStrings`（录入组件层文案，落实 tokens-theme D4，后续各屏 spec 向同一文件追加）；`dayzMotionDuration` reduce-motion 单点门（D11）；§5 规范 SVG path 常量集（含收藏星唯一 path）与 `DayzFavoriteStar`；`components.dart` barrel 骨架（先建空 barrel，后续任务各自补 export）。
+本 spec 的公共地基：引入 `flutter_svg`+`widgetbook` 依赖；补组件层 zh/en ARB 文案 key（落实 i18n 约束，禁止新增静态文案常量桶）；`dayzMotionDuration` reduce-motion 单点门（D11）；§5 规范 SVG path 常量集（含收藏星唯一 path）与 `DayzFavoriteStar`；`components.dart` barrel 骨架（先建空 barrel，后续任务各自补 export）。
 归属：`pubspec.yaml`/`pubspec.lock` 的依赖增改集中在本任务，其余任务不碰 pubspec。barrel 的 export 行各任务在自己任务内补本任务建立文件骨架。
 
 ### 实施
 1. `pubspec.yaml` 加 `flutter_svg`、`widgetbook`（按其文档定 dependencies/dev_dependencies 位），跑 `flutter pub get` 锁 `pubspec.lock`；新建 Dart 文件加 MPL-2.0 头注。
-2. `AppStrings`（`abstract final class` + `static const` 中文）录入组件层文案与 Semantics 标签（toast 默认/撤销/查看、sheet 取消/删除/确认、空态通用标题、收藏星「收藏」/「取消收藏」、菜单/更多等图标钮标签）。
+2. `app_zh.arb` / `app_en.arb` 录入组件层文案与 Semantics 标签（toast 默认/撤销/查看、sheet 取消/删除/确认、空态通用标题、收藏星「收藏」/「取消收藏」、菜单/更多等图标钮标签），运行期通过 `AppLocalizations.of(context)` 取用。
 3. `dayzMotionDuration(context, base)`：`MediaQuery.of(context).disableAnimations` 真 → `Duration.zero`，否则 `base`（默认取 `DayzMotion.dur`）。
 4. `dayz_icons.dart`：§5 规范 SVG path 常量（收藏星用 DESIGN-REF §5 唯一 path 字符串，不另画）。
 5. `DayzFavoriteStar`：`flutter_svg` 渲染收藏星 path，已收藏 `colorFilter` 着 `context.dayz.favorite`、未收藏描边 `currentColor`，path 不变；命中区 ≥44（NF1）、带 `Semantics` 标签（NF3）。
@@ -57,7 +57,7 @@ graph LR
 - `flutter pub get` 通过、`pubspec.yaml`/`pubspec.lock` 解析无误（自动）。
 - `DayzFavoriteStar` 已收藏态 fill 取 `context.dayz.favorite`、未收藏态描边 `currentColor`，两态 SVG path 相同（自动，widget test 解析渲染属性/path 串相等）。
 - `dayzMotionDuration` 在 `disableAnimations:true` 下返回 `Duration.zero`、否则返回 base（自动，注入 `MediaQueryData`）。
-- 收藏星命中区 ≥44×44、可由 `find.bySemanticsLabel(AppStrings.favorite)` 定位（自动）。
+- 收藏星命中区 ≥44×44、可由 `find.bySemanticsLabel(l10n.favorite)` 定位（自动）。
 
 ### 验收方式
 - 自动：
@@ -77,16 +77,16 @@ graph LR
 
 - [x] T2 · §3 基础组件成套（按钮/输入/开关/勾选/分段/标签/心情/天气/工具栏/弹窗/EntryCard/Gallery）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzSpacing` / `DayzRadii` / 六套 ThemeData / `DayzFonts`）｜ **关联需求：** R1, NF1, NF2, NF3 ｜ **依据设计：** D1, D2, D9 ｜ **可改文件：** `lib/ui/widgets/dayz_button.dart`、`lib/ui/widgets/dayz_text_field.dart`、`lib/ui/widgets/dayz_switch.dart`、`lib/ui/widgets/dayz_option.dart`、`lib/ui/widgets/dayz_segmented.dart`、`lib/ui/widgets/dayz_tag.dart`、`lib/ui/widgets/dayz_mood_chip.dart`、`lib/ui/widgets/dayz_weather_chip.dart`、`lib/ui/widgets/dayz_toolbar.dart`、`lib/ui/widgets/dayz_dialog.dart`、`lib/ui/widgets/dayz_entry_card.dart`、`lib/ui/widgets/dayz_gallery.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加本组用文案条目）｜ **验收基建：** `test/ui/widgets/`（各组件 `*_test.dart`）
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / `DayzSpacing` / `DayzRadii` / 六套 ThemeData / `DayzFonts`）｜ **关联需求：** R1, NF1, NF2, NF3 ｜ **依据设计：** D1, D2, D9 ｜ **可改文件：** `lib/ui/widgets/dayz_button.dart`、`lib/ui/widgets/dayz_text_field.dart`、`lib/ui/widgets/dayz_switch.dart`、`lib/ui/widgets/dayz_option.dart`、`lib/ui/widgets/dayz_segmented.dart`、`lib/ui/widgets/dayz_tag.dart`、`lib/ui/widgets/dayz_mood_chip.dart`、`lib/ui/widgets/dayz_weather_chip.dart`、`lib/ui/widgets/dayz_toolbar.dart`、`lib/ui/widgets/dayz_dialog.dart`、`lib/ui/widgets/dayz_entry_card.dart`、`lib/ui/widgets/dayz_gallery.dart`、`lib/ui/components.dart`（补 export）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补本组 zh/en ARB key，运行 gen-l10n 更新生成产物）｜ **验收基建：** `test/ui/widgets/`（各组件 `*_test.dart`）
 
 ### 背景
-实现 DESIGN-REF §3 登记的全部基础件（清单以 §3 当前内容为准）。视觉全走 token（D2 包装/自绘择优）；图标用 T1 的 `dayz_icons`/`DayzFavoriteStar`。`DayzGallery` 只接 `ImageProvider` 列表 + 回调（NF5，不触发缩略图生成）；`DayzToolbar` 只做按钮条外形+激活态+回调（不接 AppFlowy 命令）。文案/语义标签追加到 `AppStrings`，屏内禁裸中文。
-归属：本任务向 `components.dart` 补本组件的 export；`app_strings.dart` 仅**追加**本组文案条目（与 T1 建立的类同文件，T1 先建类、本任务加条目，归属点 design D10）。
+实现 DESIGN-REF §3 登记的全部基础件（清单以 §3 当前内容为准）。视觉全走 token（D2 包装/自绘择优）；图标用 T1 的 `dayz_icons`/`DayzFavoriteStar`。`DayzGallery` 只接 `ImageProvider` 列表 + 回调（NF5，不触发缩略图生成）；`DayzToolbar` 只做按钮条外形+激活态+回调（不接 AppFlowy 命令）。文案/语义标签补入 zh/en ARB，屏内禁裸中文。
+归属：本任务向 `components.dart` 补本组件的 export；`app_zh.arb` / `app_en.arb` 仅补本组文案 key，运行期用 `AppLocalizations.of(context)` 取用。
 
 ### 实施
 1. 按 §3 类名逐件实现（按钮全变体/尺寸/图标钮/disabled、`.field`/`.input`/`.textarea` 聚焦光环、`.switch`、`.opt` box/dot+on、`.segmented`、`.tag`/`.tag-outline`/删除叉、`.mood` 手绘 SVG 脸+sel、`.weather-chip`、`.toolbar` `.tb`/`.on`/`.div`、`.dialog`、`.entry`、`.gallery` 列数随张数+第9格 +N 蒙层）。
 2. 每件：样式参数取 token；可交互件命中区 ≥44（NF1）、图标钮/无文字件补 `Semantics`（NF3）、装饰图标 `ExcludeSemantics`。
-3. 文案进 `AppStrings`；删除叉/星等标签经 `AppStrings`。
+3. 文案进 `AppLocalizations`；删除叉/星等标签经 `AppLocalizations`。
 
 ### 验收标准（做完即止）
 - 每件解析后样式参数（颜色/圆角/内边距/字号/阴影）等于 DESIGN-REF 对应类在当前主题下的设计值（自动，pump 在某套 ThemeData 下读 widget 渲染属性断言==token 值）。
@@ -112,7 +112,7 @@ graph LR
 
 - [x] T3 · §3b 页面级复用件 + 跨屏空态（月份头/年份分隔/设置行/EmptyState/搜索框骨架）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / 排版 `.t-*` / `AppStrings` / `intl`）｜ **关联需求：** R2, NF1, NF2, NF3 ｜ **依据设计：** D7, D9, D10 ｜ **可改文件：** `lib/ui/widgets/dayz_month_header.dart`、`lib/ui/widgets/dayz_year_separator.dart`、`lib/ui/widgets/dayz_set_row.dart`、`lib/ui/widgets/dayz_empty_state.dart`、`lib/ui/widgets/dayz_search_field.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加本组用文案条目）｜ **验收基建：** `test/ui/widgets/`（各件 `*_test.dart`）
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`context.dayz.*` / 排版 `.t-*` / `AppLocalizations` / `intl`）｜ **关联需求：** R2, NF1, NF2, NF3 ｜ **依据设计：** D7, D9, D10 ｜ **可改文件：** `lib/ui/widgets/dayz_month_header.dart`、`lib/ui/widgets/dayz_year_separator.dart`、`lib/ui/widgets/dayz_set_row.dart`、`lib/ui/widgets/dayz_empty_state.dart`、`lib/ui/widgets/dayz_search_field.dart`、`lib/ui/components.dart`（补 export）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补本组 zh/en ARB key，运行 gen-l10n 更新生成产物）｜ **验收基建：** `test/ui/widgets/`（各件 `*_test.dart`）
 
 ### 背景
 实现 §3b 跨端复用件 + §3c 中明确跨屏的空态 `.empty`（D7）。日期/篇数/「N 年前」走 `package:intl`（MUST NOT 自拼 `'2026年5月'`/`'12 篇'`）；空态插画走 §5 单色线性 SVG（`flutter_svg`，复用 T1 `dayz_icons`）。`.topsearch`/`.suggest-row`/`.cal-*` 等屏内一次性件**不在此**，留各屏 spec。
@@ -122,21 +122,21 @@ graph LR
 1. `DayzMonthHeader`：年月 + 篇数（`intl` 格式化）+ `.tl-cal` 小日历图标（`expanded` 时着 accent）+ `onTap` 回调；吸顶由页面级 `SliverPersistentHeader` 包，本件是其内容外形。
 2. `DayzYearSeparator`：`.year-sep` 年份 + "N 年前"（`intl`/相对年差）+ 分隔线。
 3. `DayzSetRow`/分组/账户头卡：`.set-row` `.ic`+`.tx`(b 主+span 次)+右侧 `.switch`/`.val`/`.chev`；可点行带命中区与语义。
-4. `DayzEmptyState`：中性暖底圆徽 + §5 插画 + 标题 + 说明（`AppStrings`）。
+4. `DayzEmptyState`：中性暖底圆徽 + §5 插画 + 标题 + 说明（`AppLocalizations`）。
 5. `DayzSearchField`：`.search-head` 输入框骨架（图标+输入+取消），纯输入外形+回调。
 
 ### 验收标准（做完即止）
 - 月份头日期/篇数经 `intl` 格式化（断言渲染文本由 `intl` 产出，非裸拼接）、`.tl-cal` 在 `expanded` 时使用 accent 态、点击触发 `onTap`（自动）。
-- 年份分隔显年份 + 相对年差文案（`AppStrings`/`intl`），样式参数==设计（自动）。
+- 年份分隔显年份 + 相对年差文案（`AppLocalizations`/`intl`），样式参数==设计（自动）。
 - `DayzSetRow` 右侧 switch/val/chev 三型各渲染正确；可点行命中区 ≥44（自动）。
-- `DayzEmptyState` 渲染插画+标题+说明，文案经 `AppStrings`（`find.text(AppStrings.xxx)`）（自动）。
+- `DayzEmptyState` 渲染插画+标题+说明，文案经 `AppLocalizations`（`find.text(l10n.xxx)`）（自动）。
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/ui/widgets/
   ```
-  （断言 `intl` 格式化输出文本、caret 旋转 transform、`tester.getRect` 命中区、`find.text(AppStrings.xxx)`；**不** grep 被改文件自身）
+  （断言 `intl` 格式化输出文本、caret 旋转 transform、`tester.getRect` 命中区、`find.text(l10n.xxx)`；**不** grep 被改文件自身）
 
 ### 验收记录
 ```
@@ -183,13 +183,13 @@ graph LR
 
 - [x] T5 · 跨屏外壳：全局 toast（DayzToast）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（中性底 token / `--danger` / `--favorite` / accent）｜ **关联需求：** R4, NF3, NF4 ｜ **依据设计：** D3, D11 ｜ **可改文件：** `lib/ui/shell/dayz_toast.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 toast 文案）｜ **验收基建：** `test/ui/shell/dayz_toast_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（中性底 token / `--danger` / `--favorite` / accent）｜ **关联需求：** R4, NF3, NF4 ｜ **依据设计：** D3, D11 ｜ **可改文件：** `lib/ui/shell/dayz_toast.dart`、`lib/ui/components.dart`（补 export）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 toast zh/en ARB key，运行 gen-l10n 更新生成产物）｜ **验收基建：** `test/ui/shell/dayz_toast_test.dart`
 
 ### 背景
 全局 toast：`DayzToast.show(context, text, tone, action?)` 经 `ScaffoldMessenger` floating SnackBar，底色中性、语义靠图标点色（default/ok/info=accent、danger=`--danger`、fav=`--favorite`），可带一个 action，有 action 停留更久（4.2s 量级）、无 action 短（2.6s 量级），排队上限 3（D3 退化已记已知风险）。进出场经 `dayzMotionDuration`（NF4）。
 
 ### 实施
-1. `DayzToast.show`：构造 floating `SnackBar`，`content` = 中性底 `Row`（`Icon` 着 tone 语义色 + 文案 `AppStrings` + 可选 `SnackBarAction`）。
+1. `DayzToast.show`：构造 floating `SnackBar`，`content` = 中性底 `Row`（`Icon` 着 tone 语义色 + 文案 `AppLocalizations` + 可选 `SnackBarAction`）。
 2. tone→图标点色映射；有/无 action 停留时长分档；排队上限 3。
 3. action label/无 action 点击关闭；语义标签可朗读（NF3）；动效经 `dayzMotionDuration`（NF4）。
 
@@ -216,13 +216,13 @@ graph LR
 
 - [x] T6 · 跨屏外壳：底部 sheet 四形态（DayzSheet：actions/picker/form/confirm）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`--r-xl` 圆角 / 拖拽柄色 / `--danger`）｜ **关联需求：** R5, NF1, NF3, NF4 ｜ **依据设计：** D4, D11 ｜ **可改文件：** `lib/ui/shell/dayz_sheet.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 sheet 文案）｜ **验收基建：** `test/ui/shell/dayz_sheet_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`--r-xl` 圆角 / 拖拽柄色 / `--danger`）｜ **关联需求：** R5, NF1, NF3, NF4 ｜ **依据设计：** D4, D11 ｜ **可改文件：** `lib/ui/shell/dayz_sheet.dart`、`lib/ui/components.dart`（补 export）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 sheet zh/en ARB key，运行 gen-l10n 更新生成产物）｜ **验收基建：** `test/ui/shell/dayz_sheet_test.dart`
 
 ### 背景
 统一底部弹层四命名工厂（D4），共享外壳（圆角顶 `--r-xl` + 拖拽柄 + scrim + `SafeArea` 底留白），经 `showModalBottomSheet`。`DayzSheetItem{label, desc?, icon?, swatch?, tone?, selected, keepOpen, onTap}` + `sep`。滑入动效经 `dayzMotionDuration`（NF4），item 命中区 ≥44（NF1），危险动作 `tone:danger`。
 
 ### 实施
-1. `DayzSheet.actions(items)`：动作菜单 + 默认「取消」行（`AppStrings`）。
+1. `DayzSheet.actions(items)`：动作菜单 + 默认「取消」行（`AppLocalizations`）。
 2. `DayzSheet.picker(items)`：单选，命中项右侧打勾。
 3. `DayzSheet.form(content, primary, secondary?)`：轻表单 + 按钮。
 4. `DayzSheet.confirm(...)`：危险二次确认（`tone:danger` 主动作 + 取消）。
@@ -251,7 +251,7 @@ graph LR
 
 - [x] T7 · 跨屏外壳：FAB 速拨外形（DayzFab）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`fabGradient` / `--shadow-*` 三档 / `--overlay`）｜ **关联需求：** R6, NF1, NF3, NF4 ｜ **依据设计：** D11 ｜ **可改文件：** `lib/ui/shell/dayz_fab.dart`、`lib/ui/components.dart`（补 export）、`lib/ui/strings/app_strings.dart`（仅追加 FAB 动作文案）｜ **验收基建：** `test/ui/shell/dayz_fab_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`fabGradient` / `--shadow-*` 三档 / `--overlay`）｜ **关联需求：** R6, NF1, NF3, NF4 ｜ **依据设计：** D11 ｜ **可改文件：** `lib/ui/shell/dayz_fab.dart`、`lib/ui/components.dart`（补 export）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 FAB 动作 zh/en ARB key，运行 gen-l10n 更新生成产物）｜ **验收基建：** `test/ui/shell/dayz_fab_test.dart`
 
 ### 背景
 FAB 速拨视觉外形（R6）：轻点 `onTap` 回调 + 长按 ~0.35s 展开二级动作（入参给定 label+icon+回调）+ 全屏 scrim 压暗、立体渐变 `fabGradient` + 三层 `boxShadow` + 顶高光（顶部浅渐变或 0.5px 白半透边，无 inset 阴影）。展开动效经 `dayzMotionDuration`（NF4），命中区 ≥44（NF1），动作有 `data-label` 语义（NF3）。
@@ -260,12 +260,12 @@ FAB 速拨视觉外形（R6）：轻点 `onTap` 回调 + 长按 ~0.35s 展开二
 ### 实施
 1. `DayzFab(onTap, actions)`：`Container(decoration: BoxDecoration(gradient: fabGradient, boxShadow:[×3], shape: circle))` + 顶高光。
 2. 轻点 `onTap`；`GestureDetector(onLongPress)` 展开 `fab-actions` + 全屏 scrim（`--overlay` 压暗）；点 scrim 收起。
-3. 每个动作显 label（`AppStrings`）+ icon + 各自回调；命中区 ≥44、语义标签（NF1/NF3）；展开动效经门（NF4）。
+3. 每个动作显 label（`AppLocalizations`）+ icon + 各自回调；命中区 ≥44、语义标签（NF1/NF3）；展开动效经门（NF4）。
 
 ### 验收标准（做完即止）
 - 轻点触发 `onTap`、不展开（自动）。
 - 长按展开二级动作 + 全屏 scrim，各动作显 label 且点击触发各自回调；点 scrim 收起（自动）。
-- 主按钮与动作命中区 ≥44×44、动作可经 `find.bySemanticsLabel`/`find.text(AppStrings.xxx)` 定位；`disableAnimations` 时无展开动效（自动，NF1/NF3/NF4）。
+- 主按钮与动作命中区 ≥44×44、动作可经 `find.bySemanticsLabel`/`find.text(l10n.xxx)` 定位；`disableAnimations` 时无展开动效（自动，NF1/NF3/NF4）。
 
 ### 验收方式
 - 自动：

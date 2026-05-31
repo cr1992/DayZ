@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/gen/app_localizations.dart';
 import '../ui/components.dart';
 import '../ui/theme/dayz_colors.dart';
 import '../ui/theme/dayz_text_theme.dart';
@@ -693,22 +694,6 @@ String _themeFamilyLabel(String name) {
   return '雾绿';
 }
 
-final Widget _matrixHome = Builder(
-  builder: (context) {
-    final colors = context.dayz;
-    final text = context.dayzText;
-    return Scaffold(
-      backgroundColor: colors.bg,
-      body: Center(
-        child: Text(
-          'DayZ UI Kit Matrix',
-          style: text.h2.copyWith(color: colors.ink),
-        ),
-      ),
-    );
-  },
-);
-
 Widget _stage(Widget child) {
   return Scaffold(
     backgroundColor: Colors.transparent,
@@ -750,16 +735,6 @@ Widget _buttonVariants({bool compact = false}) {
   );
 
   return compact ? content : _stage(content);
-}
-
-Widget _buttonIcon() {
-  return _stage(
-    DayzButton.icon(
-      icon: const Icon(Icons.more_horiz),
-      semanticLabel: AppStrings.more,
-      onPressed: _noop,
-    ),
-  );
 }
 
 Widget _textFields({bool compact = false}) {
@@ -924,20 +899,6 @@ Widget _galleryCard({bool compact = false}) {
   return compact ? content : _stage(content);
 }
 
-Widget _pageComponents() {
-  return _stage(
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        DayzMonthHeader(month: DateTime(2026, 5), entryCount: 12),
-        DayzYearSeparator(year: 2024, referenceDate: DateTime(2026, 5, 30)),
-        const SizedBox(height: DayzSpacing.s6),
-        const DayzEmptyState(),
-      ],
-    ),
-  );
-}
-
 Widget _settings({bool compact = false}) {
   final content = Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -985,27 +946,22 @@ Widget _glassAppBar({bool compact = false}) {
 Widget _toastStage({bool compact = false}) {
   final content = Builder(
     builder: (context) {
+      final l10n = AppLocalizations.of(context);
       return Wrap(
         spacing: DayzSpacing.s3,
         runSpacing: DayzSpacing.s3,
         children: [
           DayzButton(
             variant: DayzButtonVariant.soft,
-            onPressed: () => DayzToast.show(
-              context,
-              AppStrings.toastDefault,
-              DayzToastTone.info,
-            ),
-            child: const Text(AppStrings.toastDefault),
+            onPressed: () =>
+                DayzToast.show(context, l10n.toastDefault, DayzToastTone.info),
+            child: Text(l10n.toastDefault),
           ),
           DayzButton(
             variant: DayzButtonVariant.danger,
-            onPressed: () => DayzToast.show(
-              context,
-              AppStrings.delete,
-              DayzToastTone.danger,
-            ),
-            child: const Text(AppStrings.delete),
+            onPressed: () =>
+                DayzToast.show(context, l10n.delete, DayzToastTone.danger),
+            child: Text(l10n.delete),
           ),
         ],
       );
@@ -1018,6 +974,7 @@ Widget _toastStage({bool compact = false}) {
 Widget _sheetStage({bool compact = false}) {
   final content = Builder(
     builder: (context) {
+      final l10n = AppLocalizations.of(context);
       return Wrap(
         spacing: DayzSpacing.s3,
         runSpacing: DayzSpacing.s3,
@@ -1027,7 +984,7 @@ Widget _sheetStage({bool compact = false}) {
               context,
               items: [
                 DayzSheetItem(
-                  label: AppStrings.edit,
+                  label: l10n.edit,
                   icon: Icons.edit_outlined,
                   onTap: _noop,
                 ),
@@ -1039,10 +996,10 @@ Widget _sheetStage({bool compact = false}) {
             variant: DayzButtonVariant.danger,
             onPressed: () => DayzSheet.confirm(
               context,
-              title: AppStrings.delete,
-              desc: AppStrings.emptyDescription,
+              title: l10n.delete,
+              desc: l10n.emptyDescription,
             ),
-            child: const Text(AppStrings.confirm),
+            child: Text(l10n.confirm),
           ),
         ],
       );
@@ -1053,42 +1010,52 @@ Widget _sheetStage({bool compact = false}) {
 }
 
 Widget _fabStage({bool compact = false}) {
-  return Scaffold(
-    backgroundColor: Colors.transparent,
-    body: DayzFab(
-      onTap: _noop,
-      actions: [
-        DayzFabAction(
-          label: AppStrings.camera,
-          icon: const Icon(Icons.photo_camera_outlined),
+  return Builder(
+    builder: (context) {
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: DayzFab(
           onTap: _noop,
+          actions: [
+            DayzFabAction(
+              label: l10n.camera,
+              icon: const Icon(Icons.photo_camera_outlined),
+              onTap: _noop,
+            ),
+            DayzFabAction(
+              label: l10n.voice,
+              icon: const Icon(Icons.mic_none_outlined),
+              onTap: _noop,
+            ),
+          ],
         ),
-        DayzFabAction(
-          label: AppStrings.voice,
-          icon: const Icon(Icons.mic_none_outlined),
-          onTap: _noop,
-        ),
-      ],
-    ),
+      );
+    },
   );
 }
 
 Widget _dialog({bool compact = false}) {
-  final content = DayzDialog(
-    title: const Text(AppStrings.delete),
-    message: const Text(AppStrings.emptyDescription),
-    actions: [
-      DayzButton(
-        variant: DayzButtonVariant.ghost,
-        onPressed: _noop,
-        child: const Text(AppStrings.cancel),
-      ),
-      DayzButton(
-        variant: DayzButtonVariant.danger,
-        onPressed: _noop,
-        child: const Text(AppStrings.delete),
-      ),
-    ],
+  final content = Builder(
+    builder: (context) {
+      final l10n = AppLocalizations.of(context);
+      return DayzDialog(
+        title: Text(l10n.delete),
+        message: Text(l10n.emptyDescription),
+        actions: [
+          DayzButton(
+            variant: DayzButtonVariant.ghost,
+            onPressed: _noop,
+            child: Text(l10n.cancel),
+          ),
+          DayzButton(
+            variant: DayzButtonVariant.danger,
+            onPressed: _noop,
+            child: Text(l10n.delete),
+          ),
+        ],
+      );
+    },
   );
 
   return compact ? content : _stage(content);

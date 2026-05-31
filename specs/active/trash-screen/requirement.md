@@ -86,7 +86,7 @@ When 用户点顶栏返回钮，本屏 SHALL 经 `Routes`/Navigator 返回上一
 本屏实际渲染文本/控件对比度 MUST ≥ WCAG AA：正文/标题（`--ink`/`--ink-2` 对 `--surface`/`--bg`）≥ 4.5:1；「彻底删除」「清空」危险文字（`--danger` 对其底）≥ 4.5:1；提示条文本（`--ink-2` 对 `--bg-2`）≥ 4.5:1。删除元信息「删除于…·…后清除」（`.ti-left` 用 `--ink-3`）作真实辅助文本 MUST ≥ 4.5:1，若 token 实测不达标按 tokens-theme NF1 的 expected-fail 处理（改用 `--ink-2` 或报 @Ray 调 token，**MUST NOT 在本屏硬编码绕过**）。
 
 ### NF4 · 无障碍 — Semantics 标签
-每条「恢复」/「彻底删除」按钮 MUST 携可被屏幕阅读器识别的语义标签（含条目标题，如「恢复 {标题}」「彻底删除 {标题}」），顶栏「清空」「返回」、空态插画、提示条 MUST 有语义标签 / 合理语义；widget 测试用 `find.bySemanticsLabel` / `find.text(AppStrings.xxx)` 定位。
+每条「恢复」/「彻底删除」按钮 MUST 携可被屏幕阅读器识别的语义标签（含条目标题，如「恢复 {标题}」「彻底删除 {标题}」），顶栏「清空」「返回」、空态插画、提示条 MUST 有语义标签 / 合理语义；widget 测试用 `find.bySemanticsLabel` / `find.text(l10n.xxx)` 定位。
 
 ### NF5 · 无障碍 — reduce-motion
 卡片移出动效（透明 + 右移，源屏 `.trash-item.removing` 0.26s）MUST 尊重系统「减弱动态效果」：`MediaQuery.disableAnimations` 为真时动效时长降为 0（瞬时移除），经 `design-tokens-theme`/`ui-kit-components` 的 `dayzMotionDuration` 门统一取值，MUST NOT 在本屏各自硬判。
@@ -95,7 +95,7 @@ When 用户点顶栏返回钮，本屏 SHALL 经 `Routes`/Navigator 返回上一
 SHALL 在 iOS 13+ 与 Android 8+ 正常工作：返回手势、`intl` 中文日期 / 相对时间格式化、`.btn-sm` 命中盒、移出动效在两端表现一致；中文衬线标题字体回退（落系统字）观感可接受。
 
 ### NF7 · 视觉走 token（不硬编码）
-本屏全部颜色 / 字号 / 间距 / 圆角 / 阴影 / 动效 MUST 经 token（`context.dayz.*` + `DayzSpacing/DayzRadii/DayzMotion`）取用，MUST NOT 在屏内硬编码色值 / 字号 / 间距。屏内专属样式（`.trash-*`：banner / item / 元信息行 / purge 钮危险态）以本屏私有 widget 实现，私有视觉值仍读 token；中文文案集中 `AppStrings`、日期/相对时间走 `intl`（屏内禁裸中文，落实 tokens-theme D4 / ui-kit D10）。
+本屏全部颜色 / 字号 / 间距 / 圆角 / 阴影 / 动效 MUST 经 token（`context.dayz.*` + `DayzSpacing/DayzRadii/DayzMotion`）取用，MUST NOT 在屏内硬编码色值 / 字号 / 间距。屏内专属样式（`.trash-*`：banner / item / 元信息行 / purge 钮危险态）以本屏私有 widget 实现，私有视觉值仍读 token；用户可见文案写入 `lib/l10n/arb/app_zh.arb` + `app_en.arb`，运行期经 `AppLocalizations` 取用并跑 `gen-l10n`；日期/相对时间走 `intl`（屏内禁裸中文，落实 `docs/design/11-internationalization-and-localization.md`）。
 
 ## 专项维度逐维表态（选档依据）
 

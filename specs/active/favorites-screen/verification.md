@@ -14,12 +14,12 @@
 | 场景 | 操作 | 预期结果 | 关联需求 | 方式 |
 |------|------|----------|----------|------|
 | 收藏列表倒序 | fake `EntryRepo` 返回 N 条 → pump 收藏屏 | 渲染 N 张 `DayzEntryCard`，顺序==controller `entries`（时间倒序） | R1 | 自动 |
-| 计数头 | 有内容态、count=19 | 上方计数头，标题为 `intl` 格式化「19 篇值得再读的」，文案来自 `AppStrings` | R2 | 自动 |
-| 空态 | fake 返回 0 条 → pump | 无计数头/无卡片，可见 `DayzEmptyState`（标题/说明来自 `AppStrings`） | R3 | 自动 |
-| 顶栏返回 | 点顶栏返回钮 | 触发 `Navigator.pop`/`context.pop`，标题==`AppStrings.favoritesTitle` | R4 | 自动 |
+| 计数头 | 有内容态、count=19 | 上方计数头，标题为 `intl` 格式化「19 篇值得再读的」，文案来自 `AppLocalizations` | R2 | 自动 |
+| 空态 | fake 返回 0 条 → pump | 无计数头/无卡片，可见 `DayzEmptyState`（标题/说明来自 `AppLocalizations`） | R3 | 自动 |
+| 顶栏返回 | 点顶栏返回钮 | 触发 `Navigator.pop`/`context.pop`，标题==`l10n.favoritesTitle` | R4 | 自动 |
 | 进入阅读页 | 点任一卡片 | 触发一次 `Routes.reader` 导航并携该 entryId | R5 | 自动 |
 | 加载态 | fake 用未完成 Future | 显示克制加载占位，不白屏 | R6 | 自动 |
-| 失败态 | fake 抛异常 | 显示非崩溃错误占位（`AppStrings` 文案），无未捕获异常 | R6 | 自动 |
+| 失败态 | fake 抛异常 | 显示非崩溃错误占位（`AppLocalizations` 文案），无未捕获异常 | R6 | 自动 |
 | 路由接入 | 经 `Routes.favorites` 导航 | 落到 `FavoritesScreen`（非 `PlaceholderScreen`） | R4, R5 | 自动 |
 
 ## 专项检查
@@ -58,7 +58,7 @@
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，任一不通过则 verification 未定稿。
-- [ ] 正向：R1（倒序列表）、R2（计数头）、R3（空态）、R4（顶栏返回）、R5（进阅读页）、R6（加载/失败态）、NF1（Repository 边界）、NF2（样式==token，见计数头/屏样式参数断言）、NF3（AppStrings+intl，见 R2 与文案断言）、NF4（无障碍专项）、NF5（多端专项）、NF6（不触发缩略图）均有对应场景/专项检查覆盖，无孤儿需求。
+- [ ] 正向：R1（倒序列表）、R2（计数头）、R3（空态）、R4（顶栏返回）、R5（进阅读页）、R6（加载/失败态）、NF1（Repository 边界）、NF2（样式==token，见计数头/屏样式参数断言）、NF3（AppLocalizations+intl，见 R2 与文案断言）、NF4（无障碍专项）、NF5（多端专项）、NF6（不触发缩略图）均有对应场景/专项检查覆盖，无孤儿需求。
 - [ ] 反向：各验证项「关联需求」均指向真实 R/NF；回归项（Debug Home / 路由抽查 / analyze）已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）

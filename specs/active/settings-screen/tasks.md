@@ -31,20 +31,20 @@ graph LR
 
 -----
 
-- [ ] T1 · settings 屏文案（AppStrings 追加）+ 专属图标 path 常量
+- [ ] T1 · settings 屏文案（gen-l10n）+ 专属图标 path 常量
 
-**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：AppStrings 约定`、`ui-kit-components：lib/ui/strings/app_strings.dart（既有，向其追加）、dayz_icons.dart（复用）` ｜ **关联需求：** R5, NF1 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/ui/strings/app_strings.dart`（仅**追加** settings 屏文案条目，不改既有条目）、`lib/ui/settings/settings_icons.dart`
+**同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：AppLocalizations 约定`、`i18n-localization：gen-l10n`、`ui-kit-components：dayz_icons.dart（复用）` ｜ **关联需求：** R5, NF1 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`lib/ui/settings/settings_icons.dart`
 
 ### 背景
-落地本屏全部可见文案与专属图标 path，后续任务只引用、不再写裸中文/裸 SVG。归属：`app_strings.dart` 由 `ui-kit-components` 创建、各屏增补（ui-kit D10），本任务**只追加** settings 条目，不动既有；settings 专属图标 path（DESIGN-REF §5 规范：viewBox 24、stroke=currentColor、stroke-width 2、round）归本屏 `settings_icons.dart`，能复用 `dayz_icons.dart` 既有 path 的不重复抄。
+落地本屏全部可见文案与专属图标 path，后续任务只引用、不再写裸中文/裸 SVG。文案补入 `app_zh.arb` / `app_en.arb` 并跑 `gen-l10n`；settings 专属图标 path（DESIGN-REF §5 规范：viewBox 24、stroke=currentColor、stroke-width 2、round）归本屏 `settings_icons.dart`，能复用 `dayz_icons.dart` 既有 path 的不重复抄。
 
 ### 实施
-1. 向 `lib/ui/strings/app_strings.dart` 追加 `static const` 中文字面量：`settingsTitle`、四个分组标题（`settingsGroupPrivacy/Backup/Appearance/Writing`）、各行主/次文案、`settingsDbEncryptedValue`（「已加密」）、**`settingsMediaNotLockedByPassword`（「设置主密码不会加密照片，照片始终用设备密钥保护」）**、选择器项名（`settingsThemePurple/Amber/Sage`、`settingsModeSystem/Light/Dark`）、Semantics 标签（返回、App 锁、草稿恢复）、账户副行模板片段（与 intl 配合，篇数/容量不写死，见 T2）。
+1. 向 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb` 补 key：`settingsTitle`、四个分组标题（`settingsGroupPrivacy/Backup/Appearance/Writing`）、各行主/次文案、`settingsDbEncryptedValue`（「已加密」）、**`settingsMediaNotLockedByPassword`（「设置主密码不会加密照片，照片始终用设备密钥保护」）**、选择器项名（`settingsThemePurple/Amber/Sage`、`settingsModeSystem/Light/Dark`）、Semantics 标签（返回、App 锁、草稿恢复）、账户副行模板（与 intl/ICU 配合，篇数/容量不写死，见 T2），并跑 `flutter gen-l10n`。
 2. `settings_icons.dart`：settings 专属图标的 `static const String` path（盾+勾「数据库加密」、云「本地备份」、上箭头「导出」、主题圆、外观日、文件「草稿恢复」、锁「App 锁」等设计稿 settings.html 用到、`dayz_icons.dart` 未收的），均单色线性、不含颜色属性（着色由 `flutter_svg` `colorFilter` 取 `context.dayz` 文字色，T2 接）。
 3. 全部新建 Dart 文件加 MPL-2.0 头注。
 
 ### 验收标准（做完即止）
-- `app_strings.dart` 既有条目不变、新增 settings 条目可被引用（自动：import + 断言关键常量非空字符串，含 `settingsMediaNotLockedByPassword`、`settingsDbEncryptedValue`）。
+- `app_zh.arb` / `app_en.arb` key 集合一致，新增 settings 条目可经 `AppLocalizations` 引用（自动：断言关键值非空，含 `settingsMediaNotLockedByPassword`、`settingsDbEncryptedValue`）。
 - `settings_icons.dart` 各 path 为合法 SVG path 字符串、不含 `fill`/`stroke` 颜色字面量（自动：断言常量值匹配 path 语法、不含十六进制色值）。
 
 ### 验收方式
@@ -74,13 +74,13 @@ graph LR
 ### 实施
 1. `SettingsScreen` 构造入参：`accountStats`（姓名/头像字/篇数/库字节数）、`currentThemeName`、`currentMode`、`appLockEnabled`、`draftRecoveryEnabled` + 各回调（T4/T5 接）。
 2. 定义私有 `_SettingsRowSpec`（行类型 + 图标 path + 主/次文案 key + 尾随件类型 + onTap?/onChanged?），按设计稿四分组各行声明。
-3. build：`DayzGlassAppBar` + `CustomScrollView`/滚动区，map 行清单 → `DayzSetRow`（图标徽走 `flutter_svg`+`colorFilter` currentColor、文案引 `AppStrings`、间距走 `DayzSpacing`）。
+3. build：`DayzGlassAppBar` + `CustomScrollView`/滚动区，map 行清单 → `DayzSetRow`（图标徽走 `flutter_svg`+`colorFilter` currentColor、文案引 `AppLocalizations`、间距走 `DayzSpacing`）。
 4. 账户副行经 `intl` 格式化篇数与库大小（人类可读 MB）。
 5. 全部视觉走 token（NF1），间距用 `EdgeInsetsDirectional`/`DayzSpacing`。
 6. 新文件加 MPL-2.0 头注。
 
 ### 验收标准（做完即止）
-- 渲染后可 `find` 到账户头卡 + 四个分组标题（`find.text(AppStrings.settingsGroupPrivacy)` 等）+ 设计稿各行主文案（自动，widget test）。
+- 渲染后可 `find` 到账户头卡 + 四个分组标题（`find.text(l10n.settingsGroupPrivacy)` 等）+ 设计稿各行主文案（自动，widget test）。
 - 账户副行篇数/容量由 intl 格式化入参得出（喂不同 `accountStats` → 文本随之变；断言非硬编码）（自动）。
 - 行图标徽用 `flutter_svg` 渲染、`colorFilter` 取 `context.dayz` 文字色，无写死颜色（自动：查 `SvgPicture`/`colorFilter` 来自 token）。
 - 关键元素样式参数 == 设计稿 token（分组内边距/行高/图标徽尺寸读 `DayzSpacing`/`DayzRadii`）（自动，样式参数闸）。
@@ -90,7 +90,7 @@ graph LR
   ```bash
   flutter test test/ui/settings/settings_screen_structure_test.dart
   ```
-  （pump `SettingsScreen` 喂假 `accountStats`，`find.text(AppStrings.*)` 断言四分组+各行；改入参断言账户副行随之变；断言图标 `colorFilter`/间距取自 token，**不** grep 屏源文本）
+  （pump `SettingsScreen` 喂假 `accountStats`，通过 test l10n wrapper 取 `l10n` 后 `find.text(l10n.xxx)` 断言四分组+各行；改入参断言账户副行随之变；断言图标 `colorFilter`/间距取自 token，**不** grep 屏源文本）
 
 ### 验收记录
 ```
@@ -109,14 +109,14 @@ graph LR
 两条合规红线在屏上显形：①「数据库加密」行右侧恒为只读「已加密」、无开关/无 chev/不可点（R4）；② 在「隐私与加密」分组承载「主密码锁不住照片」说明文案（R5，落点 D5：分组脚注或不可交互说明行）。归属：本任务只动 `settings_screen.dart` 中这两处行/文案的渲染与不可交互断言（行清单结构在 T2，本任务定其交互不可达与文案）。
 
 ### 实施
-1. 「数据库加密」行：主文案/次文案引 `AppStrings`，尾随件 = 只读 `Text(AppStrings.settingsDbEncryptedValue)`（「已加密」），行清单标记 `tappable=false`、无 `onTap`/`onChanged`、无 `DayzSwitch`、无 chev。
-2. 媒体红线文案：按 D5 在「隐私与加密」分组以脚注/不可交互说明行渲染 `AppStrings.settingsMediaNotLockedByPassword`（若 `DayzSetGroup` 无脚注槽则用 `DayzSetRow` 无尾随件、`tappable=false` 承载——按 ui-kit 实际 API 定）。
+1. 「数据库加密」行：主文案/次文案引 `AppLocalizations`，尾随件 = 只读 `Text(l10n.settingsDbEncryptedValue)`（「已加密」），行清单标记 `tappable=false`、无 `onTap`/`onChanged`、无 `DayzSwitch`、无 chev。
+2. 媒体红线文案：按 D5 在「隐私与加密」分组以脚注/不可交互说明行渲染 `l10n.settingsMediaNotLockedByPassword`（若 `DayzSetGroup` 无脚注槽则用 `DayzSetRow` 无尾随件、`tappable=false` 承载——按 ui-kit 实际 API 定）。
 3. 两处文案的 Semantics 可被屏幕阅读器读到（NF2，加 `Semantics` 或确保 `Text` 默认语义可读）。
 
 ### 验收标准（做完即止）
-- 「数据库加密」行右侧只显「已加密」文本，无 `DayzSwitch`、无 chev（自动：该行子树 `find.byType(DayzSwitch)` 为空、`find.text(AppStrings.settingsDbEncryptedValue)` 命中）。
+- 「数据库加密」行右侧只显「已加密」文本，无 `DayzSwitch`、无 chev（自动：该行子树 `find.byType(DayzSwitch)` 为空、`find.text(l10n.settingsDbEncryptedValue)` 命中）。
 - 点击「数据库加密」行不触发任何回调/导航（自动：tap 后无状态变更、无回调被调用——用 spy 回调断言零调用）。
-- 「主密码锁不住照片」文案在屏上可见且可被 `find.text(AppStrings.settingsMediaNotLockedByPassword)` 定位（自动，R5）。
+- 「主密码锁不住照片」文案在屏上可见且可被 `find.text(l10n.settingsMediaNotLockedByPassword)` 定位（自动，R5）。
 - 该说明文案有可读 Semantics（自动：`find.bySemanticsLabel` 或语义树含该文本）（NF2）。
 
 ### 验收方式
@@ -143,7 +143,7 @@ graph LR
 「主题色」「外观模式」两行点击 → `DayzSheet.picker` 单选选择器 → 选中调本屏入参回调 `onPickTheme(themeName)` / `onPickMode(ThemeMode)`（屏内只喊、外壳换肤，对齐原型 `settheme/setmode` 上抛）。本屏不持 `theme_controller`、不直接改 `ThemeData`。reduce-motion 经 ui-kit 的 `dayzMotionDuration`，本屏不另写动效时长。
 
 ### 实施
-1. 「主题色」行 `tappable`，右侧 `.val` = 当前主题色点（`context.dayz.accent` 或入参映射的色点）+ 名称（`AppStrings.settingsTheme*`）+ chev；点击 → `DayzSheet.picker` 列三套主题（`swatch` 色点、命中 `currentThemeName` 打勾）→ 选中 `onPickTheme(themeName)` + 关闭。
+1. 「主题色」行 `tappable`，右侧 `.val` = 当前主题色点（`context.dayz.accent` 或入参映射的色点）+ 名称（`l10n.settingsTheme*`）+ chev；点击 → `DayzSheet.picker` 列三套主题（`swatch` 色点、命中 `currentThemeName` 打勾）→ 选中 `onPickTheme(themeName)` + 关闭。
 2. 「外观模式」行 `tappable`，右侧 `.val` 的 `.mv` = 当前模式名 + chev；点击 → picker 列 跟随系统/浅色/深色（命中 `currentMode` 打勾）→ 选中 `onPickMode(ThemeMode)` + 关闭。
 3. 选择器弹出/收起动效经 `dayzMotionDuration(context, base)`（ui-kit），reduce-motion 下瞬时。
 
@@ -180,7 +180,7 @@ graph LR
 ### 实施
 1. 「App 锁」「恢复未完成的编辑」行尾随 `DayzSwitch`，`value` 取入参、`onChanged` 调对应回调（本屏不持久化）。
 2. 「本地备份」「导出」行尾随 chev、`tappable`，点击调 `onTapBackup`/`onTapExport`（指向占位/上抛导航意图，真实页面归后续 spec）。
-3. 各开关有 Semantics 标签（`AppStrings`，含开关状态）；命中区 ≥ 44px（NF2）。
+3. 各开关有 Semantics 标签（`AppLocalizations`，含开关状态）；命中区 ≥ 44px（NF2）。
 
 ### 验收标准（做完即止）
 - 拨「恢复未完成的编辑」开关 → `onDraftRecoveryChanged(true/false)` 被调用且传新值（自动，回调 spy）（R6）。
@@ -224,7 +224,7 @@ Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`on
 ### 验收标准（做完即止）
 - `demos` 末尾新增项指向 `settings_screen_demo`，Debug Home 可进入（自动，widget test：构建 demo 列表 `find` 到该项并可 pump 进入）。
 - demo 内切主题色/外观 → 经最小控制器换肤生效（自动：pump demo，tap 选择器选项后断言主题切换可观测，如 `context.dayz.accent` 变）。
-- demo 内两条红线文案可见（自动：`find.text(AppStrings.settingsDbEncryptedValue)` + `find.text(AppStrings.settingsMediaNotLockedByPassword)`）。
+- demo 内两条红线文案可见（自动：`find.text(l10n.settingsDbEncryptedValue)` + `find.text(l10n.settingsMediaNotLockedByPassword)`）。
 - 六套主题/明暗下 demo 渲染人工目视符合设计稿 settings.html（人工，@Ray）。
 
 ### 验收方式

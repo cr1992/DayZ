@@ -7,7 +7,7 @@
 
 # 设计：search-screen
 
-> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/search.html`](../../../ui-design/current/pages/screens/search.html)（`?state=typing|results|empty`）；组件类名/最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3b「搜索 `.search-head`」/ §3c「搜索建议行 `.suggest-row`」「空状态 `.empty`」/ §3「标签 `.tag`」「时间线日记卡片 `.entry`」；解析后样式真源 `ui-design/current/pages/assets/spec.css`（`.search-head`/`.search-input`/`.search-cancel`/`.search-sec`/`.search-stat`/`.hl` 段，行约 826–844、919）；HTML 机制 → Flutter 映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6；还原方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1/§3/§4/§11。token / `context.dayz.*` / `AppStrings` / `intl` 约定来自 `design-tokens-theme`（D1/D4）；复用组件与外壳来自 `ui-kit-components`（`DayzEntryCard`/`DayzSearchField`/`DayzTag`/`DayzEmptyState`/`dayzMotionDuration`）与 `ui-shell-navigation`（`Routes.search`/`Routes.reader`）。
+> 视觉与映射依据：屏源真源 [`ui-design/current/pages/screens/search.html`](../../../ui-design/current/pages/screens/search.html)（`?state=typing|results|empty`）；组件类名/最小 HTML [`ui-design/current/docs/DESIGN-REF.md`](../../../ui-design/current/docs/DESIGN-REF.md) §3b「搜索 `.search-head`」/ §3c「搜索建议行 `.suggest-row`」「空状态 `.empty`」/ §3「标签 `.tag`」「时间线日记卡片 `.entry`」；解析后样式真源 `ui-design/current/pages/assets/spec.css`（`.search-head`/`.search-input`/`.search-cancel`/`.search-sec`/`.search-stat`/`.hl` 段，行约 826–844、919）；HTML 机制 → Flutter 映射 [`ui-design/current/docs/PROTOTYPE-ARCH.md`](../../../ui-design/current/docs/PROTOTYPE-ARCH.md) §6；还原方法论 [`docs/design/10-ui-restore-and-design-sync.md`](../../../docs/design/10-ui-restore-and-design-sync.md) §1/§3/§4/§11。token / `context.dayz.*` / `AppLocalizations` / `intl` 约定来自 `design-tokens-theme`（D1/D4）；复用组件与外壳来自 `ui-kit-components`（`DayzEntryCard`/`DayzSearchField`/`DayzTag`/`DayzEmptyState`/`dayzMotionDuration`）与 `ui-shell-navigation`（`Routes.search`/`Routes.reader`）。
 
 ## 技术决策
 
@@ -75,20 +75,19 @@
 - **理由：** 守 NF2，本屏只管筛选的**呈现与编辑**，不管落库。
 - **代价：** `SearchFilters` 的字段集需与 data-layer `searchEntries` 对齐（同属 D6 待确认）。
 
-### D9 · 文案进 AppStrings、日期走 intl（落实 tokens-theme D4 / ui-kit D10）
+### D9 · 文案进 AppLocalizations、日期走 intl（落实 docs/design/11）
 - **状态：** 采纳
-- **背景：** tokens-theme D4 / ui-kit D10 已确立"文案集中 `AppStrings`、屏内禁裸中文、日期/数字走 intl"，`AppStrings` 单类由 `ui-kit-components` 首建（其 D10）。
-- **选择：** 本屏所有可见中文（「取消」「最近搜索」「标签」「找到」「篇 · 按时间倒序」「没有找到『…』」空态引导、error 文案、「重试」、各 Semantics 标签）**向 `ui-kit-components` 的 `lib/ui/strings/app_strings.dart` 追加条目**（跨 spec 共享文件，归属在 README/ui-kit 已拍板：ui-kit 创建、各屏增补），本屏把它列入白名单时引用此归属、不另建。计数 N（「找到 N 篇」）、结果卡片日期段走 `package:intl`（`NumberFormat`/`DateFormat`），MUST NOT 自拼 `'3 篇'`/`'2026年5月'`。widget 测试用 `find.text(AppStrings.xxx)` 而非裸中文。
+- **背景：** UI 文案唯一来源是 zh/en ARB。本屏有「取消」「最近搜索」「标签」「找到」「篇 · 按时间倒序」「没有找到『…』」空态引导、error 文案、「重试」、各 Semantics 标签等。
+- **选择：** 本屏所有可见文案补入 `lib/l10n/arb/app_zh.arb` 与 `app_en.arb`，运行期经 `AppLocalizations.of(context)` / `l10n.xxx` 取用；计数 N（「找到 N 篇」）、结果卡片日期段走 `package:intl` / ARB ICU，MUST NOT 自拼 `'3 篇'`/`'2026年5月'`。widget 测试用 `find.text(l10n.xxx)` 而非裸中文。
 - **理由：** 单一可审计文案落点 + 测试自带"只引常量"回归护栏。
-- **代价：** 向跨 spec 共享文件追加条目（已在 README/ui-kit 拍板归属，不重复创建）；可接受。
-- ⚠️ **待确认**：若执行时 `ui-kit-components` 的 `AppStrings` 尚未落地，本屏 MUST NOT 抢先创建该共享文件（scope creep）——停下，按 ui-kit 归属协调；过渡期可在本屏内 `search_strings.dart`（同构常量类）集中、就绪后并入（记已知风险，与 ui-shell D4「shell_strings 待并入」同模式）。
+- **代价：** `app_zh.arb` / `app_en.arb` 是跨 spec 共享文件，需和其他 UI spec 合并 key；改完要跑 `gen-l10n`。
 
 ## 架构
 
 ```mermaid
 graph TD
-  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppStrings/intl 约定] --> PAGE
-  KIT[ui-kit-components: DayzSearchField / DayzEntryCard / DayzTag / DayzEmptyState / dayzMotionDuration / AppStrings] --> PAGE
+  TOK[design-tokens-theme: context.dayz / DayzSpacing/Radii/Motion / AppLocalizations/intl 约定] --> PAGE
+  KIT[ui-kit-components: DayzSearchField / DayzEntryCard / DayzTag / DayzEmptyState / dayzMotionDuration / AppLocalizations] --> PAGE
   SHELL[ui-shell-navigation: Routes.search / Routes.reader / 进入本屏] --> PAGE
   subgraph SS[search-screen · lib/ui/search/]
     PAGE[search_page.dart · 五态 switch 渲染]
@@ -109,7 +108,7 @@ graph TD
 
 ## 文件变更
 
-> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 在文件顶部加 MPL-2.0 头注。本清单主体落 `lib/ui/search/`、`lib/demo/`、`test/ui/search/`，加两个**共享文件**：`lib/demo/demo_entry.dart`（末尾追加一行）与 `lib/ui/strings/app_strings.dart`（向 ui-kit 首建文件**追加**条目，归属已在 README/ui-kit 拍板，本屏不新建）。除这两个共享文件外，**不列入** ui-kit / shell / tokens / data 的任何交付物（顶栏/卡片/Routes/Repo 等本屏只引用、注入或调用签名，绝不改）。
+> 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 在文件顶部加 MPL-2.0 头注。本清单主体落 `lib/ui/search/`、`lib/demo/`、`test/ui/search/`，加共享文件：`lib/demo/demo_entry.dart`（末尾追加一行）与 `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/`（补 gen-l10n 文案）。除这些共享文件外，**不列入** ui-kit / shell / tokens / data 的任何交付物（顶栏/卡片/Routes/Repo 等本屏只引用、注入或调用签名，绝不改）。
 
 **屏与状态机 `lib/ui/search/`**
 - `lib/ui/search/search_page.dart`         新建（搜索屏：`DayzSearchField` + 取消钮 + 五态 `switch(state)` 渲染主体；results 用朴素 `ListView`，D1/D3/D7）
@@ -118,8 +117,9 @@ graph TD
 - `lib/ui/search/search_highlight.dart`     新建（`buildHighlightedSpans(text, query, baseStyle, hitStyle)` 纯函数，命中切分 → `List<InlineSpan>`，D4）
 - `lib/ui/search/search_source.dart`        新建（`abstract interface class SearchSource` + `RepoSearchSource` 适配 `EntryRepo`/`TagRepo`；适配层是唯一接触 Repository 的处，屏/控制器只依赖接口，D5/D6/NF2）
 
-**跨 spec 共享文件（追加，不新建）`lib/ui/strings/`**
-- `lib/ui/strings/app_strings.dart`         修改（**向 `ui-kit-components` 首建的该文件追加**本屏文案条目；归属在 README/ui-kit 拍板：ui-kit 创建、各屏增补；本 spec 只追加、MUST NOT 新建——若 ui-kit 未就绪按 D9 ⚠️ 过渡用 `lib/ui/search/search_strings.dart` 并回填本清单）
+**gen-l10n 文案**
+- `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`         修改（补本屏 zh/en 文案与 Semantics key；两份 key 集合一致，D9）
+- `lib/l10n/gen/app_localizations*.dart`        修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/search_demo.dart`               新建（注入内存假 `SearchSource`，可手动驱动六态走查，R9）
@@ -130,13 +130,13 @@ graph TD
 - `test/ui/search/fake_search_source.dart`  新建（测试用假 `SearchSource`，受控返回命中/空/抛错；共享基建，任务 `验收基建` 预批）
 
 > **不触 `pubspec.yaml`**：本屏依赖（`flutter_svg`/`go_router`/`widgetbook`/`intl`）均已由 `design-tokens-theme`/`ui-kit-components`/`ui-shell-navigation` 引入或为 SDK 传递依赖，本 spec 不新增任何 pub 依赖；如执行中发现确需新依赖，停下回填本清单 + 复核升档再继续（spec-guide P2）。
-> **不触 `AppStrings` 的创建**：上面 `lib/ui/strings/app_strings.dart` 列为「修改/追加」而非「新建」——它由 `ui-kit-components` 首建（其 D10），本屏只追加条目、MUST NOT 新建（D9）。若执行时 ui-kit 未就绪，按 D9 ⚠️ 过渡：本屏内新建 `lib/ui/search/search_strings.dart`（同构常量类），届时**回填本清单**再写。
+> **不触旧文案桶**：本屏文案只进 ARB / `AppLocalizations`，不得新建 `search_strings.dart` 或追加临时静态文案。
 
 ## 已知风险
 
 - **跨 spec 依赖未就绪的降级（按交付物名引用，可能尚未实现）：**
-  - `design-tokens-theme`（README 依赖列已登记，**强依赖**）：`context.dayz.*`（含 `accentSoft2`/`accentInk`/`bg2`）、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppStrings`/`intl` 约定。未定稿则本屏阻塞（READY 门）。
-  - `ui-kit-components`（README 依赖列已登记，**强依赖**）：`DayzSearchField`（`.search-head` 输入框）、`DayzEntryCard`（结果卡片）、`DayzTag`/`DayzTag.outline`（筛选/标签 chip）、`DayzEmptyState`（空态）、`dayzMotionDuration`（reduce-motion 门）、`AppStrings` 单类落点（D9）。未就绪降级：搜索头/卡片/空态用最小内联占位（走 token），文案过渡放 `search_strings.dart`，reduce-motion 暂在本屏内联判 `MediaQuery.disableAnimations`（就绪后改走门）。
+  - `design-tokens-theme`（README 依赖列已登记，**强依赖**）：`context.dayz.*`（含 `accentSoft2`/`accentInk`/`bg2`）、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations`/`intl` 约定。未定稿则本屏阻塞（READY 门）。
+  - `ui-kit-components`（README 依赖列已登记，**强依赖**）：`DayzSearchField`（`.search-head` 输入框）、`DayzEntryCard`（结果卡片）、`DayzTag`/`DayzTag.outline`（筛选/标签 chip）、`DayzEmptyState`（空态）、`dayzMotionDuration`（reduce-motion 门）。未就绪降级：搜索头/卡片/空态用最小内联占位（走 token），reduce-motion 暂在本屏内联判 `MediaQuery.disableAnimations`（就绪后改走门）。
   - `ui-shell-navigation`（README 依赖列已登记，**强依赖**）：`Routes.search`（进入本屏）/ `Routes.reader`（点卡片去向）。`Routes` 常量是其 D2 跨 spec 契约，本屏只引用、不改名。未就绪降级：demo 内用占位导航。
   - `data-layer`（README 依赖列已登记，但**关键方法待新增**，见 D6）：`EntryRepo.searchEntries(query, filters, limit)` LIKE 子串入口 + `EntrySearchHit` 投影 + （可选）`TagRepo.suggest()`。**该方法当前不存在**（data-layer D8 不暴露 FTS / 无 LIKE 入口）→ **本屏对它的依赖标「待确认」**：精确签名/归属须与 data-layer 协调（该方法属 data-layer 可改文件，本 spec 不实现）。未就绪期间本屏经 `SearchSource` 假实现工作，功能可 widget test 验证、真数据不可见。
   - `design-sync-automation`（**非 README 依赖**，仅验证基建关系）：参数/几何抽取 harness、`element-map.yaml`、区域化 SSIM 兜底属其交付物；本屏的样式/几何断言用 Flutter 原生 `tester.getRect` / 解析 widget 属性自验，**不依赖 harness 就绪**；需"对设计稿源屏比框"的部分留给 design-sync 期二，不在本 spec 重造。
@@ -144,7 +144,7 @@ graph TD
 - **高亮像素差（D4）**：`TextSpan.backgroundColor` 无 `.hl` 的 3px 圆角与 `0 2px` padding，直角无内边距是功能等价降级，圆角/padding 差进 golden/SSIM advisory（design-sync-automation 期二），不阻塞放行；强需圆角则后续 `WidgetSpan` 增强（另起）。
 - **结果无分页（D3）**：MVP 结果一次性取并朴素 `ListView` 全渲染；结果极多时无游标分页（时间线那套不引入本屏）。量大分页留后续 spec，记此一笔。
 - **筛选/最近搜索数据源（D8/R5）**：筛选条件如何转 where、最近搜索历史/标签建议如何持久化均归 data-layer / 后续；本屏只渲染与编辑、作入参传递，未就绪用空列表 / 假实现降级。
-- **`AppStrings` 落点二义（D9）**：与 `ui-shell-navigation` 同模式——`AppStrings` 实体由 ui-kit 首建，本屏只追加；若 ui-kit 未就绪，过渡用 `search_strings.dart`，就绪后并入并回填文件变更，**MUST NOT 在两处各建**。
+- **ARB 合并风险（D9）**：多个 UI spec 可能并行补 `app_zh.arb` / `app_en.arb`；合并时以 key 集合一致和 `scripts/check_arb_sync.sh` 为准，MUST NOT 用屏内 strings 文件或静态文案常量临时绕过。
 - **无持久化 schema 变更**：本屏不新增/改 DB schema（查询入口的实现归 data-layer）→ 无数据迁移/回滚要素。
 - **新文件加 MPL-2.0 头注**：`lib/ui/search/*.dart`、`lib/demo/search_demo.dart` 等全部新建 Dart 文件 MUST 在文件顶部加 MPL-2.0 头注（模板见 AGENTS.md / README「License」）。
 </content>

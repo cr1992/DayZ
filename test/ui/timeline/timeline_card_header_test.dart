@@ -9,8 +9,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'package:dayz/ui/shell/app_router.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/timeline/timeline_controller.dart';
 import 'package:dayz/ui/timeline/timeline_month_section.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
@@ -89,7 +88,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Jun'), findsOneWidget);
-        expect(find.text('2026 · ${AppStrings.entryCount(2)}'), findsOneWidget);
+        expect(find.text('2026 · ${testEnL10n.entryCount(2)}'), findsOneWidget);
         expect(find.text('2'), findsOneWidget);
         expect(
           find.text(
@@ -127,10 +126,10 @@ void main() {
 }
 
 class _RouterHarness extends StatelessWidget {
-  const _RouterHarness({required this.controller, this.locale});
+  const _RouterHarness({required this.controller, required this.locale});
 
   final TimelineController controller;
-  final Locale? locale;
+  final Locale locale;
 
   @override
   Widget build(BuildContext context) {
@@ -153,11 +152,7 @@ class _RouterHarness extends StatelessWidget {
       ],
     );
 
-    return MaterialApp.router(
-      routerConfig: router,
-      theme: DayzThemes.purpleLight,
-      locale: locale,
-    );
+    return localizedRouterTestApp(routerConfig: router, locale: locale);
   }
 }
 
@@ -168,10 +163,7 @@ class _DelegateHarness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
-      home: Scaffold(body: child),
-    );
+    return localizedTestApp(child: child);
   }
 }
 

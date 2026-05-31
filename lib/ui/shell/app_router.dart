@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
 import 'package:dayz/demo/debug_home.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
@@ -48,7 +47,8 @@ final ShellState shellState = ShellState();
 /// Author: @Ray
 final GoRouter appRouter = GoRouter(
   initialLocation: Routes.timelinePath,
-  errorBuilder: (context, state) => const PlaceholderScreen(title: 'Not Found'),
+  errorBuilder: (context, state) =>
+      PlaceholderScreen(titleBuilder: (l10n) => l10n.notFound),
   routes: [
     // Shell bounded routes
     ShellRoute(
@@ -86,49 +86,49 @@ final GoRouter appRouter = GoRouter(
           name: Routes.timeline,
           path: Routes.timelinePath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.timeline),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.timeline),
         ),
         GoRoute(
           name: Routes.reader,
           path: Routes.readerPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.reader),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.reader),
         ),
         GoRoute(
           name: Routes.onthisday,
           path: Routes.onthisdayPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.onThisDay),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.onThisDay),
         ),
         GoRoute(
           name: Routes.settings,
           path: Routes.settingsPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.settings),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.settings),
         ),
         GoRoute(
           name: Routes.calendar,
           path: Routes.calendarPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.calendar),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.calendar),
         ),
         GoRoute(
           name: Routes.favorites,
           path: Routes.favoritesPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.favorites),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.favorites),
         ),
         GoRoute(
           name: Routes.trash,
           path: Routes.trashPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.trash),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.trash),
         ),
         GoRoute(
           name: Routes.memory,
           path: Routes.memoryPath,
           builder: (context, state) =>
-              const PlaceholderScreen(title: AppStrings.memoryCardExport),
+              PlaceholderScreen(titleBuilder: (l10n) => l10n.memoryCardExport),
         ),
       ],
     ),
@@ -136,14 +136,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.editor,
       path: Routes.editorPath,
-      builder: (context, state) =>
-          const PlaceholderScreen(title: AppStrings.editor, showAppBar: true),
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.editor,
+        showAppBar: true,
+      ),
     ),
     GoRoute(
       name: Routes.search,
       path: Routes.searchPath,
-      builder: (context, state) =>
-          const PlaceholderScreen(title: AppStrings.search, showAppBar: true),
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.search,
+        showAppBar: true,
+      ),
     ),
     GoRoute(
       name: Routes.debugHome,

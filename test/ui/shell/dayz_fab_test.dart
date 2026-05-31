@@ -2,9 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:dayz/ui/shell/dayz_fab.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
+import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,7 +22,7 @@ void main() {
         onTap: () => mainTaps += 1,
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () => cameraTaps += 1,
           ),
@@ -36,7 +35,7 @@ void main() {
 
     expect(mainTaps, 1);
     expect(cameraTaps, 0);
-    expect(find.text(AppStrings.camera), findsNothing);
+    expect(find.text(testL10n.camera), findsNothing);
     expect(find.byKey(const ValueKey('dayz-fab-scrim')), findsOneWidget);
     expect(
       tester
@@ -53,12 +52,12 @@ void main() {
       _FabTestApp(
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () {},
           ),
           DayzFabAction(
-            label: AppStrings.voice,
+            label: testL10n.voice,
             icon: const Icon(Icons.mic_none_outlined),
             onTap: () {},
           ),
@@ -69,9 +68,9 @@ void main() {
     await tester.longPress(find.byKey(const ValueKey('dayz-fab-main')));
     await tester.pump();
 
-    expect(find.text(AppStrings.camera), findsOneWidget);
-    expect(find.text(AppStrings.voice), findsOneWidget);
-    expect(find.bySemanticsLabel(AppStrings.camera), findsOneWidget);
+    expect(find.text(testL10n.camera), findsOneWidget);
+    expect(find.text(testL10n.voice), findsOneWidget);
+    expect(find.bySemanticsLabel(testL10n.camera), findsOneWidget);
     expect(
       tester
           .widget<AnimatedOpacity>(
@@ -92,12 +91,12 @@ void main() {
       _FabTestApp(
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () => cameraTaps += 1,
           ),
           DayzFabAction(
-            label: AppStrings.voice,
+            label: testL10n.voice,
             icon: const Icon(Icons.mic_none_outlined),
             onTap: () => voiceTaps += 1,
           ),
@@ -107,12 +106,12 @@ void main() {
 
     await tester.longPress(find.byKey(const ValueKey('dayz-fab-main')));
     await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsLabel(AppStrings.camera));
+    await tester.tap(find.bySemanticsLabel(testL10n.camera));
     await tester.pumpAndSettle();
 
     expect(cameraTaps, 1);
     expect(voiceTaps, 0);
-    expect(find.text(AppStrings.camera), findsNothing);
+    expect(find.text(testL10n.camera), findsNothing);
     expect(
       tester
           .widget<AnimatedOpacity>(
@@ -130,7 +129,7 @@ void main() {
       _FabTestApp(
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () => cameraTaps += 1,
           ),
@@ -144,7 +143,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(cameraTaps, 0);
-    expect(find.text(AppStrings.camera), findsNothing);
+    expect(find.text(testL10n.camera), findsNothing);
     expect(
       tester
           .widget<AnimatedOpacity>(
@@ -162,7 +161,7 @@ void main() {
       _FabTestApp(
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () {},
           ),
@@ -179,7 +178,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final actionSize = tester.getSize(
-      find.byKey(ValueKey('dayz-fab-action-${AppStrings.camera}')),
+      find.byKey(ValueKey('dayz-fab-action-${testL10n.camera}')),
     );
 
     expect(actionSize.width, greaterThanOrEqualTo(44));
@@ -193,7 +192,7 @@ void main() {
       _FabTestApp(
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () {},
           ),
@@ -224,7 +223,7 @@ void main() {
         disableAnimations: true,
         actions: [
           DayzFabAction(
-            label: AppStrings.camera,
+            label: testL10n.camera,
             icon: const Icon(Icons.photo_camera_outlined),
             onTap: () {},
           ),
@@ -248,7 +247,7 @@ void main() {
     await tester.longPress(find.byKey(const ValueKey('dayz-fab-main')));
     await tester.pump();
 
-    expect(find.text(AppStrings.camera), findsOneWidget);
+    expect(find.text(testL10n.camera), findsOneWidget);
     expect(
       tester
           .widget<AnimatedOpacity>(
@@ -273,8 +272,7 @@ class _FabTestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: DayzThemes.purpleLight,
+    return localizedMaterialApp(
       home: MediaQuery(
         data: MediaQueryData(disableAnimations: disableAnimations),
         child: Scaffold(

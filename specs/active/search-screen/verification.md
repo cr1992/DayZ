@@ -26,7 +26,7 @@
 ## 专项检查
 
 ### 无障碍（NF1）
-- [ ] 取消钮/输入框/结果卡片/空态/重试钮均有 `Semantics` 标签（取 `AppStrings`）— 自动：`flutter test test/ui/search/search_a11y_test.dart`（`find.bySemanticsLabel(AppStrings.xxx)` 命中）
+- [ ] 取消钮/输入框/结果卡片/空态/重试钮均有 `Semantics` 标签（取 `AppLocalizations`）— 自动：`flutter test test/ui/search/search_a11y_test.dart`（`find.bySemanticsLabel(l10n.xxx)` 命中）
 - [ ] 取消钮 / 建议行 / 标签 chip / 筛选去除叉 `.x` / 卡片可点区命中盒 ≥ 44×44 — 自动：同上（`tester.getSize`）
 - [ ] reduce-motion：`MediaQueryData(disableAnimations: true)` 下输入光标闪烁/切态过渡时长 == 0（经 `dayzMotionDuration`）— 自动：同上（注入 MediaQuery 断言时长）
 - [ ] 高亮文字（`accentInk` on `accentSoft2`）对比度 ≥ WCAG AA — 自动：复用 `design-tokens-theme` 的 `test/ui/theme/contrast_test.dart` + `contrast_xfail.yaml`（单一真源，本屏不另立阈值；该对组若落入 tokens-theme 已登记的 expected-fail 则按其阻塞口径报 @Ray，不在本屏静默通过）

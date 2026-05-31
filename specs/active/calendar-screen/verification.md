@@ -64,7 +64,7 @@
 
 ## 验证命令（汇总自动项）
 ```bash
-flutter test test/ui/calendar/      # 日期数学 / 月视图 / 控制器 / 屏 / AppStrings / 对比度 / 几何 / golden
+flutter test test/ui/calendar/      # 日期数学 / 月视图 / 控制器 / 屏 / AppLocalizations / 对比度 / 几何 / golden
 flutter test test/demo/             # 日历 demo + Debug Home 回归
 flutter analyze
 ```

@@ -5,53 +5,87 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/app.dart';
 import 'package:dayz/demo/debug_home.dart';
+import 'package:dayz/l10n/locale_controller.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/theme_controller.dart';
-import 'package:dayz/ui/strings/app_strings.dart';
+import 'l10n/localized_test_app.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  late LocaleController localeController;
+
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    localeController = LocaleController();
     appRouter.go('/timeline');
   });
 
-  testWidgets('App cold start goes to timeline screen not DebugHome directly', (tester) async {
-    await tester.pumpWidget(const DayZApp());
-    await tester.pumpAndSettle();
+  tearDown(() {
+    localeController.dispose();
+  });
+
+  Future<void> pumpAppFrame(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  testWidgets('App cold start goes to timeline screen not DebugHome directly', (
+    tester,
+  ) async {
+    await localeController.setLocale(const Locale('zh'));
+
+    await tester.pumpWidget(DayZApp(localeController: localeController));
+    await pumpAppFrame(tester);
 
     // Verify it landed on Timeline placeholder screen (our initialLocation)
-    expect(find.text(AppStrings.timeline), findsOneWidget);
-    expect(find.text(AppStrings.shellPlaceholderSuffix), findsOneWidget);
+    expect(find.text(testL10n.timeline), findsOneWidget);
+    expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
 
     // Verify DebugHome is NOT the immediate child (since we use GoRouter)
     expect(find.byType(DebugHome), findsNothing);
   });
 
   testWidgets('Routes.debugHome can navigate to DebugHome', (tester) async {
-    await tester.pumpWidget(const DayZApp());
-    await tester.pumpAndSettle();
+    await localeController.setLocale(const Locale('zh'));
+
+    await tester.pumpWidget(DayZApp(localeController: localeController));
+    await pumpAppFrame(tester);
 
     appRouter.goNamed(Routes.debugHome);
-    await tester.pumpAndSettle();
+    await pumpAppFrame(tester);
 
     // Verify DebugHome is now visible
     expect(find.byType(DebugHome), findsOneWidget);
   });
 
-  testWidgets('theme controller updates rebuilds DayZApp tree with correct colors', (tester) async {
-    final controller = ThemeController();
+  testWidgets(
+    'theme controller updates rebuilds DayZApp tree with correct colors',
+    (tester) async {
+      final controller = ThemeController();
+      await localeController.setLocale(const Locale('zh'));
 
-    await tester.pumpWidget(DayZApp(themeController: controller));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        DayZApp(
+          localeController: localeController,
+          themeController: controller,
+        ),
+      );
+      await pumpAppFrame(tester);
 
-    final BuildContext contextBefore = tester.element(find.text(AppStrings.timeline));
-    expect(contextBefore.dayz.accent, DayzColors.purpleLight.accent);
+      final BuildContext contextBefore = tester.element(
+        find.text(testL10n.timeline),
+      );
+      expect(contextBefore.dayz.accent, DayzColors.purpleLight.accent);
 
-    // Switch to amber theme
-    controller.setTheme('amber');
-    await tester.pumpAndSettle();
+      // Switch to amber theme
+      controller.setTheme('amber');
+      await pumpAppFrame(tester);
 
-    final BuildContext contextAfter = tester.element(find.text(AppStrings.timeline));
-    expect(contextAfter.dayz.accent, DayzColors.amberLight.accent);
-  });
+      final BuildContext contextAfter = tester.element(
+        find.text(testL10n.timeline),
+      );
+      expect(contextAfter.dayz.accent, DayzColors.amberLight.accent);
+    },
+  );
 }

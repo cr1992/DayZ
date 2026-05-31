@@ -5,7 +5,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../strings/app_strings.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
+
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../util/dayz_motion.dart';
@@ -150,9 +151,11 @@ class _DayzFabState extends State<DayzFab> {
   }
 
   Widget _buildMainButton(DayzColors colors, Duration duration) {
+    final l10n = AppLocalizations.of(context);
+
     return Semantics(
       button: true,
-      label: AppStrings.add,
+      label: l10n.add,
       onTap: _handleSemanticTap,
       child: ExcludeSemantics(
         child: Listener(
