@@ -997,6 +997,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{date} {weekday}'**
   String editorDateKicker(String date, String weekday);
+
+  /// No description provided for @editorToolbarHeading.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get editorToolbarHeading;
+
+  /// No description provided for @editorToolbarBold.
+  ///
+  /// In zh, this message translates to:
+  /// **'粗体'**
+  String get editorToolbarBold;
+
+  /// No description provided for @editorToolbarItalic.
+  ///
+  /// In zh, this message translates to:
+  /// **'斜体'**
+  String get editorToolbarItalic;
+
+  /// No description provided for @editorToolbarUnderline.
+  ///
+  /// In zh, this message translates to:
+  /// **'下划线'**
+  String get editorToolbarUnderline;
+
+  /// No description provided for @editorToolbarStrikethrough.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除线'**
+  String get editorToolbarStrikethrough;
+
+  /// No description provided for @editorToolbarCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'行内代码'**
+  String get editorToolbarCode;
+
+  /// No description provided for @editorToolbarColor.
+  ///
+  /// In zh, this message translates to:
+  /// **'颜色高亮'**
+  String get editorToolbarColor;
+
+  /// No description provided for @editorToolbarBulletedList.
+  ///
+  /// In zh, this message translates to:
+  /// **'无序列表'**
+  String get editorToolbarBulletedList;
+
+  /// No description provided for @editorToolbarNumberedList.
+  ///
+  /// In zh, this message translates to:
+  /// **'有序列表'**
+  String get editorToolbarNumberedList;
+
+  /// No description provided for @editorToolbarTodoList.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办列表'**
+  String get editorToolbarTodoList;
+
+  /// No description provided for @editorToolbarQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'引用'**
+  String get editorToolbarQuote;
+
+  /// No description provided for @editorToolbarLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接'**
+  String get editorToolbarLink;
+
+  /// No description provided for @editorToolbarDivider.
+  ///
+  /// In zh, this message translates to:
+  /// **'分隔线'**
+  String get editorToolbarDivider;
+
+  /// No description provided for @editorToolbarImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get editorToolbarImage;
 }
 
 class _AppLocalizationsDelegate

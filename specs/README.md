@@ -14,7 +14,6 @@
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
-| [editor-integration-screen](active/editor-integration-screen/) | P2 | 进行中 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-05-29 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（T1 已完成） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [settings-screen](active/settings-screen/) | P2 | 待实现 | design-tokens-theme, ui-kit-components, ui-shell-navigation, key-management | @Ray | 2026-05-29 |
@@ -33,6 +32,7 @@
 |------|----------|------|--------|------------|
 | [timeline-screen](active/timeline-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-31 |
 | [reader-screen](active/reader-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-31 |
+| [editor-integration-screen](active/editor-integration-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-06-01 |
 
 ## 执行顺序（派生快照）
 

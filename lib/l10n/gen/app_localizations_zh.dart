@@ -506,4 +506,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String editorDateKicker(String date, String weekday) {
     return '$date $weekday';
   }
+
+  @override
+  String get editorToolbarHeading => '标题';
+
+  @override
+  String get editorToolbarBold => '粗体';
+
+  @override
+  String get editorToolbarItalic => '斜体';
+
+  @override
+  String get editorToolbarUnderline => '下划线';
+
+  @override
+  String get editorToolbarStrikethrough => '删除线';
+
+  @override
+  String get editorToolbarCode => '行内代码';
+
+  @override
+  String get editorToolbarColor => '颜色高亮';
+
+  @override
+  String get editorToolbarBulletedList => '无序列表';
+
+  @override
+  String get editorToolbarNumberedList => '有序列表';
+
+  @override
+  String get editorToolbarTodoList => '待办列表';
+
+  @override
+  String get editorToolbarQuote => '引用';
+
+  @override
+  String get editorToolbarLink => '链接';
+
+  @override
+  String get editorToolbarDivider => '分隔线';
+
+  @override
+  String get editorToolbarImage => '图片';
 }

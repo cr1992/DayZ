@@ -5,7 +5,6 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_fonts.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart' as tokens;
 

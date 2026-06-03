@@ -105,7 +105,7 @@ graph LR
 
 -----
 
-- [-] T2 · editor_style：AppFlowy EditorStyle 从 token 注入
+- [x] T2 · editor_style：AppFlowy EditorStyle 从 token 注入
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzFonts/DayzTextTheme（t-diary/t-h*/行高）` ｜ **关联需求：** R1, NF4 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/ui/editor/editor_style.dart`、`lib/ui/editor/editor_screen.dart`（接入 AppFlowyEditor + 注入 style）｜ **验收基建：** 无（用 `test/ui/editor/fakes/`，T0）
 
@@ -132,14 +132,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-01
+自动：`flutter test test/ui/editor/editor_style_test.dart` 通过
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · 底部工具栏：AppFlowy mobile_toolbar 装配（停靠/选区高亮交给 AppFlowy）
+- [x] T3 · 底部工具栏：AppFlowy mobile_toolbar 装配（停靠/选区高亮交给 AppFlowy）
 
 **同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbar(V2)/MobileToolbarStyle/toolbar items（vendored 包，已存在）`、`design-tokens-theme：token（工具栏配色）`、`ui-kit-components：dayzMotionDuration`、`i18n-localization：gen-l10n` ｜ **关联需求：** R4, R5, R6, NF3, NF4 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/ui/editor/editor_screen.dart`（装配工具栏）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`
 
@@ -173,14 +173,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-01
+自动：`flutter test test/ui/editor/editor_toolbar_test.dart` 通过
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 草稿桥：onChanged → plain payload → DraftCoordinator，退出 forceFlush
+- [x] T4 · 草稿桥：onChanged → plain payload → DraftCoordinator，退出 forceFlush
 
 **同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** `auto-save-draft：DraftCoordinator(plain payload: targetId/draftJson/isNew/cursorPos)/forceFlush/DraftRecoveryStatus`、`editor-json-contract：EditorDocCodec.encode` ｜ **关联需求：** R8, D4 顶栏「草稿已存」联动 ｜ **依据设计：** D6, D4 ｜ **可改文件：** `lib/ui/editor/editor_draft_bridge.dart`、`lib/ui/editor/editor_screen.dart`（接桥 + 顶栏标题联动 forceFlush 退出）｜ **验收基建：** `test/ui/editor/fakes/`（fake DraftCoordinator/codec，T0）
 
@@ -209,14 +209,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-01
+自动：`flutter test test/ui/editor/editor_draft_bridge_test.dart` 通过
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · 图片插入链路：image_picker → MediaStore.put → MediaRepo.addMeta → image node
+- [x] T5 · 图片插入链路：image_picker → MediaStore.put → MediaRepo.addMeta → image node
 
 **同 spec 依赖：** T1, T2, T3 ｜ **跨 spec 依赖：** `media-storage：MediaStore.put(stream,kind)/DMED 容器/独立媒体key`、`data-layer：MediaRepo.addMeta`、`editor-json-contract：image 节点构造(media.id 落点 D2)/editor_block_registry/ImageUrlResolver` ｜ **关联需求：** R7, NF1, NF2, NF5 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/editor/editor_image_inserter.dart`、`lib/ui/editor/editor_screen.dart`（接 inserter）、`pubspec.yaml`（加 `image_picker`）、`pubspec.lock`（pub get 锁定）｜ **验收基建：** `test/ui/editor/fakes/`（fake MediaStore/MediaRepo，T0）
 
@@ -245,14 +245,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-02
+自动：`flutter test test/ui/editor/editor_image_inserter_test.dart` 通过（断言链路只命中 MediaStore/MediaRepo、image 块引用 media.id、content_json 无明文路径、未触发缩略图）；`flutter pub get` 锁定 image_picker
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · 加载/保存接线：EditorDocCodec.decode/encode + extractPlainText（解 docVersion）
+- [x] T6 · 加载/保存接线：EditorDocCodec.decode/encode + extractPlainText（解 docVersion）
 
 **同 spec 依赖：** T1, T2, T4 ｜ **跨 spec 依赖：** `editor-json-contract：EditorDocCodec.encode/decode(+docVersion)/extractPlainText`、`data-layer：EntryRepo（条目读写，时区三件套封装）` ｜ **关联需求：** R3, NF1 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/ui/editor/editor_screen.dart`（加载/保存接线）、`lib/ui/editor/editor_draft_bridge.dart`（保存时产 content_plain）｜ **验收基建：** `test/ui/editor/fakes/`（fake codec/EntryRepo，T0）
 
@@ -280,14 +280,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-01
+自动：`flutter test test/ui/editor/editor_codec_wiring_test.dart` 通过
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · Debug Home demo + 挂入口 + 真机走查
+- [x] T7 · Debug Home demo + 挂入口 + 真机走查
 
 **同 spec 依赖：** T2, T3, T4, T5, T6 ｜ **跨 spec 依赖：** `ui-shell-navigation：Routes.editor/PlaceholderScreen（替换 builder）`、`design-tokens-theme：六套主题（demo 切主题）` ｜ **关联需求：** R1-R10, NF3, NF5 ｜ **依据设计：** D9 ｜ **可改文件：** `lib/demo/editor_screen_demo.dart`、`lib/demo/demo_entry.dart`、`lib/ui/shell/app_router.dart`（**归属 ui-shell，仅把 Routes.editor 的 builder 从 PlaceholderScreen 替换为 EditorScreen 一行**）
 
@@ -319,7 +319,7 @@ Debug Home 入口（真 UI 外壳就绪前/后均可走查）：`editor_screen_d
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-01
+自动：`flutter test test/demo/editor_screen_demo_test.dart && flutter test test/ui/editor/editor_route_test.dart` 通过
 人工：待确认（核查人 @Ray）
 ```

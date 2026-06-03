@@ -165,5 +165,19 @@
   "editorMetaTags": "Tags",
   "editorMetaPlaceholderSheet": "Picker flow will be connected by a later spec",
   "editorDateKickerToday": "Today · {date} {weekday}",
-  "editorDateKicker": "{date} {weekday}"
+  "editorDateKicker": "{date} {weekday}",
+  "editorToolbarHeading": "Heading",
+  "editorToolbarBold": "Bold",
+  "editorToolbarItalic": "Italic",
+  "editorToolbarUnderline": "Underline",
+  "editorToolbarStrikethrough": "Strikethrough",
+  "editorToolbarCode": "Code",
+  "editorToolbarColor": "Highlight Color",
+  "editorToolbarBulletedList": "Bulleted List",
+  "editorToolbarNumberedList": "Numbered List",
+  "editorToolbarTodoList": "Todo List",
+  "editorToolbarQuote": "Quote",
+  "editorToolbarLink": "Link",
+  "editorToolbarDivider": "Divider",
+  "editorToolbarImage": "Image"
 }

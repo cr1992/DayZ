@@ -10,6 +10,7 @@ import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
 import 'placeholder_screen.dart';
+import 'package:dayz/ui/editor/editor_screen.dart';
 
 /// Route identifiers alignment with pages.
 ///
@@ -43,9 +44,22 @@ abstract final class Routes {
 // Global shared state container for the shell.
 final ShellState shellState = ShellState();
 dynamic _timelineEntryRepo;
+dynamic _draftCoordinator;
+dynamic _mediaStore;
+dynamic _mediaRepo;
 
 void registerTimelineEntryRepo(dynamic repo) {
   _timelineEntryRepo = repo;
+}
+
+void registerEditorServices({
+  dynamic draftCoordinator,
+  dynamic mediaStore,
+  dynamic mediaRepo,
+}) {
+  _draftCoordinator = draftCoordinator;
+  _mediaStore = mediaStore;
+  _mediaRepo = mediaRepo;
 }
 
 /// The global routing configuration for the DayZ application.
@@ -162,10 +176,44 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.editor,
       path: Routes.editorPath,
-      builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.editor,
-        showAppBar: true,
-      ),
+      builder: (context, state) {
+        final rawExtra = state.extra;
+        // Tolerate any extra shape: a Map (the structured contract), a bare
+        // String (e.g. an entryId from a caller that predates the Map
+        // contract), or null. A blind `as Map` cast throws _TypeError on a
+        // String and drops the user on an error screen, so normalize instead.
+        final extra = rawExtra is Map
+            ? Map<String, dynamic>.from(rawExtra)
+            : <String, dynamic>{};
+        if (rawExtra is String && rawExtra.isNotEmpty) {
+          extra['entryId'] ??= rawExtra;
+          extra['mode'] ??= EditorScreenMode.writing;
+        }
+        final mode = extra['mode'] as EditorScreenMode? ?? EditorScreenMode.empty;
+        final entryDate = extra['entryDate'] as DateTime? ?? DateTime.now();
+        final title = extra['title'] as String?;
+        final bodyPreview = extra['bodyPreview'] as String?;
+        final entryId = extra['entryId'] as String? ??
+            (mode == EditorScreenMode.empty ? 'new_${DateTime.now().millisecondsSinceEpoch}' : null);
+        final initialContentJson = extra['initialContentJson'] as String?;
+        final draftCoordinator = extra['draftCoordinator'] ?? _draftCoordinator;
+        final entryRepo = extra['entryRepo'] ?? _timelineEntryRepo;
+        final mediaStore = extra['mediaStore'] ?? _mediaStore;
+        final mediaRepo = extra['mediaRepo'] ?? _mediaRepo;
+        
+        return EditorScreen(
+          mode: mode,
+          entryDate: entryDate,
+          title: title,
+          bodyPreview: bodyPreview,
+          entryId: entryId,
+          initialContentJson: initialContentJson,
+          draftCoordinator: draftCoordinator,
+          entryRepo: entryRepo,
+          mediaStore: mediaStore,
+          mediaRepo: mediaRepo,
+        );
+      },
     ),
     GoRoute(
       name: Routes.search,

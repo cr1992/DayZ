@@ -38,6 +38,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   appflowy_editor: ^6.2.0
+  image_picker: ^1.1.2
   path_provider: ^2.1.2
   flutter_secure_storage: ^10.3.1
   sqlcipher_flutter_libs: ^0.7.0+eol

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dayz/app.dart';
 import 'package:dayz/data/database.dart';
 import 'package:dayz/data/repositories/entry_repo.dart';
+import 'package:dayz/data/repositories/media_repo.dart';
+import 'package:dayz/media/media_store.dart';
 import 'package:dayz/data/repositories/editing_session_repo.dart';
 import 'package:dayz/drafts/draft_coordinator.dart';
 import 'package:dayz/drafts/draft_recovery_status.dart';
@@ -16,8 +18,20 @@ Future<void> main() async {
   final database = await AppDatabase.open(KeyProvider());
   registerTimelineEntryRepo(EntryRepo(database));
 
+  final mediaRepo = MediaRepo(database);
+  final mediaStore = MediaStore(
+    keyProvider: KeyProvider(),
+    mediaRepo: mediaRepo,
+  );
+
   final coordinator = createProductionDraftCoordinator(database);
   await initializeDraftRecovery(coordinator);
+
+  registerEditorServices(
+    draftCoordinator: coordinator,
+    mediaStore: mediaStore,
+    mediaRepo: mediaRepo,
+  );
 
   runApp(DayZApp(draftCoordinator: coordinator));
 }

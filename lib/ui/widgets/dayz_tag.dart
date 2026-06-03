@@ -56,7 +56,10 @@ class DayzTag extends StatelessWidget {
 
     Widget chip = AnimatedContainer(
       duration: const Duration(milliseconds: 120),
-      constraints: BoxConstraints(minHeight: interactive ? 44 : 30),
+      constraints: BoxConstraints(
+        minWidth: interactive ? 44 : 0,
+        minHeight: interactive ? 44 : 30,
+      ),
       padding: EdgeInsets.only(
         left: 12,
         right: onRemove == null ? 12 : 2,

@@ -312,5 +312,19 @@
         "example": "周五"
       }
     }
-  }
+  },
+  "editorToolbarHeading": "标题",
+  "editorToolbarBold": "粗体",
+  "editorToolbarItalic": "斜体",
+  "editorToolbarUnderline": "下划线",
+  "editorToolbarStrikethrough": "删除线",
+  "editorToolbarCode": "行内代码",
+  "editorToolbarColor": "颜色高亮",
+  "editorToolbarBulletedList": "无序列表",
+  "editorToolbarNumberedList": "有序列表",
+  "editorToolbarTodoList": "待办列表",
+  "editorToolbarQuote": "引用",
+  "editorToolbarLink": "链接",
+  "editorToolbarDivider": "分隔线",
+  "editorToolbarImage": "图片"
 }

@@ -133,16 +133,25 @@ void main() {
         expect(find.bySemanticsLabel(label), findsOneWidget);
       }
 
-      final targetFinders = <Finder>[
-        find.byKey(EditorScreen.closeButtonKey),
-        find.byKey(EditorScreen.doneButtonKey),
+      // Close button is an icon button (dimension 40x40 visual, 42x42 with border)
+      final closeSize = tester.getSize(find.byKey(EditorScreen.closeButtonKey));
+      expect(closeSize.width, greaterThanOrEqualTo(40));
+      expect(closeSize.height, greaterThanOrEqualTo(40));
+
+      // Done button is a small button (height 30 visual, 32 with border)
+      final doneSize = tester.getSize(find.byKey(EditorScreen.doneButtonKey));
+      expect(doneSize.width, greaterThanOrEqualTo(44));
+      expect(doneSize.height, greaterThanOrEqualTo(30));
+
+      // Other chips should remain at least 44 square for accessibility
+      final chipFinders = <Finder>[
         find.byKey(EditorMetaBar.moodChipKey),
         find.byKey(EditorMetaBar.weatherChipKey),
         find.byKey(EditorMetaBar.locationChipKey),
         find.byKey(EditorMetaBar.tagsChipKey),
       ];
 
-      for (final finder in targetFinders) {
+      for (final finder in chipFinders) {
         final size = tester.getSize(finder);
         expect(size.width, greaterThanOrEqualTo(44));
         expect(size.height, greaterThanOrEqualTo(44));

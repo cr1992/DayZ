@@ -49,7 +49,6 @@ void main() {
     final routesToTest = {
       Routes.timeline: testL10n.timeline,
       Routes.reader: testL10n.reader,
-      Routes.editor: testL10n.editor,
       Routes.onthisday: testL10n.onThisDay,
       Routes.search: testL10n.search,
       Routes.settings: testL10n.settings,
@@ -78,7 +77,6 @@ void main() {
     final pathsToTest = {
       Routes.timelinePath: testL10n.timeline,
       Routes.readerPath: testL10n.reader,
-      Routes.editorPath: testL10n.editor,
       Routes.onthisdayPath: testL10n.onThisDay,
       Routes.searchPath: testL10n.search,
       Routes.settingsPath: testL10n.settings,

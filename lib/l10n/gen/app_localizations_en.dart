@@ -518,4 +518,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String editorDateKicker(String date, String weekday) {
     return '$date $weekday';
   }
+
+  @override
+  String get editorToolbarHeading => 'Heading';
+
+  @override
+  String get editorToolbarBold => 'Bold';
+
+  @override
+  String get editorToolbarItalic => 'Italic';
+
+  @override
+  String get editorToolbarUnderline => 'Underline';
+
+  @override
+  String get editorToolbarStrikethrough => 'Strikethrough';
+
+  @override
+  String get editorToolbarCode => 'Code';
+
+  @override
+  String get editorToolbarColor => 'Highlight Color';
+
+  @override
+  String get editorToolbarBulletedList => 'Bulleted List';
+
+  @override
+  String get editorToolbarNumberedList => 'Numbered List';
+
+  @override
+  String get editorToolbarTodoList => 'Todo List';
+
+  @override
+  String get editorToolbarQuote => 'Quote';
+
+  @override
+  String get editorToolbarLink => 'Link';
+
+  @override
+  String get editorToolbarDivider => 'Divider';
+
+  @override
+  String get editorToolbarImage => 'Image';
 }

@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
-import 'package:dayz/ui/widgets/dayz_tag.dart';
+import 'package:dayz/ui/theme/dayz_colors.dart';
+import 'package:dayz/ui/theme/dayz_text_theme.dart';
 
 class EditorMetaBar extends StatelessWidget {
   const EditorMetaBar({
@@ -49,6 +50,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaMood,
             selected: mood != null,
             onTap: onMoodTap ?? () => _showPlaceholderSheet(context),
+            icon: Icons.sentiment_satisfied_alt,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -57,6 +59,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaWeather,
             selected: weather != null,
             onTap: onWeatherTap ?? () => _showPlaceholderSheet(context),
+            icon: Icons.wb_sunny_outlined,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -65,6 +68,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaLocation,
             selected: location != null,
             onTap: onLocationTap ?? () => _showPlaceholderSheet(context),
+            icon: Icons.location_on_outlined,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -73,6 +77,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaTags,
             selected: tags != null && tags!.isNotEmpty,
             onTap: onTagsTap ?? () => _showPlaceholderSheet(context),
+            icon: Icons.local_offer_outlined,
           ),
         ],
       ),
@@ -88,8 +93,6 @@ class EditorMetaBar extends StatelessWidget {
   }
 
   void _showPlaceholderSheet(BuildContext context) {
-    // The full picker flows are separate specs. This sheet only proves the
-    // trigger handoff without writing repository state in this screen.
     showModalBottomSheet<void>(
       context: context,
       builder: (context) {
@@ -112,23 +115,66 @@ class _MetaChip extends StatelessWidget {
     required this.semanticLabel,
     required this.selected,
     required this.onTap,
+    required this.icon,
   });
 
   final String label;
   final String semanticLabel;
   final bool selected;
   final VoidCallback onTap;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.dayz;
+    final text = context.dayzText;
+    final background = selected ? colors.accentSoft : colors.bg2;
+    final foreground = selected ? colors.accentInk : colors.ink2;
+
     return Semantics(
       button: true,
       label: semanticLabel,
       child: ExcludeSemantics(
-        child: DayzTag(
-          variant: selected ? DayzTagVariant.filled : DayzTagVariant.outline,
-          onTap: onTap,
-          child: Text(label),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(DayzRadii.full),
+            child: Container(
+              constraints: const BoxConstraints(
+                minWidth: 44,
+                minHeight: 44,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: DayzSpacing.s3,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(DayzRadii.full),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: foreground,
+                  ),
+                  const SizedBox(width: DayzSpacing.s1),
+                  Text(
+                    label,
+                    style: text.body.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: foreground,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

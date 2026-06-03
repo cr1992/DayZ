@@ -112,8 +112,8 @@ class _DayzButtonState extends State<DayzButton> {
 
     Widget button = ConstrainedBox(
       constraints: BoxConstraints(
-        minWidth: widget.isIconOnly ? 44 : 44,
-        minHeight: 44,
+        minWidth: widget.isIconOnly ? metrics.iconOnlyVisualSize : 44,
+        minHeight: metrics.minHeight,
       ),
       child: AnimatedContainer(
         duration: duration,
@@ -199,6 +199,7 @@ class _DayzButtonMetrics {
     required this.iconSize,
     required this.gap,
     required this.iconOnlyVisualSize,
+    required this.minHeight,
   });
 
   final EdgeInsetsGeometry padding;
@@ -206,6 +207,7 @@ class _DayzButtonMetrics {
   final double iconSize;
   final double gap;
   final double iconOnlyVisualSize;
+  final double minHeight;
 
   static _DayzButtonMetrics resolve(
     DayzButtonSize size,
@@ -219,6 +221,7 @@ class _DayzButtonMetrics {
         iconSize: 20,
         gap: DayzSpacing.s2,
         iconOnlyVisualSize: 40,
+        minHeight: 40,
       );
     }
 
@@ -234,6 +237,7 @@ class _DayzButtonMetrics {
           iconSize: 17,
           gap: DayzSpacing.s2,
           iconOnlyVisualSize: 40,
+          minHeight: 30,
         );
       case DayzButtonSize.medium:
         return _DayzButtonMetrics(
@@ -245,6 +249,7 @@ class _DayzButtonMetrics {
           iconSize: 18,
           gap: DayzSpacing.s2,
           iconOnlyVisualSize: 40,
+          minHeight: 38,
         );
       case DayzButtonSize.large:
         return _DayzButtonMetrics(
@@ -256,6 +261,7 @@ class _DayzButtonMetrics {
           iconSize: 20,
           gap: DayzSpacing.s2,
           iconOnlyVisualSize: 40,
+          minHeight: 44,
         );
     }
   }
