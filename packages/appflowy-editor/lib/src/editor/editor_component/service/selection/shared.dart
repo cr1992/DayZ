@@ -35,6 +35,12 @@ extension EditorStateSelection on EditorState {
     int end, [
     Map<String, Rect>? rectCache,
   ]) {
+    // >>> DAYZ-PATCH[P005]: Prevent empty nodes list crashing on clamp
+    if (sortedNodes.isEmpty) {
+      return null;
+    }
+    // <<< DAYZ-PATCH[P005]
+
     // Create rect cache for this operation if not provided
     rectCache ??= {};
 
@@ -158,6 +164,12 @@ extension EditorStateSelection on EditorState {
     bool Function(int index, Rect rect)? match,
     required bool Function(int index, Rect rect) compare,
   }) {
+    // >>> DAYZ-PATCH[P005]: Prevent lowerLimit > upperLimit clamp crash when start > end
+    if (start > end) {
+      return start;
+    }
+    // <<< DAYZ-PATCH[P005]
+
     for (var i = start; i <= end; i++) {
       final rect = _getCachedRect(sortedNodes[i], rectCache);
       if (match != null && match(i, rect)) {

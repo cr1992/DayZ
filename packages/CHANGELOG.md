@@ -43,6 +43,13 @@
 - **upstream issue：** 暂无（属上游对新 SDK 的兼容滞后，可向 upstream 提 PR）。
 - **引入提交：** `eb2b46e`（2026-05-24，随源码引入一并改入）。
 
+### P005 · 点击空编辑器或边界选取手势时防爆 clamp 崩溃
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/editor_component/service/selection/shared.dart` → `EditorStateSelection` 中的 `getNodeInOffset` 与 `_findCloseNode`。
+- **原因：** 当 `sortedNodes` 为空列表或 `children` 经过过滤变为空时，`getNodeInOffset` 会传入 `start = 0, end = -1`。这会导致 `_findCloseNode` 内调用 `min.clamp(0, -1)` 从而抛出 `ArgumentError: Invalid argument(s): 0` 崩溃（因为 clamp 的下限大于上限）。我们在 `getNodeInOffset` 首部对 `sortedNodes.isEmpty` 进行了提前拦截返回 null，并在 `_findCloseNode` 首部增加了 `start > end` 的边界防爆逻辑。
+- **关联：** Bug（点击空编辑器或边界选取手势导致 `int.clamp` 抛出 Invalid argument(s) 崩溃）。
+- **upstream issue：** 暂无。
+- **引入提交：** 待提交。
+
 > 说明：`delta_input_service.dart` 同提交内的其余 diff 仅为 `dart format` 风格差异（无逻辑改动），不分配 patch ID、不打标记。
 
 ---
@@ -64,6 +71,12 @@
 ---
 
 ## 变更历史（按日期）
+
+## [2026-06-01]
+
+### appflowy-editor
+- **修复选择手势防爆崩溃**（Patch: `P005`）：
+  - 拦截空节点列表的 `getNodeInOffset` 计算，并在 `_findCloseNode` 引入区间防爆，避免 `int.clamp` 发生 `lowerLimit > upperLimit` 的 ArgumentError 异常崩溃。
 
 ## [2026-05-30]
 
