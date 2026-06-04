@@ -59,13 +59,13 @@ mkdir -p /tmp/dz-src && tar -xzf /tmp/dayz-design.bin -C /tmp/dz-src
 ```bash
 cd <repo-root>
 rsync -ai --delete \
-  --exclude='/scraps/' --exclude='/screenshots/' --exclude='.thumbnail' --exclude='.DS_Store' \
+  --exclude='/scraps/' --exclude='/screenshots/' --exclude='/screens/' --exclude='.thumbnail' --exclude='.DS_Store' \
   /tmp/dz-src/dayz/project/ ui-design/current/
 ```
 
 `--delete` 让 `current/` 严格镜像最新设计(改名/删除的旧文件一并清掉,不留残留、不归档)。`-i` 出 itemize 清单(`+++++++` 全新 / `..t` 仅时间戳即内容未变 / `*deleting` 删),RTK 会截短,**重定向到 `/tmp/dz-rsync.txt` 再 Read** 看真清单。
 
-**过程截图的 exclude 必须用根锚定 `/`**(`/scraps/`、`/screenshots/`)——它们只在**项目根**:`scraps/` 是过程图(旧名顶层 `screenshots/`),要排掉;而 `docs/screenshots/` 是**交付物**,要留。**不锚定的 `--exclude='screenshots/'` 会匹配任意层级、把 `docs/screenshots/` 一起删——踩过,丢的就是设计师交付的展示截图。** `.thumbnail`/`.DS_Store` 保持不锚定(到处都排)。**新增 exclude 时同步更新这里,并先想清楚要不要锚定。**
+**过程截图的 exclude 必须用根锚定 `/`**(`/scraps/`、`/screenshots/`、`/screens/`)——它们只在**项目根**:`scraps/` 是过程图(旧名顶层 `screenshots/`)、`screens/` 是 app-icon 设计过程截图(`bfly-*`/`wings-*`/`feather-*` 翅膀图标迭代),都要排掉;而 `docs/screenshots/` 是**交付物**,要留。**不锚定的 `--exclude='screenshots/'`/`'screens/'` 会匹配任意层级、把 `docs/screenshots/` 或交付物 `pages/screens/`(含编辑器视觉真源 `editor.html` 等原型屏)一起删——踩过,丢的就是设计师交付的展示截图/原型屏。** 注意:rsync 的 `--exclude` 还会**保护**接收端已存在的同名目录不被 `--delete` 删,所以漏排导致已落地的 `current/screens/` 要手动 `rm -rf` 清掉。`.thumbnail`/`.DS_Store` 保持不锚定(到处都排)。**新增 exclude 时同步更新这里,并先想清楚要不要锚定。**
 
 ### 3. 构建独立 HTML(禁沙箱——字体子集化要联网)
 
