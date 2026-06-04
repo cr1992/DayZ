@@ -2,11 +2,13 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 class EditorMetaBar extends StatelessWidget {
   const EditorMetaBar({
@@ -50,7 +52,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaMood,
             selected: mood != null,
             onTap: onMoodTap ?? () => _showPlaceholderSheet(context),
-            icon: Icons.sentiment_satisfied_alt,
+            iconPath: DayzIcons.moodPath,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -59,7 +61,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaWeather,
             selected: weather != null,
             onTap: onWeatherTap ?? () => _showPlaceholderSheet(context),
-            icon: Icons.wb_sunny_outlined,
+            iconPath: DayzIcons.weatherSunPath,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -68,7 +70,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaLocation,
             selected: location != null,
             onTap: onLocationTap ?? () => _showPlaceholderSheet(context),
-            icon: Icons.location_on_outlined,
+            iconPath: DayzIcons.locationPinPath,
           ),
           const SizedBox(width: DayzSpacing.s2),
           _MetaChip(
@@ -77,7 +79,7 @@ class EditorMetaBar extends StatelessWidget {
             semanticLabel: l10n.editorMetaTags,
             selected: tags != null && tags!.isNotEmpty,
             onTap: onTagsTap ?? () => _showPlaceholderSheet(context),
-            icon: Icons.local_offer_outlined,
+            iconPath: DayzIcons.tagPath,
           ),
         ],
       ),
@@ -115,14 +117,14 @@ class _MetaChip extends StatelessWidget {
     required this.semanticLabel,
     required this.selected,
     required this.onTap,
-    required this.icon,
+    required this.iconPath,
   });
 
   final String label;
   final String semanticLabel;
   final bool selected;
   final VoidCallback onTap;
-  final IconData icon;
+  final String iconPath;
 
   @override
   Widget build(BuildContext context) {
@@ -156,10 +158,14 @@ class _MetaChip extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    icon,
-                    size: 14,
-                    color: foreground,
+                  SvgPicture.string(
+                    _svg(iconPath),
+                    width: 14,
+                    height: 14,
+                    colorFilter: ColorFilter.mode(
+                      foreground,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   const SizedBox(width: DayzSpacing.s1),
                   Text(
@@ -179,4 +185,10 @@ class _MetaChip extends StatelessWidget {
       ),
     );
   }
+}
+
+String _svg(String path) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
 }

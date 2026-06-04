@@ -1081,6 +1081,102 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'图片'**
   String get editorToolbarImage;
+
+  /// No description provided for @editorColorTextRust.
+  ///
+  /// In zh, this message translates to:
+  /// **'红褐'**
+  String get editorColorTextRust;
+
+  /// No description provided for @editorColorTextAmber.
+  ///
+  /// In zh, this message translates to:
+  /// **'暖橙'**
+  String get editorColorTextAmber;
+
+  /// No description provided for @editorColorTextBronze.
+  ///
+  /// In zh, this message translates to:
+  /// **'金棕'**
+  String get editorColorTextBronze;
+
+  /// No description provided for @editorColorTextOlive.
+  ///
+  /// In zh, this message translates to:
+  /// **'橄榄'**
+  String get editorColorTextOlive;
+
+  /// No description provided for @editorColorTextSlate.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾蓝'**
+  String get editorColorTextSlate;
+
+  /// No description provided for @editorColorTextLilac.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾紫'**
+  String get editorColorTextLilac;
+
+  /// No description provided for @editorColorHighlightYellow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暖黄'**
+  String get editorColorHighlightYellow;
+
+  /// No description provided for @editorColorHighlightGreen.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅绿'**
+  String get editorColorHighlightGreen;
+
+  /// No description provided for @editorColorHighlightBlue.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅蓝'**
+  String get editorColorHighlightBlue;
+
+  /// No description provided for @editorColorHighlightPurple.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅紫'**
+  String get editorColorHighlightPurple;
+
+  /// No description provided for @editorColorHighlightPink.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅粉'**
+  String get editorColorHighlightPink;
+
+  /// No description provided for @editorHeadingParagraphGlyph.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文'**
+  String get editorHeadingParagraphGlyph;
+
+  /// No description provided for @editorHeadingParagraphLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落'**
+  String get editorHeadingParagraphLabel;
+
+  /// No description provided for @editorHeadingLabelH1.
+  ///
+  /// In zh, this message translates to:
+  /// **'大标题'**
+  String get editorHeadingLabelH1;
+
+  /// No description provided for @editorHeadingLabelH2.
+  ///
+  /// In zh, this message translates to:
+  /// **'中标题'**
+  String get editorHeadingLabelH2;
+
+  /// No description provided for @editorHeadingLabelH3.
+  ///
+  /// In zh, this message translates to:
+  /// **'小标题'**
+  String get editorHeadingLabelH3;
 }
 
 class _AppLocalizationsDelegate

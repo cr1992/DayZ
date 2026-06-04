@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -16,6 +17,7 @@ import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/widgets/dayz_button.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 import 'editor_meta_bar.dart';
 import 'editor_style.dart';
@@ -239,7 +241,12 @@ class _EditorScreenState extends State<EditorScreen> {
           centerTitle: true,
           leading: DayzButton.icon(
             key: EditorScreen.closeButtonKey,
-            icon: Icon(Icons.close, color: colors.ink2),
+            icon: SvgPicture.string(
+              _svg(DayzIcons.closePath),
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(colors.ink2, BlendMode.srcIn),
+            ),
             semanticLabel: l10n.editorCloseSemanticLabel,
             variant: DayzButtonVariant.text,
             onPressed: _handleClose,
@@ -274,10 +281,14 @@ class _EditorScreenState extends State<EditorScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 12,
-                    color: colors.accentInk,
+                  SvgPicture.string(
+                    _svg(DayzIcons.calendarPath),
+                    width: 12,
+                    height: 12,
+                    colorFilter: ColorFilter.mode(
+                      colors.accentInk,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -637,4 +648,10 @@ class _EditorBodyState extends State<_EditorBody> {
       ),
     );
   }
+}
+
+String _svg(String path) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
 }

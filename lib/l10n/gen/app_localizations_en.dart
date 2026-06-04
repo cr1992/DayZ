@@ -560,4 +560,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorToolbarImage => 'Image';
+
+  @override
+  String get editorColorTextRust => 'Rust';
+
+  @override
+  String get editorColorTextAmber => 'Amber';
+
+  @override
+  String get editorColorTextBronze => 'Bronze';
+
+  @override
+  String get editorColorTextOlive => 'Olive';
+
+  @override
+  String get editorColorTextSlate => 'Slate';
+
+  @override
+  String get editorColorTextLilac => 'Lilac';
+
+  @override
+  String get editorColorHighlightYellow => 'Warm Yellow';
+
+  @override
+  String get editorColorHighlightGreen => 'Light Green';
+
+  @override
+  String get editorColorHighlightBlue => 'Light Blue';
+
+  @override
+  String get editorColorHighlightPurple => 'Light Purple';
+
+  @override
+  String get editorColorHighlightPink => 'Light Pink';
+
+  @override
+  String get editorHeadingParagraphGlyph => 'Body';
+
+  @override
+  String get editorHeadingParagraphLabel => 'Paragraph';
+
+  @override
+  String get editorHeadingLabelH1 => 'Title';
+
+  @override
+  String get editorHeadingLabelH2 => 'Heading';
+
+  @override
+  String get editorHeadingLabelH3 => 'Subheading';
 }

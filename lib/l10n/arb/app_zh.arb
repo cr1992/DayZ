@@ -326,5 +326,21 @@
   "editorToolbarQuote": "引用",
   "editorToolbarLink": "链接",
   "editorToolbarDivider": "分隔线",
-  "editorToolbarImage": "图片"
+  "editorToolbarImage": "图片",
+  "editorColorTextRust": "红褐",
+  "editorColorTextAmber": "暖橙",
+  "editorColorTextBronze": "金棕",
+  "editorColorTextOlive": "橄榄",
+  "editorColorTextSlate": "雾蓝",
+  "editorColorTextLilac": "雾紫",
+  "editorColorHighlightYellow": "暖黄",
+  "editorColorHighlightGreen": "浅绿",
+  "editorColorHighlightBlue": "浅蓝",
+  "editorColorHighlightPurple": "浅紫",
+  "editorColorHighlightPink": "浅粉",
+  "editorHeadingParagraphGlyph": "正文",
+  "editorHeadingParagraphLabel": "段落",
+  "editorHeadingLabelH1": "大标题",
+  "editorHeadingLabelH2": "中标题",
+  "editorHeadingLabelH3": "小标题"
 }

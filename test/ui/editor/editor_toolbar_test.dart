@@ -5,7 +5,6 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/editor/editor_screen.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
-import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -223,6 +222,88 @@ void main() async {
         expect(size.width, greaterThanOrEqualTo(44));
         expect(size.height, greaterThanOrEqualTo(44));
       }
+    });
+
+    testWidgets('heading menu offers an explicit Body option plus H1/H2/H3', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        localizedTestApp(
+          child: EditorScreen.writing(
+            entryDate: DateTime(2026),
+            bodyPreview: 'hello',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EditorScreen)),
+      );
+
+      final editor = tester.widget<AppFlowyEditor>(find.byType(AppFlowyEditor));
+      editor.editorState.selection = Selection(
+        start: Position(path: [0], offset: 0),
+        end: Position(path: [0], offset: 5),
+      );
+      await tester.pumpAndSettle();
+
+      // Open the heading menu from the toolbar.
+      await tester.tap(
+        find.ancestor(
+          of: find.bySemanticsLabel(l10n.editorToolbarHeading),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // The design's four-up menu: explicit Body item + H1/H2/H3 glyphs and
+      // their descriptive labels — no reliance on AppFlowy's toggle-back.
+      expect(find.text(l10n.editorHeadingParagraphGlyph), findsOneWidget);
+      expect(find.text(l10n.editorHeadingParagraphLabel), findsOneWidget);
+      expect(find.text('H1'), findsOneWidget);
+      expect(find.text('H2'), findsOneWidget);
+      expect(find.text('H3'), findsOneWidget);
+      expect(find.text(l10n.editorHeadingLabelH1), findsOneWidget);
+    });
+
+    testWidgets('color menu shows DayZ warm swatches, not Material defaults', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        localizedTestApp(
+          child: EditorScreen.writing(
+            entryDate: DateTime(2026),
+            bodyPreview: 'hello',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EditorScreen)),
+      );
+
+      final editor = tester.widget<AppFlowyEditor>(find.byType(AppFlowyEditor));
+      editor.editorState.selection = Selection(
+        start: Position(path: [0], offset: 0),
+        end: Position(path: [0], offset: 5),
+      );
+      await tester.pumpAndSettle();
+
+      // Open the color menu from the toolbar.
+      await tester.tap(
+        find.ancestor(
+          of: find.bySemanticsLabel(l10n.editorToolbarColor),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Text-color swatches render their DayZ names (ColorButton draws the
+      // name as colored text). Spot-check both ends of the warm palette.
+      expect(find.text(l10n.editorColorTextRust), findsOneWidget);
+      expect(find.text(l10n.editorColorTextLilac), findsOneWidget);
     });
   });
 }

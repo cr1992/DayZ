@@ -548,4 +548,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorToolbarImage => '图片';
+
+  @override
+  String get editorColorTextRust => '红褐';
+
+  @override
+  String get editorColorTextAmber => '暖橙';
+
+  @override
+  String get editorColorTextBronze => '金棕';
+
+  @override
+  String get editorColorTextOlive => '橄榄';
+
+  @override
+  String get editorColorTextSlate => '雾蓝';
+
+  @override
+  String get editorColorTextLilac => '雾紫';
+
+  @override
+  String get editorColorHighlightYellow => '暖黄';
+
+  @override
+  String get editorColorHighlightGreen => '浅绿';
+
+  @override
+  String get editorColorHighlightBlue => '浅蓝';
+
+  @override
+  String get editorColorHighlightPurple => '浅紫';
+
+  @override
+  String get editorColorHighlightPink => '浅粉';
+
+  @override
+  String get editorHeadingParagraphGlyph => '正文';
+
+  @override
+  String get editorHeadingParagraphLabel => '段落';
+
+  @override
+  String get editorHeadingLabelH1 => '大标题';
+
+  @override
+  String get editorHeadingLabelH2 => '中标题';
+
+  @override
+  String get editorHeadingLabelH3 => '小标题';
 }

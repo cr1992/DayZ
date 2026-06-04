@@ -179,5 +179,21 @@
   "editorToolbarQuote": "Quote",
   "editorToolbarLink": "Link",
   "editorToolbarDivider": "Divider",
-  "editorToolbarImage": "Image"
+  "editorToolbarImage": "Image",
+  "editorColorTextRust": "Rust",
+  "editorColorTextAmber": "Amber",
+  "editorColorTextBronze": "Bronze",
+  "editorColorTextOlive": "Olive",
+  "editorColorTextSlate": "Slate",
+  "editorColorTextLilac": "Lilac",
+  "editorColorHighlightYellow": "Warm Yellow",
+  "editorColorHighlightGreen": "Light Green",
+  "editorColorHighlightBlue": "Light Blue",
+  "editorColorHighlightPurple": "Light Purple",
+  "editorColorHighlightPink": "Light Pink",
+  "editorHeadingParagraphGlyph": "Body",
+  "editorHeadingParagraphLabel": "Paragraph",
+  "editorHeadingLabelH1": "Title",
+  "editorHeadingLabelH2": "Heading",
+  "editorHeadingLabelH3": "Subheading"
 }
