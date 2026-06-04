@@ -75,6 +75,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   drift_dev: ^2.33.0
+  patrol: ^4.6.1
 
 dependency_overrides:
   appflowy_editor:
@@ -84,6 +85,14 @@ hooks:
   user_defines:
     sqlite3:
       source: sqlite3mc
+
+# Patrol E2E 测试配置（原生自动化用，仅 dev/测试期生效）
+patrol:
+  app_name: DayZ
+  android:
+    package_name: com.dayz
+  ios:
+    bundle_id: com.dayz
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -92,3 +92,6 @@ test/thumbnails/**
 
 # AI Agent workspace config & local tools
 .agents/
+
+# Patrol：每次 `patrol test` 自动重新生成的测试 bundle，不入库
+patrol_test/test_bundle.dart
