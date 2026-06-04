@@ -52,6 +52,13 @@
 
 > 说明：`delta_input_service.dart` 同提交内的其余 diff 仅为 `dart format` 风格差异（无逻辑改动），不分配 patch ID、不打标记。
 
+### P006 · 大行高下光标对齐可见字形框（不再浮在文字上方）
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/block_component/rich_text/appflowy_rich_text.dart` → `getCursorRectInPosition(...)` 末尾，紧随上游 `widget.cursorHeight != null` 分支后新增的 `else if` 分支。
+- **原因：** DayZ 正文用 1.85 大行高 + `leadingDistribution: even`，AppFlowy 默认光标取整行盒高度（`getFullHeightForCaret`）。在换行 / 非首行（应用了完整行距）时，光标顶部浮在字形上方约 4px 且整体偏高；空节点上光标又退化到 Latin 空格 placeholder 的度量（约 18px），比 CJK 正文 / hint（约 25px）矮。两者真机走查均明显可见。本改动在未显式指定 `cursorHeight` 时，把光标对齐到可见字形 tight 框（`getBoxesForSelection(..., BoxHeightStyle.tight)` 的 top + height）：非空节点取相邻字符的字形框；空节点用 `TextPainter` 在节点文本样式下测量一个 CJK 参考字（`永`）的字形高（仅取高度、保留原行顶位置），使空态光标与 CJK hint 等高。`永` 为本 app 中文为主场景的度量参考；纯拉丁内容空态会略偏高。
+- **关联：** 编辑器真机走查 Bug（光标明显高于输入文字 / hint）；回归守卫 `integration_test/editor_caret_e2e.dart`。
+- **upstream issue：** 暂无（待评估提 PR）。
+- **引入提交：** 待提交。
+
 ---
 
 ## 自研包（self-authored · 无 upstream · 不进 Patch 台账）
