@@ -27,7 +27,9 @@ valid_ids="$(mktemp)"
 active_table_ids="$(mktemp)"
 archive_table_dirs="$(mktemp)"
 archive_table_ids="$(mktemp)"
-trap 'rm -f "$tmp" "$active_rows" "$archive_rows" "$active_dirs" "$archive_dirs" "$archive_pairs" "$contract_ids" "$valid_ids" "$active_table_ids" "$archive_table_dirs" "$archive_table_ids"' EXIT
+delivered_rows="$(mktemp)"
+delivered_table_ids="$(mktemp)"
+trap 'rm -f "$tmp" "$active_rows" "$archive_rows" "$active_dirs" "$archive_dirs" "$archive_pairs" "$contract_ids" "$valid_ids" "$active_table_ids" "$archive_table_dirs" "$archive_table_ids" "$delivered_rows" "$delivered_table_ids"' EXIT
 
 relpath() {
   case "$1" in
@@ -188,6 +190,8 @@ extract_table_rows() {
       rows++
       if (kind == "active") {
         printf "%d\t%s\t%s\t%s\n", NR, c[feature_i], c[deps_i], c[status_i] >> outfile
+      } else if (kind == "delivered") {
+        printf "%d\t%s\t%s\n", NR, c[feature_i], (deps_i ? c[deps_i] : "") >> outfile
       } else {
         printf "%d\t%s\t%s\n", NR, c[feature_i], c[result_i] >> outfile
       }
@@ -260,6 +264,12 @@ sort -u "$contract_ids" -o "$contract_ids"
 
 extract_table_rows "进行中" "$active_rows" "active"
 extract_table_rows "已归档" "$archive_rows" "archive"
+# 已交付·随设计维护：DayZ overlay 的第二张活跃表（屏幕 spec 交付 v1 后转入，不归档）。
+# 其功能列同样链 active/<id>/，须算作 active 目录的合法登记处（否则双向一致性误报）。
+# 该表为 DayZ 专属，缺失时不报错（非 DayZ 仓库无此表）。
+if grep -Eq '^##[[:space:]]+已交付·随设计维护[[:space:]]*$' "$README"; then
+  extract_table_rows "已交付·随设计维护" "$delivered_rows" "delivered"
+fi
 
 TAB="$(printf '\t')"
 
@@ -308,6 +318,45 @@ while IFS="$TAB" read -r line feature deps status; do
 done < "$active_rows"
 sort -u "$active_table_ids" -o "$active_table_ids"
 
+# 校验 已交付·随设计维护 表（功能列链接 → active/<id>/，依赖须可解析）。
+while IFS="$TAB" read -r line feature deps; do
+  [ -n "${line:-}" ] || continue
+  target="$(clean_target "$(extract_link_target "$feature")")"
+  label="$(extract_link_label "$feature")"
+  if [ -z "$target" ] || [ -z "$label" ]; then
+    err "$README" "$line" "已交付表的功能列必须是 Markdown 链接 '[spec-id](active/spec-id/)'"
+    continue
+  fi
+  case "$target" in
+    active/*)
+      id="${target#active/}"
+      id="${id%%/*}"
+      ;;
+    *)
+      err "$README" "$line" "已交付表链接必须指向 active/<spec-id>/，当前为 '$target'"
+      continue
+      ;;
+  esac
+  printf '%s\n' "$id" >> "$delivered_table_ids"
+  [ "$label" = "$id" ] || err "$README" "$line" "功能链接文字 '$label' 应等于 spec ID '$id'"
+  [ -d "$SPECS_DIR/active/$id" ] || err "$README" "$line" "已交付表引用 '$id'，但目录 active/$id/ 不存在"
+
+  deps_clean="$(printf '%s\n' "$deps" | sed -E 's/<br[[:space:]]*\/?>/,/g; s/[，、;；]/,/g')"
+  IFS=',' read -r -a dep_items <<< "$deps_clean"
+  for dep_raw in "${dep_items[@]}"; do
+    dep="$(normalize_dep_id "$dep_raw")"
+    case "$dep" in
+      ""|"无"|"-"|"—"|"N/A"|"n/a") continue ;;
+    esac
+    if [ "$dep" = "$id" ]; then
+      err "$README" "$line" "依赖列包含自身 '$dep'"
+    elif ! contains_line "$dep" "$valid_ids"; then
+      err "$README" "$line" "依赖 '$dep' 无法解析为 active/archive/contracts 中的有效 spec ID"
+    fi
+  done
+done < "$delivered_rows"
+sort -u "$delivered_table_ids" -o "$delivered_table_ids"
+
 # 校验 archive 表。
 while IFS="$TAB" read -r line feature result; do
   [ -n "${line:-}" ] || continue
@@ -340,7 +389,9 @@ sort -u "$archive_table_ids" -o "$archive_table_ids"
 # 表与目录双向一致。
 while IFS= read -r id; do
   [ -n "$id" ] || continue
-  contains_line "$id" "$active_table_ids" || err "$README" 1 "目录 active/$id/ 存在，但未登记在 '## 进行中' 表"
+  if ! contains_line "$id" "$active_table_ids" && ! contains_line "$id" "$delivered_table_ids"; then
+    err "$README" 1 "目录 active/$id/ 存在，但未登记在 '## 进行中' 或 '## 已交付·随设计维护' 表"
+  fi
 done < "$active_dirs"
 
 while IFS= read -r dir; do
@@ -354,6 +405,20 @@ while IFS= read -r id; do
     err "$README" 1 "spec ID '$id' 同时出现在进行中与已归档表；稳定 ID 必须唯一"
   fi
 done < "$active_table_ids"
+
+# 已交付表 ID 不得与进行中/已归档重复，且不得自身重复登记。
+while IFS= read -r id; do
+  [ -n "$id" ] || continue
+  if contains_line "$id" "$active_table_ids"; then
+    err "$README" 1 "spec ID '$id' 同时出现在进行中与已交付表；同一 spec 只登记一处"
+  fi
+  if contains_line "$id" "$archive_table_ids"; then
+    err "$README" 1 "spec ID '$id' 同时出现在已交付与已归档表；稳定 ID 必须唯一"
+  fi
+done < "$delivered_table_ids"
+sort "$delivered_table_ids" | uniq -d | while IFS= read -r dup; do
+  [ -n "$dup" ] && err "$README" 1 "已交付表重复登记 spec ID '$dup'"
+done
 
 sort "$active_table_ids" | uniq -d | while IFS= read -r dup; do
   [ -n "$dup" ] && err "$README" 1 "进行中表重复登记 spec ID '$dup'"

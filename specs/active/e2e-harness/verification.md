@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-06-04
 最后更新：2026-06-04
-文档状态：进行中（V2 已通过）
+文档状态：进行中（V2 通过；T2/T3/T4 工件交付，wrapper 逻辑自验过；live 连跑/干净 checkout/CI 留人闸与后置）
 ---
 
 # 验证：e2e-harness
@@ -26,20 +26,21 @@
 - [x] `patrol test` 在 iPhone 17 模拟器跑通冒烟、1 用例绿 — 自动：证据 `build/ios_results_*.xcresult`、`Total:1 / Successful:1 / Failed:0`
 - [x] 直接 `xcodebuild build-for-testing -only-testing:RunnerUITests` 成功（target 配置正确、patrol.framework 正常链接、`@import patrol` 可解析）— 自动
 - [x] `RunnerUITests` 已在 `Runner.xcscheme` 的 TestAction（`scheme_testables=RunnerTests, RunnerUITests`，无重复/悬空）— 自动：`scripts/setup_patrol_ios.rb` 输出
-- [ ] 干净 checkout 照 T2 文档可从零搭到冒烟绿 — 人工（@Ray），一次性走查
+- [ ] 干净 checkout 照 T2 文档可从零搭到冒烟绿 — 人工（@Ray），一次性走查（文档已就绪：`docs/patrol-e2e-onboarding.md`）
 
 ### flaky 防护（R4, R7）
-- [ ] T3 wrapper 落地：禁 analytics（盘+env）+ native-asset retry + `Total:N` 非零校验 — 自动（T3 交付后置 [x]）
-- [ ] 连续 3 次 wrapper 调用 0 次假崩 — 自动
+- [x] T3 wrapper 落地：禁 analytics（盘+env）+ native-asset/Maven/Android-Total:0 retry + `Total:N` 非零校验 — 自动：`scripts/patrol_test.sh`
+- [x] wrapper 逻辑静态自验（**静态层；真机实证见下条**）：`bash -n` 语法过；`--selftest` 解析+零执行守卫过；对 stub `patrol` 跑全控制流 8 例均符合预期——pass→exit0/1att；假绿 Total:0→R7 拦截 exit1/重试用尽；真断言失败 Failed≥1（含 status=0 坏退出码、报错文本含 "timed out" 的）→exit1/1att **绝不重试**；Failed 行缺失→fail-closed 重试后判失败；非 infra 非零→exit1/1att 不重试；flaky→重试恢复 exit0/2att — 自动（无需真机）
+- [ ] 连续 3 次 **live**（真机/模拟器）wrapper 调用 0 次假崩 — 自动·**待实跑**（命令就绪、逻辑已静态自验；缺真 patrol + 真网络抖动下的实证，由 @Ray 在真机/模拟器跑 3 次确认）
 - [x] 根因记录在案：handshake=patrol_cli 启动遥测 POST google-analytics；asset 重下=独立 derivedDataPath 触发 sqlite3mc dylib 重新下载 — 文档（design.md 成本账）
 
 ### 验收方法论（R1, R5, R6）
-- [ ] `specs/README.md` 有「验收分层」方法论段（自动化可覆盖 vs 必须人工/不可逆终验）— 自动：grep README（T4 交付后置 [x]）
-- [ ] 提供屏 spec `verification.md` 两栏骨架，新屏可无歧义套用 — 人工（@Ray）评审「AI 能否无歧义执行」
+- [x] 「验收分层」方法论已落文档（**doc 交付，非自动断言**）：`specs/README.md` §验收分层 blockquote + `AGENTS.md` 规则段，并指向可复制骨架 `verification-skeleton.md`。**可套用性**的最终判定见下一条 @Ray 评审
+- [ ] 提供屏 spec `verification.md` 两栏骨架，新屏可无歧义套用 — 骨架已交付（`verification-skeleton.md`）；可无歧义套用的最终判定（「AI 能否无歧义执行」）待 @Ray 评审
 - [x] R6 人闸约束写明：加密/备份/还原即便 E2E 绿仍保留人工终验 — 文档（requirement R6）
 
 ### 边界 / 不回退（不可逆 & 既有栈）
-- [ ] 接入未破坏既有 vanilla `integration_test`（argon2id_ffi 仍走 `flutter test integration_test/`）— 自动（**待跑**：patrol 接入仅增量改动，argon2id 测试文件未动，但尚未重跑确认）
+- [ ] 接入未破坏既有 vanilla `integration_test`（argon2id_ffi 仍走 `flutter test integration_test/`）— 自动·**待跑**（patrol 接入未动 argon2id 测试文件，但**必须实跑确认**，不得以「仅增量改动」推断通过）
 - [ ] 接入未破坏正常 app 构建（`flutter run -d <ios-sim>` 仍可启动；SPM+CocoaPods 混用下 app 正常）— 人工（@Ray）走查一次
 - [x] footprint 全部可回退（未提交，集中在 `ios/` 原生工程 + `pubspec` + 新增 `patrol_test/`、`ios/RunnerUITests/`、`scripts/setup_patrol_ios.rb`）— 文档（design.md footprint）
 

@@ -21,11 +21,11 @@
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage | @Ray | 2026-05-29 |
-| [e2e-harness](active/e2e-harness/) | P2 | 进行中（iOS + Android 冒烟均已跑通 M1；复现脚本/flaky 防护/验收分层待收尾；CI 后置） | editor-integration-screen, media-storage | @Ray | 2026-06-04 |
+| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | editor-integration-screen, media-storage | @Ray | 2026-06-04 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
 
-> **验收分层**（随 [e2e-harness](active/e2e-harness/) 落地）：屏 / 功能 spec 的 `verification.md` 把验收项分两类——**自动化可覆盖**（widget test 或 Patrol E2E）与**必须人工**（设计目检 + 加密/备份/还原等不可逆链路的终验）。判据：纯 in-Flutter 行为 → widget test 即可，不强制 E2E；**有原生跨界 / 不可逆副作用**的链路 → 标「需 E2E」并依赖 `e2e-harness`。安全 / 不可逆链路即便 E2E 全绿也**保留人工终验**（patrol_cli 有静默假阳性 + iOS 模拟器 CI flaky 先例）。
+> **验收分层**（随 [e2e-harness](active/e2e-harness/) 落地）：屏 / 功能 spec 的 `verification.md` 把验收项分两类——**自动化可覆盖**（widget test 或 Patrol E2E）与**必须人工**（设计目检 + 加密/备份/还原等不可逆链路的终验）。判据：纯 in-Flutter 行为 → widget test 即可，不强制 E2E；**有原生跨界 / 不可逆副作用**的链路 → 标「需 E2E」并依赖 `e2e-harness`。安全 / 不可逆链路即便 E2E 全绿也**保留人工终验**（patrol_cli 有静默假阳性 + iOS 模拟器 CI flaky 先例）。**新屏可复制的两栏骨架**见 [`active/e2e-harness/verification-skeleton.md`](active/e2e-harness/verification-skeleton.md)；**Patrol 一次性接入 SOP** 见 [`docs/patrol-e2e-onboarding.md`](../docs/patrol-e2e-onboarding.md)。
 
 ## 已交付·随设计维护
 

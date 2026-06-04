@@ -55,3 +55,35 @@ harness SHALL 对 patrol_cli 两类已知 flaky 提供确定性防护：
 
 ### R7 · 防静默假阳性（CI 前置）
 接入 CI 前，harness SHALL 断言「**确实跑了 ≥ N 个用例**」（解析 patrol 输出的 `Total:` 计数并校验非零），把"全 pass 但零执行"挡在闸外。
+
+### R8 · 测试隔离与产物清理
+E2E 跑测 SHALL NOT 向后续运行泄漏持久化的设备 app 状态（残留的真加密 DB/媒体会污染下一次跑、造成顺序依赖型 flaky，对加密 app 还是隐私卫生问题），且测试产生的产物 SHALL NOT 提交入库：
+- **iOS 状态隔离**：iOS 无 Android 的 `clearPackageData`（Android 已每用例清数据），故运行入口 SHALL 在跑前（及绿后）清 app 容器（`xcrun simctl uninstall <ios-sim> com.dayz`），使每次跑干净起步——追平 Android 的 clean-slate。红跑可保留现场供 post-mortem（下次跑前再清）。
+- **产物清理**：patrol 生成的 `test_bundle.dart` SHALL gitignore（不入库）；主机构建产物（`build/ios_results_*.xcresult` 等）SHALL 受控修剪、一律不提交。
+
+判据：纯无状态冒烟可不强清；**有状态 E2E**（插数据 / 落库）的链路 SHALL 保证起始态干净（容器重置或用例 teardown）。
+
+## 非功能需求
+
+### NF1 · 多端兼容
+同一冒烟用例 MUST 在 iOS 模拟器（iPhone）与 Android 模拟器（API 36）**双端**跑通，各报 `Total:1 / Successful:1 / Failed:0`。度量：两端经 wrapper 跑 `patrol test` 退出 0 且 `Total` 非零。
+
+### NF2 · 防假阳性（可靠性）
+flaky 防护 wrapper MUST 在 `Total:0`（零执行）时以非零码退出；对已知可重试模式（启动 handshake、native-asset/Maven 下载中断、Android 首跑 `Total:0`）MUST 自动重试，默认上限 3 次（`PATROL_MAX_RETRIES`）；真实用例断言失败 MUST NOT 重试（不得掩盖真 bug）。度量：`scripts/patrol_test.sh --selftest` 对 stub patrol 的四类控制流（pass / 假绿 / 真失败 / flaky）行为符合预期。
+
+### NF3 · 安全（真加密 + 人闸）
+harness 启动真实生产入口 `main()` 时 MUST 走真实 SQLCipher 加密库初始化（不 mock 加密层）；加密 / 备份 / 还原等不可逆链路即便 E2E 全绿 MUST 保留人工终验（见 R6）。度量：冒烟经真实 `AppDatabase.open` 落盘；不可逆链路 verification 项标「人工（@Ray）」。
+
+## 选档（标准档）
+
+专项 5 维逐维表态（任一为「是」即标准档）：
+
+| 维度 | 命中 | 依据 |
+|---|---|---|
+| 安全 | 是 | 启动真实 SQLCipher 加密库；R6 / NF3 守不可逆链路人闸 |
+| 权限 | 是 | T5 测 iOS 相册授权弹窗（原生权限自动化是 patrol 核心独占场景）|
+| 无障碍 | 否 | 本 spec 是测试基建，不涉 UI 无障碍 |
+| 性能 | 否 | 构建 / 测试耗时仅记录在 design 成本账，不立性能 NF 约束 |
+| 多端兼容 | 是 | iOS + Android 双端 harness（NF1）|
+
+跨多模块：design `## 文件变更` 落在 `ios/`、`android/`、`scripts/`、`patrol_test/`、`specs/` 等多个顶层目录。→ **标准档**（含 verification.md）。
