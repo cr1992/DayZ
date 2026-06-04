@@ -76,6 +76,9 @@
 | `--ink` / `--ink-2` / `--ink-3` / `--ink-4` | 主文字 / 次级 / 辅助·占位 / 禁用 |
 | `--hairline` / `--hairline-2` | 分割线 / 强描边 |
 | `--overlay` | 遮罩底色 |
+| `--media-bg` / `--media-surface` | 沉浸式媒体层底 / 层内条格底（大图查看器·选择器，暖近黑，明暗一致） |
+| `--media-ink` / `--media-ink-2` | 媒体层主文字图标 / 次级·空心描边 |
+| `--media-hairline` / `--media-scrim` / `--media-chip` | 媒体层分割线 / 渐隐遮罩·投影 / 圆钮底 |
 | `--danger` / `--danger-soft` | 危险操作文字 / 其浅底 |
 | `--favorite` | 收藏星标（暖金） |
 | `--shadow-sm` / `--shadow-md` / `--shadow-lg` | 暖调投影三档 |
@@ -107,7 +110,7 @@
 > 曾有 `warm` 暖纸 / `paired` 主题配套 / `sepia` 深褐，评估同色发闷、捆绑不自由后移除；纸与主题色各自独立（点主题不换纸）。每套都让 `surface` 比 `bg` 亮一档，突出主体。
 - **不要写死背景色**：组件一律用 `var(--bg/--surface/...)`，纸色切换即自动生效。
 - 切换 + 持久化在 `spec.js`（`.paper-btn[data-bg]` 点击；`#paperHue` 滑块 → `custom` + 设种子）。展示见 `design-system.html` §02。
-- **联动**：点顶栏主题色（`.swatch-btn`）只切主题；点纸色（`.paper-btn`）只改纸、不动主题。顶栏切换后自动滚到 §06 真实界面看效果（`spec.js` `jumpToContext`）。
+- **联动**：点顶栏主题色（`.swatch-btn`）= 切主题 **并** 把纸设为 `paired`（配套纸）；单独点纸（`.paper-btn`）只改纸、不动主题。顶栏切换后自动滚到 §06 真实界面看效果（`spec.js` `jumpToContext`）。
 - **Flutter**：纸色 = 一个 `paper` 枚举 + 可空 `paperSeed` 颜色；`tinted`/`custom` 用 HSL/oklch 把 accent 或 seed 以低比例混入基底背景（`Color.alphaBlend` 或手算），映射到 `ThemeExtension` 的背景族。
 
 ---
@@ -230,6 +233,7 @@
 ### 相册九宫格 `.gallery`（多图日记）
 卡片正文区 / 阅读页正文后的多图网格。列数随张数变（克制版朋友圈）：`data-n="2"`→2列、`"3"`→3列、`"4"`→2×2 田字、`≥5`→3列铺满、`"1"`→单张大图(4:3)。超 9 张时在**第 9 格**加 `.more`（`data-more="N"` 显示「+N」蒙层）**收起**，被收起的格加 `.hidden`；阅读页点 `.more` 由 `screen.js` 给 `.gallery` 加 `.expanded` 露出全部。信息流卡片里外层 `data-nav` 先行导航 → 点图直接进阅读页（不就地展开）。单张封面仍用 `.entry .photo`，多图才用 `.gallery`。
 > Flutter：`GridView.count`（crossAxisCount 由张数 2/3 决定）+ 最后一格 `Stack` 叠 +N 蒙层；点 +N 展开或进相册查看器。
+> **点图看大图**：给 `.gallery` 加 `data-lightbox` 即可（容器内图自动成组，点谁从谁开；见「大图查看器 `.lbx`」）。
 ```html
 <div class="gallery" data-n="9">
   <div class="ph"><img src="…" alt=""></div>          <!-- 第 1–8 格 -->
@@ -245,16 +249,41 @@
 > **真源分两处**：跨端共享的组件在 `design-system/assets/spec.css`（改后须复制到 `pages/assets/`）；**仅原型用的屏内组件/骨架**在 `pages/assets/screen.css`（不回流设计规范）。本节(3b)= spec.css；下一节(3c)= screen.css。
 
 ### 时间线年月吸顶头 `.tl-month`
-`position:sticky; top:0`，停靠在覆盖式顶栏正下方（`.app-scroll` 已用 `--top-h` 留白，sticky 自身不再叠加 top）。**现为可点击触发器**（`<button>`）：点它打开日期跳转日历（见 §3c「时间线日期跳转」）。带 `data-cal-open` + `data-ym="YYYY-M"` + 末尾小日历图标 `.tl-cal`（展开态 `aria-expanded="true"` 时着 accent）。
+`position:sticky; top:var(--top-h)`，停靠在覆盖式顶栏正下方（`--top-h` 见 §3c 骨架）。**现为可点击触发器**（`<button>`）：点它打开日期跳转日历（见 §3c「时间线日期跳转」）。带 `data-cal-open` + `data-ym="YYYY-M"` + 末尾下拉 `.tl-caret`（展开态 `aria-expanded="true"` 时旋转）。
 ```html
 <button class="tl-month" data-cal-open data-ym="2026-5" aria-expanded="false">
   <span class="y">5月</span><span class="c">2026 · 12 篇</span>
-  <svg class="tl-cal" viewBox="0 0 24 24" …><rect x="3.5" y="4.5" width="17" height="16" rx="3"/></svg>
+  <svg class="tl-caret" viewBox="0 0 24 24" …><path d="m6 9 6 6 6-6"/></svg>
 </button>
 ```
 
 ### 单篇阅读版式 `.reader`
-`.r-kicker`(日期，含日历图标) → `h1`(衬线大标题) → `.r-meta`(weather-chip + tag + 地点) → `.r-body p`(衬线 1.85) → `.r-tags`。封面用 `.read-hero > img`。
+`.r-kicker`(日期，含日历图标) → `h1`(衬线大标题) → `.r-meta`(weather-chip + tag + 地点) → `.r-body p`(衬线 1.85) → `.r-tags`。封面用 `.read-hero > img`。封面 + 正文后九宫格都已加 `data-lightbox`，点图进大图查看器（见下）。
+
+### 大图查看器 `.lbx`（DZ.lightbox · 全局引擎）
+**全屏沉浸式看图**：暖近黑底（`--media-*`，明暗/主题一致）、横向 scroll-snap 翻页、顶部计数 `3 / 11` + 关闭钮、可选底部 caption。点空白退出、点图不退出；桌面预览支持 `Esc`/`←`/`→`。
+- **引擎**：`assets/lightbox.js`，调 `DZ.lightbox({images:['a.png',{src,caption}], index, host})`。
+- **自动接线（推荐）**：给容器加 `data-lightbox` → 容器内所有 `<img>` 成一组，点哪张从哪张开。容器或单图可带 `data-caption`。已接：阅读页 `.read-hero` + `.gallery`。
+- **凡有内容图皆可接**：内容型图片（封面/九宫格）直接加 `data-lightbox`；**卡片封面图（时间线/收藏/往年今日）不接**——整卡点击是「打开这篇日记」（Day One 同此），进详情再看大图。
+> Flutter：`PhotoViewGallery.builder` + `PageController(initialPage:index)`，背景暖近黑，`onPageChanged` 更新计数。
+```html
+<div class="gallery" data-n="9" data-lightbox> …<div class="ph"><img src="…"></div>… </div>
+```
+
+### 全屏图片选择器 `.pk`（DZ.picker · 微信式 · 全局引擎）
+**插入图片入口**：暖近黑全屏，顶栏（取消 / 相册名 ▾）+ 4 列网格（首格相机 `.pk-cam`）+ 底栏（预览 / 原图 / 完成(N)）。多选带**顺序编号徽标** `.pk-badge`（选中 accent 实底 + 缩放 + accent 描边；未选空心圈），超上限 toast 拦截。预览复用 `DZ.lightbox`；编号/完成钮走主题 accent。
+- **引擎**：`assets/picker.js`，调 `DZ.picker({assets:[src…], max:9, onDone(srcs){}, onCamera(){}, album, host})`。`onDone` 回选中**顺序**的 src 数组。
+- **选择按格身份去重（非 src）**——原型缩略图可能复用同一张图，按 src 去重会误连选。
+- 已接：编辑器图片钮（`editor.js` `openImagePicker()`）。
+> Flutter：`wechat_assets_picker`（`AssetPicker.pickAssets`：maxAssets/预览/原图/编号全内置）或 `photo_manager` + 自绘 `GridView`。
+```html
+<!-- 引擎生成；手写一般只调 DZ.picker() -->
+<div class="pk in">
+  <div class="pk-top"><button class="pk-cancel">取消</button><button class="pk-album">最近项目 ▾</button></div>
+  <div class="pk-grid"><button class="pk-cam">📷</button><button class="pk-cell sel"><img><span class="pk-badge">1</span></button>…</div>
+  <div class="pk-foot"><button class="pk-preview">预览</button><button class="pk-orig"><span class="box"></span>原图</button><button class="pk-done">完成 (1)</button></div>
+</div>
+```
 
 ### 往年今日年份分隔 `.year-sep`
 ```html
@@ -307,8 +336,21 @@
 ### 顶栏展开搜索 `.topsearch`（交互见 screen.js）
 放大镜就地展开为输入框。结构放在 `.app-top` 内：触发钮 `[data-search-open]`；展开层 `.topsearch`(含 `.field > input[data-search-input]` + `[data-search-close]`)；`.app-top.searching` 控制显隐。回车 → `postMessage({type:'nav',to:'search'})` 跳结果页。
 
-### 编辑器富格式块 `.cb-*`（compose-body 内 · 演示 AppFlowy 块）
-`.cb-h`(标题) · `.cb-list`(有序/无序) · `.cb-todo`(待办，勾选态 `.done`，`.bx`+`.tx`) · `.cb-quote`(引用)。仅用于编辑页「富格式」状态示意。
+### 编辑器富格式块 `.cb-*`（compose-body 内 · 演示 AppFlowy 全能力集）
+编辑页 `data-when="rich"` 状态把 AppFlowy **全部**支持的样式画全（画布样式真源，避免还原偏差；内容长、可滚动）：
+- **标题**：`h1/h2/h3.cb-h`（衬线，26/21/17px）。
+- **行内**：粗 `<strong>` · 斜 `<em>` · 下划线 `<u>` · 删除线 `<s>`（原生标签）；行内代码 `code.cb-code`（mono+`--bg-2`）；链接 `a.cb-link`（`--accent-ink`+下划线）；文字色 `.cb-fc[data-fc]` / 高亮 `.cb-hl[data-hl]`（**底色由 editor.js 从工具栏同一套 `TEXT_COLORS`/`HL_COLORS` 注入**，高亮固定配深墨文字，明暗都读得清）。
+- **块**：无序 `ul.cb-list`(disc) · 有序 `ol.cb-list`(decimal) · 待办 `.cb-todo`（`.done` 勾选，`.bx`+`.tx`）· 引用 `blockquote.cb-quote` · 代码块 `pre.cb-codeblock`（mono+边框）· 分隔线 `hr.cb-hr` · 图片 `.cb-img`（圆角，带 `data-lightbox` 可点开大图）。
+> 改色板只改 editor.js 的 `TEXT_COLORS`/`HL_COLORS`；demo 自动跟随。Flutter 能力集对照见 `docs/handoff/editor.md`。
+
+### 编辑器键盘位内联面板 `.editor-dock-wrap` + `.tb-panel`（真源 `pages/assets/editor.{css,js}` · 仅编辑页）
+还原 AppFlowy `MobileToolbarV2` 的二级菜单模式:点工具栏 **H / 颜色 / 链接** → 面板从工具栏**下方**(键盘位)升起,文档与选区保持可见、不压暗。**不要改成底部 sheet**(那是更差的编辑手势,且与原生不符)。唯一例外:**图片**走 `DZ.sheet` 相册/拍照来源菜单(一次性插入动作,非格式化)。
+- 结构:`.editor-dock-wrap`(贴底，包住工具栏 + 面板) > `.toolbar.editor-dock` + 三个 `.tb-panel[data-panel=heading|color|link]`;`.editor-dock-wrap.panel-open` 时工具栏补底分割。
+- 触发钮在工具栏上用 `data-tb="heading|color|link|image"`(**不再用 `data-toggle`**,故 screen.js 不会把它们当纯 toggle);开关/选色/链接提交逻辑在 `editor.js`。
+- **标题面板** `.tb-headings > .tb-h-opt[data-level=p|1|2|3]`(`.g` 字形 + `.l` 小标签，选中 `.on`)——比 AppFlowy 原件**多一个显式「正文」项**。
+- **颜色面板** `.tb-pal`:两组 `.tb-pal-lab` + `.tb-pal-row[data-pal=text|hl]`,swatch `.tb-sw`(选中 `.on` = accent 光环；`.dot-default`/`.dot-none` 为默认/无)。色板由 `editor.js` `TEXT_COLORS`/`HL_COLORS` 注入,是**编辑器色板真源**(hex 表 + 原生对接见 `docs/EDITOR-HANDOFF.md`)。
+- **链接面板** `.tb-link`:URL 单字段(`.field>.input`) + `.tb-link-acts`(取消/完成)——对齐 AppFlowy `MobileLinkMenu`,**不加「显示文字」字段**。
+> Flutter:维持 `MobileToolbarItem.withMenu` 的内联面板;颜色项把 DayZ 色板传进 `textColorOptions`/`backgroundColorOptions`。完整差异与落地要求见 `docs/handoff/editor.md`。
 
 ### 新建日记本选色 `.nj-*`（sheet 内表单 · 仅原型）
 `.nj-colorlab`(小标题) + `.nj-colors > .nj-color[data-c]`（六色圆钮，选中 `.on` = 外环 + 白勾）。由 `screen.js` `openNewJournal()` 注入 sheet 的 `content`。色板 = 三主题色 + 三扩展色。

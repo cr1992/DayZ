@@ -1,0 +1,84 @@
+/* ============================================================
+   DayZ · 编辑页屏内专属样式（真源 · 仅 editor.html）
+   还原 AppFlowy MobileToolbarV2 的「键盘位内联面板」二级菜单：
+   点工具栏 H / 颜色 / 链接 → 面板从工具栏「下方」（键盘位）升起，
+   文档与选区保持可见、不压暗。全部用 DayZ token 着色。
+   —— 这是该模式的设计真源，原生侧照此对齐（见 docs/handoff/editor.md）。
+   ============================================================ */
+
+/* 底栏容器：工具栏 + 内联面板，整体贴底 */
+.editor-dock-wrap {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 25;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  box-shadow: 0 -1px 0 var(--hairline), 0 -10px 26px -16px rgba(60, 50, 35, 0.22);
+}
+/* 容器内工具栏改为静态流式（覆盖 spec 的 absolute 定位）*/
+.editor-dock-wrap .toolbar.editor-dock {
+  position: static; z-index: auto; box-shadow: none;
+  background: transparent; backdrop-filter: none;
+  padding: 8px 10px; border: 0;
+}
+/* 面板打开时给工具栏补一条底分割，和面板区分层 */
+.editor-dock-wrap.panel-open .toolbar.editor-dock {
+  box-shadow: 0 1px 0 var(--hairline);
+}
+
+/* ---- 内联面板基座 ---- */
+.tb-panel { display: none; padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + 6px); }
+.tb-panel.open { display: block; animation: tb-panel-in var(--dur) var(--ease); }
+@keyframes tb-panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- 标题面板：正文 + H1/H2/H3 四等分 ---- */
+.tb-headings { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
+.tb-h-opt {
+  appearance: none; border: 1px solid var(--hairline); background: var(--bg);
+  border-radius: var(--r-md); cursor: pointer; min-height: 64px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--ink-2); font-family: inherit; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tb-h-opt:hover { background: var(--bg-2); color: var(--ink); }
+.tb-h-opt .g { font-family: var(--font-serif); font-weight: 600; line-height: 1; color: var(--ink); }
+.tb-h-opt[data-level="p"] .g { font-size: 17px; }
+.tb-h-opt[data-level="1"] .g { font-size: 23px; }
+.tb-h-opt[data-level="2"] .g { font-size: 20px; }
+.tb-h-opt[data-level="3"] .g { font-size: 16px; }
+.tb-h-opt .l { font-size: 11px; font-family: var(--font-sans); color: var(--ink-3); letter-spacing: 0.02em; }
+.tb-h-opt.on { background: var(--accent-soft); border-color: transparent; }
+.tb-h-opt.on .g { color: var(--accent-ink); }
+.tb-h-opt.on .l { color: var(--accent-ink); }
+
+/* ---- 颜色 / 高亮面板 ---- */
+.tb-pal { display: grid; gap: var(--sp-2); }
+.tb-pal-lab { font-size: 12px; font-weight: 600; color: var(--ink-3); font-family: var(--font-sans); letter-spacing: 0.02em; }
+.tb-pal-lab:not(:first-child) { margin-top: var(--sp-2); }
+.tb-pal-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.tb-sw {
+  appearance: none; border: none; background: none; cursor: pointer; padding: 0;
+  width: 36px; height: 36px; border-radius: var(--r-full);
+  display: grid; place-items: center;
+}
+.tb-sw .dot {
+  width: 28px; height: 28px; border-radius: var(--r-full);
+  display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--hairline-2);
+  color: var(--surface); font-family: var(--font-serif); font-weight: 600; font-size: 15px;
+  transition: transform var(--dur) var(--ease);
+}
+/* 「默认」：A 字示色 / 「无」：斜杠示意 */
+.tb-sw .dot-default { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline-2); }
+.tb-sw .dot-none { background: var(--surface); position: relative; }
+.tb-sw .dot-none::after {
+  content: ""; position: absolute; left: 5px; right: 5px; top: 50%; height: 1.5px;
+  background: var(--ink-4); transform: rotate(-45deg);
+}
+.tb-sw.on { box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-ring); }
+.tb-sw.on .dot { transform: scale(0.84); }
+
+/* ---- 链接面板：URL 单字段 + 取消/完成（对齐 AppFlowy MobileLinkMenu）---- */
+.tb-link { display: grid; gap: var(--sp-3); }
+.tb-link .field { max-width: none; }
+.tb-link-acts { display: flex; gap: 10px; }
+.tb-link-acts .btn { flex: 1; }

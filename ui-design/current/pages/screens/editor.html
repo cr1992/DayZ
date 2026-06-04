@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="../assets/tokens.css">
 <link rel="stylesheet" href="../assets/spec.css">
 <link rel="stylesheet" href="../assets/screen.css">
+<link rel="stylesheet" href="../assets/editor.css">
 </head>
 <body>
 <div class="pg has-dock">
@@ -49,41 +50,107 @@
         <p style="margin:0"><span class="dim">在这里继续写下今天的故事</span><span class="compose-caret"></span></p>
       </div>
 
-      <!-- 富格式（展示 AppFlowy 块类型）-->
+      <!-- 富格式（完整展示 AppFlowy 全能力集，供画布作样式真源；内容长、可滚动）-->
       <div class="compose-body" data-when="rich">
-        <p style="margin:0 0 var(--sp-4)">周六打算去<strong>西山</strong>走一圈，趁天气好。把要带的东西先列一下，免得到时候手忙脚乱。</p>
-        <h2 class="cb-h">出发清单</h2>
+        <p style="margin:0 0 var(--sp-4)">周六去<strong>西山</strong>走一圈，<em>趁天气好</em>。出发前把要点<u>记下来</u>，省得手忙脚乱——去年那条<s>南坡</s>今年封了。路线存成了 <code class="cb-code">xishan.gpx</code>，参考<a class="cb-link" href="#">两年前那篇游记</a>；<span class="cb-fc" data-fc="1">红字</span>标必带，<span class="cb-hl" data-hl="1">高亮</span>是临时加的。</p>
+
+        <h1 class="cb-h">出发前一晚</h1>
+        <p style="margin:0 0 var(--sp-4)">清单分三类列好，照着收拾最快，也不容易落东西。</p>
+
+        <h2 class="cb-h">装备</h2>
+        <ul class="cb-list">
+          <li>登山鞋、速干衣</li>
+          <li>冲锋衣（山顶风大）</li>
+          <li>头灯 + 备用电池</li>
+        </ul>
+
+        <h3 class="cb-h">随身小件</h3>
+        <ol class="cb-list">
+          <li>身份证、少量现金</li>
+          <li>创可贴、防晒霜</li>
+          <li>充电宝、数据线</li>
+        </ol>
+
         <div class="cb-todo done"><span class="bx"></span><span class="tx">登山鞋 · 防滑</span></div>
         <div class="cb-todo done"><span class="bx"></span><span class="tx">两升水 + 盐丸</span></div>
-        <div class="cb-todo"><span class="bx"></span><span class="tx">充电宝、雨衣</span></div>
         <div class="cb-todo"><span class="bx"></span><span class="tx">给相机换张空卡</span></div>
+        <div class="cb-todo"><span class="bx"></span><span class="tx">雨衣塞进背包侧袋</span></div>
+
         <blockquote class="cb-quote">山不会走来找你，但它一直在那儿。</blockquote>
-        <p style="margin:0"><span class="dim">继续写……</span><span class="compose-caret"></span></p>
+
+        <pre class="cb-codeblock">06:30  出发
+09:00  到登山口
+12:30  山顶午餐
+16:00  开始下撤</pre>
+
+        <hr class="cb-hr">
+
+        <div class="cb-img" data-lightbox><img src="../assets/img/sea.png" alt=""></div>
+
+        <p style="margin:var(--sp-4) 0 0"><span class="dim">继续写……</span><span class="compose-caret"></span></p>
       </div>
     </div>
   </div>
 
-  <!-- 底部停靠工具栏：AppFlowy Editor 能力（横向滚动）-->
+  <!-- 底部停靠工具栏 + 键盘位内联面板（AppFlowy MobileToolbarV2 风格）-->
+  <div class="editor-dock-wrap">
   <div class="toolbar editor-dock">
-    <button class="tb" data-toggle aria-label="标题">H</button>
+    <button class="tb" data-tb="heading" aria-label="标题">H</button>
     <span class="div"></span>
     <button class="tb" data-toggle aria-label="加粗" style="font-weight:700">B</button>
     <button class="tb" data-toggle aria-label="斜体" style="font-style:italic">I</button>
     <button class="tb" data-toggle aria-label="下划线" style="text-decoration:underline">U</button>
     <button class="tb" data-toggle aria-label="删除线" style="text-decoration:line-through">S</button>
     <button class="tb" data-toggle aria-label="行内代码"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4"/></svg></button>
-    <button class="tb" data-toggle aria-label="文字颜色 / 高亮"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="m14.5 4.5 5 5-8 8-5 .9.9-5z"/></svg></button>
+    <button class="tb" data-tb="color" aria-label="文字颜色 / 高亮"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="m14.5 4.5 5 5-8 8-5 .9.9-5z"/></svg></button>
     <span class="div"></span>
     <button class="tb" data-toggle aria-label="无序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>
     <button class="tb" data-toggle aria-label="有序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 5h1.4v3.4M4 13.2c.3-.6 1.6-.6 1.6.3 0 .7-1.6 1.3-1.6 2.5h1.8"/></svg></button>
     <button class="tb" data-toggle aria-label="待办清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.2" width="7" height="7" rx="2"/><path d="m4.8 7.6 1.3 1.3 2.3-2.6M14 7.5h6M3.5 15.2h7M14 16.5h6"/></svg></button>
     <button class="tb" data-toggle aria-label="引用"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3M20 7h-4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3"/></svg></button>
     <span class="div"></span>
-    <button class="tb" aria-label="链接"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.6 5.6l-1.5 1.5M13 17.5 11.5 19a4 4 0 0 1-5.6-5.6l1.5-1.5"/></svg></button>
+    <button class="tb" data-tb="link" aria-label="链接"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.6 5.6l-1.5 1.5M13 17.5 11.5 19a4 4 0 0 1-5.6-5.6l1.5-1.5"/></svg></button>
     <button class="tb" aria-label="分隔线"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
-    <button class="tb" aria-label="插入图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="m4 17 4.5-4 3 2.5L16 11l4 4.5"/></svg></button>
+    <button class="tb" data-tb="image" aria-label="插入图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="m4 17 4.5-4 3 2.5L16 11l4 4.5"/></svg></button>
+  </div>
+
+    <!-- 标题面板：正文 + H1/H2/H3 -->
+    <div class="tb-panel" data-panel="heading">
+      <div class="tb-headings">
+        <button class="tb-h-opt on" type="button" data-level="p"><span class="g">正文</span><span class="l">段落</span></button>
+        <button class="tb-h-opt" type="button" data-level="1"><span class="g">H1</span><span class="l">大标题</span></button>
+        <button class="tb-h-opt" type="button" data-level="2"><span class="g">H2</span><span class="l">中标题</span></button>
+        <button class="tb-h-opt" type="button" data-level="3"><span class="g">H3</span><span class="l">小标题</span></button>
+      </div>
+    </div>
+
+    <!-- 颜色 / 高亮面板（色板由 editor.js 注入）-->
+    <div class="tb-panel" data-panel="color">
+      <div class="tb-pal">
+        <div class="tb-pal-lab">文字颜色</div>
+        <div class="tb-pal-row" data-pal="text"></div>
+        <div class="tb-pal-lab">高亮</div>
+        <div class="tb-pal-row" data-pal="hl"></div>
+      </div>
+    </div>
+
+    <!-- 链接面板：URL 单字段（对齐 AppFlowy MobileLinkMenu）-->
+    <div class="tb-panel" data-panel="link">
+      <div class="tb-link">
+        <div class="field"><input class="input" type="url" inputmode="url" placeholder="粘贴或输入链接 URL"></div>
+        <div class="tb-link-acts">
+          <button class="btn btn-ghost" type="button" data-link-cancel>取消</button>
+          <button class="btn btn-primary" type="button" data-link-done>完成</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+<script src="../assets/toast.js"></script>
+<script src="../assets/sheet.js"></script>
+<script src="../assets/lightbox.js"></script>
+<script src="../assets/picker.js"></script>
 <script src="../assets/screen.js"></script>
+<script src="../assets/editor.js"></script>
 </body>
 </html>

@@ -33,6 +33,7 @@
 - `prototype-kit/` —— **可复用原型启动套件**：上述框架抽出的业务无关外壳（壳 + 通用屏内逻辑 + 空屏模板 + 示例屏 + README）。新项目要沿用这套原型方式时,从这里复制起步。
 - `docs/CHANGELOG.md` —— 更新日志（按天 + 模块标签）。
 - `docs/BACKLOG.md` —— **待办 / 需求池**：记录尚未动手或未定档的需求与交互缺口（「要做的」）；与 CHANGELOG（「做完的」）互补。某项定档后从 BACKLOG 移除并写入 CHANGELOG。
+- `docs/handoff/` —— **走查任务单**：按目标代码区一份（如 `editor.md` 对 `lib/ui/editor/*`），列原型↔原生差异 + 改法 + 验收 checklist，受众是落地该模块的原生 agent。生命周期「🚧 待落地 → 验收全过 → 移入 `_archive/`」，约定见 `docs/handoff/README.md`。
 - 项目文档统一收纳在 `docs/`（CLAUDE.md 因需置于根目录而保留在根）。
 
 ## 约定
@@ -45,6 +46,29 @@
 - 维护 `docs/CHANGELOG.md`，**按天 + 模块标签**记录（格式 `- [模块] 描述`）。
 - **定档后自动更新**：仅当某项工作被确认定稿（"定档"）后，才把它写入当天 changelog；过程中的草稿/试验不记录。无需用户提醒，定档即写。
 - 新增模块时同步补充 changelog 顶部「模块索引」。
+- **同日合并（硬规则）**：写条目前先 `grep '^## <今天日期>' docs/CHANGELOG.md`，命中就把新条目 append 到那段，**绝不新开第二个同日 `## YYYY-MM-DD`**。新的一天则在文件**顶部**（模块索引下方）开新段——**newest-first，最新日期段永远在最上面**。
+- **深度上限**：一条 = 1 行标题 + 最多 3 子 bullet。变更叙事不是验尸报告——根因/踩坑一句话带过，深内容分流到对应 doc 并指路。
+- **滚动窗口 + 归档**：主文件只留最近约 2 个会话日；超 ~200 行就把窗口外**最旧的整段（文件底部）**移到 `docs/_archive/CHANGELOG-YYYY-MM.md`（原样保真），底部留链接。
+
+## 收尾同步表（DoD · `done` 前逐行过）
+> 核心纪律：**任何影响产物的改动都带一个同步义务**，漏一项 = 文档/索引漂移。下表是 checklist，各项「为什么」见下方维护小节。
+
+| 改了 | 必做 |
+|---|---|
+| `tokens.css` 加/改 token | 同步 `DESIGN-REF.md` Token 速查表 |
+| 新增 / 改 / 删可复用组件 | 登记 / 更新 `DESIGN-REF.md` 组件目录（类名 + 最小 HTML）；没登记的视为临时草稿 |
+| 在某屏**局部私补**基础组件样式（如给 `.btn` 补 `justify-content`）才能用 | 当作「基础类有洞」的信号：优先回 `spec.css` 补基础类、撤掉私补，而非就地绕过 |
+| 给组件加了 spec 里**已定义却从没被触发**的变体（如 `.btn[disabled]`） | 确保至少一处真实用例会触发它——没用例 = 没被肉眼测过，必腐化 |
+| 改 `pages/` 屏结构或新增屏 | 同步 `SCREENS[]`；必要时更新 `docs/PROTOTYPE-ARCH.md` |
+| 任何 CSS/JSX 改了**颜色相关**值 | 自查 + 跑 `tools/check-tokens.js`（read_file → 粘进 run_script）：禁裸 `#hex` / 禁裸 `rgba()` / 禁假 fallback，一律 `var(--*)`（允许 token→token fallback）。脚本带 baseline 只报增量；清了旧违规跑 `args=['--write-baseline']` 同步 |
+| 在实战中改进了 `prototype-kit/` 外壳/逻辑/模板 | 反哺 kit + 记 `- [原型套件] …`；改了契约同步 `PROTOTYPE-ARCH.md` |
+| 改了 `docs/CHANGELOG.md` | 跑 `tools/check-changelog.js`（read_file → run_script）：重复同日段 = FAIL · 超 200 行 = warn 提示归档 · 条目超 3 子 bullet = warn 点名。纯只读、无 baseline |
+| 任意定档 | 写当天 `CHANGELOG.md`（先 grep 同日段，命中即 append） |
+
+### 机读 guard（`tools/`）
+把上表里靠自觉的两条纪律变成可机检的守卫。我是 agent、不能直接 `node`：流程统一是 **read_file 脚本 → 整个粘到 run_script 执行**（脚本只用沙箱 helper：`readFile`/`saveFile`/`ls`/`log`）。
+- `tools/check-tokens.js` — 扫 `design-system/` `pages/` `prototype-kit/` + 根 `index.html` 的 .css/.js/.jsx/.html，抓裸 hex / 裸 rgba / 假 fallback。**自动遍历目录**（新增屏不漏扫、不需维护文件清单），跳过任何 `tokens.css`（token 唯一真源）与 `img/` 资产。带 `tools/check-tokens.baseline.json`：**只报增量**，清了旧违规跑 `args=['--write-baseline']` 同步。首版 baseline（2026-06-03）已接受 156 处现状——设备 chrome（灵动岛/镜片）、文档色板展示值、journal 色点种子数据属合理保留；产品 CSS 里散落的 `#fff`/`#000`/照片蒙层 rgba 是待 burn-down 的尾巴。
+- `tools/check-changelog.js` — 纯只读扫 `docs/CHANGELOG.md`：重复同日段=FAIL、超 200 行=warn 提示归档、条目超 3 子 bullet=warn 点名。
 
 ## DESIGN-REF 维护（保证不腐化）
 - **改动即同步**：任何对 token / 组件 / 模式（pattern）的新增或修改，**与定档同一步**更新 `docs/DESIGN-REF.md`——新增组件补「组件目录」条目（类名 + 最小 HTML），改 token 补「Token 速查」。改完 DESIGN-REF 再写 changelog，二者成对出现。

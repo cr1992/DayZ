@@ -1,4 +1,4 @@
-/* DayZ 底部弹层（sheet）引擎 —— 业务无关、零依赖。
+/* 底部弹层（sheet）引擎 —— 业务无关、零依赖。
    动作菜单 / 选择器 / 轻表单三合一。从底部滑入，scrim 点击关闭。
 
    用法：
@@ -12,7 +12,7 @@
        { label:'雾紫', swatch:'#786CAD', selected:true, onTap(){…} }, …
      ]});
      // 3) 轻表单（自定义内容 + 主按钮）
-     DZ.sheet({ title:'新建日记本', content: el, primary:{ label:'创建', onTap(){…} } });
+     DZ.sheet({ title:'新建项目', content: el, primary:{ label:'创建', onTap(){…} } });
 
    item 字段：label / desc(次级行) / icon(SVG 串) / swatch(色点) / tone('danger')
               / selected(打勾) / keepOpen(点后不自动关) / onTap(回调)
@@ -147,7 +147,7 @@
   };
 
   /* 便捷封装：确认再执行（最常见的 sheet 特化）。
-     DZ.confirm({ title:'删除这篇日记？', desc:'…', confirmLabel:'移到回收站', icon:'<svg…>', danger:true, onConfirm(){…} })
+     DZ.confirm({ title:'删除这一项？', desc:'…', confirmLabel:'移到回收站', icon:'<svg…>', danger:true, onConfirm(){…} })
      danger 默认 true（确认多为危险操作）；传 danger:false 用普通色。 */
   DZ.confirm = function (opts) {
     opts = opts || {};

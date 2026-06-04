@@ -31,6 +31,7 @@
 - `docs/DESIGN-REF.md` —— **AI / 开发速查手册**（机器友好）：token 全表 + 组件目录 + 类名 + 最小 HTML 片段。**复用组件前先读它。**
 - `docs/PROTOTYPE-ARCH.md` —— **页面原型架构**：`pages/` 的「一套屏幕源、两种呈现（原型/画布）」iframe 体系 + postMessage 协议 + 路由栈（来自 prototype-kit，§8 是移植指南）。改 `pages/` 结构或新增屏幕前先读它。
 - `docs/CHANGELOG.md` —— 更新日志（按天 + 模块标签）。
+- `docs/handoff/` —— **走查任务单**（可选）：按目标代码区一份，列原型↔落地差异 + 改法 + 验收 checklist，受众是实现该模块的开发/agent。生命周期「🚧 待落地 → 验收全过 → 移入 `_archive/`」，约定见 `docs/handoff/README.md`。
 - 项目文档统一收纳在 `docs/`（CLAUDE.md 因需置于根目录而保留在根）。
 
 ## 约定
@@ -38,12 +39,32 @@
 - 〈语言/排版细则，如 CJK 正文行高 1.7–1.8〉。
 - 移动端点击目标 ≥ 44px。
 
-## Changelog 维护
-- 维护 `docs/CHANGELOG.md`，**按天 + 模块标签**记录（格式 `- [模块] 描述`）。
-- **定档后自动更新**：仅当某项工作被确认定稿（"定档"）后，才把它写入当天 changelog；过程中的草稿/试验不记录。无需用户提醒，定档即写。
-- 新增模块时同步补充 changelog 顶部「模块索引」。
+## 工作纪律（来自 prototype-kit · 换项目仍成立）
+- **先 grep 再写**：改既有制品前先读 `DESIGN-REF.md` / grep 现有 class，别重造已沉淀的组件、屏壳、图标。
+- **按需披露**：`docs/` 索引按任务需要再打开，**不要预读**全部；深细节走对应 doc。
+- **别自造清单**：iOS chrome（状态栏/灵动岛/Home 条）、跨屏跳转（`data-nav`）、底部弹层（`DZ.sheet`）、原型/画布外壳——全是现成的，别重画（见 `README.md` 易踩的坑）。
+- **单一真源**：数值只在 `tokens.css`；改源不改副本，两处冲突以 `tokens.css` 为准。
 
-## DESIGN-REF 维护（保证不腐化）
-- **改动即同步**：任何对 token / 组件 / 模式的新增或修改，**与定档同一步**更新 `docs/DESIGN-REF.md`——新增组件补「组件目录」条目（类名 + 最小 HTML），改 token 补「Token 速查」。改完 DESIGN-REF 再写 changelog，二者成对出现。
-- **单一真源**：`tokens.css` 是 token 唯一真源；DESIGN-REF 只做索引与语义说明，不重复定义数值。若两者冲突，以 `tokens.css` 为准并立即修正 DESIGN-REF。
-- **新组件准入**：组件只有在 DESIGN-REF 有条目后才算「可复用」；没登记的视为临时草稿。
+## Changelog 维护
+- 维护 `docs/CHANGELOG.md`，**按天 + 模块标签**记录（格式 `- [模块] 描述`）。新增模块同步补顶部「模块索引」。
+- **定档即写**：仅把已定稿的工作写入当天 changelog；过程中的草稿/试验不记录。无需用户提醒，定档即写。
+- **同日合并（硬规则）**：写条目前先 `grep '^## <今天日期>' docs/CHANGELOG.md`，命中就把新条目 append 到那段，**绝不新开第二个同日 `## YYYY-MM-DD`**。新的一天则在文件**顶部**（模块索引下方）开新段——**newest-first，最新日期段永远在最上面**。
+- **深度上限**：一条 = **1 行标题 + 最多 3 子 bullet**。变更叙事不是验尸报告——根因/踩坑最多一句话带过，深内容分流到对应 doc 并指路。
+- **滚动窗口 + 归档**：主文件只留最近约 2 个会话日；超 ~200 行就把窗口外**最旧的整段（文件底部）**移到 `docs/_archive/CHANGELOG-YYYY-MM.md`（原样保真），底部留链接。
+
+## 单一真源 & 不腐化
+- **`tokens.css` 是 token 唯一真源**；`DESIGN-REF.md` 只做索引与语义，不重复定义数值，冲突以 `tokens.css` 为准并立即修正 DESIGN-REF。
+- **新组件准入**：组件只有在 `DESIGN-REF.md` 有条目（类名 + 最小 HTML）后才算「可复用」；没登记的视为临时草稿。
+
+## 收尾同步表（DoD · `done` 前逐行过）
+> 核心纪律：**任何影响产物的改动都带一个同步义务**，漏一项 = 文档/索引漂移。
+
+| 改了 | 必做 |
+|---|---|
+| `tokens.css` 加/改 token | 同步 `DESIGN-REF.md` Token 速查表 |
+| 新增 / 改 / 删可复用组件 | 登记 / 更新 `DESIGN-REF.md` 组件目录（类名 + 最小 HTML） |
+| 加 / 删 / 改屏 | 同步 `pages/` 的 `SCREENS[]`；必要时更新 `PROTOTYPE-ARCH.md` |
+| 改了**颜色相关**值 | 自查：禁裸 `#hex` / 禁裸 `rgba()` / 禁假 fallback，一律 `var(--*)` |
+| 在实战中改进了外壳 / 屏内逻辑 / 模板 | 反哺 `prototype-kit/`，并记 `- [原型套件] …` |
+| 某模块走查通过、可交付落地 | 把对应 `docs/handoff/<区域>.md` 验收 checklist 勾全后移入 `docs/handoff/_archive/` |
+| 任意定档 | 写当天 `CHANGELOG.md`（先 grep 同日段，命中即 append；最新日期段置顶） |

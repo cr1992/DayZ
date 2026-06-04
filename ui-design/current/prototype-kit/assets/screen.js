@@ -1,6 +1,6 @@
 /* ============================================================
-   DayZ · 单屏脚本（运行在每个 screens/*.html 内部）
-   注入 iOS chrome · 多状态显隐 · 交互 · postMessage 导航
+   单屏脚本（运行在每个 screens/*.html 内部）
+   注入 iOS chrome · 多状态显隐 · 通用交互 · postMessage 导航
    ============================================================ */
 (function () {
   "use strict";
@@ -52,64 +52,17 @@
       var st = e.target.closest(".drawer-stage"); if (st) st.classList.remove("open"); return;
     }
 
-    /* 通用演示交互 */
+    /* 通用演示交互：分段控件 */
     var seg = e.target.closest(".segmented button");
     if (seg) { seg.parentElement.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-selected", "false"); }); seg.setAttribute("aria-selected", "true"); return; }
-    var mood = e.target.closest(".mood");
-    if (mood) { mood.parentElement.querySelectorAll(".mood").forEach(function (m) { m.classList.remove("sel"); }); mood.classList.add("sel"); return; }
-    var tb = e.target.closest(".toolbar .tb");
-    if (tb && tb.dataset.toggle !== undefined) { tb.classList.toggle("on"); return; }
-    var chip = e.target.closest(".compose-meta .chip-btn");
-    if (chip) { chip.classList.toggle("on"); return; }
-    var dwi = e.target.closest(".dw-item");
-    if (dwi && !dwi.hasAttribute("data-nav")) { dwi.closest(".dw-section").querySelectorAll(".dw-item").forEach(function (i) { i.classList.remove("on"); }); dwi.classList.add("on"); return; }
-    var todo = e.target.closest(".cb-todo");
-    if (todo) { todo.classList.toggle("done"); return; }
   });
 
-  /* ---------- 顶栏内联展开搜索 ---------- */
-  (function () {
-    var top = document.querySelector(".app-top");
-    var opener = document.querySelector("[data-search-open]");
-    if (!top || !opener) return;
-    var form = top.querySelector(".topsearch");
-    var input = form && form.querySelector("input");
-    var openIt = function () { top.classList.add("searching"); if (input) setTimeout(function () { input.focus(); }, 60); };
-    var closeIt = function () { top.classList.remove("searching"); if (input) input.value = ""; };
-    opener.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openIt(); });
-    if (form) {
-      var cancel = form.querySelector("[data-search-close]");
-      if (cancel) cancel.addEventListener("click", function (e) { e.preventDefault(); closeIt(); });
-      if (input) input.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") { e.preventDefault(); post({ type: "nav", to: "search" }); setTimeout(closeIt, 50); }
-      });
-    }
-  })();
-
-  /* ---------- FAB 速拨：轻点起草(导航) · 长按展开 ---------- */
-  var wrap = document.querySelector(".fab-wrap");
-  if (wrap) {
-    var main = wrap.querySelector(".fab-main");
-    var timer = null, longPressed = false;
-    var open = function () { wrap.classList.add("open"); wrap.classList.remove("pressing"); };
-    var close = function () { wrap.classList.remove("open"); };
-    main.addEventListener("pointerdown", function (e) {
-      e.preventDefault(); longPressed = false;
-      if (wrap.classList.contains("open")) return;
-      wrap.classList.add("pressing");
-      timer = setTimeout(function () { longPressed = true; open(); }, 340);
-    });
-    main.addEventListener("pointerup", function () {
-      clearTimeout(timer); wrap.classList.remove("pressing");
-      if (longPressed) return;
-      if (wrap.classList.contains("open")) close();
-      else post({ type: "nav", to: "editor" });
-    });
-    main.addEventListener("pointercancel", function () { clearTimeout(timer); wrap.classList.remove("pressing"); });
-    main.addEventListener("pointerleave", function () { if (!longPressed) clearTimeout(timer); });
-    var fs = document.querySelector(".fab-scrim"); if (fs) fs.addEventListener("click", close);
-    wrap.querySelectorAll(".fab-action").forEach(function (a) {
-      a.addEventListener("click", function () { close(); post({ type: "nav", to: "editor" }); });
+  /* ---------- FAB（通用：轻点导航到 data-nav 目标）---------- */
+  var fabMain = document.querySelector(".fab-wrap .fab-main");
+  if (fabMain) {
+    fabMain.addEventListener("click", function () {
+      var to = fabMain.getAttribute("data-nav");
+      if (to) post({ type: "nav", to: to });
     });
   }
 
@@ -117,7 +70,7 @@
   (function () {
     var pg = document.querySelector(".pg");
     var scroll = document.querySelector(".app-scroll");
-    var bar = document.querySelector(".pg > .app-top, .pg > .search-head");
+    var bar = document.querySelector(".pg > .app-top");
     if (!pg || !scroll || !bar) return;
     var measure = function () { pg.style.setProperty("--top-h", bar.offsetHeight + "px"); };
     measure();

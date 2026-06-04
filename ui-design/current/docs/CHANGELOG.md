@@ -1,6 +1,6 @@
 # DayZ 更新日志（Changelog）
 
-> 按**天**记录更新，每条标注涉及的**模块**便于筛选。
+> 按**天**记录更新，每条标注涉及的**模块**便于筛选。**最新的日期段在最上面**（newest-first）。
 > 格式：`- [模块] 变更描述`。一天内可有多条，按模块归类。
 > 模块清单会持续扩充，新增模块请同步补到下方「模块索引」。
 
@@ -17,12 +17,51 @@
 - **架构** — 页面原型架构（`docs/PROTOTYPE-ARCH.md`）：一套屏幕源/两种呈现 + Flutter 映射
 - **原型套件** — `prototype-kit/`：业务无关的可复用原型外壳（供新项目沿用）
 - **相册** — 多图日记九宫格 `.gallery`（列数随张数 + 超量收起）
+- **媒体** — 沉浸式媒体层：大图查看器 `.lbx`(DZ.lightbox) + 全屏选择器 `.pk`(DZ.picker)，暖近黑 `--media-*`
 - **提示条** — 全局 toast 系统 `.toast` / `.toast-host` + 引擎 `DZ.toast()`
 - **弹层** — 底部弹层 sheet（动作菜单 / 选择器 / 轻表单）+ 引擎 `DZ.sheet()`
 - **背景/纸色** — `data-bg` 纸色轴（纯净/暖纸/主题微染/深褐/自定义）
 - **UI** — Flutter `lib/ui` 界面实现
+- **工具** — `tools/`：机读 guard 脚本（token 纪律 / changelog 卫生）
 
 ---
+
+## 2026-06-04
+- [原型套件] **kit 去 DayZ 具体设计 + newest-first/handoff 约定回灌（定档）**：明确 kit 只承载脚手架 + 工作约定，不带具体设计。拿走 `spec.css`/`screen.css` 里的 DayZ 产品件（心情/天气/日记卡/编辑器工具栏 + dock/抽屉内容/FAB速拨/整段页面级组件/富格式 cb），FAB 中性化为单动作、抽屉留壳，`tokens.css` 去 `--font-diary`/`--favorite` 并去品牌。
+  - 通用机制（按钮/输入/开关/分段/标签/toast/dialog/sheet/抽屉壳/FAB壳）保留；示例屏 home/detail 本就中性、未动。spec.css 856→509 行，check-tokens burn-down 9 处。
+  - CLAUDE/CHANGELOG 模板 + ARCH 同步去 DayZ；newest-first 与 `docs/handoff/` 生命周期约定回灌 kit 文档体系。
+- [媒体] **大图查看器 `DZ.lightbox`（定档）**：全屏沉浸看图，横向 scroll-snap 翻页 + 顶部 `N/总数` 计数，暖近黑 `--media-*`（明暗/主题一致）。`data-lightbox` 容器自动成组，已接阅读页封面 + 九宫格；卡片封面图不接（整卡进详情）。
+  - 新增 `assets/lightbox.js` + spec.css `.lbx`；Flutter 映射 `photo_view` PhotoViewGallery。
+- [媒体] **微信式全屏图片选择器 `DZ.picker`（定档）**：顶栏（取消/相册名 ▾）+ 4 列网格（首格相机）+ 底栏（预览/原图/完成(N)），多选带顺序编号徽标，编号/完成走主题 accent。替掉编辑器旧的相册/拍照 sheet。
+  - 新增 `assets/picker.js` + spec.css `.pk`；选择按格身份去重（非 src，避免原型复用图误连选）；Flutter 映射 `wechat_assets_picker`。
+- [设计规范] 新增 `--media-*` token（媒体层底/面/文字/描边/遮罩），登记 DESIGN-REF Token 速查 + 组件目录（`.lbx`/`.pk`）。
+- [编辑器] `handoff/editor.md` §5 漂移 #5 从🟡升级为🟢已定档：图片插入 = 全屏选择器 + 大图查看器，含原生 `wechat_assets_picker`/`photo_view` 落地映射与验收项。
+- [编辑器] **富格式 demo 补全为 AppFlowy 全能力集（定档）**：编辑页 `rich` 状态原只画了 H2/粗/待办/引用，现补齐 H1–H3 · 斜/下划线/删除线/行内代码 · 文字色/高亮 · 有序·无序列表 · 代码块 · 链接 · 分隔线 · 图片——作画布样式真源、消除还原偏差。
+  - 文字色/高亮由 editor.js 从工具栏同一套色板注入（`[data-fc]`/`[data-hl]`），单一真源不漂；新增 `.cb-code`/`.cb-codeblock`/`.cb-link`/`.cb-hr`/`.cb-img` 等 demo 块（screen.css，token 化），登记 DESIGN-REF §3c。
+- [文档] **新建 `docs/handoff/` 走查任务单目录 + 生命周期约定（定档）**：原 `EDITOR-HANDOFF.md` → `docs/handoff/editor.md`（按走查的代码区命名）；加 `README.md` 定义「待走查→验收通过→归档 `_archive/`」流程 + 状态栏；CLAUDE.md 文档清单同步。
+
+## 2026-06-03
+- [工具] **新增两个机读 guard（定档）**：把 DoD 表里靠自觉的两条纪律变成可机检守卫（read_file → run_script 执行，只用沙箱 helper）。
+  - `tools/check-tokens.js`：自动遍历 `design-system/`/`pages/`/`prototype-kit/` + 根 `index.html`，抓裸 hex / 裸 rgba / 假 fallback；跳过 `tokens.css` 与 `img/`；带 baseline 只报增量。首版 `check-tokens.baseline.json` 接受 156 处现状（设备 chrome / 文档色板 / 种子数据属合理保留，产品 CSS 蒙层散值待 burn-down）。
+  - `tools/check-changelog.js`：纯只读扫本文件——重复同日段=FAIL、超 200 行=warn、条目超 3 子 bullet=warn。
+- [文档] DoD 表的「颜色相关」「改 CHANGELOG」两行接上对应 guard，并补「机读 guard」小节说明运行方式与 baseline 哲学。
+- [编辑器] **二级菜单从「只 toggle」补全为「键盘位内联面板」（定档）**：原型 `editor.html` 点 H/颜色/链接 → 面板从工具栏下方升起（贴合 AppFlowy `MobileToolbarV2`，非底部 sheet），图片走相册/拍照来源 sheet。新增屏内真源 `pages/assets/editor.{css,js}`、登记 DESIGN-REF §3c。
+  - 色板 `TEXT_COLORS`/`HL_COLORS`（暖调 6+5）为编辑器文字色/高亮真源；标题面板比 AppFlowy 多显式「正文」项。
+- [文档] **新增编辑页 handoff + 走查原生编辑页（定档）**：比对 `lib/ui/editor/*` 与设计，列 5 处漂移（🔴默认 Material 色板 · 🟠meta chip 用 Material Icons · 🟡日期/关闭 Material Icons · 🟡标题缺正文项 · 🟡图片无来源选择）+ 改法 + 色板 hex 表 + 验收清单。
+
+## 2026-05-31
+- [侧边栏] **切换日记本不再在顶栏展示本名（定档）**：抽屉选中某本日记本后，顶栏搜索框左侧不再写入该日记本名称（原"全部日记留空、其余显示本名"）；仅保留列表刷新（滚顶 + `tl-refreshing` 淡入）与 `dayz:journalchange` 派发。`screen.js` 去掉对 `.app-top .title` 的赋值。
+- [原型套件] **沉淀工作纪律到 kit（定档）**：把通用纪律回灌 `prototype-kit/`（不抄业务/不抄 guard 脚本，只回灌纪律）。
+  - `CLAUDE.template.md` 新增「工作纪律」（先 grep 再写 / 按需披露 / 别自造清单）与「收尾同步表（DoD）」，把原散落的 Changelog/DESIGN-REF 维护合并为一张「改了 X → 必做 Y」表。
+  - `CHANGELOG.template.md` 补卫生三条：同日合并（grep 后 append）/ 深度上限（≤3 子 bullet）/ 滚动归档（~200 行）。
+- [按钮] **修文本贴左 + 接通禁用态（定档）**：基础 `.btn` 补 `justify-content:center`——此前仅 `inline-flex; align-items:center`，在 `.sheet-foot` 纵列里被拉满整宽时文字靠左（创建按钮即此症）；三份 `spec.css` 同步。
+  - 顺手接通本就存在却未被触发的 `.btn[disabled]`：新建日记本「创建」默认禁用，名称非空才解锁（去掉空名兜底"新日记本"）。
+  - memory.html 私补的 `justify-content:center` 同步撤除（`.mem-actions .btn` 只留 `flex:1`）——基础类已覆盖，留着即"私补未撤"的腐化苗头。
+  - 沉淀两条纪律进 `CLAUDE.md` DoD 表：① 局部私补基础组件样式 = 基础类有洞的信号，优先补基础类；② spec 定义却无真实用例触发的变体（如 disabled）必腐化，须接一处用例。
+- [文档] **根 `CLAUDE.md` 收尾约定收敛为 DoD 表（定档）**：新增「收尾同步表（`done` 前逐行过）」把 token/组件/屏/颜色/kit反哺/定档六类同步义务并成一张「改了 X → 必做 Y」表；Changelog 维护补同日合并 + 深度上限 + 滚动归档三条卫生。原维护小节保留作「为什么」细节。
+
+## 2026-05-30
+- [图标] **App 图标导出（定档）**：基于已定方案 **B · 暖纸底 · 雾紫 Lavender**（暖纸渐变 + `#786CAD` 描边书签本），输出 iOS / Android 全套启动图标到独立目录 `app-icons/exports/`。iOS `AppIcon.appiconset`（含 `Contents.json`，覆盖 iPhone/iPad/1024 满版方形）；Android 自适应图标（`mipmap-anydpi-v26` + 各密度 fg/bg/legacy/round）+ Play 512；附 `Icon Export Preview.html` 明暗 + 遮罩预览与 `README.md` 落地说明。所有尺寸由同一矢量光栅化，未二次缩放。
 
 ## 2026-05-29
 - [文档] 初始化 `CLAUDE.md`，沉淀产品定位、设计基调（温润/克制、浅深双模式、中文为主）、token 架构与约定。
@@ -103,6 +142,3 @@
 - [原型套件] **底部弹层 sheet 回灌 kit**：`DZ.sheet` 引擎与样式业务无关，已同步进 `prototype-kit/assets/sheet.js` + `spec.css`，并在示例屏 detail 接一个 ⋯ 动作菜单演示；README 组件清单补一条。DayZ 的菜单文案/新建日记本/回忆卡片属业务，不回灌。
 - [弹层/原型套件] **`DZ.confirm()` 便捷封装 + settheme/setmode 外壳协议回灌**：① 给 sheet 引擎加 `DZ.confirm({title,desc,confirmLabel,icon,danger,onConfirm})`——"确认再执行"是最高频特化，DayZ 删除/彻底删/清空回收站改用它；同步进 kit。② 把"设置屏请求换肤"的 `settheme`/`setmode`（含`跟随系统`→`matchMedia`）从 DayZ `app.js` 回灌到 `prototype-kit/assets/app.js`——纯外壳机制，任何带设置页的原型可用；kit PROTOTYPE-ARCH §4/§6 同步。
 - [页面] **回忆卡片改版（定档）**：① 修底栏溢出——画幅/风格选择器 + 保存/分享改为**固定底栏**（始终可见，卡片更高时上方预览区滚动），修掉「`.btn` 内 SVG 无尺寸约束被撑爆」。② 新增**长图**画幅——把往年今日"这一天"的多段回忆（含年份分隔 + 配图 + 摘录）竖排成一张可分享长图（纸感款，长图固定纸感、风格行置灰）；满足"往年今日分享一个长图"。画幅三选：竖版 9:16 / 方形 1:1 / 长图。
-
-## 2026-05-30
-- [图标] **App 图标导出（定档）**：基于已定方案 **B · 暖纸底 · 雾紫 Lavender**（暖纸渐变 + `#786CAD` 描边书签本），输出 iOS / Android 全套启动图标到独立目录 `app-icons/exports/`。iOS `AppIcon.appiconset`（含 `Contents.json`，覆盖 iPhone/iPad/1024 满版方形）；Android 自适应图标（`mipmap-anydpi-v26` + 各密度 fg/bg/legacy/round）+ Play 512；附 `Icon Export Preview.html` 明暗 + 遮罩预览与 `README.md` 落地说明。所有尺寸由同一矢量光栅化，未二次缩放。

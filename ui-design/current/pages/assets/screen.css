@@ -148,19 +148,34 @@ body {
 .suggest-row svg { width: 18px; height: 18px; color: var(--ink-3); flex-shrink: 0; display: block; }
 .suggest-row .sub { margin-left: auto; font-size: 12px; color: var(--ink-3); }
 
-/* 富格式编辑：演示块 */
-.compose-body h2.cb-h { font-family: var(--font-serif); font-size: 21px; font-weight: 600; margin: var(--sp-4) 0 var(--sp-2); letter-spacing: -0.01em; }
-.compose-body ul.cb-list, .compose-body ol.cb-list { margin: 0 0 var(--sp-4); padding-left: 1.3em; }
+/* 富格式编辑：演示块（覆盖 AppFlowy 全能力集 —— 标题 H1–H3 / 行内样式 / 有序·无序·待办 / 引用 / 代码块 / 链接 / 分隔线 / 图片）*/
+.compose-body h1.cb-h, .compose-body h2.cb-h, .compose-body h3.cb-h { font-family: var(--font-serif); font-weight: 600; letter-spacing: -0.01em; }
+.compose-body h1.cb-h { font-size: 26px; margin: var(--sp-5) 0 var(--sp-2); }
+.compose-body h2.cb-h { font-size: 21px; margin: var(--sp-4) 0 var(--sp-2); }
+.compose-body h3.cb-h { font-size: 17px; margin: var(--sp-4) 0 var(--sp-1); }
+.compose-body ul.cb-list { list-style: disc; margin: 0 0 var(--sp-4); padding-left: 1.4em; }
+.compose-body ol.cb-list { list-style: decimal; margin: 0 0 var(--sp-4); padding-left: 1.4em; }
 .compose-body ul.cb-list li, .compose-body ol.cb-list li { margin: 4px 0; }
 .compose-body .cb-todo { display: flex; align-items: flex-start; gap: 10px; margin: 7px 0; }
 .compose-body .cb-todo .bx { width: 19px; height: 19px; border-radius: 5px; border: 2px solid var(--hairline-2); flex-shrink: 0; margin-top: 3px; display: grid; place-items: center; }
 .compose-body .cb-todo.done .bx { background: var(--accent); border-color: var(--accent); }
-.compose-body .cb-todo.done .bx::after { content: ""; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-1px); }
+.compose-body .cb-todo.done .bx::after { content: ""; width: 5px; height: 9px; border: solid var(--on-accent); border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-1px); }
 .compose-body .cb-todo.done .tx { color: var(--ink-3); text-decoration: line-through; }
 .compose-body blockquote.cb-quote {
   margin: var(--sp-4) 0; padding: 4px 0 4px var(--sp-4);
   border-left: 3px solid var(--accent-soft-2); color: var(--ink-2); font-style: italic;
 }
+/* 行内样式：粗(strong)/斜(em)/下划线(u)/删除线(s) 走原生标签；行内代码 / 链接 / 文字色 / 高亮 如下 */
+.compose-body code.cb-code { font-family: var(--font-mono); font-size: 0.86em; background: var(--bg-2); color: var(--ink-2); padding: 1px 5px; border-radius: var(--r-xs); }
+.compose-body a.cb-link { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--accent-soft-2); }
+.compose-body .cb-hl { padding: 1px 3px; border-radius: 3px; }  /* 底色 + 文字色由 editor.js 从同一套色板注入 */
+/* 代码块 */
+.compose-body pre.cb-codeblock { font-family: var(--font-mono); font-size: 13px; line-height: 1.7; background: var(--bg-2); color: var(--ink-2); border: 1px solid var(--hairline); border-radius: var(--r-sm); padding: var(--sp-3) var(--sp-4); margin: var(--sp-4) 0; overflow-x: auto; white-space: pre; }
+/* 分隔线 */
+.compose-body hr.cb-hr { border: 0; border-top: 1px solid var(--hairline-2); margin: var(--sp-5) 0; }
+/* 插入图片（点击可进大图查看器）*/
+.compose-body .cb-img { margin: var(--sp-4) 0; border-radius: var(--r-md); overflow: hidden; cursor: pointer; }
+.compose-body .cb-img img { width: 100%; display: block; }
 
 /* ---------- 新建日记本：选色（sheet 内表单，仅原型）---------- */.nj-colorlab { font-size: 12.5px; color: var(--ink-3); margin: var(--sp-4) 0 10px; padding-left: 2px; }
 .nj-colors { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
