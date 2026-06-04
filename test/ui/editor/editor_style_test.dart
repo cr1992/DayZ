@@ -104,5 +104,9 @@ void main() async {
           DayzFonts.serif);
       expect(find.byType(TextField), findsOneWidget);
     });
+    // NOTE: the caret-vs-glyph overhang only manifests on wrapped / non-first
+    // lines under the real engine (the widget-test harness collapses the body
+    // to a single first line with no leading, so it cannot reproduce it). That
+    // regression is guarded by integration_test/editor_caret_e2e.dart.
   });
 }

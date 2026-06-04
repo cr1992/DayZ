@@ -70,7 +70,18 @@ List<MobileToolbarItem> buildDayzToolbarItems({
 
 bool _isAttributeActive(EditorState editorState, Selection selection, String attributeName) {
   if (selection.isCollapsed) {
-    return editorState.toggledStyle.containsKey(attributeName);
+    // Reflect the style that newly-typed text would actually receive at the
+    // caret, so the button stays lit while the caret sits inside styled text
+    // (not only for the single tap before typing). This mirrors what
+    // Transaction.insertText applies: the sliced attributes of the adjacent
+    // character, with any pending toggledStyle layered on top. Each decoration
+    // is checked independently, so stacked styles (B/I/U…) all light up.
+    final delta = editorState.getNodeAtPath(selection.start.path)?.delta;
+    final effective = <String, dynamic>{
+      ...?delta?.sliceAttributes(selection.startIndex),
+      ...editorState.toggledStyle,
+    };
+    return effective[attributeName] == true;
   }
   final nodes = editorState.getNodesInSelection(selection);
   return nodes.allSatisfyInSelection(selection, (delta) {
@@ -89,14 +100,25 @@ MobileToolbarItem buildTextDecorationItem({
     itemIconBuilder: (context, editorState, _) {
       final selection = editorState.selection;
       if (selection == null) return null;
-      final isSelected = _isAttributeActive(editorState, selection, attributeName);
       final theme = MobileToolbarTheme.of(context);
-      return Semantics(
-        label: semanticLabel,
-        child: AFMobileIcon(
-          afMobileIcons: icon,
-          color: isSelected ? theme.primaryColor : theme.iconColor,
-        ),
+      // Also rebuild on toggledStyle changes: with a collapsed caret, toggling
+      // a decoration updates toggledStyle (the style for the next typed text)
+      // without changing the selection. MobileToolbarV2 only rebuilds item
+      // icons on selection changes, so without this the button would not light
+      // up until text is actually selected/typed.
+      return ListenableBuilder(
+        listenable: editorState.toggledStyleNotifier,
+        builder: (_, _) {
+          final isSelected =
+              _isAttributeActive(editorState, selection, attributeName);
+          return Semantics(
+            label: semanticLabel,
+            child: AFMobileIcon(
+              afMobileIcons: icon,
+              color: isSelected ? theme.primaryColor : theme.iconColor,
+            ),
+          );
+        },
       );
     },
     actionHandler: (_, editorState) {

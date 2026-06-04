@@ -305,5 +305,110 @@ void main() async {
       expect(find.text(l10n.editorColorTextRust), findsOneWidget);
       expect(find.text(l10n.editorColorTextLilac), findsOneWidget);
     });
+
+    testWidgets('Bold lights up when toggled with a collapsed caret', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        localizedTestApp(
+          child: EditorScreen.writing(
+            entryDate: DateTime(2026),
+            bodyPreview: 'hello',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EditorScreen)),
+      );
+      final colors = tester.element(find.byType(EditorScreen)).dayz;
+      final editor = tester.widget<AppFlowyEditor>(find.byType(AppFlowyEditor));
+
+      // Collapsed caret (no range) — the case that used to leave the button dark.
+      editor.editorState.selection = Selection.collapsed(
+        Position(path: [0], offset: 2),
+      );
+      await tester.pumpAndSettle();
+
+      Finder boldIcon() => find.descendant(
+            of: find.descendant(
+              of: find.byType(IconButton),
+              matching: find.bySemanticsLabel(l10n.editorToolbarBold),
+            ),
+            matching: find.byType(AFMobileIcon),
+          );
+
+      expect(tester.widget<AFMobileIcon>(boldIcon()).color, colors.ink);
+
+      await tester.tap(
+        find.ancestor(
+          of: find.bySemanticsLabel(l10n.editorToolbarBold),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Toggling on a collapsed caret records the style in toggledStyle; the
+      // button must light up immediately (it used to stay dark because the
+      // toolbar only rebuilt item icons on selection changes).
+      expect(tester.widget<AFMobileIcon>(boldIcon()).color, colors.accent);
+      expect(
+        editor.editorState.toggledStyle.containsKey(AppFlowyRichTextKeys.bold),
+        isTrue,
+      );
+    });
+
+    testWidgets('decoration buttons reflect the caret context and stack', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        localizedTestApp(
+          child: EditorScreen.writing(
+            entryDate: DateTime(2026),
+            bodyPreview: 'hello',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EditorScreen)),
+      );
+      final colors = tester.element(find.byType(EditorScreen)).dayz;
+      final editorState =
+          tester.widget<AppFlowyEditor>(find.byType(AppFlowyEditor)).editorState;
+
+      Finder icon(String label) => find.descendant(
+            of: find.descendant(
+              of: find.byType(IconButton),
+              matching: find.bySemanticsLabel(label),
+            ),
+            matching: find.byType(AFMobileIcon),
+          );
+      Color colorOf(String label) =>
+          tester.widget<AFMobileIcon>(icon(label)).color!;
+
+      // Make 'hello' both bold and italic.
+      editorState.selection = Selection(
+        start: Position(path: [0], offset: 0),
+        end: Position(path: [0], offset: 5),
+      );
+      await tester.pumpAndSettle();
+      editorState.toggleAttribute(AppFlowyRichTextKeys.bold);
+      await tester.pumpAndSettle();
+      editorState.toggleAttribute(AppFlowyRichTextKeys.italic);
+      await tester.pumpAndSettle();
+
+      // Collapse the caret INSIDE the styled run (no toggledStyle in play):
+      // the bold + italic buttons must both stay lit (stacked), underline must
+      // not — reflecting the style newly-typed text would inherit there.
+      editorState.selection = Selection.collapsed(Position(path: [0], offset: 3));
+      await tester.pumpAndSettle();
+
+      expect(colorOf(l10n.editorToolbarBold), colors.accent);
+      expect(colorOf(l10n.editorToolbarItalic), colors.accent);
+      expect(colorOf(l10n.editorToolbarUnderline), colors.ink);
+    });
   });
 }
