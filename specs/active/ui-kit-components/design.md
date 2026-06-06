@@ -98,6 +98,18 @@
 - **理由：** 单点判定、易测（verification 注入 `MediaQueryData(disableAnimations: true)` 断言动效时长为 0），杜绝逐组件漏判。
 - **代价：** 多一个 helper；微小。
 
+### D12 · 大图查看器 `DayzImageViewer`：`photo_view` 的 `PhotoViewGallery` + `PageController`（R9）
+- **状态：** 采纳
+- **背景：** R9 要全屏沉浸看图、横向翻页 + 顶部计数 + 点空白退出，对齐原型 `pages/assets/lightbox.js`（`.lbx` 横向 `scroll-snap`、`.lbx-top` 计数、点非 `IMG` 退出）与 handoff `editor.md §5(b)`（Flutter 映射明确指向 `photo_view` 的 `PhotoViewGallery.builder` + `PageController(initialPage:index)`）。本组件归 ui-kit（业务无关、零数据接入）；页面级 spec（reader / editor 只读）只在打开它前备好 `ImageProvider` 列表。
+- **选择：**
+  - 引 `photo_view`（README 依赖外的普通包依赖，列入 `## 文件变更` 的 `pubspec.yaml` / `pubspec.lock`，归 R9 任务白名单）。`DayzImageViewer({required List<ImageProvider> images, int initialIndex = 0, List<String?>? captions, VoidCallback? onClose})`，全屏 `Stack` + `PhotoViewGallery.builder`（每页一张，`backgroundDecoration` 取 `--media-bg` 暖近黑）+ `PageController(initialPage: initialIndex)`，`onPageChanged` 更新当前页号状态。
+  - 顶部计数：仅 `images.length > 1` 时渲染 `N / 总数`（对齐 lightbox.js `multi` 判定），随 `onPageChanged` 实时更新；单张不渲染计数。
+  - 关闭：左上角关闭钮（`DayzIcons` 关闭 path）触发 `onClose`；点空白（页面背景，非图片本体）触发 `onClose`——`photo_view` 经 `PhotoViewGallery` 的 `onTapUp`/背景 `GestureDetector` 实现「点图不退、点空白退」（对齐 lightbox.js `track.click` 仅在 `target ≠ IMG` 时关闭）。
+  - 可选 caption：当某页有 caption 时渲染底部 `--media-scrim` 渐隐说明（对齐 `.lbx-foot`）。
+  - 媒体层取色统一引 `--media-bg`/`--media-surface`/`--media-ink`/`--media-ink-2`/`--media-scrim`/`--media-chip`（DESIGN-REF §3c Token，由 design-tokens-theme 提供）；不写死颜色。命中盒 / 关闭钮 ≥44（NF1），关闭钮 / 计数有 `Semantics` 标签（NF3），入场 / 退场动效经 `dayzMotionDuration`（NF4）。
+- **理由：** `photo_view` 是 handoff 钦定的 Flutter 落地件，内置缩放 / 翻页手势；ui-kit 收口这件「沉浸式媒体壳」使 reader / 编辑只读等多消费方共用一份，避免各屏自造。
+- **代价：** 新增一个普通包依赖（`photo_view`）；与原型 `scroll-snap` 翻页手感存在框架级细微差异（验收以 Patrol 视觉项守手感，见任务）。
+
 ## 架构
 
 ```mermaid
@@ -139,6 +151,7 @@ graph TD
 - `lib/ui/widgets/dayz_dialog.dart`            新建（`.dialog` h4+p+`.acts`）
 - `lib/ui/widgets/dayz_entry_card.dart`        新建（`.entry`：date 列 + card + photo/head/excerpt/foot）
 - `lib/ui/widgets/dayz_gallery.dart`           新建（`.gallery` 九宫格，列数随张数 + 第9格 +N 蒙层，接 `ImageProvider` 列表 + 回调）
+- `lib/ui/widgets/dayz_image_viewer.dart`      新建（`.lbx` 全屏沉浸式大图查看器 `DayzImageViewer`：`photo_view` `PhotoViewGallery` + `PageController(initialPage)`，横向滑动 + 顶部 `N / 总数` 计数（多张时）+ 关闭钮 / 点空白退出 + 暖近黑 `--media-*` 底 + 可选 caption，接 `ImageProvider` 列表 + `initialIndex` + 回调，零数据接入，R9/D12）
 
 **页面级复用组件（§3b）+ 跨屏空态（§3c 中跨屏件）`lib/ui/widgets/`**
 - `lib/ui/widgets/dayz_month_header.dart`      新建（`.tl-month` 年月吸顶头触发器 + `.tl-cal` 小日历图标，日期走 intl）
@@ -167,13 +180,14 @@ graph TD
 - `lib/demo/demo_entry.dart`                   修改（**仅末尾追加一行**，不插中间、不改 `DemoEntry` 字段）
 
 **共享依赖**
-- `pubspec.yaml`                               修改（加 `flutter_svg` + `widgetbook`；`intl` 为 SDK 传递依赖不新增）
+- `pubspec.yaml`                               修改（加 `flutter_svg` + `widgetbook` + `photo_view`（大图查看器 R9/D12）；`intl` 为 SDK 传递依赖不新增）
 - `pubspec.lock`                               修改（`flutter pub get` 后锁定版本）
 
 **测试目录（白名单 hook 对 `test/**/*_test.dart` 自动放行；非 `_test.dart` 的共享基建由任务 `验收基建` 字段预批）**
 - `test/ui/widgets/`                           新建（各基础/页面级组件 widget test）
 - `test/ui/shell/`                             新建（外壳组件 widget test）
 - `test/demo/widget_gallery_demo_test.dart`    新建（画廊 + Debug Home 入口测试）
+- `patrol_test/dayz_image_viewer_visual_test.dart`  新建（T9：DayzImageViewer 真机视觉截图 E2E，dependsOn e2e-harness；非 `test/**` 不走自动放行，故列本清单 + 任务可改文件）
 
 ## 已知风险
 

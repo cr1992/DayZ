@@ -83,6 +83,17 @@ UI 还原三层（token → 组件 → 屏）的**中间层**：在 `design-toke
 - 操作：取收藏星组件并切换收藏态。
 - 结果：已收藏 = 填充 `--favorite` 暖金、未收藏 = 描边 `currentColor`，二者 path 完全一致（不另画导致歪斜）；图标颜色随父级文字色/主题，无写死色。
 
+### R9 · 大图查看器：全屏沉浸式可左右滑动看图（DZ.lightbox）
+系统 SHALL 提供一个业务无关、零数据接入的全屏大图查看器组件 `DayzImageViewer`（DESIGN-REF §3c「大图查看器 `.lbx`」/ handoff `editor.md §5(b)`），把一组图片在覆盖整个视口的沉浸式媒体层上铺满呈现，横向滑动翻页。组件只接 `ImageProvider` 列表 + `initialIndex` + 可选 caption + 关闭回调，不知道图片从哪来、不触发任何相册 / 解密 / 缩略图链路（取数与解密由页面级 spec 在打开它之前完成，NF5）。
+- 前提：给定一组 `ImageProvider`（≥1 张）与起始下标 `initialIndex`。
+- 操作：打开查看器；横向滑动翻页；点空白区域 / 关闭钮退出；点图片本身不退出。
+- 结果：
+  - 打开即停在 `initialIndex` 对应那张（`PageController(initialPage: initialIndex)`）。
+  - **多张时**顶部显示 `N / 总数` 计数（如 `3 / 11`），随翻页更新当前页号；**单张时不显示**计数。
+  - 背景为暖近黑沉浸层（`--media-*`，明暗 / 主题一致），左上角关闭钮，可选底部 caption。
+  - 点空白退出（触发关闭回调）；点图片本身不退出（便于细看）。
+  - 不 import `lib/data/`、不调相册 / 缩略图 / 解密入口（NF5）。
+
 ## 非功能需求
 
 ### NF1 · 无障碍：点击目标 ≥ 44px

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-06-06
 文档状态：定稿
 ---
 
@@ -70,11 +70,13 @@
 - 操作：移动光标/改变选区到不同格式的文本。
 - 结果：工具栏按钮高亮态随选区实际格式即时切换（选区是粗体→B 亮、退出粗体区域→B 灭）。
 
-### R7 · 图片插入：image_picker → 加密容器 → image node
-插入图片时系统 SHALL 经 `image_picker` 取图字节 → 经 `MediaStore.put` 写入媒体加密容器（`DMED`，串独立设备媒体 key）并经 `MediaRepo.addMeta` 记元数据 → 在文档中插入 image 块，块引用 `media.id`（权威引用键，落点以 `editor-json-contract` D2 为准），MUST NOT 把真实文件路径写进 `content_json`。
+### R7 · 图片插入：全屏微信式多图选择器 → 加密容器 → 多个 image node
+> **设计维护（2026-06-06，已交付 v1.0 后设计实质变更）：** 设计稿把「单图 → 多选」定档为微信式全屏选择器（handoff `docs/handoff/editor.md` §5a + DESIGN-REF §3c）。R7 由「单图」扩到「多图（≤9）」，落地见 tasks `S1`、设计见 D11；旧版「相册/拍照 sheet + 单图」行为被取代。引用本 R 的 tasks（S1）/verification 项须按多图链路重验。
+
+插入图片时系统 SHALL 拉起**全屏图片选择器**（微信式：顶栏取消/相册名 ▾ + 4 列网格首格即相机 + 底栏预览/原图/顺序编号/完成(N)，最多 9 张），把**返回的每张资产**依次经 `MediaStore.put` 写入媒体加密容器（`DMED`，串独立设备媒体 key）并经 `MediaRepo.addMeta` 记元数据 → 在文档中**按选择顺序插入多个 image 块**，每块引用各自 `media.id`（权威引用键，落点以 `editor-json-contract` D2 为准），MUST NOT 把真实文件路径写进 `content_json`。
 - 前提：编辑器聚焦，点击工具栏「插入图片」。
-- 操作：从相册选一张图。
-- 结果：图片被加密存入媒体容器、元数据入 `MediaRepo`、文档插入引用 `media.id` 的 image 块；`content_json` 内不含明文路径（满足 editor-json-contract R2「路径变化不破坏文档」）。
+- 操作：在全屏选择器多选 N（1≤N≤9）张图后点「完成」；或点首格相机现拍一张。
+- 结果：N 张图各自被加密存入媒体容器、元数据入 `MediaRepo`、文档按序插入 N 个引用各自 `media.id` 的 image 块；`content_json` 内不含明文路径（满足 editor-json-contract R2「路径变化不破坏文档」）。MUST NOT 再出现旧版「相册/拍照」二级 sheet。
 
 ### R8 · 自动保存对接（编辑器 → DraftCoordinator）
 编辑器内容变更时本屏 SHALL 把变更翻成 plain payload（`targetId, draftJson, isNew, cursorPos`，draftJson 经 `EditorDocCodec.encode`）喂 `auto-save-draft` 的 `DraftCoordinator`，并在页面失焦/退出等时机触发 `forceFlush`。
@@ -93,6 +95,14 @@
 - 前提：在编辑页。
 - 操作：点「完成」/点某个 chip 钮。
 - 结果：「完成」触发保存（R3/R8 链路）后返回上一屏；chip 钮点击打开对应选择交互（MVP 可占位 sheet）并在选中后以 `.on` 态回显——chip 的取数/落库经 Repository、本屏不直连 Drift（NF5）。
+
+### R11 · 工具栏分层：8 件高频停靠 + Aa 三段格式面板 + 链接下沉 + 双向同步
+> **设计维护（2026-06-06，已交付 v1.0 后设计实质变更）：** 设计稿把工具栏从「一排 14 件」重排为「高频在外、全集在面板」（handoff §8a/§8b + DESIGN-REF §3c）。本 R 在 R4/R5/R6 之上补「分层与面板」约束（不取代三者：能力仍由 AppFlowy mobile_toolbar 体系落地 R4、停靠仍交 AppFlowy R5、激活态仍派生自选区 R6）。落地见 tasks `S2`、设计见 D12。引用 R4/R5/R6 的既有 verification 项保持有效，本 R 新增项叠加其上。
+
+工具栏 SHALL 只在停靠条暴露 **8 件高频项**（`Aa·格式`（`withMenu`）｜加粗 B｜斜体 I｜颜色｜无序列表｜有序列表｜待办｜图片），其余格式 SHALL 收进 `Aa·格式` 打开的**三段式面板**：①段落（正文/H1/H2/H3，沿用既有四等分）②列表与块（无序/有序/待办/引用/标注/分隔线，radio 互斥，段落↔块互斥）③文字样式（B/I/U/S/行内代码，独立 toggle）。链接 SHALL 从停靠条**下沉**进文字样式段（较低频），点击拉起单 URL 字段的链接面板（无显示文本字段）。停靠条的 无序/有序/待办 与面板内同项 SHALL 双向同步；B/I 与面板文字样式段 SHALL 双向同步。面板高度 SHALL 向软键盘看齐（`MediaQuery.viewInsets.bottom`，最小 288）。
+- 前提：编辑器聚焦、软键盘弹出。
+- 操作：点停靠条 `Aa·格式` 打开面板；在面板或停靠条切换某格式；点文字样式段链接项。
+- 结果：停靠条恒为 8 件；面板呈三段全集；段落与块互斥、块内 radio 互斥；停靠条与面板的 ul/ol/todo、B/I 状态一致（任一侧改另一侧即时同步）；链接项打开单 URL 输入面板；面板高度≥288 且对齐键盘高。
 
 ## 非功能需求
 
@@ -119,7 +129,7 @@ SHALL 在 iOS 13+ 与 Android 8+（minSdk 26）正常工作：软键盘弹出时
 | 专项维度 | 命中？ | 依据（一句话） |
 |---|---|---|
 | 安全 | **是** | 图片走媒体加密容器 + 独立媒体 key（NF2）；Repository 边界禁直连 DB（NF1） |
-| 权限 | **是** | `image_picker` 触发相册/相机系统权限 |
+| 权限 | **是** | 全屏选择器（`wechat_assets_picker`）触发相册读取权限 + 首格相机触发相机权限（R7/S1）；旧 `image_picker` 相机路径可保留或替换 |
 | 无障碍 | **是** | 工具栏/顶栏/chip 的 Semantics + 44px 命中 + 对比度 + reduce-motion（NF3） |
 | 性能 | 否 | 富文本编辑为交互态，无可度量运行阈值（重活如缩略图明确范围外） |
 | 多端兼容 | **是** | iOS 13+ / Android 8+ 键盘停靠与取图（NF5） |

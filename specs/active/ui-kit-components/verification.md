@@ -21,6 +21,7 @@
 | 底部 sheet 四形态 | 触发 actions/picker/form/confirm | 各形态结构/勾选/回调/关闭正确 | R5 | 自动 |
 | FAB 速拨 | 轻点 / 长按 | 轻点回调；长按展开动作+scrim；点 scrim 收起 | R6 | 自动 |
 | 收藏星规范 path | 切已收藏/未收藏 | fill `--favorite`/描边 currentColor，path 不变 | R8 | 自动 |
+| 大图查看器 | pump `DayzImageViewer`（多图，`initialIndex==i`）| 全屏铺满 + 暖近黑 `--media-*` 底；横滑翻页同步「N/总数」计数；点图不退、点空白/关闭钮退出；`initialIndex` 命中 | R9 | 自动 |
 | widgetbook 矩阵 | 切主题 addon + 组件状态 | 组件在所选主题×状态即时渲染；变体编目齐 | R7 | 自动 + 人工(@Ray 矩阵观感) |
 
 ## 专项检查
@@ -32,6 +33,10 @@
 - [ ] 图标钮/无文字件/开关/收藏星有可定位 `Semantics` 标签（`AppLocalizations`）、装饰图标被 `ExcludeSemantics` — 自动：`flutter test test/ui/`（`find.bySemanticsLabel` 命中 + 装饰件不在语义树）
 - [ ] 组件未误用 token 引入新不达标渲染对（正文不用 `--ink-3`、着色文字落 soft 底、实色底文字用 `--on-accent`）— 自动：`flutter test test/ui/`（断组件文本/UI 用对 token 角色；对比度数值本身由 tokens-theme `contrast_test` 负责，本项只验"用对语义"）
 - [ ] toast/sheet/FAB/顶栏动效在 `MediaQuery.disableAnimations==true` 时降级为无动效/瞬时 — 自动：`flutter test test/ui/`（注入 `MediaQueryData(disableAnimations:true)` 断动效时长为 0，经 `dayzMotionDuration` 单点门）
+
+### 视觉验收（Patrol·设计维护 T9）
+> 视觉走查交 Patrol 截图工件，不甩人工目检（@Ray 仅留最终手感终签）。
+- [ ] `DayzImageViewer` 暖近黑 `--media-*` 沉浸观感 + 横滑翻页手感对照原型 `pages/assets/lightbox.js`（`.lbx`）— 自动：`bash scripts/patrol_test.sh -d <device> --target patrol_test/dayz_image_viewer_visual_test.dart`（真信号 = 截图工件 + 校验 `Total:` 非零，依赖 e2e-harness）
 
 ### Repository 边界（NF5 硬红线）
 - [ ] 组件层无任何 `package:.../data` 或 `drift` import、无 Drift 句柄/SQL — 自动：`flutter test test/ui/architecture_no_repo_import_test.dart`（用 `dart:io` 扫 `lib/ui/` 源文件的 import 声明，断言不含 `data/`/`drift`/`sqlite`；这是对**目录整体**的结构断言，非 grep 被改文件自身的实现内容，符合抗规避——断言的是"全层 import 拓扑"这一可观测结构，不是某文件里有没有某行字面量）
@@ -51,7 +56,7 @@
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，任一不通过则 verification 未定稿。
-- [ ] 正向：R1（§3 成套）、R2（§3b）、R3（毛玻璃顶栏）、R4（toast）、R5（sheet）、R6（FAB）、R7（widgetbook）、R8（收藏星）、NF1（≥44px）、NF2（对比度用对 token）、NF3（Semantics）、NF4（reduce-motion）、NF5（Repository 边界）、NF6（多端）、NF7（saturate 降级）均有对应场景/专项检查覆盖，无孤儿需求。
+- [ ] 正向：R1（§3 成套）、R2（§3b）、R3（毛玻璃顶栏）、R4（toast）、R5（sheet）、R6（FAB）、R7（widgetbook）、R8（收藏星）、R9（大图查看器 + Patrol 视觉）、NF1（≥44px）、NF2（对比度用对 token）、NF3（Semantics）、NF4（reduce-motion）、NF5（Repository 边界）、NF6（多端）、NF7（saturate 降级）均有对应场景/专项检查覆盖，无孤儿需求。
 - [ ] 反向：各验证项「关联需求」均指向真实 R/NF；回归项（Debug Home / analyze / 禁裸中文护栏）已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）

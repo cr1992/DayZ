@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-06-06
 文档状态：定稿
 ---
 
@@ -21,10 +21,13 @@
 | 工具栏走 AppFlowy 体系 | 聚焦编辑器 | 工具栏由 AppFlowy mobile_toolbar 渲染、绑定 EditorState、editor-dock 能力齐备 | R4 | 自动 |
 | 不自管键盘停靠 | 注入不同 viewInsets | 本屏不额外平移工具栏（停靠由 AppFlowy 管），本屏无 viewInsets 手动顶起 | R5 | 自动 |
 | 高亮态派生自选区 | 选区移入/移出粗体 | B item 随选区实际格式即时亮/灭，非本地布尔 | R6 | 自动 |
-| 图片插入加密链路 | 选一张图 | image_picker→MediaStore.put(DMED,独立媒体key)→MediaRepo.addMeta→插 image 块(media.id)；content_json 无真实路径 | R7, NF2 | 自动 |
+| 图片插入加密多图链路（设计维护 S1）| 微信式全屏选择器多选 N 张 | wechat_assets_picker(maxAssets:9,themeColor=accent,首格相机)→逐张 MediaStore.put(DMED,独立媒体key)→MediaRepo.addMeta×N→按序插 N 个 image 块(各 media.id)；content_json 无真实路径；取消不插块 | R7(多图), NF2 | 自动 |
+| 相册授权原生链路（设计维护 S1）| 真机点插图→授权→选 N 张 | `$.native` 处理相册授权弹窗 → 加密 MediaStore → N 个 image node 落库 | R7, NF2, 权限/NF5 | 自动（E2E，依赖 e2e-harness）|
 | 自动保存对接 | 编辑后停顿 / 退出 | onChanged 翻 plain payload 喂 DraftCoordinator；退出/完成 forceFlush | R8 | 自动 |
 | 三状态呈现 | 以 empty/writing/rich 进入 | 占位/正文/顶栏标题文案与 editor.html 对应态一致(经 AppLocalizations)，日期 kicker 经 intl | R9 | 自动 |
 | 顶栏与 chip | 点「完成」/点 chip | 完成走保存(R3/R8)后返回；chip 点开占位选择并 .on 回显 | R10 | 自动 |
+| 工具栏分层（设计维护 S2）| 看停靠条 / 开 Aa 面板 / 切某格式 | 停靠条恒 8 件；Aa 面板呈段落/列表与块/文字样式三段；段落↔块互斥、块内 radio 互斥；停靠 ul/ol/todo 与 B/I ↔ 面板双向同步；链接下沉文字样式段拉单 URL 面板；面板高度≥288 且对齐键盘高 | R11(在 R4/R5/R6 之上) | 自动 |
+| 工具栏视觉还原（设计维护 S2）| 真机/模拟器渲染工具栏 + 打开面板 | 8 件停靠布局 + 面板贴键盘观感出截图、对照 editor.html（含「面板本轮无代码块入口」已知偏差，不误报）| R11, NF4 | 自动（E2E 视觉，依赖 e2e-harness）|
 
 ## 专项检查
 > 对应 requirement 的 NF 编号。
@@ -38,10 +41,11 @@
 - [ ] 本屏图片/隐私文案不暗示「主密码锁住照片」（媒体走独立设备 key，不随主密码/rekey）— 人工（@Ray）（核 AppLocalizations 内本屏相关文案口径，与 settings 屏红线文案单一来源一致）
 
 ### 权限（NF5 之一，权限 · 真机 · 跨任务）
-- [ ] `image_picker` 在 iOS 13+ / Android 8+ 触发相册/相机系统权限并能取图 — 人工（@Ray，真机各一次）
+- [ ] 相册/相机系统权限：微信式全屏选择器在 iOS 13+ / Android 8+ 触发相册读取授权（首格相机触发相机授权）并能取图 — 自动（E2E，依赖 e2e-harness，设计维护 S1）：`bash scripts/patrol_test.sh -d <device> --target patrol_test/editor_image_picker_test.dart`（`$.native` 处理授权弹窗 + 选 N 张落库 + N 个 image node；**校验 `Total:` 非零**，真实信号 = 用例绿 + 落库工件。**取代 e2e-harness park 的 T5 相册授权选图人工/后置项**）
 
 ### 无障碍（NF3 · 跨任务）
 - [ ] 工具栏每个 item、顶栏关闭/完成、四 chip 均有 `Semantics` 标签（对齐 editor.html aria-label，经 AppLocalizations）— 自动：`flutter test test/ui/editor/editor_a11y_test.dart`（`find.bySemanticsLabel(l10n.xxx)` 逐项命中）
+- [ ] 重排后 8 件停靠项 + Aa 面板三段各项（段落/列表与块/文字样式/链接）均有 `Semantics` 标签、命中区 ≥ 44×44（设计维护 S2）— 自动：`flutter test test/ui/editor/editor_toolbar_test.dart`（8 件逐项 `find.bySemanticsLabel`，面板各项命中区 `tester.getSize`≥Size(44,44)，R11/NF3）
 - [ ] 所有可点目标命中区 ≥ 44×44 px（含横向滚动工具栏 item）— 自动：同上（`tester.getSize` 断言 ≥ Size(44,44)）
 - [ ] 正文/标题文本对底对比度 ≥ WCAG AA（4.5:1），着色元素（accent 日期 kicker / chip 选中）按 tokens-theme NF1 分族口径达标 — 自动：`flutter test test/ui/editor/editor_contrast_test.dart`（按本屏实际渲染对算相对亮度比，六套主题逐项；沿用 tokens-theme token，不新造色；遇 tokens-theme 已登记的 expected-fail 项以其 `contrast_xfail.yaml` 为准、阻塞报 @Ray，不静默通过）
 - [ ] 动效尊重「减弱动态效果」：注入 `MediaQueryData(disableAnimations: true)`，工具栏/chip/sheet 动效时长降为近瞬时（经 `dayzMotionDuration`）— 自动：`flutter test test/ui/editor/editor_reduce_motion_test.dart`（断言 disableAnimations 下动效 Duration≈0）
@@ -50,6 +54,7 @@
 - [ ] 本屏元素样式参数 == token（顶栏/标题/kicker/meta chip/工具栏配色取 `context.dayz.*`，无硬编码色值/像素字号/魔法间距）— 自动：`flutter test test/ui/editor/editor_style_params_test.dart`（断言解析后样式 == token 值）
 - [ ] 布局几何：顶栏在最上、kicker→标题→meta→正文顺序正确、底部 has-dock 留白存在、内容不溢出；fixed-geometry 元素（关闭/完成钮、chip、工具栏 item）尺寸/相对位置硬断言（≤1–2px 容差），content-driven（标题/正文文本块）只断顺序+包含+不溢出、不硬断块高 — 自动：`flutter test test/ui/editor/editor_geometry_test.dart`（`tester.getRect` 分治断言）
 - [ ] 栅格观感（编辑器排版、工具栏 editor-dock 外观、毛玻璃顶栏）对照设计稿 — golden 回归锁 + 区域化 SSIM advisory（**依赖 design-sync** 期二 harness；`MobileToolbarStyle`/saturate 像素差进 advisory 标红、不阻塞，方法论 §4 ④）— 自动(golden) + advisory
+- [ ] 工具栏 8 件停靠布局 + Aa 面板贴键盘观感对照 editor.html（设计维护 S2，**Patrol 视觉验收取代原栅格观感人工目检那截**）— 自动（E2E 视觉，依赖 e2e-harness）：`bash scripts/patrol_test.sh -d <device> --target patrol_test/editor_toolbar_test.dart`（出 8 件布局 + 面板贴键盘截图工件；**校验 `Total:` 非零**，真实信号 = 截图工件；已知偏差「面板本轮无代码块入口」（延后 editor-rich-blocks）不作还原缺失误报）
 
 ### 多端兼容（NF5 · 真机 · 跨任务）
 - [ ] iOS 13+：软键盘弹出工具栏停靠正确、编辑滚动不被键盘遮挡、AppFlowy mobile toolbar 表现正常 — 人工（@Ray）
@@ -65,15 +70,18 @@
 
 ## 需求↔验证覆盖核验（双向闭环）
 > 闭环检查，任一不通过则 verification 未定稿。
-- [ ] 正向：R1（AppFlowy 正文）、R2（无边框标题）、R3（codec/docVersion）、R4（AppFlowy 工具栏）、R5（不自管 viewInsets）、R6（高亮派生选区）、R7（图片加密链路）、R8（自动保存）、R9（三状态）、R10（顶栏/chip）、NF1（Repository 边界）、NF2（媒体密钥独立/文案）、NF3（无障碍四项）、NF4（视觉参数/几何）、NF5（多端键盘/取图）均有场景或专项检查覆盖，无孤儿需求。
-- [ ] 反向：各验证项「关联需求」均指向真实 R/NF；回归项（Debug Home / analyze / check_patches）已显式标「回归」，无孤儿测试。
+- [ ] 正向：R1（AppFlowy 正文）、R2（无边框标题）、R3（codec/docVersion）、R4（AppFlowy 工具栏）、R5（不自管 viewInsets）、R6（高亮派生选区）、R7（图片加密**多图**链路 + 相册授权 E2E）、R8（自动保存）、R9（三状态）、R10（顶栏/chip）、**R11（工具栏分层 + 三段面板 + 链接下沉 + 双向同步 + 视觉，设计维护 S2）**、NF1（Repository 边界）、NF2（媒体密钥独立/文案）、NF3（无障碍四项 + S2 8 件/面板项）、NF4（视觉参数/几何 + S2 Patrol 视觉）、NF5（多端键盘/取图）均有场景或专项检查覆盖，无孤儿需求。
+- [ ] 反向：各验证项「关联需求」均指向真实 R/NF（含新增 R7-多图、R11）；回归项（Debug Home / analyze / check_patches）已显式标「回归」，无孤儿测试。
 
 ## 验证命令（汇总自动项）
 ```bash
-flutter test test/ui/editor/        # 屏体/样式/工具栏/桥/插图/codec/路由/无障碍/对比度/几何/参数/边界
+flutter test test/ui/editor/        # 屏体/样式/工具栏(含 S2 8件/面板/双向同步)/桥/插图(含 S1 多图)/codec/路由/无障碍/对比度/几何/参数/边界
 flutter test test/demo/             # 编辑页 demo + Debug Home 回归
 flutter analyze                     # 回归
 bash scripts/check_patches.sh       # 回归：vendored 包未被本 spec 越界改动（退出 0）
+# 设计维护 S1/S2 的 Patrol E2E / 视觉（依赖 e2e-harness；校验 Total: 非零，真实信号 = 截图/落库工件）
+bash scripts/patrol_test.sh -d <device> --target patrol_test/editor_image_picker_test.dart   # S1：相册授权 + N 图落库
+bash scripts/patrol_test.sh -d <device> --target patrol_test/editor_toolbar_test.dart        # S2：8 件布局 + 面板贴键盘视觉
 ```
 
 > 共享测试基建说明：`*_test.dart` 由白名单 hook 对 `test/**/*_test.dart` **无条件放行、无需预批**；真正需预批的是非 `_test.dart` 的共享基建——`test/ui/editor/fakes/`（codec/MediaStore/DraftCoordinator/Repository 内存 fake），已在 T0/T1/T4/T5/T6 的 inline `验收基建` 字段预批（执行协议第 2 条）。「对设计稿源屏比框/SSIM」的参数抽取 harness 属 `design-sync-automation` 交付物，本 spec 标依赖、不在此重造（方法论 §4）。

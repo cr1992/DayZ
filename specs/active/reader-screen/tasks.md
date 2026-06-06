@@ -20,13 +20,15 @@ graph LR
   T2 --> T5
   T5 --> T6
   T6 --> T7[T7 reader_demo + Debug Home 入口]
+  T3 --> T8[T8 内容图开大图查看器 DayzImageViewer]
+  T6 --> T8
 ```
 
 并行组：
 - Group A：T1、T2、T3、T4（彼此独立，可并行；T2 顺带建立本 spec 的 AppLocalizations 文案条目）
 - Group B：T5（依赖 T1、T2）
 - Group C：T6（依赖 T1/T2/T3/T4/T5）
-- Group D：T7（依赖 T6）
+- Group D：T7（依赖 T6）；T8（依赖 T3、T6 + 跨 spec ui-kit `DayzImageViewer`）
 
 （整屏一体、无可独立部署 / 演示的中间切点 → 不设里程碑。）
 
@@ -285,4 +287,49 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 日期：2026-05-31
 自动：`flutter test test/demo/reader_demo_test.dart`
 人工：@Ray 确认 OK
+```
+
+-----
+
+- [ ] T8 · 内容图开大图查看器（详情封面 + 九宫格 → DayzImageViewer，卡片封面不接）
+
+**同 spec 依赖：** T3, T6 ｜ **跨 spec 依赖：** ui-kit-components：DayzImageViewer（大图查看器组件 + barrel 导出，README 依赖列已登记）、design-tokens-theme（`dayzMotionDuration`）、e2e-harness（Patrol on-device 视觉跑）｜ **关联需求：** R10, NF2, NF3 ｜ **依据设计：** D1, D10 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart`、`patrol_test/reader_image_viewer_visual_test.dart` ｜ **验收基建：** `test/ui/reader/reader_image_viewer_test.dart`
+
+### 背景
+落地 R10 / D10：把**详情页内容型图片**（`read-hero` 封面 + `DayzGallery` 九宫格）接到 ui-kit `DayzImageViewer`（点谁从谁开、`initialIndex` = 被点下标）。**不在本屏自造查看器**（D1，查看器本体 + `photo_view` 依赖归 ui-kit-components；本屏只消费 barrel 导出件）。
+归属/边界（Day One parity，本卡核心约束）：本屏只接「进了详情后的内容图」；时间线 / 收藏 / 往年今日的**卡片封面图不接查看器**——整卡点击 = 打开这篇日记（已由各来源屏接 `Routes.reader` 导航，归各来源屏 spec，不在本卡）。编辑只读 `.cb-img` 行内图是 `DayzImageViewer` 的**后续消费方**，不在本卡范围。
+一组图 = 封面 + 九宫格全部图，provider 沿用 T3 `reader_image.dart` 的异步缩略图 / 已就绪 handle，**不为查看器另起同步重建**（NF2 红线）。接线落在 `reader_screen.dart`（屏装配处），不新增屏内文件。
+
+### 实施
+1. 在 `reader_screen.dart` 按渲染顺序构建该篇内容图 `ImageProvider` 列表（封面 + 九宫格，复用 T3 provider）。
+2. 封面外层包点击 → 以封面在组内下标打开 `DayzImageViewer`；`DayzGallery(onImageTap: (i) => openViewer(initialIndex: 封面偏移 + i))` —— 点九宫格第 i 张从第 i 张开。
+3. 打开方式经同栈推入透明覆盖层（退出回本屏、**不改变当前 entry 路由**）；查看器关闭回调收起覆盖层。
+4. 卡片封面 → 查看器逻辑**不实现**（边界外）；本屏不引入任何「卡片点击开查看器」路径。
+
+### 验收标准（做完即止）
+- 点九宫格第 i 张 → 推入 `DayzImageViewer` 且其 `initialIndex == i`（叠加封面偏移后映射到组内下标）（自动：pump 详情态 + 假 provider，tap 第 2 张断推入的查看器 `initialIndex` == 对应组内下标）（R10）。
+- 点详情封面 → 推入 `DayzImageViewer`，`initialIndex` 指向封面那张（自动：tap 封面断查看器入栈 + 起始下标）（R10）。
+- 打开查看器**不改变当前路由 entry**（自动：打开前后 `Routes.reader` 的 entryId 不变 / 路由栈仍以本屏为底，查看器为其上覆盖层）（R10）。
+- **边界**：本屏渲染的卡片封面式入口不开查看器——本屏不存在「卡片封面 tap → 查看器」路径，详情封面 tap 才开（自动：断本屏 widget 树里详情封面 tap 开查看器、且查看器仅由内容图触发，不由任何整卡 tap 触发；整卡导航属来源屏不在本屏树）（R10）。
+- 内容图 provider 沿用 T3 异步链路，打开查看器不触发同步缩略图重建（自动：注入会在同步重建路径抛错的假缩略图源，打开查看器不抛、不调同步重建入口）（NF2）。
+
+### 禁止
+- 不在本屏自造大图查看器 / 不 import `photo_view`（查看器归 ui-kit，D1）。
+- 不接「卡片封面 → 查看器」（边界外，整卡点击进详情归来源屏）。
+- 不为查看器另起同步 / 全量缩略图重建（NF2 红线）；不在屏内直连 Drift / 写 SQL（NF1）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/reader/reader_image_viewer_test.dart
+  ```
+  （注入假 Repo + 假缩略图 provider，pump 详情态：tap 九宫格第 i 张断推入 `DayzImageViewer` 的 `initialIndex==i`、tap 封面断起始下标、打开前后断当前 entry 路由不变、断本屏树内无整卡 tap → 查看器路径、断不触发同步重建；**不** grep 被改文件自身）
+- 人工（Patrol 视觉，替代真机目检）：
+  - 真机 / 模拟器经 Patrol 跑 `patrol_test/reader_image_viewer_visual_test.dart`：进详情 → 点九宫格开全屏大图、可左右滑；截图核对暖近黑沉浸观感 + 翻页手感对照原型 `reader.html` + `lightbox.js`，并复核「卡片封面进详情、内容图才开查看器」边界；@Ray 看截图工件确认；命令 `bash scripts/patrol_test.sh -d <device> --target patrol_test/reader_image_viewer_visual_test.dart`，校验 `Total:` 非零（依赖 e2e-harness）。
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：待确认（核查人 @Ray）
 ```

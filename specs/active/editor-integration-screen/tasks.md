@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-06-06
 文档状态：定稿
 ---
 
@@ -31,6 +31,8 @@ graph LR
 - Group C：{T2..T6} → T7
 
 （整屏一体、无可独立部署/演示的中间切点 → 不设里程碑。`compose-meta` 选择器录入流、草稿恢复提示条、undo/redo 工具按钮均范围外，不在此拆任务。）
+
+> **设计维护卡（2026-06-06，已交付 v1.0 后）：** T0–T7 全 `[x]` 后，设计稿实质变更新增 S1（图片选择器改写）/S2（工具栏重排），见文末「## 设计维护卡（实质档）」段，与 T 系任务图独立（各自改写既有交付物，可并行）。
 
 -----
 
@@ -321,5 +323,108 @@ Debug Home 入口（真 UI 外壳就绪前/后均可走查）：`editor_screen_d
 ```
 日期：2026-06-01
 自动：`flutter test test/demo/editor_screen_demo_test.dart && flutter test test/ui/editor/editor_route_test.dart` 通过
+人工：待确认（核查人 @Ray）
+```
+
+-----
+
+## 设计维护卡（实质档）
+
+> 本屏处「已交付·随设计维护」lane（v1.0 已交付，T0–T7 全 `[x]`）。2026-06-06 设计稿实质变更（design-sync R7「substantial」），按 spec-guide「需求/设计变更比照 ADR」补两张维护卡 S1/S2，并已回填 requirement（R7 扩多图、新增 R11）、design（新增 D11/D12、扩 `## 文件变更`/`## 已知风险`）、verification（新增功能验证行 + 专项检查项）。S1/S2 沿用 P3 骨架、可改文件 ⊆ design `## 文件变更`。
+>
+> 依赖速览（S1/S2 inline 为准）：S1（图片选择器改写）、S2（工具栏改写）互不依赖、可并行；S1 的 Patrol E2E 与 S2 的 Patrol 视觉用例均 `dependsOn e2e-harness`（跨 spec，README「依赖」列为准）；S2 的 callout 入口 `dependsOn editor-rich-blocks`。
+
+-----
+
+- [ ] S1 · 微信式全屏图片选择器（单图 → 多选）
+
+**同 spec 依赖：** T5（改写其产物 `editor_image_inserter.dart`）｜ **跨 spec 依赖：** `media-storage：MediaStore.put(stream,kind)/DMED/独立媒体key`、`data-layer：MediaRepo.addMeta`、`editor-json-contract：image 节点构造(media.id 落点 D2)`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，原生相册授权 E2E）` ｜ **关联需求：** R7（多图）, NF1, NF2, NF5 ｜ **依据设计：** D5, D11 ｜ **可改文件：** `lib/ui/editor/editor_image_inserter.dart`、`pubspec.yaml`、`pubspec.lock`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`patrol_test/editor_image_picker_test.dart` ｜ **验收基建：** `test/ui/editor/fakes/`（fake MediaStore/MediaRepo，T0 产出复用）
+
+### 背景
+设计稿把图片插入从「单图」定档为「微信式全屏多图选择器」（handoff §5a / DESIGN-REF §3c，D11/R7-多图）。旧 `editor_image_inserter.dart:24-26` 是 `ImagePicker().pickImage(source: ImageSource.gallery)`（单图）+ 旧「相册/拍照」二级 sheet。本卡改写**取图头段**（D5 的 put→addMeta→插块三段不变，对每张资产循环）。
+归属：取图与多图插入链路本卡；callout/工具栏重排归 S2；缩略图/大图查看器（lightbox）范围外。`wechat_assets_picker` 依赖加入与 `pubspec.lock` 锁定仅本卡触碰。
+
+### 实施
+1. `pubspec.yaml` 加 `wechat_assets_picker`（活跃维护；传递依赖 `photo_manager`）；`flutter pub get` 锁 `pubspec.lock`；视相机路径取舍决定 `image_picker` 保留/移除（首步读两包 API 拍板）。
+2. `editor_image_inserter.dart`：取图头段改为 `AssetPicker.pickAssets(maxAssets: 9, ...)`，`AssetPickerConfig.themeColor = context.dayz.accent`，首格相机 → `ImageSource.camera`；保留 `pickImageOp` 注入缝的同形态（改为可注入「返回多资产」的 fake op）。
+3. 对返回的每张资产取字节流，**循环** D5 三段（`MediaStore.put` → `MediaRepo.addMeta` → 插 image node），按选择顺序插入多个 image 块；逐张 put 成功后清理明文中转字节/临时文件。
+4. 删旧「相册/拍照」二级 sheet；0 张返回（取消）直接 return、不插块、不触发缩略图（红线）。
+5. 选择器内文案/aria-label（取消/相册名/预览/原图/完成）补入 zh/en ARB（D10），经 `AppLocalizations` 取用。
+
+### 验收标准（做完即止）
+- 注入 fake op 返回 N（如 3）张资产 → 调用 `AssetPicker` 的配置满足 `maxAssets==9`、`themeColor==context.dayz.accent`；文档中按序插入 **N 个** image 块，每块引用各自 fake `MediaStore.put` 返回的 `media.id`；`MediaRepo.addMeta` 被调用 N 次（自动，R7-多图/D11）。
+- 插入后文档序列化（经 fake codec）**不含**真实文件路径、只含各 `media.id`（自动，断言无路径分隔/绝对路径、含 N 个 media.id；R7/NF2）。
+- 插入链路只命中注入的 `MediaStore`/`MediaRepo` fake，无缩略图入口被调（自动，红线 + NF1 护栏）。
+- 取消（fake op 返回空列表）→ 不插任何块、不调 put/addMeta（自动，R7 边界）。
+- 原生相册授权 → 微信式全屏选择器 → 加密 MediaStore → N 个 image node 的端到端链路在真机/模拟器跑通（自动，Patrol E2E，权限/NF5；`$.native` 处理相册授权弹窗）。
+
+### 禁止
+- MUST NOT 自绘系统相册 UI（范围外，由 `wechat_assets_picker` 承担）；MUST NOT 把真实路径写进 `content_json`（R7/NF2）；MUST NOT 同步触发缩略图重建（红线，warmup 归 thumbnail-cache）；MUST NOT 直连 Drift（NF1，元数据只经 MediaRepo）。
+- 若需改 `packages/appflowy-editor` vendored 源码才能插多块 → **停下声明**（走 appflowy-patch-tracking，不在本 spec 白名单）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/editor/editor_image_inserter_test.dart && flutter pub get
+  bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/editor_image_picker_test.dart
+  ```
+  （widget test：fake 多资产 op，断言 maxAssets/themeColor/插 N 块/各 media.id/addMeta×N/无路径/未触发缩略图/取消不插块——**不** grep inserter 源码。Patrol E2E：真机相册授权弹窗被 `$.native` 处理 + N 张落库 + N 个 image node；**校验输出 `Total:` 非零**（零执行守卫，spec-guide 第 209 行），真实信号 = 用例绿 + 截图/落库工件，非「测试跑过」。）
+- 人工（仅当无法自动化时）：
+  - N/A（原生相册授权链路由 Patrol E2E 覆盖，无残留人工项）。
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：N/A
+```
+
+-----
+
+- [ ] S2 · 工具栏 14→8 重排 + 三段格式面板 + 链接下沉
+
+**同 spec 依赖：** T3（改写其产物 `editor_toolbar.dart`）｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbarItem.withMenu/formatNodeToType/MobileLinkMenu/toggleAttribute（vendored 包，读源码对齐 API）`、`editor-rich-blocks：callout 块类型（block_types+builder 注册）`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，工具栏视觉截图）` ｜ **关联需求：** R11（在 R4/R5/R6 之上）, NF3, NF4 ｜ **依据设计：** D3, D12 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`patrol_test/editor_toolbar_test.dart`
+
+### 背景
+设计稿把工具栏从「一排 14 件」重排为「8 件高频停靠 + 全集进 `Aa·格式` 三段面板 + 链接下沉」（handoff §8a/§8b，D12/R11）。本卡改写 `editor_toolbar.dart` 的 item 装配与面板。**激活态机制（光标处生效样式）已在 HEAD `155d53d` 提交（`_isAttributeActive` + `ListenableBuilder(editorState.toggledStyleNotifier)`），本卡在其上建 B/I 双向同步，不重做该工作。**
+归属：工具栏重排/面板/双向同步/链接面板本卡；图片选择器改写归 S1（图片 item 的 onTap 入口接 S1 不变）；callout **块类型注册**归 `editor-rich-blocks`（本卡只调其 type 切换、不注册块）。
+
+### 实施
+1. 读 `packages/appflowy-editor` 源码核实 `MobileToolbarItem.withMenu`/`formatNodeToType`/`MobileLinkMenu`/`toggleAttribute` 精确 API（沿用 T3 同款核实纪律）。
+2. `buildDayzToolbarItems` 重排为 **8 件停靠**：`Aa·格式`（withMenu）｜B｜I｜颜色｜无序｜有序｜待办｜图片。
+3. `Aa` = `MobileToolbarItem.withMenu`，菜单 = `Column` 三段：①段落（复用既有 `_DayzHeadingMenu` 四等分 正文/H1/H2/H3）②列表与块（3 列网格 radio 互斥：无序/有序/待办/引用/标注/分隔线，经 `formatNodeToType`，段落↔块互斥、块内 radio 互斥）③文字样式（B/I/U/S/行内代码 `toggleAttribute`）。
+4. 链接 **下沉**进文字样式段，点击拉起 `MobileLinkMenu`（单 URL 字段，无显示文本字段）。
+5. 双向同步：停靠 ul/ol/todo ↔ 面板同项；B/I ↔ 面板文字样式段（建在 `155d53d` 的 `_isAttributeActive` + `toggledStyleNotifier` 之上）。
+6. 面板高度对齐 `MediaQuery.viewInsets.bottom`（键盘高），最小 288。
+7. 新增/调整文案与 aria-label（格式/列表与块/文字样式/链接段标题等）补入 zh/en ARB（D10/NF3）。
+8. **本轮省略代码块入口**（延后 `editor-rich-blocks`，handoff §7）；callout 入口接 `editor-rich-blocks` 的 callout type，未就绪先灰/缺。
+
+### 验收标准（做完即止）
+- 停靠条恒为 **8 件**（Aa/B/I/颜色/无序/有序/待办/图片），各可 `find.bySemanticsLabel(l10n.xxx)` 定位、命中区 ≥ 44×44（自动，R11/NF3）。
+- 打开 `Aa` 面板呈三段：段落四等分、列表与块网格、文字样式行；段落↔块互斥、块内 radio 互斥（自动：选某块项后再选段落项，前者退选；R11）。
+- 双向同步：在停靠条切 ul → 面板「无序」呈激活；在面板切 B → 停靠条 B 呈激活（反之亦然）（自动，R11；激活态复用 `155d53d` 机制）。
+- 链接项在文字样式段、点击拉起单 URL 字段的 `MobileLinkMenu`（无显示文本字段）（自动，R11）。
+- 面板高度 ≥ 288 且随注入的 `MediaQueryData(viewInsets.bottom)` 对齐键盘高（自动，R11）。
+- 8 件停靠布局 + 面板贴键盘观感在真机/模拟器出截图工件、对照 editor.html（自动，Patrol 视觉，NF4）。
+
+### 禁止
+- MUST NOT 自监听 `viewInsets.bottom` 顶起工具栏（R5，停靠仍交 AppFlowy）；MUST NOT 自管按钮高亮布尔（R6，复用 `155d53d` 选区派生）；MUST NOT 重做 `155d53d` 的光标处生效样式机制。
+- MUST NOT 在本卡注册 callout/code 块类型（归 `editor-rich-blocks`）；本轮 MUST NOT 放代码块入口（已知偏差，Patrol 视觉验收须知、不误报）。
+- 若需改 `packages/appflowy-editor` vendored 源码 → **停下声明**（走 appflowy-patch-tracking，不在本 spec 白名单）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/editor/editor_toolbar_test.dart
+  bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/editor_toolbar_test.dart
+  ```
+  （widget test：断言 8 件停靠、三段面板、段落↔块/块内互斥、ul/ol/todo 与 B/I 双向同步、链接单 URL 面板、面板高度≥288 且随 viewInsets 对齐——**不** grep 工具栏源码。Patrol 视觉：8 件布局 + 面板贴键盘截图对照 editor.html；**校验 `Total:` 非零**，真实信号 = 截图工件，非「测试跑过」。）
+- 人工（仅当无法自动化时）：
+  - 最终手感终签：六套主题×明暗下 8 件停靠 + 面板贴键盘观感无突兀（@Ray，仅 Patrol 截图无法定夺的手感差时）。
+
+### 验收记录
+```
+日期：—
+自动：—
 人工：待确认（核查人 @Ray）
 ```

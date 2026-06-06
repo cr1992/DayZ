@@ -24,11 +24,12 @@ graph LR
   T5 --> T8
   T6 --> T8
   T7 --> T8
+  T1 --> T9[T9 大图查看器 DayzImageViewer]
 ```
 
 并行组：
 - Group A：T1（地基，先行）
-- Group B（T1 后并行）：T2, T3, T4, T5, T6, T7
+- Group B（T1 后并行）：T2, T3, T4, T5, T6, T7, T9
 - Group C：T8（汇总全部）
 
 （整套组件层一体、无可独立部署/演示的中间切点 → 不设里程碑；画廊是目检入口而非可交付产品。）
@@ -316,5 +317,49 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 ```
 日期：2026-05-30
 自动：`dart analyze lib/demo/widget_gallery_demo.dart test/demo/widget_gallery_demo_test.dart lib/ui/widgets/dayz_text_field.dart` 无问题；`flutter test test/demo/widget_gallery_demo_test.dart` 通过（8/8，含真源标注、选择控件交互、弹窗取消按钮描边）。
+人工：待确认（核查人 @Ray）
+```
+
+-----
+
+- [ ] T9 · 大图查看器组件（DayzImageViewer：全屏沉浸式可左右滑动看图）
+
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`--media-*` 暖近黑媒体层 token / `DayzIcons` 关闭 path / `dayzMotionDuration`，README 依赖列已登记）、e2e-harness（Patrol on-device 视觉跑）｜ **关联需求：** R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D1, D12 ｜ **可改文件：** `lib/ui/widgets/dayz_image_viewer.dart`、`lib/ui/components.dart`（补 export）、`pubspec.yaml`（加 `photo_view`）、`pubspec.lock`（pub get 锁定）、`patrol_test/dayz_image_viewer_visual_test.dart` ｜ **验收基建：** `test/ui/widgets/dayz_image_viewer_test.dart`
+
+### 背景
+落地 R9 / D12 的全屏沉浸式大图查看器组件 `DayzImageViewer`（DESIGN-REF §3c `.lbx` / handoff `editor.md §5(b)` / 原型 `pages/assets/lightbox.js`）。业务无关、零数据接入：只接 `images`（`ImageProvider` 列表）+ `initialIndex` + 可选 `captions` + `onClose` 回调，MUST NOT import `lib/data/`、MUST NOT 触发相册 / 解密 / 缩略图链路（NF5）——取数与解密由消费方（reader-screen / 后续编辑只读）在打开它之前完成。
+归属：本任务实现组件本体 + 向 `components.dart` 补 export + 引入 `photo_view` 依赖。`pubspec.yaml`/`pubspec.lock` 属白名单外共享文件，已在本 spec `## 文件变更` 显式列出并归入本任务白名单（避免「只写 yaml 顺手改 lock」越界）。
+
+### 实施
+1. 引 `photo_view`（`pubspec.yaml` + `flutter pub get` 锁 `pubspec.lock`，首跑核版本与当前 stable Flutter 兼容）。
+2. `DayzImageViewer({required List<ImageProvider> images, int initialIndex = 0, List<String?>? captions, VoidCallback? onClose})`：全屏 `Stack` + `PhotoViewGallery.builder`（`backgroundDecoration` 取 `--media-bg` 暖近黑）+ `PageController(initialPage: initialIndex.clamp(0, images.length-1))`，`onPageChanged` 更新当前页号状态。
+3. 顶部计数：仅 `images.length > 1` 时渲染 `N / 总数`（`'${i+1} / ${images.length}'`），随翻页更新；单张不渲染。
+4. 关闭钮（`DayzIcons` 关闭 path，命中盒 ≥44、`Semantics` 标签经 `AppLocalizations`）触发 `onClose`；点空白（背景，非图片本体）触发 `onClose`，点图片本身不退出。
+5. 某页有 caption 时渲染底部 `--media-scrim` 渐隐说明；入 / 退场动效经 `dayzMotionDuration`（NF4）；媒体层全引 `--media-*` token，不写死色。
+
+### 验收标准（做完即止）
+- 打开即停在 `initialIndex` 对应那张（自动：pump 给定 `initialIndex=2` 的查看器，断当前页为第 3 张 / `PageController.initialPage==2`）（R9）。
+- 多张（≥2）时顶部计数显 `N / 总数`、横向翻页后计数更新到对应页号；单张时**无**计数（自动：pump 多张 fling/animateToPage 后断 `find.text('2 / 3')`，pump 单张断计数 `findsNothing`）（R9）。
+- 点图片本体不触发 `onClose`、点空白触发 `onClose`（自动：tap 图片 widget 断回调未被调，tap 背景断回调被调）（R9）。
+- 关闭钮命中盒 ≥44×44 且可经 `find.bySemanticsLabel(l10n.xxx)` 定位（自动，`tester.getRect` + Semantics）（NF1/NF3）。
+- 组件源码无 `package:dayz/data` / `drift` import（自动：本组件不接数据，由 ui-kit verification 的静态边界核验兜，NF5）。
+
+### 禁止
+- 不在组件内 import `lib/data/` / 持 Drift 句柄 / 调相册·缩略图·解密入口（NF5 红线）。
+- 不写死媒体层颜色 / 动效时长 / 命中盒尺寸（一律引 `--media-*` token + `dayzMotionDuration`）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/widgets/dayz_image_viewer_test.dart
+  ```
+  （pump `DayzImageViewer` 于某套 ThemeData 下：断 `initialIndex` 起始页、翻页后计数文本、单张无计数、点图不关 / 点空白关回调、关闭钮 `tester.getRect` 命中盒 + `find.bySemanticsLabel`；**不** grep 被改文件自身）
+- 人工（Patrol 视觉，替代真机目检）：
+  - 真机 / 模拟器经 Patrol 跑 `patrol_test/dayz_image_viewer_visual_test.dart`，截图核对暖近黑 `--media-*` 沉浸观感 + 横向滑动翻页手感对照原型 `pages/assets/lightbox.js`（`.lbx`），@Ray 看截图工件确认；命令 `bash scripts/patrol_test.sh -d <device> --target patrol_test/dayz_image_viewer_visual_test.dart`，校验 `Total:` 非零（依赖 e2e-harness）。
+
+### 验收记录
+```
+日期：—
+自动：—
 人工：待确认（核查人 @Ray）
 ```
