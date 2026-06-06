@@ -4,10 +4,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/demo/debug_home.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/settings/settings_screen.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
+import 'package:dayz/ui/shell/theme_controller.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
 import 'placeholder_screen.dart';
 import 'package:dayz/ui/editor/editor_screen.dart';
@@ -136,10 +139,34 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.settings,
       path: Routes.settingsPath,
-      builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.settings,
-        showAppBar: true,
-      ),
+      builder: (context, state) {
+        final themeController = ThemeControllerScope.of(context);
+        return SettingsScreen(
+          accountStats: const SettingsAccountStats(
+            displayName: 'DayZ',
+            initials: 'D',
+            entryCount: 0,
+            localLibraryBytes: 0,
+          ),
+          currentThemeName: themeController.choice.themeName,
+          currentMode: themeController.choice.mode,
+          appLockEnabled: false,
+          draftRecoveryEnabled: true,
+          onPickTheme: themeController.setTheme,
+          onPickMode: themeController.setMode,
+          onAppLockChanged: (_) => _showSettingsUnavailable(context),
+          onDraftRecoveryChanged: (_) => _showSettingsUnavailable(context),
+          onTapBackup: () => _showSettingsUnavailable(context),
+          onTapExport: () => _showSettingsUnavailable(context),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            context.goNamed(Routes.timeline);
+          },
+        );
+      },
     ),
     GoRoute(
       name: Routes.calendar,
@@ -200,7 +227,7 @@ final GoRouter appRouter = GoRouter(
         final entryRepo = extra['entryRepo'] ?? _timelineEntryRepo;
         final mediaStore = extra['mediaStore'] ?? _mediaStore;
         final mediaRepo = extra['mediaRepo'] ?? _mediaRepo;
-        
+
         return EditorScreen(
           mode: mode,
           entryDate: entryDate,
@@ -230,3 +257,19 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+
+void _showSettingsUnavailable(BuildContext context) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) {
+    return;
+  }
+  messenger
+    ..clearSnackBars()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).settingsActionUnavailableToast,
+        ),
+      ),
+    );
+}

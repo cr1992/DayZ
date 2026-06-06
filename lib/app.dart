@@ -97,49 +97,53 @@ class _DayZAppState extends State<DayZApp> {
   Widget build(BuildContext context) {
     return LocaleControllerScope(
       controller: _localeController,
-      child: ListenableBuilder(
-        listenable: _themeController,
-        builder: (context, _) {
-          final isDark =
-              _themeController.themeMode == ThemeMode.dark ||
-              (_themeController.themeMode == ThemeMode.system &&
-                  MediaQuery.platformBrightnessOf(context) == Brightness.dark);
-          final systemOverlayStyle = isDark
-              ? SystemUiOverlayStyle.light.copyWith(
-                  statusBarColor: Colors.transparent,
-                )
-              : SystemUiOverlayStyle.dark.copyWith(
-                  statusBarColor: Colors.transparent,
-                );
+      child: ThemeControllerScope(
+        controller: _themeController,
+        child: ListenableBuilder(
+          listenable: _themeController,
+          builder: (context, _) {
+            final isDark =
+                _themeController.themeMode == ThemeMode.dark ||
+                (_themeController.themeMode == ThemeMode.system &&
+                    MediaQuery.platformBrightnessOf(context) ==
+                        Brightness.dark);
+            final systemOverlayStyle = isDark
+                ? SystemUiOverlayStyle.light.copyWith(
+                    statusBarColor: Colors.transparent,
+                  )
+                : SystemUiOverlayStyle.dark.copyWith(
+                    statusBarColor: Colors.transparent,
+                  );
 
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: systemOverlayStyle,
-            child: MaterialApp.router(
-              title: 'DayZ',
-              routerConfig: appRouter,
-              theme: _themeController.materialTheme,
-              darkTheme: _themeController.materialDarkTheme,
-              themeMode: _themeController.themeMode,
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: AppLocalizations.supportedLocales,
-              locale: _localeController.locale,
-              localeResolutionCallback: (locale, supportedLocales) {
-                if (locale != null &&
-                    supportedLocales.any(
-                      (s) => s.languageCode == locale.languageCode,
-                    )) {
-                  return locale;
-                }
-                return const Locale('zh');
-              },
-            ),
-          );
-        },
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: systemOverlayStyle,
+              child: MaterialApp.router(
+                title: 'DayZ',
+                routerConfig: appRouter,
+                theme: _themeController.materialTheme,
+                darkTheme: _themeController.materialDarkTheme,
+                themeMode: _themeController.themeMode,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
+                locale: _localeController.locale,
+                localeResolutionCallback: (locale, supportedLocales) {
+                  if (locale != null &&
+                      supportedLocales.any(
+                        (s) => s.languageCode == locale.languageCode,
+                      )) {
+                    return locale;
+                  }
+                  return const Locale('zh');
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

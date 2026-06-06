@@ -15,17 +15,25 @@ void main() {
   ) async {
     await tester.pumpWidget(localizedTestApp(child: const DebugHome()));
 
+    await tester.scrollUntilVisible(find.text('设置屏 demo'), 500);
     expect(find.text('设置屏 demo'), findsOneWidget);
     await tester.tap(find.text('设置屏 demo'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SettingsScreenDemo), findsOneWidget);
     expect(find.text(testL10n.settingsDbEncryptedValue), findsOneWidget);
-    expect(find.text(testL10n.settingsMediaNotLockedByPassword), findsOneWidget);
+    expect(
+      find.text(testL10n.settingsMediaNotLockedByPassword),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('settings demo keeps switch visual state locally', (tester) async {
-    await tester.pumpWidget(localizedTestApp(child: const SettingsScreenDemo()));
+  testWidgets('settings demo keeps switch visual state locally', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      localizedTestApp(child: const SettingsScreenDemo()),
+    );
 
     DayzSwitch appLockSwitch() {
       return tester.widget<DayzSwitch>(

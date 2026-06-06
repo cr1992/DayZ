@@ -18,11 +18,7 @@ class DayzThemeChoice {
     required this.paper,
   });
 
-  DayzThemeChoice copyWith({
-    String? themeName,
-    ThemeMode? mode,
-    bool? paper,
-  }) {
+  DayzThemeChoice copyWith({String? themeName, ThemeMode? mode, bool? paper}) {
     return DayzThemeChoice(
       themeName: themeName ?? this.themeName,
       mode: mode ?? this.mode,
@@ -50,10 +46,12 @@ class ThemeController extends ChangeNotifier {
   ThemeMode get themeMode => _choice.mode;
 
   /// Returns light [ThemeData] mapped from current choice.
-  ThemeData get materialTheme => dayzTheme(_themeTypeFromName(_choice.themeName), Brightness.light);
+  ThemeData get materialTheme =>
+      dayzTheme(_themeTypeFromName(_choice.themeName), Brightness.light);
 
   /// Returns dark [ThemeData] mapped from current choice.
-  ThemeData get materialDarkTheme => dayzTheme(_themeTypeFromName(_choice.themeName), Brightness.dark);
+  ThemeData get materialDarkTheme =>
+      dayzTheme(_themeTypeFromName(_choice.themeName), Brightness.dark);
 
   /// Update active theme name and notify.
   void setTheme(String name) {
@@ -95,5 +93,23 @@ class ThemeController extends ChangeNotifier {
   /// Stubs for database preference persistence hook.
   void _savePreferences() {
     // TODO: Connect to data-layer setting/preference repository when ready.
+  }
+}
+
+/// Exposes the app-level [ThemeController] to route builders.
+///
+/// Author: @Ray
+class ThemeControllerScope extends InheritedNotifier<ThemeController> {
+  const ThemeControllerScope({
+    super.key,
+    required ThemeController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static ThemeController of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<ThemeControllerScope>();
+    assert(scope != null, 'ThemeControllerScope was not found in the tree.');
+    return scope!.notifier!;
   }
 }

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-06-06
 文档状态：定稿
 ---
 
@@ -34,7 +34,7 @@ graph LR
 
 -----
 
-- [ ] T1 · settings 屏文案（gen-l10n）+ 专属图标 path 常量
+- [x] T1 · settings 屏文案（gen-l10n）+ 专属图标 path 常量
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** `design-tokens-theme：AppLocalizations 约定`、`i18n-localization：gen-l10n`、`ui-kit-components：dayz_icons.dart（复用）` ｜ **关联需求：** R5, NF1 ｜ **依据设计：** D4, D6 ｜ **可改文件：** `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`lib/ui/settings/settings_icons.dart`
 
@@ -59,14 +59,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_strings_icons_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · 设置屏骨架：账户头卡 + 四分组 + 声明式行清单装配
+- [x] T2 · 设置屏骨架：账户头卡 + 四分组 + 声明式行清单装配
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme：context.dayz/DayzSpacing/DayzRadii`、`ui-kit-components：DayzSetRow/DayzSetGroup/DayzSwitch/DayzGlassAppBar/dayz_icons + flutter_svg` ｜ **关联需求：** R1, NF1, NF3, NF4 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/ui/settings/settings_screen.dart` ｜ **验收基建：** `test/ui/settings/settings_screen.golden`
 
@@ -97,14 +97,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_screen_structure_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · 数据库加密只读行 + 媒体红线文案显形
+- [x] T3 · 数据库加密只读行 + 媒体红线文案显形
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `key-management：DB 恒加密 / 主密码不保护照片（媒体 key 独立、不参与 rekey）的产品行为`、`media-storage：媒体 key 独立`、`ui-kit-components：DayzSetRow（不可交互态）/DayzSetGroup（脚注槽，待确认）` ｜ **关联需求：** R4, R5, NF2 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/settings/settings_screen.dart`
 
@@ -131,14 +131,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_encryption_redline_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · 主题色 / 外观模式选择器（DayzSheet.picker + 回调上抬）
+- [x] T4 · 主题色 / 外观模式选择器（DayzSheet.picker + 回调上抬）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components：DayzSheet.picker（单选选择器，swatch 色点 + 选中打勾）、dayzMotionDuration`、`ui-shell-navigation：theme_controller.setTheme/setMode（接收端，本屏只上抛回调）` ｜ **关联需求：** R2, R3, NF2 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/settings/settings_screen.dart`
 
@@ -166,14 +166,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_pickers_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · 开关 / 导航类行回调上抬（不落库）
+- [x] T5 · 开关 / 导航类行回调上抬（不落库）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components：DayzSwitch`、`ui-shell-navigation：Routes.*（导航上抛意图）`、`auto-save-draft / key-management / backup-full-snapshot：真实业务归彼处（本屏只回调）` ｜ **关联需求：** R6, NF2, NF4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/settings/settings_screen.dart`
 
@@ -201,14 +201,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_rows_callbacks_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · 真路由接入 + 返回行为（Routes.settings → SettingsScreen）
+- [x] T6 · 真路由接入 + 返回行为（Routes.settings → SettingsScreen）
 
 **同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** `ui-shell-navigation：Routes.settings/app_router.dart/theme_controller` ｜ **关联需求：** R1, R7, NF4 ｜ **依据设计：** D8, D9 ｜ **可改文件：** `lib/ui/shell/app_router.dart`、`lib/ui/shell/theme_controller.dart`、`lib/app.dart`
 
@@ -238,14 +238,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：PASS — `flutter test test/ui/settings/settings_route_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · 设置屏 demo + 挂 Debug Home 入口
+- [x] T7 · 设置屏 demo + 挂 Debug Home 入口
 
 **同 spec 依赖：** T3, T4, T5 ｜ **跨 spec 依赖：** `ui-shell-navigation：theme_controller（接 onPickTheme/onPickMode 演示换肤；demo 可用最小本地 ChangeNotifier 降级）` ｜ **关联需求：** R8, NF1 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/demo/settings_screen_demo.dart`、`lib/demo/demo_entry.dart`
 
@@ -279,7 +279,7 @@ Debug Home 入口：用假 `accountStats` + 最小控制器渲染设置屏，`on
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-06-06
+自动：PASS — `flutter test test/demo/settings_screen_demo_test.dart`
+人工：待确认（核查人 @Ray；需真机/模拟器目视六套主题 × 明暗）
 ```
