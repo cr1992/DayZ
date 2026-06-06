@@ -5,7 +5,7 @@
 
 # 归档验收说明
 
-本文件记录 2026-05-30 初次复验与 2026-05-31 补充复验后，对 `specs/README.md`「已归档」表中 15 个 spec 的终局复验结论。后续不再逐个回翻历史 tasks / verification 做人工 review；历史文档中旧式 `人工：—（无）`、已由自动化覆盖的 `待确认`、以及已转由后续 spec 承接的跨 spec 占位，以本说明的结论为准。
+本文件记录 2026-05-30 初次复验、2026-05-31 补充复验与 2026-06-06 `ui-kit-components` 归档复验后，对 `specs/README.md`「已归档」表中 spec 的终局复验结论。后续不再逐个回翻历史 tasks / verification 做人工 review；历史文档中旧式 `人工：—（无）`、已由自动化覆盖的 `待确认`、以及已转由后续 spec 承接的跨 spec 占位，以本说明的结论为准。
 
 ## 复验范围
 
@@ -24,6 +24,7 @@
 - `media-storage`
 - `thumbnail-cache`
 - `ui-shell-navigation`
+- `ui-kit-components`
 
 ## 已执行命令
 
@@ -90,6 +91,20 @@ bash spec-kit/scripts/archive_spec.sh ui-shell-navigation
 
 结果：上述 `ui-shell-navigation` 复验命令通过；`flutter pub get` 首次在普通沙箱因 Flutter SDK cache 写权限失败，按项目备忘提升权限重跑同一命令后通过。全仓 `flutter analyze` 当前仍受无关 active backup / vendored / 历史 lint 影响，按本轮归档口径采用 shell/demo 定向 `dart analyze`。
 
+2026-06-06 `ui-kit-components` 归档复验命令：
+
+```bash
+flutter test test/ui/widgets/dayz_image_viewer_test.dart test/demo/reader_demo_test.dart test/ui/reader/reader_image_viewer_test.dart test/demo/widget_gallery_demo_test.dart
+PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/dayz_image_viewer_visual_test.dart --verbose
+PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/dayz_image_viewer_visual_test.dart --verbose --no-uninstall
+PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart --verbose --no-uninstall
+dart analyze lib/ui/widgets/dayz_image_viewer.dart lib/ui/components.dart lib/ui/reader/reader_screen.dart lib/demo/reader_demo.dart lib/demo/widget_gallery_demo.dart test/ui/widgets/dayz_image_viewer_test.dart test/ui/reader/reader_image_viewer_test.dart test/demo/reader_demo_test.dart test/demo/widget_gallery_demo_test.dart patrol_test/dayz_image_viewer_visual_test.dart patrol_test/reader_image_viewer_visual_test.dart
+git diff --check
+bash spec-kit/scripts/archive_spec.sh ui-kit-components
+```
+
+结果：上述复验命令通过；`DayzImageViewer` Patrol 截图与 reader 内容图打开 viewer 截图均已目检，图片非黑屏，计数文本无黄色下划线；@Ray 2026-06-06 目检暂未发现问题，按通过记录。全仓 `flutter analyze` 当前仍受无关 active/vendored 历史 issue 影响，本轮归档口径采用 ui-kit/reader 定向 `dart analyze`。
+
 ## 结论
 
 | spec | 归档结论 | 说明 |
@@ -109,6 +124,7 @@ bash spec-kit/scripts/archive_spec.sh ui-shell-navigation
 | `media-storage` | 通过 | `test/media/` 覆盖 AEAD smoke、设备媒体密钥消费、路径工具、codec 往返、100 MiB 流式读写正确性、nonce 唯一、篡改/错密钥失败、MediaStore put/openRead/soft/hard delete、备份重加密、路径安全与 Media demo；tag 验证旁路和绝对路径硬编码守卫无命中。真机吞吐/RSS、杀进程跨进程读取、demo UI 绝对路径目视、严格 crash fault-injection 作为后置项。 |
 | `thumbnail-cache` | 通过 | `test/thumbnails/` 覆盖缩略图生成、加密落盘、DB thumb 字段、脏失效、取消、并发上限、warmup、API 解耦守卫和 demo 入口；本轮定向 analyzer 清理后 `lib/thumbnails` + `test/thumbnails` 无静态问题。真机 isolate/RSS/JPEG 质量一致性、完整 demo 人工路径作为后置人工烟测，不阻塞归档。 |
 | `ui-shell-navigation` | 通过 | `test/ui/shell/` + `test/app_router_mount_test.dart` + `test/demo/` 覆盖路由常量/路径、真外壳启动、DebugHome 具名路由、抽屉（含头像/身份头、日记本/浏览/设置结构、计数注入）、FAB/sheet 交互、换肤、返回栈、44px 命中区、reduce-motion 与 Repository 边界；shell/demo 定向 analyzer 无 issue。生产壳层 journal 当前为入参/回调 + 内存 fallback，不持 Drift/SQL；真实 `JournalRepo` app bootstrap 接线归后续数据接入/页面 spec。 |
+| `ui-kit-components` | 通过 | 组件层 T1–T9 已完成；widget/demo/reader 大图相关 19 个测试通过；`DayzImageViewer` 组件、reader 消费路径与 UI Kit 画廊均有回归覆盖；Patrol 视觉用例 `dayz_image_viewer_visual_test.dart` 通过并产出多页截图，@Ray 目检暂未发现问题。reader-screen 对 `DayzImageViewer` 的消费任务仍归 reader-screen 维护，不反向阻塞组件层归档。 |
 
 ## 不作为归档阻塞
 
@@ -117,3 +133,4 @@ bash spec-kit/scripts/archive_spec.sh ui-shell-navigation
 - `backup-full-snapshot` 尚未实现时，observability 的备份包联测只能作为后续备份 spec 约束，不阻塞 observability 归档。
 - `data-layer` 的 EXPLAIN 真索引命中、10000 条性能、WAL/journal 明文目审、Android 真机 CRUD；`media-storage` 的真机吞吐/RSS/跨进程读取和严格 crash fault-injection；`thumbnail-cache` 的真机 isolate/RSS/JPEG 质量一致性；`auto-save-draft` 的 100 KiB 真机 pendingFlush 耗时；`dayz-security-rust` 的真机 release/archive/体积/并发 OOM，均作为后置质量闸或发布前闸门，不追溯阻塞本次归档。
 - `ui-shell-navigation` 的真机 SafeArea/返回手势烟测、外壳文案从 `AppStrings` 统一迁移到 gen-l10n `AppLocalizations`、以及真实 `JournalRepo` app bootstrap 接线，均作为后续页面 / 设置 / 数据接入 spec 或发布前闸门处理，不追溯阻塞本次外壳骨架归档。
+- `ui-kit-components` 的后续消费方（reader/editor 只读图片、页面级视觉微调）归对应屏幕维护态 spec 或后续 active spec；组件层只保证业务无关组件 API、样式、语义、demo 入口和视觉主信号。

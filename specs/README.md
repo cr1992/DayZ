@@ -12,7 +12,6 @@
 |------|--------|------|------|--------|------|
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T9 自动验收 + @Ray 目检通过；待归档整理） | design-tokens-theme, e2e-harness | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（T1 已完成） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
@@ -55,6 +54,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [ui-kit-components](archive/2026-06-06-ui-kit-components/) | 已完成 | 2026-06-06 |
 | [ui-shell-navigation](archive/2026-05-31-ui-shell-navigation/) | 已完成 | 2026-05-31 |
 | [thumbnail-cache](archive/2026-05-30-thumbnail-cache/) | 已完成（单元测试 Benchmark 耗时 8.0ms/张，支持 Isolate 限制并发、设备密钥加密落盘、一致性补偿） | 2026-05-30 |
 | [media-storage](archive/2026-05-30-media-storage/) | 已完成（本机基线吞吐 write=14.4 MiB/s, read=14.5 MiB/s） | 2026-05-30 |
