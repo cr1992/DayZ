@@ -10,9 +10,11 @@
 #
 #   R4-a 禁启动遥测：写 ~/.config/patrol_cli/analytics.json {"enabled":false} +
 #        导出 PATROL_ANALYTICS_ENABLED=false，避开 google-analytics 偶发 TLS handshake 崩 CLI。
-#   R4-b 网络抖动 retry：native assets（sqlite3mc 的 iOS dylib / android .so）从零重下、
-#        Android kotlin-compiler-embeddable 的 Maven handshake 中途断、以及 Android 首跑偶发
-#        app-service 时序 Total:0 —— 命中可重试模式时重跑（最多 PATROL_MAX_RETRIES 次）。
+#   R4-b sqlite3mc 稳定缓存 + 网络抖动 retry：sqlite3 3.3.x hook 的下载缓存目录使用
+#        Object.hash，默认跨 Dart VM 进程不稳定，导致同一 sqlite3mc dylib/.so 反复落到不同
+#        download-* 目录。wrapper 给 Flutter tool 注入 --deterministic，让 hook 目录稳定后复用
+#        .dart_tool/hooks_runner/shared；若下载/Maven handshake 中途断，再命中可重试模式重跑
+#        （最多 PATROL_MAX_RETRIES 次）。
 #   R7   零执行守卫：解析 patrol 输出的 `Total: N`，N 缺失或为 0 → 判失败（非零退出），
 #        把「全 pass 但零执行」挡在 CI 闸外。**真实的用例断言失败不重试**（避免重试掩盖真 bug）。
 #   R8   测试隔离 + 产物清理：iOS 无 Android 的 clearPackageData，故跑前（及绿后）清 app 的
@@ -60,6 +62,22 @@ disable_analytics() {
 }
 
 # ---------------------------------------------------------------------------
+# R4-b · 稳定 sqlite3mc hook shared-cache 目录
+# ---------------------------------------------------------------------------
+enable_deterministic_flutter_tool() {
+  [[ -z "${PATROL_NO_DETERMINISTIC_HASH:-}" ]] || return 0
+  case " ${FLUTTER_TOOL_ARGS:-} " in
+    *" --deterministic "*) return 0 ;;
+  esac
+
+  if [[ -n "${FLUTTER_TOOL_ARGS:-}" ]]; then
+    export FLUTTER_TOOL_ARGS="${FLUTTER_TOOL_ARGS} --deterministic"
+  else
+    export FLUTTER_TOOL_ARGS="--deterministic"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # R7 · 从一段 patrol 输出里取「最后一个」Total 计数（取末次＝最终汇总，无则空串）
 # ---------------------------------------------------------------------------
 parse_total() {
@@ -75,7 +93,7 @@ parse_failed() {
 # 自检：用样例输出喂解析/守卫逻辑，不依赖真机 / 真 patrol
 # ---------------------------------------------------------------------------
 selftest() {
-  local tmp ok=0
+  local tmp ok=0 saved_flutter_tool_args saved_no_deterministic
   tmp="$(mktemp "${TMPDIR:-/tmp}/patrol_selftest.XXXXXX")"
 
   printf 'Total: 1\nSuccessful: 1\nFailed: 0\n' > "$tmp"
@@ -91,12 +109,42 @@ selftest() {
   printf 'HandshakeException: Connection terminated during handshake\n' > "$tmp"
   grep -Eq "$RETRYABLE_RE" "$tmp" || { echo "  FAIL: handshake terminated 应判为可重试基建抖动" >&2; ok=1; }
 
+  saved_flutter_tool_args="${FLUTTER_TOOL_ARGS-}"
+  saved_no_deterministic="${PATROL_NO_DETERMINISTIC_HASH-}"
+  FLUTTER_TOOL_ARGS="--enable-asserts"
+  unset PATROL_NO_DETERMINISTIC_HASH
+  enable_deterministic_flutter_tool
+  case " $FLUTTER_TOOL_ARGS " in
+    *" --enable-asserts "*) ;;
+    *) echo "  FAIL: 注入 --deterministic 时应保留既有 FLUTTER_TOOL_ARGS 参数" >&2; ok=1 ;;
+  esac
+  case " $FLUTTER_TOOL_ARGS " in
+    *" --deterministic "*) ;;
+    *) echo "  FAIL: 应向 FLUTTER_TOOL_ARGS 注入 --deterministic" >&2; ok=1 ;;
+  esac
+  enable_deterministic_flutter_tool
+  case "$FLUTTER_TOOL_ARGS" in
+    *"--deterministic --deterministic"*) echo "  FAIL: --deterministic 不应重复注入" >&2; ok=1 ;;
+  esac
+  PATROL_NO_DETERMINISTIC_HASH=1
+  FLUTTER_TOOL_ARGS="--enable-asserts"
+  enable_deterministic_flutter_tool
+  case " $FLUTTER_TOOL_ARGS " in
+    *" --deterministic "*) echo "  FAIL: PATROL_NO_DETERMINISTIC_HASH=1 时不应注入 --deterministic" >&2; ok=1 ;;
+  esac
+  FLUTTER_TOOL_ARGS="$saved_flutter_tool_args"
+  if [[ -n "$saved_no_deterministic" ]]; then
+    PATROL_NO_DETERMINISTIC_HASH="$saved_no_deterministic"
+  else
+    unset PATROL_NO_DETERMINISTIC_HASH
+  fi
+
   # 取「末次」汇总：构建期可能出现中间 Total，最终汇总才算数。
   printf 'Total: 99 (intermediate)\nTotal: 2\nSuccessful: 2\nFailed: 0\n' > "$tmp"
   [[ "$(parse_total "$tmp")" == "2" ]] || { echo "  FAIL: 多个 Total 应取最后一个（2）" >&2; ok=1; }
 
   rm -f "$tmp"
-  if [[ $ok -eq 0 ]]; then echo "selftest OK：解析与零执行守卫逻辑通过"; fi
+  if [[ $ok -eq 0 ]]; then echo "selftest OK：deterministic 注入、解析与零执行守卫逻辑通过"; fi
   return $ok
 }
 
@@ -152,6 +200,7 @@ fi
 
 cd "$ROOT_DIR"
 disable_analytics
+enable_deterministic_flutter_tool
 
 IOS_SIM="${PATROL_FORCE_IOS_SIM:-$(detect_ios_sim "$@")}"   # 空＝非 iOS 模拟器目标，R8 清理全程 no-op
 

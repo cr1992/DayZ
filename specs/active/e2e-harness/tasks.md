@@ -98,16 +98,17 @@ iOS 是既有 `integration_test` 的验证目标、构建已证可行，故先�
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R4, R7, NF2 ｜ **依据设计：** D5 ｜ **可改文件：** `scripts/patrol_test.sh` ｜ **验收基建：** `scripts/patrol_test.sh`（自带 `--selftest`）
 
 ### 背景
-裸调 `patrol test` 会因启动 handshake、native-asset/Maven 下载中断、Android 首跑 `Total:0` 等假崩/假阴（R4/R7）。需一层确定性 wrapper。
+裸调 `patrol test` 会因启动 handshake、sqlite3mc hook 缓存目录不稳定导致 native asset 反复下载、native-asset/Maven 下载中断、Android 首跑 `Total:0` 等假崩/假阴（R4/R7）。需一层确定性 wrapper。
 
 ### 实施
 1. `scripts/patrol_test.sh`：禁 analytics（写 `~/.config/patrol_cli/analytics.json` `{"enabled":false}` + 导出 `PATROL_ANALYTICS_ENABLED=false`）。
-2. 对可重试模式 retry（`PATROL_MAX_RETRIES` 默认 3）；真实断言失败**不**重试。
-3. 解析 `Total: N`，零执行 → 非零退出（R7）。
-4. `--selftest`：不跑真机，对 stub patrol 验解析 + 守卫四类控制流。
+2. 给 Flutter tool 注入 `--deterministic`，稳定 sqlite3mc hook 的 `.dart_tool/hooks_runner/shared/.../download-*` 目录；`PATROL_NO_DETERMINISTIC_HASH=1` 可临时关闭。
+3. 对可重试模式 retry（`PATROL_MAX_RETRIES` 默认 3）；真实断言失败**不**重试。
+4. 解析 `Total: N`，零执行 → 非零退出（R7）。
+5. `--selftest`：不跑真机，对 deterministic 注入、stub patrol 解析 + 守卫四类控制流做自检。
 
 ### 验收标准（做完即止）
-- `Total:0` → 非零退出；可重试模式 retry ≤3；真失败不重试（自动，NF2）。
+- `Total:0` → 非零退出；`FLUTTER_TOOL_ARGS` 注入 `--deterministic` 且不重复；可重试模式 retry ≤3；真失败不重试（自动，NF2）。
 - `bash -n` 语法过（自动）。
 
 ### 验收方式
@@ -120,7 +121,7 @@ iOS 是既有 `integration_test` 的验证目标、构建已证可行，故先�
 ### 验收记录
 ```
 日期：2026-06-04
-自动：`bash -n` 过；`--selftest` 对 stub 四类控制流（pass/假绿/真失败/flaky）行为符合预期；2026-06-06 追加 `HandshakeException: Connection terminated during handshake` 可重试判定自检，`bash -n scripts/patrol_test.sh && bash scripts/patrol_test.sh --selftest` 通过。
+自动：`bash -n` 过；`--selftest` 对 stub 四类控制流（pass/假绿/真失败/flaky）行为符合预期；2026-06-06 追加 `HandshakeException: Connection terminated during handshake` 可重试判定自检，`bash -n scripts/patrol_test.sh && bash scripts/patrol_test.sh --selftest` 通过。2026-06-06 追加 sqlite3mc 重复下载修复：本地探针确认 `sqlite3` 3.3.x hook 的 `download-*` 目录默认跨 Dart VM 进程不稳定、`dart --deterministic` 后稳定；wrapper 默认注入 `FLUTTER_TOOL_ARGS=... --deterministic`，并将保留既有参数 / 不重复注入 / 可关闭写入 `--selftest`；`FLUTTER_TOOL_ARGS=--deterministic flutter --version` 通过。
 人工：待确认（核查人 @Ray）—— live 连跑 3 次
 ```
 

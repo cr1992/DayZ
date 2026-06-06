@@ -48,10 +48,11 @@
 - **状态：** 采纳
 - **选择：**
   - analytics 双关：写 `~/.config/patrol_cli/analytics.json` = `{"enabled":false,...}` + 跑测时带 `PATROL_ANALYTICS_ENABLED=false`。
-  - native asset 下载失败：运行入口对 `Building native assets failed` / `Connection closed while receiving data` retry。
+  - sqlite3mc native asset 稳定缓存：运行入口给 Flutter tool 注入 `--deterministic`，稳定 `sqlite3` hook 的 `download-*` 目录，复用 `.dart_tool/hooks_runner/shared` 下的 sqlite3mc 缓存；`PATROL_NO_DETERMINISTIC_HASH=1` 可临时关闭。
+  - native asset / Maven 下载失败：运行入口对 `Building native assets failed` / `Connection closed while receiving data` / download handshake 类错误 retry。
   - CI 前置：解析 patrol 输出 `Total: N` 校验非零（防静默假阳性）。
-- **理由：** 实测两类 flaky 各废过运行（handshake 约半数崩、sqlite3mc dylib 下载中途断）。
-- **代价：** 运行需包一层 retry wrapper（见 tasks T3），不能裸调 `patrol test`。
+- **理由：** 实测两类 flaky 各废过运行（handshake 约半数崩、sqlite3mc dylib 下载中途断）。2026-06-06 复盘确认 `sqlite3` 3.3.x hook 的 `PrebuiltSqliteLibrary.dirname` 基于 `Object.hash`，默认跨 Dart VM 进程不稳定，导致 shared-cache 被绕开、`.dart_tool/hooks_runner/shared/sqlite3/build/` 堆多个等价 `download-*` 目录；`dart --deterministic` 可稳定同一目标的目录名。
+- **代价：** 运行需包一层 wrapper（见 tasks T3），不能裸调 `patrol test`；wrapper 会默认影响 Flutter tool 的 VM hash 随机性，仅限测试构建链路。
 
 ### D6 · Android 已跑通，CI 后置
 - **状态：** Android 采纳（已实测跑通）；CI 暂缓
@@ -75,10 +76,10 @@
 | 建 UITest target（D3） | xcodeproj 程序化，最硬一步 | 中高 |
 | patrol_cli 4.0 目录破坏性改动 | 用例须放 `patrol_test/`，放错触发 bundle 路径 bug | 低但坑 |
 | flaky·启动遥测 handshake | 约半数运行崩，禁 analytics 才稳 | 中（CI 杀手） |
-| flaky·native asset 重下（sqlite3mc dylib） | 独立 derivedData 触发重下，网络掐断，靠 retry | 中高（DayZ 特有） |
+| flaky·sqlite3mc native asset 重下 | sqlite3 hook 目录 hash 默认跨 VM 不稳定，曾绕开 shared-cache 反复下载；wrapper 注入 `--deterministic` 稳定缓存，retry 只兜底下载中断 | 中（DayZ 特有） |
 | iOS 跑通 | 冷构建 ~98s / 增量 ~20–40s / 测试 ~26s，1 用例模拟器绿 | — |
 | Android·Rust 交叉编译 | argon2id aarch64-linux-android 在 patrol 链里实测过（rustup 接管前提下） | 低（工具链已就绪） |
-| Android·网络抖动 | kotlin-compiler-embeddable 的 Maven handshake、sqlite3mc android `.so` | 中（retry 兜底） |
+| Android·网络抖动 | kotlin-compiler-embeddable 的 Maven handshake、sqlite3mc android `.so` 首次缓存 | 中（deterministic cache + retry 兜底） |
 | Android·首跑 `Total:0` | app-service 时序抖动，重跑即绿 | 低但实证 R7 必要 |
 | Android 跑通 | apk 冷构建 ~178s / 测试 ~52s，1 用例模拟器绿 | — |
 

@@ -104,10 +104,10 @@ bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/patrol_smoke_te
 bash scripts/patrol_test.sh -d <android-emulator-id>
 ```
 
-**为什么不裸调 `patrol test`**（[`scripts/patrol_test.sh`](../scripts/patrol_test.sh) 封装了这三件事，对应 spec R4 / R7）：
+**为什么不裸调 `patrol test`**（[`scripts/patrol_test.sh`](../scripts/patrol_test.sh) 封装了这些防护，对应 spec R4 / R7 / R8）：
 
 1. **启动遥测 handshake**（R4-a）：patrol_cli 启动 POST google-analytics，偶发 TLS handshake 崩 CLI（约半数运行）。wrapper 写 `~/.config/patrol_cli/analytics.json` `{"enabled":false}` + 导出 `PATROL_ANALYTICS_ENABLED=false` 双关禁掉。
-2. **native asset 重下**（R4-b）：patrol 用独立 `derivedDataPath` 触发 native assets 从零重建 → 重下 `sqlite3mc` 的 iOS dylib / android `.so`（Android 还有 `kotlin-compiler-embeddable` 的 Maven handshake）→ 网络中途断。wrapper 对可重试模式 retry（`PATROL_MAX_RETRIES`，默认 3）。
+2. **sqlite3mc native asset 重下**（R4-b）：`sqlite3` 3.3.x hook 的 shared-cache 子目录基于 Dart `Object.hash`，默认跨 VM 进程不稳定，导致同一 `sqlite3mc` iOS dylib / Android `.so` 反复落到不同 `download-*` 目录。wrapper 给 Flutter tool 注入 `--deterministic`，让 `.dart_tool/hooks_runner/shared` 缓存可复用；若首次缓存或 Maven 下载仍中断，再按可重试模式 retry（`PATROL_MAX_RETRIES`，默认 3）。`PATROL_NO_DETERMINISTIC_HASH=1` 可临时关闭。
 3. **零执行假阳性**（R7）：patrol_cli 有「0 用例却 all pass」先例 + Android 首跑 `Total:0` 时序抖动。wrapper 解析输出 `Total: N`，**N 缺失或为 0 即判失败**（非零退出），把假绿挡在 CI 闸外。**真实用例断言失败不重试**（避免重试掩盖真 bug）。
 4. **测试隔离 + 产物清理**（R8）：iOS 无 Android 的 `clearPackageData`，patrol 跑 `main()` 把真加密 DB/媒体留在模拟器容器、跨次污染。wrapper 检测到 iOS 模拟器目标时，跑前（及绿后）清 app 的**数据容器**（`xcrun simctl get_app_container <ios-sim> com.dayz data` 后清其内容，**保留 app 安装、不卸包**——对齐 Android `clearPackageData`），并修剪旧 `build/ios_results_*.xcresult`（保留最近 `PATROL_KEEP_XCRESULTS`，默认 3）。`PATROL_NO_RESET=1` 可关。
 

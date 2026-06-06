@@ -30,10 +30,10 @@
 - [ ] 干净 checkout 照 T2 文档可从零搭到冒烟绿 — 人工（@Ray），一次性走查（文档已就绪：`docs/patrol-e2e-onboarding.md`）
 
 ### flaky 防护（R4, R7）
-- [x] T3 wrapper 落地：禁 analytics（盘+env）+ native-asset/Maven/Android-Total:0 retry + `Total:N` 非零校验 — 自动：`scripts/patrol_test.sh`
-- [x] wrapper 逻辑静态自验（**静态层；真机实证见下条**）：`bash -n` 语法过；`--selftest` 解析+零执行守卫过；对 stub `patrol` 跑全控制流 8 例均符合预期——pass→exit0/1att；假绿 Total:0→R7 拦截 exit1/重试用尽；真断言失败 Failed≥1（含 status=0 坏退出码、报错文本含 "timed out" 的）→exit1/1att **绝不重试**；Failed 行缺失→fail-closed 重试后判失败；非 infra 非零→exit1/1att 不重试；flaky→重试恢复 exit0/2att — 自动（无需真机）
+- [x] T3 wrapper 落地：禁 analytics（盘+env）+ Flutter tool deterministic 注入稳定 sqlite3mc hook cache + native-asset/Maven/Android-Total:0 retry + `Total:N` 非零校验 — 自动：`scripts/patrol_test.sh`
+- [x] wrapper 逻辑静态自验（**静态层；真机实证见下条**）：`bash -n` 语法过；`--selftest` 验 deterministic 注入（保留既有参数 / 不重复 / 可关闭）、解析+零执行守卫过；对 stub `patrol` 跑全控制流 8 例均符合预期——pass→exit0/1att；假绿 Total:0→R7 拦截 exit1/重试用尽；真断言失败 Failed≥1（含 status=0 坏退出码、报错文本含 "timed out" 的）→exit1/1att **绝不重试**；Failed 行缺失→fail-closed 重试后判失败；非 infra 非零→exit1/1att 不重试；flaky→重试恢复 exit0/2att — 自动（无需真机）
 - [ ] 连续 3 次 **live**（真机/模拟器）wrapper 调用 0 次假崩 — 自动·**待实跑**（命令就绪、逻辑已静态自验；缺真 patrol + 真网络抖动下的实证，由 @Ray 在真机/模拟器跑 3 次确认）
-- [x] 根因记录在案：handshake=patrol_cli 启动遥测 POST google-analytics；asset 重下=独立 derivedDataPath 触发 sqlite3mc dylib 重新下载 — 文档（design.md 成本账）
+- [x] 根因记录在案：handshake=patrol_cli 启动遥测 POST google-analytics；sqlite3mc 重下=`sqlite3` 3.3.x hook 的 `download-*` 目录 hash 默认跨 VM 进程不稳定、绕开 shared-cache — 文档（design.md 成本账）
 
 ### 测试隔离 + 产物清理（R8）
 - [x] R8 落地 wrapper：iOS 目标跑前/绿后清 app **数据容器**（`get_app_container ... data` 后清内容、**保留安装**，对齐 Android `clearPackageData`）+ 旧 xcresult 修剪 + 非 iOS/真机目标 no-op — 自动：`scripts/patrol_test.sh`

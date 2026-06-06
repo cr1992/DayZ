@@ -43,7 +43,7 @@ Patrol 用例 SHALL 放在 `patrol_test/`（patrol_cli ≥ 4.0 的默认目录�
 ### R4 · flaky 防护（采纳本 spec 即必须固化）
 harness SHALL 对 patrol_cli 两类已知 flaky 提供确定性防护：
 - **启动遥测 handshake**：禁用 analytics（`~/.config/patrol_cli/analytics.json` 置 `enabled:false` 且 `PATROL_ANALYTICS_ENABLED=false`），避免 google-analytics 的 TLS handshake 偶发崩 CLI。
-- **native asset 重下**：patrol 用独立 `derivedDataPath` 触发 native assets 从零重建 → 重新下载 `sqlite3mc` 的 iOS dylib → 网络中途掐断。运行入口 SHALL 对该失败 retry。
+- **sqlite3mc native asset 重下**：`sqlite3` 3.3.x hook 的 shared-cache 子目录使用 Dart `Object.hash`，默认跨 VM 进程不稳定，导致同一 `sqlite3mc` iOS dylib / Android `.so` 反复落到不同 `download-*` 目录。运行入口 SHALL 给 Flutter tool 注入 `--deterministic` 以稳定 hook 缓存目录；若仍遇到下载 / Maven handshake 中断，SHALL retry。
 
 ### R5 · DoD 升级（差异化，不一刀切）
 屏 spec 的「交付」定义 SHALL 升级为：
@@ -69,7 +69,7 @@ E2E 跑测 SHALL NOT 向后续运行泄漏持久化的设备 app 状态（残留
 同一冒烟用例 MUST 在 iOS 模拟器（iPhone）与 Android 模拟器（API 36）**双端**跑通，各报 `Total:1 / Successful:1 / Failed:0`。度量：两端经 wrapper 跑 `patrol test` 退出 0 且 `Total` 非零。
 
 ### NF2 · 防假阳性（可靠性）
-flaky 防护 wrapper MUST 在 `Total:0`（零执行）时以非零码退出；对已知可重试模式（启动 handshake、native-asset/Maven 下载中断、Android 首跑 `Total:0`）MUST 自动重试，默认上限 3 次（`PATROL_MAX_RETRIES`）；真实用例断言失败 MUST NOT 重试（不得掩盖真 bug）。度量：`scripts/patrol_test.sh --selftest` 对 stub patrol 的四类控制流（pass / 假绿 / 真失败 / flaky）行为符合预期。
+flaky 防护 wrapper MUST 在 `Total:0`（零执行）时以非零码退出；MUST 默认注入 `FLUTTER_TOOL_ARGS=... --deterministic` 稳定 sqlite3mc hook shared-cache；对已知可重试模式（启动 handshake、native-asset/Maven 下载中断、Android 首跑 `Total:0`）MUST 自动重试，默认上限 3 次（`PATROL_MAX_RETRIES`）；真实用例断言失败 MUST NOT 重试（不得掩盖真 bug）。度量：`scripts/patrol_test.sh --selftest` 对 deterministic 注入、stub patrol 的四类控制流（pass / 假绿 / 真失败 / flaky）行为符合预期。
 
 ### NF3 · 安全（真加密 + 人闸）
 harness 启动真实生产入口 `main()` 时 MUST 走真实 SQLCipher 加密库初始化（不 mock 加密层）；加密 / 备份 / 还原等不可逆链路即便 E2E 全绿 MUST 保留人工终验（见 R6）。度量：冒烟经真实 `AppDatabase.open` 落盘；不可逆链路 verification 项标「人工（@Ray）」。
