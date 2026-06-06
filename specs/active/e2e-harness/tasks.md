@@ -120,7 +120,7 @@ iOS 是既有 `integration_test` 的验证目标、构建已证可行，故先�
 ### 验收记录
 ```
 日期：2026-06-04
-自动：`bash -n` 过；`--selftest` 对 stub 四类控制流（pass/假绿/真失败/flaky）行为符合预期
+自动：`bash -n` 过；`--selftest` 对 stub 四类控制流（pass/假绿/真失败/flaky）行为符合预期；2026-06-06 追加 `HandshakeException: Connection terminated during handshake` 可重试判定自检，`bash -n scripts/patrol_test.sh && bash scripts/patrol_test.sh --selftest` 通过。
 人工：待确认（核查人 @Ray）—— live 连跑 3 次
 ```
 

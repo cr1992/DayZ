@@ -43,7 +43,7 @@ MAX_RETRIES="${PATROL_MAX_RETRIES:-3}"
 # 命中其一即「基建/网络抖动」候选。仅在**没有真实断言失败**（Failed=0 或缺失）时才据此重试——
 # 真实用例断言失败（Failed≥1）在决策树里先被拦掉、绝不重试，故这里即便措辞偏宽也不会掩盖真 bug。
 # 刻意只收编译/下载/依赖解析这类构建期短语，不收裸 "TLS"/"timed out"/"Connection reset"（易撞用例自身输出）。
-RETRYABLE_RE='Building native assets failed|Connection closed while receiving data|Could not (resolve|download|GET|HEAD)|kotlin-compiler-embeddable|Read timed out|SocketException|handshake failed|Failed to (download|resolve)|sqlite3mc.*(download|fetch)'
+RETRYABLE_RE='Building native assets failed|Connection closed while receiving data|Could not (resolve|download|GET|HEAD)|kotlin-compiler-embeddable|Read timed out|SocketException|handshake failed|HandshakeException|Connection terminated during handshake|Failed to (download|resolve)|sqlite3mc.*(download|fetch)'
 
 # ---------------------------------------------------------------------------
 # R4-a · 禁启动遥测 handshake（盘 + env 双关）
@@ -87,6 +87,9 @@ selftest() {
 
   printf 'some unrelated build chatter\nno summary here\n' > "$tmp"
   [[ -z "$(parse_total "$tmp")" ]] || { echo "  FAIL: 无 Total 行应得空串（守卫 fail-closed）" >&2; ok=1; }
+
+  printf 'HandshakeException: Connection terminated during handshake\n' > "$tmp"
+  grep -Eq "$RETRYABLE_RE" "$tmp" || { echo "  FAIL: handshake terminated 应判为可重试基建抖动" >&2; ok=1; }
 
   # 取「末次」汇总：构建期可能出现中间 Total，最终汇总才算数。
   printf 'Total: 99 (intermediate)\nTotal: 2\nSuccessful: 2\nFailed: 0\n' > "$tmp"
