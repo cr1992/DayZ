@@ -15,7 +15,7 @@
 | callout codec 往返 | 含 callout（delta="记得复盘"）的 Document → `EditorDocCodec.encode` → `decode` | 还原节点 `type=='callout'`、delta 文本逐字一致；`supported` 含 callout | R1 | 自动 |
 | callout 注册渲染 | decode 结果用 `EditorBlockRegistry` builders 渲染 | callout 走 `CalloutBlockComponentBuilder`，不落 `_UnknownBlockComponentBuilder`（无「[未支持块]」） | R1 | 自动 |
 | callout 主题色渲染 | 在 amberDark / sageLight 两主题下分别渲染 callout | 背景 == 对应主题 `DayzColors.accentSoft`、图标 == `accentInk`、无左边框 | R2 | 自动 + 人工(@Ray 截图签收) |
-| callout 真机视觉 | Patrol 设备上渲染 callout 并截图 | 截图工件产出，暖调 `--accent-soft` 底随主题、质感对齐设计稿 | R2 | 自动(Patrol)+人工(@Ray) |
+| callout 真机视觉 | Patrol 设备上渲染 callout 并截图 | 截图工件产出，暖调 `--accent-soft` 底随主题，`Total:` 非零 | R2 | 自动（E2E，依赖 e2e-harness） |
 | callout plain 降级 | `EditorPlainTextExtractor.extract(含 callout 文档)` | plain 含一行 `记得复盘`（与降级同源） | R3 | 自动 |
 | callout markdown 降级 | callout 节点经 `EditorExportFallback` 取 markdown 行 | 前缀 `> ` + delta 文本 | R3 | 自动 |
 | callout 空文本降级 | callout `delta` 为空时抽取 | 该行为空字符串、`extract` 不抛异常 | R3, NF1 | 自动 |

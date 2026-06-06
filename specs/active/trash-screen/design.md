@@ -113,6 +113,9 @@ graph TD
 - `test/ui/trash/`                         新建（屏 / 卡片 / 提示条 / controller / DTO 的 widget & 单元测试）
 - `test/demo/trash_screen_demo_test.dart`  新建（demo + Debug Home 入口测试）
 
+**Patrol E2E（跨屏删除 / 恢复闭环，放 `patrol_test/`，dependsOn `e2e-harness`）**
+- `patrol_test/trash_restore_flow_test.dart` 新建（reader 删除 → 回收站出现 → 恢复 → 时间线可见的跨屏 E2E；经 `scripts/patrol_test.sh` 跑，校验 `Total:` 非零）
+
 > 不触 `pubspec.yaml`：本屏所需 `flutter_svg`（提示条/危险图标）、`intl`（SDK 传递依赖）均由 `design-tokens-theme` / `ui-kit-components` 引入，本 spec 不新增依赖。若实现时发现需新增依赖（如某图标/动画包），MUST 停下回填本清单 + 请求确认（spec-guide P2 / 方法论 §10 第 7 条），不擅自改 pubspec。
 
 ## 已知风险

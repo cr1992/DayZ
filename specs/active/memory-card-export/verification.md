@@ -22,8 +22,10 @@
 | 长图多段 | 以 N 段 `MemoryDayData` 切长图 | 段数 == N，「写过 N 篇」/「共 N 段回忆」计数正确（intl 成品文案） | R4 | 自动 |
 | 保存到相册 | 点保存（注入假 exporter） | `saveToGallery` 被调用、收当前卡片 widget；成功出 toast | R5 | 自动 |
 | 保存失败 / 拒权 | 假 exporter 返回 error | 失败 toast（tone=danger）、不崩溃、不静默吞 | R5, NF6 | 自动 |
+| 原生保存到相册 | Patrol 设备上点保存 | iOS Photos / Android MediaStore 权限被处理，成功 toast 可见，app 不崩溃，`Total:` 非零 | R5, NF5, NF6 | 自动（E2E，依赖 e2e-harness） |
 | 分享 | 点分享（注入假 exporter） | `share` 被调用、出分享 toast | R6 | 自动 |
 | 分享取消 | 假 exporter 返回 cancelled | 静默回屏、不报错 | R6 | 自动 |
+| 原生分享面板 | Patrol 设备上点分享 | 系统分享面板出现，可取消 / 关闭回到本屏，取消路径不报错，`Total:` 非零 | R6, NF5, NF6 | 自动（E2E，依赖 e2e-harness） |
 | 取数边界 | 静态解析屏 / 卡片 / 模型源码 import | 不含 `package:.../data/` / Drift 句柄，数据经纯模型入参 | R7 | 自动 |
 | Debug Home 入口 | 进入 `demos` 末尾新增项 | 假数据渲染本屏、可切 / 可触发假导出 | R8 | 自动 |
 
@@ -48,8 +50,9 @@
 ### 多端兼容（NF5, NF7）
 - [ ] 离屏栅格化以 `pixelRatio = max(devicePixelRatio, 3.0)` 产出清晰 PNG，位图尺寸 == 卡片逻辑尺寸 × pixelRatio — 自动：`flutter test test/ui/memory_card_export/memory_card_exporter_test.dart`（断 PNG 可解码 + 尺寸，NF7）
 - [ ] 长图导出含完整长卡（非仅视口）— 自动：断导出位图高度 ≈ 完整子树高度 × pixelRatio（NF7）
-- [ ] iOS 13+ 真机 / 模拟器：保存到相册（Photos 权限）+ 分享面板正常，失败路径有反馈 — 人工（@Ray）
-- [ ] Android 8+ 真机 / 模拟器：保存到相册（MediaStore / 旧权限）+ 分享正常，失败路径有反馈 — 人工（@Ray）
+- [ ] iOS 13+ 真机 / 模拟器：保存到相册（Photos 权限）+ 系统分享面板正常，取消回屏不报错 — 自动：`bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/memory_card_export_native_test.dart`（校验 `Total:` 非零、`Failed:` = 0，真实信号 = 权限弹窗处理 + 成功 toast + 分享面板出现/取消）
+- [ ] Android 8+ 真机 / 模拟器：保存到相册（MediaStore / 旧权限）+ 系统分享面板正常，取消回屏不报错 — 自动：`bash scripts/patrol_test.sh -d <android-emulator-id> --target patrol_test/memory_card_export_native_test.dart`（校验 `Total:` 非零、`Failed:` = 0，真实信号 = 权限弹窗处理 + 成功 toast + 分享面板出现/取消）
+- [ ] 导出文案 / 系统面板返回手感终签 — 人工（@Ray）：复核本屏文案未暗示导出物受保护 / 加密，系统面板返回体验无突兀
 
 ### 栅格观感（§4 ④ 闸，advisory）
 - [ ] 两风格 × 三画幅 + 长图 golden 基线 — 自动：`flutter test test/ui/memory_card_export/`（golden 回归锁）
@@ -71,6 +74,8 @@
 flutter pub get
 flutter test test/ui/memory_card_export/   # 模型/单卡/长图/底栏/exporter/屏/对比度
 flutter test test/demo/                    # 回忆卡片 demo + Debug Home 回归
+bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/memory_card_export_native_test.dart
+bash scripts/patrol_test.sh -d <android-emulator-id> --target patrol_test/memory_card_export_native_test.dart
 flutter analyze
 ```
 

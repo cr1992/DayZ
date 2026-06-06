@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-06-06
 文档状态：草稿
 ---
 
@@ -19,6 +19,7 @@ graph LR
   T3 --> T5
   T4 --> T5
   T5 --> T6[T6 demo + Debug Home 入口]
+  T6 --> T7[T7 删除/回收站/恢复闭环 E2E]
 ```
 
 并行组：
@@ -26,6 +27,7 @@ graph LR
 - Group B：T2, T3, T4（均依赖 T1，可并行）
 - Group C：T5（依赖 T2+T3+T4）
 - Group D：T6（依赖 T5）
+- Group E：T7（依赖 T6 + e2e-harness + 删除发起方/时间线就绪，跑真实 app 跨屏闭环）
 
 （单屏一体、无可独立部署/演示的中间切点 → 不设里程碑。）
 
@@ -252,4 +254,41 @@ Debug Home 入口：在模拟设备框内渲染回收站屏 demo，用内存假 
 日期：—
 自动：—
 人工：N/A
+```
+
+-----
+
+- [ ] T7 · 跨屏删除 / 回收站 / 恢复闭环 E2E（Patrol，后置）
+
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** `e2e-harness`：`patrol_test/` 落点 + `scripts/patrol_test.sh` 零执行守卫；`reader-screen`：删除发起入口；`timeline-screen`：恢复后列表可见；`data-layer`：`EntryRepo.softDelete/restore/listTrash` 真接口 ｜ **关联需求：** R1, R2, R7 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `patrol_test/trash_restore_flow_test.dart`
+
+### 背景
+本 spec 内的 widget test 能覆盖「给定软删数据 → 回收站列表 / 恢复 / 硬删 / 清空」；但用户真正关心的闭环是从别屏删除开始，软删落入回收站，再恢复回时间线。该链路跨路由、真 Repo、真实 app 状态，适合由 Patrol 自动覆盖，人工只保留最终设计观感 / 手感签收，不再承担机械回归。
+
+### 实施
+1. 新建 `patrol_test/trash_restore_flow_test.dart`（MPL-2.0 头），经真实 app 入口进入一条可控日记详情（优先 reader 路径）。
+2. 触发删除并确认：断言返回后该条不再出现在当前来源列表 / 时间线可见区，且无崩溃。
+3. 进入回收站：断言软删条目出现，标题 / 删除提示可定位。
+4. 点恢复：断言成功 toast，回到时间线后该条重新可见。
+5. 用例经 `scripts/patrol_test.sh` 跑，依赖 wrapper 的 app 数据清理与 `Total:` 非零守卫；测试造的数据不得依赖上次残留。
+
+### 验收标准（做完即止）
+- Patrol 设备上完成 reader 删除 → 回收站出现 → 恢复 → 时间线可见的闭环，`Total:` ≥ 1、`Failed:` = 0（自动，R1/R2/R7）。
+- 用例断言真实行为信号：软删后来源列表不可见、回收站可见、恢复后时间线可见；不以「命令跑过」代替断言（自动）。
+- 测试数据由 wrapper / 用例清理，不提交生成 bundle、设备数据、截图以外的运行产物（自动/约束）。
+
+### 验收方式
+- 自动：
+  ```bash
+  bash scripts/patrol_test.sh -d <device-id> --target patrol_test/trash_restore_flow_test.dart
+  ```
+  （真实信号 = 删除后来源不可见 + 回收站可见 + 恢复后时间线可见 + `Total:` 非零）
+- 人工（仅最终手感 / 观感签收）：
+  - @Ray 复核 Patrol 截图 / 录屏工件：跨屏跳转、toast、回收站列表状态和恢复后落点无突兀。
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：待确认（核查人 @Ray）
 ```

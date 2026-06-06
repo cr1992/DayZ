@@ -15,8 +15,7 @@ graph LR
   T1[T1 iOS harness 接入+冒烟绿] --> T2[T2 固化复现脚本+文档]
   T1 --> T3[T3 flaky 防护封装 patrol-run wrapper]
   T4[T4 验收分层模板+README 方法论]
-  T3 --> T5[T5 首个原生 E2E：相册授权选图]
-  T1 --> T5
+  T4 --> T5[T5 首个业务 E2E 样例跟踪]
   T3 --> T8[T8 测试隔离+产物清理]
   T6[T6 Android harness ✅已交付]
   T3 --> T7[T7 CI 接入]
@@ -25,13 +24,13 @@ graph LR
 
 并行组：
 - Group A（即跑）：T2、T3、T4（互不依赖，均承接已交付的 T1）；T8 承接 T3
-- Group B（后置·依赖屏 spec）：T5（dependsOn `editor-integration-screen` + `media-storage`）
+- Group B（后置·业务样例跟踪）：T5（不交付业务用例；跟踪 `editor-integration-screen` S1 的 Patrol 用例）
 - Group C（后置）：T6 Android ✅ 已交付；T7 CI（dependsOn T3 + T6）待办
 
 ## 里程碑
 - **M1 = iOS + Android 冒烟管线（T1、T6）**：✅ 已交付。`patrol test` 在 iPhone 与 Android 模拟器**双端**跑通真 app 冷启动 + `$` finder，各 1 用例绿。
 - **M2 = 可复现 + 防 flaky + 测试隔离（T2、T3、T4、T8）**：**工件层 ✅，收口待人闸 ⏳**。runbook（`docs/patrol-e2e-onboarding.md`）+ flaky wrapper（`scripts/patrol_test.sh`，逻辑已静态自验）+ 验收分层骨架（`verification-skeleton.md`）+ R8 测试隔离/产物清理已交付；干净 checkout 实走查、wrapper live 连跑、骨架评审留 @Ray，未收口前 M2 不算完成。
-- **M3 = 首个真原生 E2E（T5）**：相册授权选图链路真机跑通，证明 harness 独占价值。
+- **M3 = 首个真原生 E2E（T5）**：相册授权选图链路由 `editor-integration-screen` S1 在真机跑通，证明 harness 独占价值；本 spec 只跟踪口径，不持有业务用例文件。
 
 -----
 
@@ -154,25 +153,28 @@ iOS 是既有 `integration_test` 的验证目标、构建已证可行，故先�
 
 -----
 
-- [ ] T5 · 首个真原生 E2E：相册授权选图（后置）
+- [ ] T5 · 首个真原生 E2E：相册授权选图（转交 editor-integration S1）
 
-**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** `editor-integration-screen`：编辑器插图入口；`media-storage`：图片落库 ｜ **关联需求：** R2, NF3 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `patrol_test/editor_image_pick_e2e.dart` ｜ **验收基建：** `patrol_test/editor_image_pick_e2e.dart`
+**同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无（业务用例由 `editor-integration-screen` S1 自己声明 `dependsOn e2e-harness`；本卡只跟踪方法论样例，避免 harness 与业务 spec 形成互相依赖）｜ **关联需求：** R2, NF3 ｜ **依据设计：** D1, D4 ｜ **可改文件：** 无（用例交由 `editor-integration-screen` S1 白名单：`patrol_test/editor_image_picker_test.dart`）｜ **验收基建：** 无
 
 ### 背景
-patrol 唯一独占、widget test 碰不到的场景＝驱动 iOS 原生相册授权弹窗 + 选图。是证明 harness 价值的关键用例，待编辑器插图链路就绪。
+patrol 唯一独占、widget test 碰不到的场景＝驱动 iOS 原生相册授权弹窗 + 选图。该链路的业务入口、断言对象与可改文件已落到 `editor-integration-screen` 设计维护 S1（`patrol_test/editor_image_picker_test.dart`），本 harness spec 只保留跨 spec 跟踪项，避免同一条 E2E 在两个 spec 各自声明不同文件名。
 
 ### 实施
-1. 写 `patrol_test/` 下 E2E：进编辑器 → 插图 → `$.native` 处理相册授权弹窗 + 选图。
-2. 断言图片落库（MediaRepo）。
+1. `editor-integration-screen` S1 新建 `patrol_test/editor_image_picker_test.dart`。
+2. 用例经 `scripts/patrol_test.sh` 跑，处理相册授权弹窗，选择 N 张图片。
+3. 断言图片落库（MediaStore / MediaRepo）并插入 N 个 image node。
 
 ### 验收标准（做完即止）
-- 真机/模拟器跑通，原生授权弹窗被 Patrol 处理、图片落库（自动）。
+- `editor-integration-screen` S1 的 `patrol_test/editor_image_picker_test.dart` 在真机/模拟器跑通，原生授权弹窗被 Patrol 处理、图片落库并插入 image node（自动）。
+- 本 spec 不再另建 `editor_image_pick_e2e.dart`，相册链路的唯一 E2E 文件名为 `editor_image_picker_test.dart`（自动/文档核对）。
 
 ### 验收方式
 - 自动：
   ```bash
-  bash scripts/patrol_test.sh -t patrol_test/editor_image_pick_e2e.dart -d <sim-id>
+  bash scripts/patrol_test.sh -d <sim-id> --target patrol_test/editor_image_picker_test.dart
   ```
+  （由 `editor-integration-screen` S1 交付；本卡验收口径只跟踪该跨 spec 用例跑通，且 wrapper 校验 `Total:` 非零）
 
 ### 验收记录
 ```

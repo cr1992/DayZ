@@ -21,6 +21,7 @@ graph LR
   T4 --> T6
   T5 --> T6
   T6 --> T7[T7 demo + Debug Home 入口]
+  T7 --> T8[T8 原生保存/分享 E2E]
 ```
 
 并行组：
@@ -28,6 +29,7 @@ graph LR
 - Group B：T2、T3、T4（均依赖 T1，三者并行）
 - Group C：T6（依赖 T2/T3/T4/T5）
 - Group D：T7（依赖 T6）
+- Group E：T8（依赖 T7 + e2e-harness，跑真实 app 原生链路）
 
 （整屏一体、无可独立部署 / 演示的中间切点 → 不设里程碑。）
 
@@ -300,4 +302,43 @@ Debug Home 入口（D9）：用假 `MemoryCardData` / `MemoryDayData`（含本�
 日期：—
 自动：—
 人工：N/A
+```
+
+-----
+
+- [ ] T8 · 原生保存 / 分享 E2E（Patrol）
+
+**同 spec 依赖：** T7 ｜ **跨 spec 依赖：** `e2e-harness`：`patrol_test/` 落点 + `scripts/patrol_test.sh` 零执行守卫 ｜ **关联需求：** R5, R6, NF5, NF6, NF7 ｜ **依据设计：** D3, D4, D8 ｜ **可改文件：** `patrol_test/memory_card_export_native_test.dart`
+
+### 背景
+T5/T6 的 widget test 能证明离屏 PNG、假相册 sink、假分享和失败反馈，但碰不到系统 Photos/MediaStore 权限与系统分享面板。该链路正好属于 e2e-harness 的 Patrol 覆盖范围：权限 / 文件 IO / 原生系统面板用 E2E 自动化，人工只保留文案不误导与最终体验签收。
+归属：本卡只交付原生 E2E 用例文件；导出器实现、权限声明、屏状态与 Debug Home 入口分别归 T5/T6/T7。
+
+### 实施
+1. 新建 `patrol_test/memory_card_export_native_test.dart`（MPL-2.0 头），通过 Debug Home 进入回忆卡片导出 demo 或真路由入口。
+2. 触发「保存」：处理 iOS Photos / Android MediaStore 权限弹窗，等待成功 toast，断言导出完成且 app 未崩溃。
+3. 触发「分享」：等待系统分享面板出现，取消 / 关闭分享面板后回到本屏，断言取消路径不报错。
+4. 用例经 `scripts/patrol_test.sh` 跑，依赖 wrapper 的 `Total:` 非零守卫与 iOS 数据容器清理，避免假绿和跨次残留。
+
+### 验收标准（做完即止）
+- iOS 13+ 模拟器 / 真机：保存到相册权限弹窗被 Patrol 处理，成功 toast 可见；分享面板可打开并取消回屏（自动，R5/R6/NF5）。
+- Android 8+ 模拟器 / 真机：MediaStore / 旧权限路径保存成功，分享面板可打开并取消回屏（自动，R5/R6/NF5）。
+- E2E 输出 `Total:` ≥ 1、`Failed:` = 0；截图 / 日志工件能证明保存与分享两段都执行过（自动，e2e-harness R7）。
+- 用例不依赖上次残留数据；测试造的数据由 wrapper / 用例清理，不提交任何生成 bundle 或导出产物（自动/约束，NF6）。
+
+### 验收方式
+- 自动：
+  ```bash
+  bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/memory_card_export_native_test.dart
+  bash scripts/patrol_test.sh -d <android-emulator-id> --target patrol_test/memory_card_export_native_test.dart
+  ```
+  （真实信号 = 权限弹窗处理 + 成功 toast + 分享面板出现/取消 + `Total:` 非零；不以“测试命令跑过”代替断言）
+- 人工（仅最终文案 / 手感签收）：
+  - @Ray 复核本屏文案未暗示导出物受保护 / 加密，系统面板返回体验无突兀。
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：待确认（核查人 @Ray）
 ```

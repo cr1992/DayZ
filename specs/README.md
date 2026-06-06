@@ -12,17 +12,17 @@
 |------|--------|------|------|--------|------|
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
+| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme, e2e-harness | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（T1 已完成） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [settings-screen](active/settings-screen/) | P2 | 待实现 | design-tokens-theme, ui-kit-components, ui-shell-navigation, key-management | @Ray | 2026-05-29 |
 | [calendar-screen](active/calendar-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage | @Ray | 2026-05-29 |
-| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | editor-integration-screen, media-storage | @Ray | 2026-06-04 |
-| [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 草稿（2026-06-06 设计同步实质档派生：编辑器新增块类型；本轮实现 callout 标注块，code 代码块占位后置） | editor-json-contract | @Ray | 2026-06-06 |
+| [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, reader-screen, timeline-screen, e2e-harness | @Ray | 2026-05-29 |
+| [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage, e2e-harness | @Ray | 2026-05-29 |
+| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | 无 | @Ray | 2026-06-04 |
+| [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 草稿（2026-06-06 设计同步实质档派生：编辑器新增块类型；本轮实现 callout 标注块，code 代码块占位后置） | editor-json-contract, e2e-harness | @Ray | 2026-06-06 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
 
@@ -35,8 +35,8 @@
 | 功能 | 当前对齐 | 依赖 | 负责人 | 进入维护态 |
 |------|----------|------|--------|------------|
 | [timeline-screen](active/timeline-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-31 |
-| [reader-screen](active/reader-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-31 |
-| [editor-integration-screen](active/editor-integration-screen/) | v1.0（+设计维护 S1/S2 进行中） | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft, editor-rich-blocks | @Ray | 2026-06-01 |
+| [reader-screen](active/reader-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache, e2e-harness | @Ray | 2026-05-31 |
+| [editor-integration-screen](active/editor-integration-screen/) | v1.0（+设计维护 S1/S2 进行中） | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft, editor-rich-blocks, e2e-harness | @Ray | 2026-06-01 |
 
 ## 执行顺序（派生快照）
 

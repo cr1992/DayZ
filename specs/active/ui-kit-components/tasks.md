@@ -343,6 +343,7 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 - 点图片本体不触发 `onClose`、点空白触发 `onClose`（自动：tap 图片 widget 断回调未被调，tap 背景断回调被调）（R9）。
 - 关闭钮命中盒 ≥44×44 且可经 `find.bySemanticsLabel(l10n.xxx)` 定位（自动，`tester.getRect` + Semantics）（NF1/NF3）。
 - 组件源码无 `package:dayz/data` / `drift` import（自动：本组件不接数据，由 ui-kit verification 的静态边界核验兜，NF5）。
+- Patrol 设备上打开 `DayzImageViewer`，产出多图横滑截图工件，`Total:` ≥ 1 且 `Failed:` = 0（自动，R9 视觉 / 手感主信号）。
 
 ### 禁止
 - 不在组件内 import `lib/data/` / 持 Drift 句柄 / 调相册·缩略图·解密入口（NF5 红线）。
@@ -352,10 +353,12 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 - 自动：
   ```bash
   flutter test test/ui/widgets/dayz_image_viewer_test.dart
+  bash scripts/patrol_test.sh -d <device> --target patrol_test/dayz_image_viewer_visual_test.dart
   ```
   （pump `DayzImageViewer` 于某套 ThemeData 下：断 `initialIndex` 起始页、翻页后计数文本、单张无计数、点图不关 / 点空白关回调、关闭钮 `tester.getRect` 命中盒 + `find.bySemanticsLabel`；**不** grep 被改文件自身）
-- 人工（Patrol 视觉，替代真机目检）：
-  - 真机 / 模拟器经 Patrol 跑 `patrol_test/dayz_image_viewer_visual_test.dart`，截图核对暖近黑 `--media-*` 沉浸观感 + 横向滑动翻页手感对照原型 `pages/assets/lightbox.js`（`.lbx`），@Ray 看截图工件确认；命令 `bash scripts/patrol_test.sh -d <device> --target patrol_test/dayz_image_viewer_visual_test.dart`，校验 `Total:` 非零（依赖 e2e-harness）。
+  （Patrol 视觉：真机 / 模拟器打开查看器，横滑翻页并截图；wrapper 校验 `Total:` 非零，真实信号 = 截图工件 + 非零执行）
+- 人工（仅最终手感签收）：
+  - @Ray 复核 Patrol 截图：暖近黑 `--media-*` 沉浸观感 + 横向滑动翻页手感对照原型 `pages/assets/lightbox.js`（`.lbx`），无明显偏差。
 
 ### 验收记录
 ```
