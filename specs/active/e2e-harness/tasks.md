@@ -2,7 +2,7 @@
 作者：@Ray
 创建日期：2026-06-04
 最后更新：2026-06-04
-文档状态：进行中（M1 双端冒烟绿；M2 T2/T3/T4 工件已交付，live 连跑 / 干净 checkout 走查 / 骨架评审留 @Ray 人闸；T5/T7 后置）
+文档状态：进行中（M1 双端冒烟绿；M2 T2/T3/T4/T8 工件已交付，live 连跑 / 干净 checkout 走查 / 骨架评审留 @Ray 人闸；T5/T7 后置）
 ---
 
 # 任务列表：e2e-harness
@@ -17,19 +17,20 @@ graph LR
   T4[T4 验收分层模板+README 方法论]
   T3 --> T5[T5 首个原生 E2E：相册授权选图]
   T1 --> T5
+  T3 --> T8[T8 测试隔离+产物清理]
   T6[T6 Android harness ✅已交付]
   T3 --> T7[T7 CI 接入]
   T6 --> T7
 ```
 
 并行组：
-- Group A（即跑）：T2、T3、T4（互不依赖，均承接已交付的 T1）
+- Group A（即跑）：T2、T3、T4（互不依赖，均承接已交付的 T1）；T8 承接 T3
 - Group B（后置·依赖屏 spec）：T5（dependsOn `editor-integration-screen` + `media-storage`）
 - Group C（后置）：T6 Android ✅ 已交付；T7 CI（dependsOn T3 + T6）待办
 
 ## 里程碑
 - **M1 = iOS + Android 冒烟管线（T1、T6）**：✅ 已交付。`patrol test` 在 iPhone 与 Android 模拟器**双端**跑通真 app 冷启动 + `$` finder，各 1 用例绿。
-- **M2 = 可复现 + 防 flaky（T2、T3、T4）**：**工件层 ✅，收口待人闸 ⏳**。runbook（`docs/patrol-e2e-onboarding.md`）+ flaky wrapper（`scripts/patrol_test.sh`，逻辑已静态自验）+ 验收分层骨架（`verification-skeleton.md`）已交付；干净 checkout 实走查、wrapper live 连跑、骨架评审留 @Ray，未收口前 M2 不算完成。
+- **M2 = 可复现 + 防 flaky + 测试隔离（T2、T3、T4、T8）**：**工件层 ✅，收口待人闸 ⏳**。runbook（`docs/patrol-e2e-onboarding.md`）+ flaky wrapper（`scripts/patrol_test.sh`，逻辑已静态自验）+ 验收分层骨架（`verification-skeleton.md`）+ R8 测试隔离/产物清理已交付；干净 checkout 实走查、wrapper live 连跑、骨架评审留 @Ray，未收口前 M2 不算完成。
 - **M3 = 首个真原生 E2E（T5）**：相册授权选图链路真机跑通，证明 harness 独占价值。
 
 -----
@@ -207,6 +208,43 @@ patrol 唯一独占、widget test 碰不到的场景＝驱动 iOS 原生相册�
 日期：2026-06-04
 自动：Android（Medium_Phone_API_36.1）冒烟绿 Total:1/Successful:1；argon2id Rust 交叉编译过；首跑 Total:0 重跑即绿（实证 R7）
 人工：N/A
+```
+
+-----
+
+- [-] T8 · 测试隔离 + 产物清理〔M2〕
+
+**同 spec 依赖：** T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R8, NF2 ｜ **依据设计：** D7 ｜ **可改文件：** `scripts/patrol_test.sh`、`docs/patrol-e2e-onboarding.md`、`specs/active/e2e-harness/requirement.md`、`specs/active/e2e-harness/design.md`、`specs/active/e2e-harness/verification.md`、`specs/active/e2e-harness/verification-skeleton.md` ｜ **验收基建：** `scripts/patrol_test.sh`（`--selftest` + R8 清理函数 + `PATROL_FORCE_IOS_SIM`/`PATROL_RESULTS_GLOB` 注入缝）
+
+### 背景
+iOS 无 Android 的 `clearPackageData`，patrol 跑 `main()` 把真加密 DB/媒体留在模拟器容器、跨次污染（顺序依赖型 flaky + 隐私卫生，D7）。须在 wrapper 收口测试隔离 + 产物清理；**不**碰加密数据路径。
+
+### 实施
+1. `scripts/patrol_test.sh` 加 R8：检测目标为 iOS 模拟器时，跑前（及绿后）清 app **数据容器**（`get_app_container ... data` 后清内容、**保留安装**，对齐 Android `clearPackageData`，带严格 rm 护栏）；修剪旧 `build/ios_results_*.xcresult`（保留最近 `PATROL_KEEP_XCRESULTS`，默认 3）；`PATROL_NO_RESET=1` 可关；非 iOS / Android / 真机目标全程 no-op。
+2. runbook 补「测试产物不入库 / 清理」；`verification-skeleton.md` DoD 补「有状态 E2E 须起始态干净 / teardown」。
+
+### 验收标准（做完即止）
+- 清理仅在 iOS 模拟器目标触发，Android / 非真机目标 no-op（自动）。
+- 旧 xcresult 修剪保留最近 N、删更旧（自动）。
+- patrol 生成的 `test_bundle.dart` 不入库（自动）。
+- `bash -n` 过、`--selftest` 仍过（自动）。
+
+### 禁止
+- 不在生产 `AppDatabase` / 路径解析里加测试专用数据目录缝（D7：不碰加密数据面）。
+
+### 验收方式
+- 自动：
+  ```bash
+  bash -n scripts/patrol_test.sh && bash scripts/patrol_test.sh --selftest
+  git check-ignore patrol_test/test_bundle.dart    # 退 0 = 已忽略、不入库
+  ```
+- 人工（@Ray）：真机/模拟器跑后确认容器已清（无残留真加密 DB）、机器无旧 xcresult 堆积——与 T3 live 连跑合并走查。
+
+### 验收记录
+```
+日期：2026-06-05
+自动：`bash -n` 过；`--selftest` 过；stub 驱动——`-d fake`→R8 全程 no-op；stub `xcrun` 指向临时数据容器→清内容但**保留容器目录**（app 不卸）、非 `*/Containers/Data/Application/*` 路径**拒删**（rm 护栏生效）；`PATROL_RESULTS_GLOB` 注入 5 假 xcresult/keep=3→修剪剩最新 3；真 booted UDID 命中 `simctl list`（检测正向）、`fake` 不命中（负向）；`git check-ignore patrol_test/test_bundle.dart` 退 0
+人工：待确认（核查人 @Ray）—— 真机跑后 app 仍在、其数据已清
 ```
 
 -----

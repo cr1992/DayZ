@@ -15,10 +15,11 @@
 #        app-service 时序 Total:0 —— 命中可重试模式时重跑（最多 PATROL_MAX_RETRIES 次）。
 #   R7   零执行守卫：解析 patrol 输出的 `Total: N`，N 缺失或为 0 → 判失败（非零退出），
 #        把「全 pass 但零执行」挡在 CI 闸外。**真实的用例断言失败不重试**（避免重试掩盖真 bug）。
-#   R8   测试隔离 + 产物清理：iOS 无 Android 的 clearPackageData，故跑前（及绿后）
-#        `xcrun simctl uninstall <ios-sim> com.dayz` 清 app 容器——清掉上次留下的真加密 DB/媒体，
-#        每次跑干净起步（红跑保留现场供 post-mortem，下次跑前再清）；并修剪旧 build/ios_results_*.xcresult。
-#        仅在目标是 iOS 模拟器时生效（Android 走自身 clearPackageData）；PATROL_NO_RESET=1 可关。
+#   R8   测试隔离 + 产物清理：iOS 无 Android 的 clearPackageData，故跑前（及绿后）清 app 的
+#        **数据容器**（`get_app_container ... data` 后清其内容，**保留 app 安装**、不卸包——对齐
+#        Android clearPackageData）：抹掉上次留下的真加密 DB/媒体，每次跑干净起步；并修剪旧
+#        build/ios_results_*.xcresult。仅目标是 iOS 模拟器时生效（Android 走自身 clearPackageData，
+#        真机不触发）；PATROL_NO_RESET=1 可关。
 #
 # 跑法（device flag 之外的参数原样透传给 `patrol test`）：
 #   bash scripts/patrol_test.sh -d <ios-sim-id>
@@ -114,11 +115,17 @@ detect_ios_sim() {
   if xcrun simctl list devices 2>/dev/null | grep -q -- "$dev"; then printf '%s' "$dev"; fi
 }
 
-# 清 iOS app 容器：清掉上次跑留下的真加密 DB/媒体，保证干净起步。uninstall 对未安装的 app 无害。
+# 清 iOS app 的「数据容器」（**保留安装**，对齐 Android clearPackageData）：抹掉上次跑留下的
+# 真加密 DB/媒体，保证干净起步。未安装则无数据可清（patrol 跑时会装新构建，本就干净）。
 reset_ios_app() {
   [[ -n "${IOS_SIM:-}" && -z "${PATROL_NO_RESET:-}" ]] || return 0
-  echo "  R8 测试隔离：simctl uninstall ${IOS_SIM} ${APP_BUNDLE_ID}（清容器）" >&2
-  xcrun simctl uninstall "$IOS_SIM" "$APP_BUNDLE_ID" >/dev/null 2>&1 || true
+  local data
+  data="$(xcrun simctl get_app_container "$IOS_SIM" "$APP_BUNDLE_ID" data 2>/dev/null)" || return 0
+  # 严格护栏（防 rm 误删）：路径必须形如模拟器「数据容器」且真实存在，才敢清。
+  case "$data" in */Containers/Data/Application/*) ;; *) return 0 ;; esac
+  [[ -d "$data" ]] || return 0
+  echo "  R8 测试隔离：清 ${APP_BUNDLE_ID} 数据容器（保留安装）：${data}" >&2
+  find "${data:?}" -mindepth 1 -delete 2>/dev/null || true   # 清内容、留容器目录本身
 }
 
 # 修剪旧 xcresult：保留最近 PATROL_KEEP_XCRESULTS 个（默认 3），其余删除。仅 iOS 产物。

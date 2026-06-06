@@ -109,8 +109,13 @@ bash scripts/patrol_test.sh -d <android-emulator-id>
 1. **启动遥测 handshake**（R4-a）：patrol_cli 启动 POST google-analytics，偶发 TLS handshake 崩 CLI（约半数运行）。wrapper 写 `~/.config/patrol_cli/analytics.json` `{"enabled":false}` + 导出 `PATROL_ANALYTICS_ENABLED=false` 双关禁掉。
 2. **native asset 重下**（R4-b）：patrol 用独立 `derivedDataPath` 触发 native assets 从零重建 → 重下 `sqlite3mc` 的 iOS dylib / android `.so`（Android 还有 `kotlin-compiler-embeddable` 的 Maven handshake）→ 网络中途断。wrapper 对可重试模式 retry（`PATROL_MAX_RETRIES`，默认 3）。
 3. **零执行假阳性**（R7）：patrol_cli 有「0 用例却 all pass」先例 + Android 首跑 `Total:0` 时序抖动。wrapper 解析输出 `Total: N`，**N 缺失或为 0 即判失败**（非零退出），把假绿挡在 CI 闸外。**真实用例断言失败不重试**（避免重试掩盖真 bug）。
+4. **测试隔离 + 产物清理**（R8）：iOS 无 Android 的 `clearPackageData`，patrol 跑 `main()` 把真加密 DB/媒体留在模拟器容器、跨次污染。wrapper 检测到 iOS 模拟器目标时，跑前（及绿后）清 app 的**数据容器**（`xcrun simctl get_app_container <ios-sim> com.dayz data` 后清其内容，**保留 app 安装、不卸包**——对齐 Android `clearPackageData`），并修剪旧 `build/ios_results_*.xcresult`（保留最近 `PATROL_KEEP_XCRESULTS`，默认 3）。`PATROL_NO_RESET=1` 可关。
 
 只验逻辑、不跑真机：`bash scripts/patrol_test.sh --selftest`。
+
+> **要不要专开模拟器？** —— 不强制。R8 只清 `com.dayz` 这一个 app 的**数据**（app 仍装着），不动别的 app / 别的模拟器 / 真机 / pub·Pod·Gradle 依赖包。所以拿日常那台模拟器跑 E2E 也行，代价只是 `com.dayz` 里你手动造的数据会被重置（而且 patrol 跑测本就会启动真 app 改写它）。**只有当你在该模拟器的 `com.dayz` 里存了想保留的手动状态**时，才用一台专用/一次性模拟器、或 `PATROL_NO_RESET=1` 临时关清理。CI 用临时模拟器，天然隔离。
+>
+> **测试产物不入库**：patrol 每次重生成的 `patrol_test/test_bundle.dart` 已 gitignore；`build/` 下的 xcresult / derivedData 一律不提交（受 wrapper 修剪）。新写有状态 E2E 时，用例自身也应在 teardown 删掉造的数据。
 
 ---
 

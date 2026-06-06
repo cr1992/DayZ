@@ -49,4 +49,5 @@
 - **两栏不可混写**：一条验收项要么落「自动」要么落「人工」，跨界链路的「功能回归」截面可自动化（标自动·E2E），「设计目检 / 不可逆终验」截面留人工。
 - **DoD 差异化（R5）**：有原生跨界 / 不可逆副作用 → 加「主链路 E2E 冒烟通过」；纯 in-Flutter → 维持 widget test 基线，不强制 E2E。
 - **人闸不可因绿撤（R6）**：加密 / 备份 / 还原即便 E2E 全绿，仍保留人工终验。
+- **有状态 E2E 须起始态干净（R8）**：插数据 / 落库类用例不得依赖上次残留——iOS 经 `scripts/patrol_test.sh` 跑会自动清 app 数据容器（**保留安装**，对齐 Android `clearPackageData`），Android 靠 `clearPackageData`；用例自身也应在 teardown 删掉造的数据，断言才可信。测试产生的产物（DB / 媒体 / xcresult / 生成 bundle）一律不入库。
 - **抗规避**：自动项必须真断言需求的可观测结果（`assert(true)` / grep 被改文件 = 假壳），口径见 [`spec-kit/spec-guide.md`](../../../spec-kit/spec-guide.md) P3。

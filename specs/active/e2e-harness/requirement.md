@@ -58,7 +58,7 @@ harness SHALL 对 patrol_cli 两类已知 flaky 提供确定性防护：
 
 ### R8 · 测试隔离与产物清理
 E2E 跑测 SHALL NOT 向后续运行泄漏持久化的设备 app 状态（残留的真加密 DB/媒体会污染下一次跑、造成顺序依赖型 flaky，对加密 app 还是隐私卫生问题），且测试产生的产物 SHALL NOT 提交入库：
-- **iOS 状态隔离**：iOS 无 Android 的 `clearPackageData`（Android 已每用例清数据），故运行入口 SHALL 在跑前（及绿后）清 app 容器（`xcrun simctl uninstall <ios-sim> com.dayz`），使每次跑干净起步——追平 Android 的 clean-slate。红跑可保留现场供 post-mortem（下次跑前再清）。
+- **iOS 状态隔离**：iOS 无 Android 的 `clearPackageData`（Android 已每用例清数据、**不卸包**），故运行入口 SHALL 在跑前（及绿后）清 app 的**数据容器**（`xcrun simctl get_app_container <ios-sim> com.dayz data` 后清其内容，**保留 app 安装、不卸包**），使每次跑干净起步——追平 Android 的 clean-slate（同样只清数据）。
 - **产物清理**：patrol 生成的 `test_bundle.dart` SHALL gitignore（不入库）；主机构建产物（`build/ios_results_*.xcresult` 等）SHALL 受控修剪、一律不提交。
 
 判据：纯无状态冒烟可不强清；**有状态 E2E**（插数据 / 落库）的链路 SHALL 保证起始态干净（容器重置或用例 teardown）。

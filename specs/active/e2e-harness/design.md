@@ -62,9 +62,9 @@
 ### D7 · 测试隔离 + 产物清理：iOS 容器重置（追平 Android clearPackageData）
 - **状态：** 采纳（@Ray 拍板：harness 容器重置；**不**在加密数据路径上开测试缝）
 - **背景：** `AppDatabase.open()` 把 DB 路径硬编码成 `getApplicationDocumentsDirectory()/db/main.sqlite`（`lib/data/database.dart:103`，无 env/test 覆写缝）；patrol 跑 `main()` 会把**真·生产加密 DB/媒体**落进模拟器容器的生产路径、**跨次留存**。Android 已每用例清（`clearPackageData=true` + Orchestrator），iOS 无等价机制 → 残留污染下次跑（顺序依赖型 flaky）+ 隐私卫生。
-- **选择：** 三选一里取 **harness 容器重置**（弃「生产加 `DAYZ_DATA_DIR` 测试缝」与「仅用例 teardown」）：`scripts/patrol_test.sh` 检测到目标是 iOS 模拟器时，跑前（及绿后）`xcrun simctl uninstall <ios-sim> com.dayz`；并修剪旧 `build/ios_results_*.xcresult`（保留最近 `PATROL_KEEP_XCRESULTS`，默认 3）。`PATROL_NO_RESET=1` 可关；非 iOS/Android 目标全程 no-op。
+- **选择：** 三选一里取 **harness 数据容器重置**（弃「生产加 `DAYZ_DATA_DIR` 测试缝」与「仅用例 teardown」）：`scripts/patrol_test.sh` 检测到目标是 iOS 模拟器时，跑前（及绿后）清 app 的**数据容器**（`xcrun simctl get_app_container <ios-sim> com.dayz data` 后清其内容，**保留 app 安装、不卸包**——精确对齐 Android `clearPackageData`；早期实现曾用 `simctl uninstall`，因「连 app 一起卸、比 clearPackageData 更激进」改为只清数据）；并修剪旧 `build/ios_results_*.xcresult`（保留最近 `PATROL_KEEP_XCRESULTS`，默认 3）。`PATROL_NO_RESET=1` 可关；非 iOS/Android/真机目标全程 no-op。
 - **理由：** 零生产代码改动；**不在加密数据面开环境变量缝**（安全面更干净，对加密 app 是有意识的取舍）；与 Android clean-slate 对齐。红跑保留现场便于 post-mortem。
-- **代价：** 粒度 = 每次跑（非每用例）；将来并行多用例需另解（当前单用例够用）。依赖 booted 模拟器——uninstall 对未 boot / 未安装无害（`|| true`）。可测性靠 `PATROL_FORCE_IOS_SIM` / `PATROL_RESULTS_GLOB` 注入缝，stub 驱动即可验隔离/修剪而不碰真机。
+- **代价：** 粒度 = 每次跑（非每用例）；将来并行多用例需另解（当前单用例够用）。依赖 booted 模拟器——app 未安装时 `get_app_container` 取不到数据容器即跳过（无害）；清理只 `rm` 形如 `*/Containers/Data/Application/*` 且真实存在的路径（严格护栏防误删）。可测性靠 `PATROL_FORCE_IOS_SIM` / `PATROL_RESULTS_GLOB` 注入缝（+ stub `xcrun` 指向临时容器），stub 驱动即可验「清数据保留容器目录」「非容器路径拒删」「xcresult 修剪」而不碰真机。
 
 ## 成本账（实测 · DayZ iOS）
 
@@ -96,7 +96,7 @@
 - `android/app/src/androidTest/java/com/dayz/MainActivityTest.java`  新建（Dart 用例枚举入口）
 - `patrol_test/patrol_smoke_test.dart`  新建（冒烟用例）
 - `scripts/setup_patrol_ios.rb`  新建（xcodeproj 程序化建 UITest target）
-- `scripts/patrol_test.sh`  新建（flaky 防护 + 零执行守卫 wrapper + R8 iOS 容器重置/产物修剪）
+- `scripts/patrol_test.sh`  新建（flaky 防护 + 零执行守卫 wrapper + R8 iOS 数据容器清理/产物修剪）
 - `docs/patrol-e2e-onboarding.md`  新建（一次性接入 runbook）
 - `.gitignore`  修改（忽略 patrol 生成的 `test_bundle.dart`）
 - `specs/README.md`  修改（注册 + 验收分层方法论）

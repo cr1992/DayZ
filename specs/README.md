@@ -21,7 +21,7 @@
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage | @Ray | 2026-05-29 |
-| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | editor-integration-screen, media-storage | @Ray | 2026-06-04 |
+| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | editor-integration-screen, media-storage | @Ray | 2026-06-04 |
 | [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 草稿（2026-06-06 设计同步实质档派生：编辑器新增块类型；本轮实现 callout 标注块，code 代码块占位后置） | editor-json-contract | @Ray | 2026-06-06 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
