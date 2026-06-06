@@ -3,6 +3,7 @@
 
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:dayz/editor/contract/block_types.dart';
+import 'package:dayz/editor/contract/blocks/callout_block.dart';
 import 'package:dayz/editor/contract/blocks/location_block.dart';
 import 'package:dayz/editor/contract/blocks/weather_block.dart';
 import 'package:dayz/editor/contract/image_url_resolver.dart';
@@ -93,6 +94,9 @@ abstract final class EditorBlockRegistry {
           : ResolvedImageBlockComponentBuilder.editable(
               imageUrlResolver: imageUrlResolver,
             ),
+      EditorBlockTypes.callout: CalloutBlockComponentBuilder(
+        readOnly: readOnly,
+      ),
       EditorBlockTypes.location: LocationBlockComponentBuilder(
         readOnly: readOnly,
       ),

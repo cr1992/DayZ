@@ -5,8 +5,8 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 
 /// DayZ editor contract block type inventory.
 ///
-/// The set is intentionally closed and mirrors
-/// `specs/active/editor-json-contract/design.md`.
+/// The set is intentionally closed and extends the archived
+/// `editor-json-contract` inventory through active rich-block specs.
 abstract final class EditorBlockTypes {
   static const String paragraph = ParagraphBlockKeys.type;
   static const String heading = HeadingBlockKeys.type;
@@ -17,6 +17,7 @@ abstract final class EditorBlockTypes {
   static const String divider = DividerBlockKeys.type;
   static const String image = ImageBlockKeys.type;
 
+  static const String callout = 'callout';
   static const String location = 'location';
   static const String weather = 'weather';
 
@@ -29,6 +30,7 @@ abstract final class EditorBlockTypes {
     quote,
     divider,
     image,
+    callout,
     location,
     weather,
   };

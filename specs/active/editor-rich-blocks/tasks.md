@@ -29,7 +29,7 @@ graph LR
 
 -----
 
-- [ ] T1 · callout type 常量 + data key（进封闭集）
+- [x] T1 · callout type 常量 + data key（进封闭集）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** editor-json-contract：EditorBlockTypes 封闭块清单 + supported 集 ｜ **关联需求：** R1 ｜ **依据设计：** D1, D2 ｜ **可改文件：** `lib/editor/contract/block_types.dart`, `test/editor/contract/block_types_test.dart`
 
@@ -54,14 +54,14 @@ callout 进封闭契约的第一步：把 `type='callout'` 常量与其 data key
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：RED `flutter test test/editor/contract/block_types_test.dart` → 编译失败，`EditorBlockTypes.callout` 缺失；GREEN `flutter test test/editor/contract/block_types_test.dart` → 4/4 passed
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · CalloutBlockComponentBuilder（编辑/只读，主题色渲染）
+- [x] T2 · CalloutBlockComponentBuilder（编辑/只读，主题色渲染）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** appflowy-editor：BlockComponentBuilder / 文本型块组件基类；editor-json-contract：自定义块 builder 落法（location/weather 先例） ｜ **关联需求：** R2 ｜ **依据设计：** D2, D3 ｜ **可改文件：** `lib/editor/contract/blocks/callout_block.dart`, `test/editor/contract/blocks/callout_block_test.dart`
 
@@ -93,14 +93,14 @@ callout 进封闭契约的第一步：把 `type='callout'` 常量与其 data key
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：RED `flutter test -j 1 test/editor/contract/blocks/callout_block_test.dart` → 编译失败，`blocks/callout_block.dart` / `calloutNode` / `CalloutBlockComponentBuilder` 缺失；GREEN `flutter test -j 1 test/editor/contract/blocks/callout_block_test.dart` → 5/5 passed
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · 注册 callout 进 EditorBlockRegistry（编辑/只读）+ codec 往返
+- [x] T3 · 注册 callout 进 EditorBlockRegistry（编辑/只读）+ codec 往返
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** editor-json-contract：EditorDocCodec 薄封装 + editor_block_registry _builders ｜ **关联需求：** R1 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/editor/contract/editor_block_registry.dart`, `test/editor/contract/blocks/callout_block_test.dart`
 
@@ -125,14 +125,14 @@ callout 进封闭契约的第一步：把 `type='callout'` 常量与其 data key
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：RED `flutter test -j 1 test/editor/contract/blocks/callout_block_test.dart` → callout builder/registry 符号缺失；GREEN `flutter test -j 1 test/editor/contract/blocks/callout_block_test.dart` → 5/5 passed
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · callout 导出降级（plain / markdown）
+- [x] T4 · callout 导出降级（plain / markdown）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** editor-json-contract：EditorExportFallback 降级表 + EditorPlainTextExtractor 同源抽取 ｜ **关联需求：** R3 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/editor/contract/export_fallback.dart`, `test/editor/contract/export_fallback_test.dart`
 
@@ -159,14 +159,14 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：RED `flutter test -j 1 test/editor/contract/export_fallback_test.dart` → `EditorExportFallbackFormat` / `format` 参数缺失；GREEN `flutter test -j 1 test/editor/contract/export_fallback_test.dart` → 4/4 passed
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · callout 端到端串联（插入→渲染→codec→降级）+ 视觉
+- [-] T5 · callout 端到端串联（插入→渲染→codec→降级）+ 视觉
 
 **同 spec 依赖：** T3, T4 ｜ **跨 spec 依赖：** e2e-harness：patrol_test/ 落点 + scripts/patrol_test.sh 零执行守卫 ｜ **关联需求：** R1, R2, R3 ｜ **依据设计：** D1, D2, D3 ｜ **可改文件：** `patrol_test/editor_callout_visual_test.dart`
 
@@ -193,8 +193,8 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：已新增 `patrol_test/editor_callout_visual_test.dart`；提升权限后 `PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/editor_callout_visual_test.dart --verbose` 通过，`Total: 1 / Failed: 0`，产出 `editor_callout_amber_dark.png` 与 `editor_callout_sage_light.png` 截图工件。
 人工：待确认（核查人 @Ray）
 ```
 

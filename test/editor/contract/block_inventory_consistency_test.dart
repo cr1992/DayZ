@@ -11,9 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'block inventory stays aligned across design and runtime registries',
+    'block inventory stays aligned across archived contract, active extensions, and runtime registries',
     () {
-      final designTypes = _readTypesFromDesign();
+      final designTypes = {
+        ..._readTypesFromArchivedContractDesign(),
+        ..._activeEditorRichBlockExtensions(),
+      };
       final runtimeTypes = EditorBlockRegistry.contentTypesOf(
         EditorBlockRegistry.readonlyBuilders(),
       );
@@ -26,7 +29,7 @@ void main() {
   );
 }
 
-Set<String> _readTypesFromDesign() {
+Set<String> _readTypesFromArchivedContractDesign() {
   final design = File(
     'specs/archive/2026-05-30-editor-json-contract/design.md',
   ).readAsLinesSync();
@@ -54,4 +57,8 @@ Set<String> _readTypesFromDesign() {
   }
 
   return types;
+}
+
+Set<String> _activeEditorRichBlockExtensions() {
+  return const {EditorBlockTypes.callout};
 }

@@ -4,10 +4,16 @@
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:dayz/editor/contract/block_types.dart';
 
+enum EditorExportFallbackFormat { plain, markdown }
+
 abstract final class EditorExportFallback {
   static const Set<String> supportedTypes = EditorBlockTypes.supported;
 
-  static String? fallbackLineForNode(Node node, {int orderedListIndex = 1}) {
+  static String? fallbackLineForNode(
+    Node node, {
+    int orderedListIndex = 1,
+    EditorExportFallbackFormat format = EditorExportFallbackFormat.plain,
+  }) {
     switch (node.type) {
       case EditorBlockTypes.paragraph:
       case EditorBlockTypes.heading:
@@ -27,6 +33,8 @@ abstract final class EditorExportFallback {
         return '';
       case EditorBlockTypes.image:
         return '[图片]';
+      case EditorBlockTypes.callout:
+        return _calloutFallback(node, format);
       case EditorBlockTypes.location:
         final placeName = _textValue(
           node.attributes[LocationBlockDataKeys.placeName],
@@ -46,6 +54,14 @@ abstract final class EditorExportFallback {
       default:
         return _unknownFallback(node);
     }
+  }
+
+  static String _calloutFallback(Node node, EditorExportFallbackFormat format) {
+    final text = _plainText(node) ?? '';
+    if (format == EditorExportFallbackFormat.markdown && text.isNotEmpty) {
+      return '> $text';
+    }
+    return text;
   }
 
   static String? _unknownFallback(Node node) {
