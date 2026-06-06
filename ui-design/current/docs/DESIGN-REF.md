@@ -172,7 +172,7 @@
 ```
 
 ### 编辑器工具栏 `.toolbar`
-按钮 `.tb`（激活 `.on`）；分隔 `.div`；演示切换加 `data-toggle`。对接 **AppFlowy Editor**（能力集见 §3b 「编辑页 `.compose-*`」）。
+按钮 `.tb`（激活 `.on`）；分隔 `.div`；演示切换加 `data-toggle`；二级面板触发加 `data-tb`（不当纯 toggle）。编辑页用 `.toolbar.editor-dock`（精简 7 件，余收进格式面板，见 §3c「键盘位内联面板」）。对接 **AppFlowy Editor**（能力集见 §3b 「编辑页 `.compose-*`」）。
 
 ### 提示条 `.toast` / 弹窗 `.dialog`
 **全局 toast 系统**：底部居中浮现、自动消失、可堆叠（容器 `.toast-host`，最多 3 条）。底色保持中性（`.toast` 深色款 / `.toast.surface` 表面款），**语义只靠图标点色**承载（默认/成功/信息=主题色 · `.danger`=`--danger` · `.fav`=`--favorite`），克制不喧哗。可带一个操作 `.acc`（撤销/查看/重试）。
@@ -340,17 +340,22 @@
 编辑页 `data-when="rich"` 状态把 AppFlowy **全部**支持的样式画全（画布样式真源，避免还原偏差；内容长、可滚动）：
 - **标题**：`h1/h2/h3.cb-h`（衬线，26/21/17px）。
 - **行内**：粗 `<strong>` · 斜 `<em>` · 下划线 `<u>` · 删除线 `<s>`（原生标签）；行内代码 `code.cb-code`（mono+`--bg-2`）；链接 `a.cb-link`（`--accent-ink`+下划线）；文字色 `.cb-fc[data-fc]` / 高亮 `.cb-hl[data-hl]`（**底色由 editor.js 从工具栏同一套 `TEXT_COLORS`/`HL_COLORS` 注入**，高亮固定配深墨文字，明暗都读得清）。
-- **块**：无序 `ul.cb-list`(disc) · 有序 `ol.cb-list`(decimal) · 待办 `.cb-todo`（`.done` 勾选，`.bx`+`.tx`）· 引用 `blockquote.cb-quote` · 代码块 `pre.cb-codeblock`（mono+边框）· 分隔线 `hr.cb-hr` · 图片 `.cb-img`（圆角，带 `data-lightbox` 可点开大图）。
+- **块**：无序 `ul.cb-list`(disc) · 有序 `ol.cb-list`(decimal) · 待办 `.cb-todo`（`.done` 勾选，`.bx`+`.tx`）· 引用 `blockquote.cb-quote` · 代码块 `pre.cb-codeblock`（mono+边框）· **标注 `.cb-callout`**（`--accent-soft` 底 + `.ic` 信息图标(`--accent-ink`) + `.tx` 文字，承载一句心得/提醒）· 分隔线 `hr.cb-hr` · 图片 `.cb-img`（圆角，带 `data-lightbox` 可点开大图）。
 > 改色板只改 editor.js 的 `TEXT_COLORS`/`HL_COLORS`；demo 自动跟随。Flutter 能力集对照见 `docs/handoff/editor.md`。
 
 ### 编辑器键盘位内联面板 `.editor-dock-wrap` + `.tb-panel`（真源 `pages/assets/editor.{css,js}` · 仅编辑页）
-还原 AppFlowy `MobileToolbarV2` 的二级菜单模式:点工具栏 **H / 颜色 / 链接** → 面板从工具栏**下方**(键盘位)升起,文档与选区保持可见、不压暗。**不要改成底部 sheet**(那是更差的编辑手势,且与原生不符)。唯一例外:**图片**走 `DZ.sheet` 相册/拍照来源菜单(一次性插入动作,非格式化)。
-- 结构:`.editor-dock-wrap`(贴底，包住工具栏 + 面板) > `.toolbar.editor-dock` + 三个 `.tb-panel[data-panel=heading|color|link]`;`.editor-dock-wrap.panel-open` 时工具栏补底分割。
-- 触发钮在工具栏上用 `data-tb="heading|color|link|image"`(**不再用 `data-toggle`**,故 screen.js 不会把它们当纯 toggle);开关/选色/链接提交逻辑在 `editor.js`。
-- **标题面板** `.tb-headings > .tb-h-opt[data-level=p|1|2|3]`(`.g` 字形 + `.l` 小标签，选中 `.on`)——比 AppFlowy 原件**多一个显式「正文」项**。
-- **颜色面板** `.tb-pal`:两组 `.tb-pal-lab` + `.tb-pal-row[data-pal=text|hl]`,swatch `.tb-sw`(选中 `.on` = accent 光环；`.dot-default`/`.dot-none` 为默认/无)。色板由 `editor.js` `TEXT_COLORS`/`HL_COLORS` 注入,是**编辑器色板真源**(hex 表 + 原生对接见 `docs/EDITOR-HANDOFF.md`)。
-- **链接面板** `.tb-link`:URL 单字段(`.field>.input`) + `.tb-link-acts`(取消/完成)——对齐 AppFlowy `MobileLinkMenu`,**不加「显示文字」字段**。
-> Flutter:维持 `MobileToolbarItem.withMenu` 的内联面板;颜色项把 DayZ 色板传进 `textColorOptions`/`backgroundColorOptions`。完整差异与落地要求见 `docs/handoff/editor.md`。
+还原 AppFlowy `MobileToolbarV2` 的二级菜单模式:点工具栏 **Aa·格式 / 颜色** → 面板从工具栏**下方**(键盘位)升起,文档与选区保持可见、不压暗。**不要改成底部 sheet**(那是更差的编辑手势,且与原生不符)。唯一例外:**图片**走全屏选择器(一次性插入动作,非格式化)。
+- **工具栏分层(高频在外、全集在面板)**:工具栏 `.toolbar.editor-dock` 只放高频 8 件 —— `Aa`(开格式面板,`data-tb=format`) ｜ 加粗 / 斜体 / 颜色 ｜ 无序列表 / 有序列表 / 待办(`data-tb-block=ul|ol|todo`，与面板块状态双向同步) ｜ 图片。链接较低频,**收进格式面板「文字样式」行**(点 `data-mark=link` 拉起链接面板)。其余格式收进「格式」面板(**additive**:面板列全集,工具栏快捷件在面板里也有,状态双向同步)。
+- 结构:`.editor-dock-wrap`(贴底，包住工具栏 + 面板) > `.toolbar.editor-dock` + `.tb-panel[data-panel=format|color|link]`;`.editor-dock-wrap.panel-open` 时工具栏补底分割。面板加 `.kb` = 键盘位高度(`min-height:288px` 向软键盘看齐、内容多时自然生长,`max-height:62vh` 兜底滚动)。
+- 触发钮在工具栏上用 `data-tb="format|color|image"` 或 `data-tb-block="ul|ol|todo"`(**不用 `data-toggle`**,故 screen.js 不当纯 toggle);开关/选块/选色/链接逻辑在 `editor.js`。
+- **格式面板** `.tb-panel[data-panel=format] > .tb-fmt`,三段(`.tb-sec-lab` 段头):
+  - **段落** `.tb-headings > .tb-h-opt[data-level=p|1|2|3]`(`.g` 字形 + `.l` 小标签，选中 `.on`)——比 AppFlowy 原件**多一个显式「正文」项**。
+  - **列表与块** `.tb-blocks > .tb-blk[data-block=ul|ol|todo|quote|code|callout|divider]`(图标 + 文字，3 列网格，radio 互斥选中 `.on`;`divider` 为一次性插入不驻留)。与段落互斥(选块清标题、选标题清块)。
+  - **文字样式** `.tb-marks > .tb-mark[data-mark=bold|italic|underline|strike|icode|link]`(独立 toggle;`bold`/`italic` 与工具栏快捷件双向同步;`link` 不 toggle、点击拉起链接面板)。
+  - 任一块/非正文标题激活时,工具栏 `Aa` 触发钮点亮 `.on`。
+- **颜色面板** `.tb-panel[data-panel=color].kb > .tb-pal`:两组 `.tb-pal-lab` + `.tb-pal-row[data-pal=text|hl]`,swatch `.tb-sw`(选中 `.on` = accent 光环；`.dot-default`/`.dot-none` 为默认/无)。色板由 `editor.js` `TEXT_COLORS`/`HL_COLORS` 注入,是**编辑器色板真源**。
+- **链接面板** `.tb-panel[data-panel=link].kb > .tb-link`:URL 单字段(`.field>.input`) + `.tb-link-acts`(取消/完成)——对齐 AppFlowy `MobileLinkMenu`,**不加「显示文字」字段**。
+> Flutter:维持 `MobileToolbarItem.withMenu` 的内联面板;「格式」对应一个 `withMenu` 项,内部按段落/块/文字三段排;块项调 `formatNodeToType`/`CalloutBlockKeys`/`CodeBlockKeys` 等。颜色项把 DayZ 色板传进 `textColorOptions`/`backgroundColorOptions`。完整差异与落地要求见 `docs/handoff/editor.md`。
 
 ### 新建日记本选色 `.nj-*`（sheet 内表单 · 仅原型）
 `.nj-colorlab`(小标题) + `.nj-colors > .nj-color[data-c]`（六色圆钮，选中 `.on` = 外环 + 白勾）。由 `screen.js` `openNewJournal()` 注入 sheet 的 `content`。色板 = 三主题色 + 三扩展色。

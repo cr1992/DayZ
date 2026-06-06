@@ -27,6 +27,13 @@
 ---
 
 ## 2026-06-04
+- [编辑器] **工具栏二次调整：列表上提、链接下沉（定档）**：无序/有序列表提到工具栏（`data-tb-block=ul|ol|todo` 与面板块状态双向同步），工具栏由 7→8 件；链接较低频，收进格式面板「文字样式」行（`data-mark=link` 拉起链接面板）。同步 DESIGN-REF §3c + handoff §8a。
+- [编辑器] **工具栏按高频重排 + 格式面板全集 + 新增标注块（定档）**：`.toolbar.editor-dock` 精简为 7 件高频（Aa·格式/B/I/颜色/待办/图片/链接），其余格式收进 `Aa·格式`键盘位面板（段落+列表与块+文字样式三段，additive·状态双向同步）。
+  - 代码块 `data-block=code` 入「列表与块」（定调：做）；新增**标注块 callout** `.cb-callout`（`--accent-soft` 底 + `--accent-ink` 信息图标），接 AppFlowy `CalloutBlockKeys`。
+  - 面板加 `.kb`：`min-height:288px` 向键盘看齐、内容多时自然生长（`max-height:62vh` 兜底滚动）；同步 DESIGN-REF §3c + handoff §7/§8。
+- [编辑器] **走查原生编辑页，回写 handoff §0/§5/§6（定档）**：对照 `lib/ui/editor/*` + `lib/editor/contract/*`，#1–#4（暖调色板/meta·日期·关闭图标/标题「正文」项）原生已对齐，§6 对应项打勾。
+  - #5 图片插入「设计已定档但原生未落地」：`editor_image_inserter.dart` 仍直连 `ImagePicker(gallery)` 单图，全库无 `photo_view` → `DZ.picker`/`DZ.lightbox` 两件套件原生仍为 0，列为待落地。
+  - 新增 §7 代码块矛盾：原型 `rich`/DESIGN-REF 列了代码块，但两边工具栏无按钮、原生 registry `block_types` 不含 codeblock（会渲染成「[未支持块]」）——待定调（建议删 demo）。
 - [原型套件] **kit 去 DayZ 具体设计 + newest-first/handoff 约定回灌（定档）**：明确 kit 只承载脚手架 + 工作约定，不带具体设计。拿走 `spec.css`/`screen.css` 里的 DayZ 产品件（心情/天气/日记卡/编辑器工具栏 + dock/抽屉内容/FAB速拨/整段页面级组件/富格式 cb），FAB 中性化为单动作、抽屉留壳，`tokens.css` 去 `--font-diary`/`--favorite` 并去品牌。
   - 通用机制（按钮/输入/开关/分段/标签/toast/dialog/sheet/抽屉壳/FAB壳）保留；示例屏 home/detail 本就中性、未动。spec.css 856→509 行，check-tokens burn-down 9 处。
   - CLAUDE/CHANGELOG 模板 + ARCH 同步去 DayZ；newest-first 与 `docs/handoff/` 生命周期约定回灌 kit 文档体系。

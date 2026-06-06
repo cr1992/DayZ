@@ -91,16 +91,27 @@
     btn.classList.toggle("on", !!active);
   }
 
+  /* ---- 元素引用 ---- */
+  var fmtTrigger = dock.querySelector('[data-tb="format"]');
+  var barBold = dock.querySelector('.tb[aria-label="加粗"]');
+  var barItalic = dock.querySelector('.tb[aria-label="斜体"]');
+  var barTodo = dock.querySelector('.tb[aria-label="待办清单"]');
+  var barBlocks = [].slice.call(dock.querySelectorAll('.tb[data-tb-block]'));
+  function barBlockBtn(name) { return dock.querySelector('.tb[data-tb-block="' + name + '"]'); }
+  var headRow = wrap.querySelector(".tb-headings");
+  var blockRow = wrap.querySelector(".tb-blocks");
+  var markRow = wrap.querySelector(".tb-marks");
+
   /* ---- 面板开关（同一时刻只开一个）---- */
   var openName = null;
   function panelEl(name) { return wrap.querySelector('.tb-panel[data-panel="' + name + '"]'); }
   function closePanel() {
     if (!openName) return;
     var p = panelEl(openName); if (p) p.classList.remove("open");
-    // 颜色按钮的 .on 由选色状态决定，标题/链接的 .on 随面板关闭撤掉
-    if (openName !== "color") {
-      var b = dock.querySelector('[data-tb="' + openName + '"]');
-      if (b && openName !== "heading") b.classList.remove("on");
+    // color / format 触发钮的 .on 由内容状态决定（不随关闭撤销）；link 关闭即撤
+    if (openName === "link") {
+      var b = dock.querySelector('[data-tb="link"]');
+      if (b) b.classList.remove("on");
     }
     wrap.classList.remove("panel-open");
     openName = null;
@@ -110,12 +121,49 @@
     closePanel();
     var p = panelEl(name); if (!p) return;
     p.classList.add("open");
+    p.scrollTop = 0;
     wrap.classList.add("panel-open");
     openName = name;
     if (name === "link") {
+      var b = dock.querySelector('[data-tb="link"]'); if (b) b.classList.add("on");
       var i = p.querySelector("input");
       if (i) setTimeout(function () { i.focus(); }, 90);
     }
+    if (name === "format") syncMarksFromBar();
+  }
+
+  /* ---- 块 / 标题状态（段落与块互斥：heading · ul/ol/todo/quote/code/callout）---- */
+  function clearHeadings() { if (headRow) headRow.querySelectorAll(".tb-h-opt").forEach(function (x) { x.classList.remove("on"); }); }
+  function setHeadingChoice(level) {
+    clearHeadings();
+    var o = headRow && headRow.querySelector('[data-level="' + level + '"]'); if (o) o.classList.add("on");
+  }
+  function clearBlocks() {
+    if (blockRow) blockRow.querySelectorAll(".tb-blk").forEach(function (x) { x.classList.remove("on"); });
+    barBlocks.forEach(function (x) { x.classList.remove("on"); });
+  }
+  function activeBlock() {
+    var b = blockRow && blockRow.querySelector(".tb-blk.on");
+    if (b) return b.getAttribute("data-block");
+    var bb = barBlocks.filter(function (x) { return x.classList.contains("on"); })[0];
+    return bb ? bb.getAttribute("data-tb-block") : null;
+  }
+  function paintFormatActive() {
+    if (!fmtTrigger) return;
+    var hl = headRow && headRow.querySelector(".tb-h-opt.on");
+    var headingActive = hl && hl.getAttribute("data-level") !== "p";
+    fmtTrigger.classList.toggle("on", !!(headingActive || activeBlock()));
+  }
+  function setBlock(name) {
+    var on = activeBlock() === name;
+    clearBlocks(); clearHeadings();
+    if (!on) {
+      var btn = blockRow && blockRow.querySelector('[data-block="' + name + '"]'); if (btn) btn.classList.add("on");
+      var bb = barBlockBtn(name); if (bb) bb.classList.add("on");
+    } else {
+      setHeadingChoice("p");   // 取消当前块 → 回正文
+    }
+    paintFormatActive();
   }
 
   /* ---- 工具栏点击分流 ---- */
@@ -123,7 +171,7 @@
     var btn = e.target.closest(".tb");
     if (!btn) return;
     var tb = btn.getAttribute("data-tb");
-    if (tb === "heading" || tb === "color" || tb === "link") {
+    if (tb === "format" || tb === "color" || tb === "link") {
       e.preventDefault();
       openPanel(tb);
       return;
@@ -134,22 +182,61 @@
       openImagePicker();
       return;
     }
-    /* 其余按钮（B/I/U/S/列表/引用/分隔线）：关掉面板，toggle 交给 screen.js */
-    closePanel();
+    if (btn === barBold || btn === barItalic) {
+      setTimeout(syncMarksFromBar, 0);
+      return;
+    }
+    var blk = btn.getAttribute("data-tb-block");   // 快捷列表/待办：参与块状态（与面板同步）
+    if (blk) {
+      e.preventDefault();
+      setBlock(blk);
+      return;
+    }
   });
 
-  /* ---- 标题选择 ---- */
-  var headRow = wrap.querySelector(".tb-headings");
+  /* ---- 标题选择（面板内，选后面板保持打开）---- */
   if (headRow) {
     headRow.addEventListener("click", function (e) {
       var opt = e.target.closest(".tb-h-opt");
       if (!opt) return;
-      headRow.querySelectorAll(".tb-h-opt").forEach(function (x) { x.classList.remove("on"); });
-      opt.classList.add("on");
-      /* H 按钮：选中非「正文」时点亮 */
-      var hBtn = dock.querySelector('[data-tb="heading"]');
-      if (hBtn) hBtn.classList.toggle("on", opt.getAttribute("data-level") !== "p");
-      closePanel();
+      clearBlocks();
+      setHeadingChoice(opt.getAttribute("data-level"));
+      paintFormatActive();
+    });
+  }
+
+  /* ---- 列表与块（radio 互斥；divider 为一次性插入）---- */
+  if (blockRow) {
+    blockRow.addEventListener("click", function (e) {
+      var b = e.target.closest(".tb-blk");
+      if (!b) return;
+      var name = b.getAttribute("data-block");
+      if (name === "divider") { if (window.DZ && DZ.toast) DZ.toast("已插入分隔线"); return; }
+      setBlock(name);
+      var turnedOn = b.classList.contains("on");
+      if (turnedOn && window.DZ && DZ.toast) {
+        if (name === "code") DZ.toast("已转为代码块");
+        else if (name === "callout") DZ.toast("已插入标注块");
+      }
+    });
+  }
+
+  /* ---- 文字样式（B/I/U/S/行内代码；独立 toggle，bold/italic 与工具栏双向同步）---- */
+  function syncMarksFromBar() {
+    if (!markRow) return;
+    var mb = markRow.querySelector('[data-mark="bold"]'); if (mb && barBold) mb.classList.toggle("on", barBold.classList.contains("on"));
+    var mi = markRow.querySelector('[data-mark="italic"]'); if (mi && barItalic) mi.classList.toggle("on", barItalic.classList.contains("on"));
+  }
+  if (markRow) {
+    markRow.addEventListener("click", function (e) {
+      var m = e.target.closest(".tb-mark");
+      if (!m) return;
+      var name = m.getAttribute("data-mark");
+      if (name === "link") { openPanel("link"); return; }   // 链接：由面板入口拉起 URL 面板
+      m.classList.toggle("on");
+      var on = m.classList.contains("on");
+      if (name === "bold" && barBold) barBold.classList.toggle("on", on);
+      if (name === "italic" && barItalic) barItalic.classList.toggle("on", on);
     });
   }
 

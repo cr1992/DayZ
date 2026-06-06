@@ -28,9 +28,19 @@
 .tb-panel { display: none; padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + 6px); }
 .tb-panel.open { display: block; animation: tb-panel-in var(--dur) var(--ease); }
 @keyframes tb-panel-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(8px); }
+  to   { transform: translateY(0); }
 }
+/* 键盘位面板：高度向软键盘看齐（min 与键盘同高），内容更多时自然生长、不滚动跳动 */
+.tb-panel.kb {
+  min-height: 288px;
+  max-height: 62vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Aa·格式 触发钮：衬线字形呼应标题面板 */
+.tb-fmt-trigger { font-family: var(--font-serif); font-weight: 600; font-size: 17px; }
 
 /* ---- 标题面板：正文 + H1/H2/H3 四等分 ---- */
 .tb-headings { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
@@ -50,6 +60,36 @@
 .tb-h-opt.on { background: var(--accent-soft); border-color: transparent; }
 .tb-h-opt.on .g { color: var(--accent-ink); }
 .tb-h-opt.on .l { color: var(--accent-ink); }
+
+/* ---- 格式面板分段（段落 / 列表与块 / 文字样式）---- */
+.tb-fmt { display: grid; gap: var(--sp-3); }
+.tb-sec-lab { font-size: 12px; font-weight: 600; color: var(--ink-3); font-family: var(--font-sans); letter-spacing: 0.02em; }
+
+/* 列表与块：图标 + 文字，radio 互斥（选中 accent-soft）*/
+.tb-blocks { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+.tb-blk {
+  appearance: none; border: 1px solid var(--hairline); background: var(--bg);
+  border-radius: var(--r-md); cursor: pointer; min-height: 46px;
+  display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3);
+  color: var(--ink-2); font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tb-blk svg { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+.tb-blk:hover { background: var(--bg-2); color: var(--ink); }
+.tb-blk.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
+
+/* 文字样式：B/I/U/S/行内代码，独立 toggle */
+.tb-marks { display: flex; gap: var(--sp-2); }
+.tb-mark {
+  appearance: none; border: 1px solid var(--hairline); background: var(--bg);
+  border-radius: var(--r-md); cursor: pointer; min-height: 44px; flex: 1;
+  display: grid; place-items: center; color: var(--ink-2);
+  font-family: var(--font-sans); font-size: 16px;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tb-mark svg { width: 20px; height: 20px; display: block; }
+.tb-mark:hover { background: var(--bg-2); color: var(--ink); }
+.tb-mark.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
 
 /* ---- 颜色 / 高亮面板 ---- */
 .tb-pal { display: grid; gap: var(--sp-2); }

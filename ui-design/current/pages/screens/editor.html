@@ -78,6 +78,8 @@
 
         <blockquote class="cb-quote">山不会走来找你，但它一直在那儿。</blockquote>
 
+        <div class="cb-callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6h.01"/></svg></span><div class="tx">山顶信号差，出发前把离线地图下好；别忘了去年那张登顶合影，今年再补一张。</div></div>
+
         <pre class="cb-codeblock">06:30  出发
 09:00  到登山口
 12:30  山顶午餐
@@ -95,37 +97,53 @@
   <!-- 底部停靠工具栏 + 键盘位内联面板（AppFlowy MobileToolbarV2 风格）-->
   <div class="editor-dock-wrap">
   <div class="toolbar editor-dock">
-    <button class="tb" data-tb="heading" aria-label="标题">H</button>
+    <button class="tb tb-fmt-trigger" data-tb="format" aria-label="段落与格式">Aa</button>
     <span class="div"></span>
     <button class="tb" data-toggle aria-label="加粗" style="font-weight:700">B</button>
     <button class="tb" data-toggle aria-label="斜体" style="font-style:italic">I</button>
-    <button class="tb" data-toggle aria-label="下划线" style="text-decoration:underline">U</button>
-    <button class="tb" data-toggle aria-label="删除线" style="text-decoration:line-through">S</button>
-    <button class="tb" data-toggle aria-label="行内代码"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4"/></svg></button>
     <button class="tb" data-tb="color" aria-label="文字颜色 / 高亮"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="m14.5 4.5 5 5-8 8-5 .9.9-5z"/></svg></button>
     <span class="div"></span>
-    <button class="tb" data-toggle aria-label="无序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>
-    <button class="tb" data-toggle aria-label="有序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 5h1.4v3.4M4 13.2c.3-.6 1.6-.6 1.6.3 0 .7-1.6 1.3-1.6 2.5h1.8"/></svg></button>
-    <button class="tb" data-toggle aria-label="待办清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.2" width="7" height="7" rx="2"/><path d="m4.8 7.6 1.3 1.3 2.3-2.6M14 7.5h6M3.5 15.2h7M14 16.5h6"/></svg></button>
-    <button class="tb" data-toggle aria-label="引用"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3M20 7h-4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3"/></svg></button>
+    <button class="tb" data-tb-block="ul" aria-label="无序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>
+    <button class="tb" data-tb-block="ol" aria-label="有序列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 5h1.4v3.4M4 13.2c.3-.6 1.6-.6 1.6.3 0 .7-1.6 1.3-1.6 2.5h1.8"/></svg></button>
+    <button class="tb" data-tb-block="todo" aria-label="待办清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.2" width="7" height="7" rx="2"/><path d="m4.8 7.6 1.3 1.3 2.3-2.6M14 7.5h6M3.5 15.2h7M14 16.5h6"/></svg></button>
     <span class="div"></span>
-    <button class="tb" data-tb="link" aria-label="链接"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.6 5.6l-1.5 1.5M13 17.5 11.5 19a4 4 0 0 1-5.6-5.6l1.5-1.5"/></svg></button>
-    <button class="tb" aria-label="分隔线"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
     <button class="tb" data-tb="image" aria-label="插入图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="m4 17 4.5-4 3 2.5L16 11l4 4.5"/></svg></button>
   </div>
 
-    <!-- 标题面板：正文 + H1/H2/H3 -->
-    <div class="tb-panel" data-panel="heading">
-      <div class="tb-headings">
-        <button class="tb-h-opt on" type="button" data-level="p"><span class="g">正文</span><span class="l">段落</span></button>
-        <button class="tb-h-opt" type="button" data-level="1"><span class="g">H1</span><span class="l">大标题</span></button>
-        <button class="tb-h-opt" type="button" data-level="2"><span class="g">H2</span><span class="l">中标题</span></button>
-        <button class="tb-h-opt" type="button" data-level="3"><span class="g">H3</span><span class="l">小标题</span></button>
+    <!-- 格式面板（键盘位·高频重排后的溢出区：段落 + 列表与块 + 文字样式）-->
+    <div class="tb-panel kb" data-panel="format">
+      <div class="tb-fmt">
+        <div class="tb-sec-lab">段落</div>
+        <div class="tb-headings">
+          <button class="tb-h-opt on" type="button" data-level="p"><span class="g">正文</span><span class="l">段落</span></button>
+          <button class="tb-h-opt" type="button" data-level="1"><span class="g">H1</span><span class="l">大标题</span></button>
+          <button class="tb-h-opt" type="button" data-level="2"><span class="g">H2</span><span class="l">中标题</span></button>
+          <button class="tb-h-opt" type="button" data-level="3"><span class="g">H3</span><span class="l">小标题</span></button>
+        </div>
+        <div class="tb-sec-lab">列表与块</div>
+        <div class="tb-blocks">
+          <button class="tb-blk" type="button" data-block="ul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>无序列表</button>
+          <button class="tb-blk" type="button" data-block="ol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 5h1.4v3.4M4 13.2c.3-.6 1.6-.6 1.6.3 0 .7-1.6 1.3-1.6 2.5h1.8"/></svg>有序列表</button>
+          <button class="tb-blk" type="button" data-block="todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.2" width="7" height="7" rx="2"/><path d="m4.8 7.6 1.3 1.3 2.3-2.6M14 7.5h6M3.5 15.2h7M14 16.5h6"/></svg>待办清单</button>
+          <button class="tb-blk" type="button" data-block="quote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3M20 7h-4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3"/></svg>引用</button>
+          <button class="tb-blk" type="button" data-block="code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="m9.5 10-2 2 2 2M14.5 10l2 2-2 2"/></svg>代码块</button>
+          <button class="tb-blk" type="button" data-block="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6h.01"/></svg>标注</button>
+          <button class="tb-blk" type="button" data-block="divider"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>分隔线</button>
+        </div>
+        <div class="tb-sec-lab">文字样式</div>
+        <div class="tb-marks">
+          <button class="tb-mark" type="button" data-mark="bold" aria-label="加粗" style="font-weight:700">B</button>
+          <button class="tb-mark" type="button" data-mark="italic" aria-label="斜体" style="font-style:italic">I</button>
+          <button class="tb-mark" type="button" data-mark="underline" aria-label="下划线" style="text-decoration:underline">U</button>
+          <button class="tb-mark" type="button" data-mark="strike" aria-label="删除线" style="text-decoration:line-through">S</button>
+          <button class="tb-mark" type="button" data-mark="icode" aria-label="行内代码"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4"/></svg></button>
+          <button class="tb-mark" type="button" data-mark="link" aria-label="链接"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.6 5.6l-1.5 1.5M13 17.5 11.5 19a4 4 0 0 1-5.6-5.6l1.5-1.5"/></svg></button>
+        </div>
       </div>
     </div>
 
     <!-- 颜色 / 高亮面板（色板由 editor.js 注入）-->
-    <div class="tb-panel" data-panel="color">
+    <div class="tb-panel kb" data-panel="color">
       <div class="tb-pal">
         <div class="tb-pal-lab">文字颜色</div>
         <div class="tb-pal-row" data-pal="text"></div>
@@ -135,7 +153,7 @@
     </div>
 
     <!-- 链接面板：URL 单字段（对齐 AppFlowy MobileLinkMenu）-->
-    <div class="tb-panel" data-panel="link">
+    <div class="tb-panel kb" data-panel="link">
       <div class="tb-link">
         <div class="field"><input class="input" type="url" inputmode="url" placeholder="粘贴或输入链接 URL"></div>
         <div class="tb-link-acts">

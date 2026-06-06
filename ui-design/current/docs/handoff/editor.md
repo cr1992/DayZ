@@ -1,6 +1,7 @@
 # 编辑页对接手册（原生 ↔ 原型 差异 + 落地要求）
 
 > 状态: 🚧 待原生落地（验收 checklist §6 全过后移入 `_archive/`，约定见 `docs/handoff/README.md`）
+> 走查: 🔁 2026-06-04 复查——#1–#4 已对齐；#5 图片插入未落地（§5）；#6 代码块、#7 工具栏重排+标注块已定调，原型已落地、待原生跟进（§7/§8）。
 > 受众:实现 Flutter 编辑页的原生 agent。覆盖代码区 `lib/ui/editor/*` + `lib/editor/*`。
 > 真源:原型 `pages/screens/editor.html` + `pages/assets/editor.{css,js}`;基调见根 `CLAUDE.md` §设计基调 / §约定(Flutter 优先)。
 > 背景:编辑器用 **AppFlowy Editor（方案 A）**,工具栏用 `MobileToolbarV2`。本文只覆盖**编辑页**,逐条列出当前原生实现与设计的差异、严重度、改法。
@@ -8,18 +9,21 @@
 ---
 
 ## 0. 结论速览
+> **走查更新 2026-06-04**（对照 `lib/ui/editor/*` + `lib/editor/contract/*` 现状）：原生已修掉 **#1–#4**（色板 / meta 图标 / 日期·关闭图标 / 标题正文项全部对齐）；**#5「图片插入」设计已定档但原生完全未落地**（仍是旧的直连相册单图），并新发现 **#6 代码块能力矛盾**（§7）。「走查」列即 2026-06-04 原生现状。
+
 原生编辑器主体**没漂**——内容样式(`editor_style.dart`)、工具栏 chrome 配色(`MobileToolbarV2` 的 bg/ink/accent/onAccent/hairline/danger)都已用 DayZ token 套过,纯 toggle 类按钮(B/I/U/S/代码/列表/引用/分隔线)也对。
-**漂移集中在「二级菜单的内容」与「图标来源」两处**,按严重度:
 
-| # | 漂移点 | 严重度 | 根因 | 改法 |
-|---|---|---|---|---|
-| 1 | 颜色/高亮用了 AppFlowy 默认高饱和原色板 | 🔴 高 | `buildColorItem` 没传自定义色板 | 传 DayZ 暖调色板(§2) |
-| 2 | meta chip(心情/天气/地点/标签)用 Material Icons | 🟠 中 | DayzIcons 缺这 4 个 path | 补 path + 换用(§3) |
-| 3 | 日期 kicker / 关闭按钮用 Material Icons | 🟡 低 | 现成 DayZ path 没被用 | 换 `DayzIcons.calendarPath` / `closePath`(§3) |
-| 4 | 标题菜单无「正文」显式项 | 🟡 低 | 用了 AppFlowy 原件,靠再点切回 | 加「正文」项(§4,建议) |
-| 5 | 图片直接进相册,无来源选择 + 大图无查看器 | 🟢 已定档 | `onImageTap` 直连 gallery | 全屏微信式选择器 `DZ.picker` + 大图查看器 `DZ.lightbox`(§5) |
+| # | 漂移点 | 严重度 | 走查(06-04) | 根因 | 改法 |
+|---|---|---|---|---|---|
+| 1 | 颜色/高亮用了 AppFlowy 默认高饱和原色板 | 🔴 高 | ✅ 已修 | `buildColorItem` 没传自定义色板 | 传 DayZ 暖调色板(§2) |
+| 2 | meta chip(心情/天气/地点/标签)用 Material Icons | 🟠 中 | ✅ 已修 | DayzIcons 缺这 4 个 path | 补 path + 换用(§3) |
+| 3 | 日期 kicker / 关闭按钮用 Material Icons | 🟡 低 | ✅ 已修 | 现成 DayZ path 没被用 | 换 `DayzIcons.calendarPath` / `closePath`(§3) |
+| 4 | 标题菜单无「正文」显式项 | 🟡 低 | ✅ 已修 | 用了 AppFlowy 原件,靠再点切回 | 加「正文」项(§4) |
+| 5 | 图片直接进相册,无来源选择 + 大图无查看器 | 🔴 高 | 🚧 **未落地** | `onImageTap` 直连 `ImagePicker(gallery)`（单图） | 全屏微信式选择器 `DZ.picker` + 大图查看器 `DZ.lightbox`(§5) |
+| 6 | 代码块:原型 demo / 能力清单有,但两边工具栏 + 原生 registry 都没有 | 🟠 中 | ✅ 已定调(做) | demo 超出实际可用能力 | 补块:原型已落地,原生跟进(§7) |
+| 7 | 工具栏 14 件太长 + 格式分散 | 🟠 中 | ✅ 已定调 | 一排堆满易误触 | 精简 8 件 + 格式面板全集 + 标注块(§8) |
 
-> 模式判断(重要):二级菜单**保留 AppFlowy「键盘位内联面板」模式**(点 H/颜色/链接 → 面板替代键盘升起,文档与选区不被遮挡),**不要改成底部 sheet**。这是更好的编辑手势,且原生已用 DayZ token 套过色。原型 `editor.html` 已照此模式 1:1 还原,作为视觉真源。唯一用 sheet 的是「图片来源」(一次性插入动作,非格式化,§5)。
+> **模式判断(重要)**：二级菜单**保留 AppFlowy「键盘位内联面板」模式**（点 `Aa·格式` / 颜色 → 面板替代键盘升起，文档与选区不被遮挡），**不要改成底部 sheet**——这是与原生一致、且更顺手的编辑手势，原生已用 DayZ token 套过色。原型 `editor.html` 已照此模式 1:1 还原，作为视觉真源。唯一用 sheet 的是「图片来源」（一次性插入动作，非格式化，§5）。
 
 ---
 
@@ -32,7 +36,7 @@
 | 分隔线 | AppFlowy 原件 | 同 | ✅ |
 | 标题 H | `headingMobileToolbarItem` 原件,H1/H2/H3 一行 | 加「正文」项 → 四项 | ⚠️ §4 |
 | 颜色/高亮 | `buildTextAndBackgroundColorMobileToolbarItem()`,**默认色板** | DayZ 暖调色板 | ❌ §2 |
-| 链接 | `linkMobileToolbarItem`,URL 单字段 + 取消/完成 | **一致**(原型已对齐:URL 单字段,不加「显示文字」) | ✅ 仅核对配色随主题 |
+| 链接 | `linkMobileToolbarItem`,URL 单字段 + 取消/完成 | URL 单字段一致;**入口下沉到格式面板「文字样式」段** | ⚙️ §8a(不再是顶层工具栏项) |
 | 图片 | `onImageTap` → 直接 `ImagePicker(gallery)` | 全屏微信式选择器 + 大图查看器 | ❌ §5 |
 | 内容样式 | `dayzEditorStyle`:cursor/selection/正文衬线/code/href 全 token | 同 | ✅ |
 | meta chip 图标 | Material `Icons.*` | 内联 SVG(§5 基调) | ❌ §3 |
@@ -98,7 +102,9 @@ AppFlowy 原件只有 H1/H2/H3,**靠再点一次激活项切回正文**——不
 
 ---
 
-## 5. 🟢 图片插入：全屏选择器（微信式）+ 大图查看器（定档）
+## 5. 🔴 图片插入：全屏选择器（微信式）+ 大图查看器（设计定档·原生未落地）
+> **走查 2026-06-04**：设计端已定档（`DZ.picker`/`DZ.lightbox` + 原生映射均备齐），但**原生代码一行未改**：`editor_image_inserter.dart:24` 仍是 `ImagePicker().pickImage(source: ImageSource.gallery)`——即本手册当初标 ❌ 的旧行为，且只能插单张；大图查看器全库 grep 不到 `photo_view`/`PhotoView` 任何痕迹。两件套件原生侧**仍为 0**，是本轮最需落地的二项。
+
 原生现在点图片直接 `ImagePicker(gallery)`。原型已改成两件套件，均为覆盖整个手机视口的沉浸式媒体层（暖近黑 `--media-*`，明暗/主题一致，强调色走 accent）：
 
 **(a) 全屏图片选择器 `DZ.picker`（代替原来的相册/拍照 sheet）**
@@ -114,10 +120,45 @@ AppFlowy 原件只有 H1/H2/H3,**靠再点一次激活项切回正文**——不
 ---
 
 ## 6. 验收 checklist(原生改完逐条过)
-- [ ] 颜色面板出现的是 DayZ 暖调 6+5 色,**没有** Material 原色。
-- [ ] 浅色 + 深色 × 紫/黄/绿 三主题各开一次颜色/标题/链接面板,配色不突兀。
-- [ ] 编辑页再无 `Icons.*`(grep `Icons\.` 应只剩非编辑页或确需的系统图标)。
-- [ ] 标题菜单含「正文」项(若采纳 §4)。
-- [ ] 图片插入为全屏微信式选择器（首格相机 + 多选编号 + 预览/原图/完成），非旧的相册/拍照 sheet。
-- [ ] 详情页封面 + 九宫格点击能开全屏大图查看器、可左右滑；卡片封面图仍是整卡进详情。
-- [ ] 二级菜单仍是键盘位内联面板,**未被改成底部 sheet**。
+> 勾选 = 2026-06-04 走查已确认（代码层面）；未勾选 = 未落地或需运行时肉眼复查。
+- [x] 颜色面板出现的是 DayZ 暖调 6+5 色,**没有** Material 原色。（`buildColorItem` 已注入色板）
+- [ ] 浅色 + 深色 × 紫/黄/绿 三主题各开一次颜色/标题/链接面板,配色不突兀。（需运行时肉眼）
+- [x] 编辑页再无 `Icons.*`。（`grep Icons\.` 于 `lib/ui/editor` 已零命中）
+- [x] 标题菜单含「正文」项。（`_DayzHeadingMenu` 四等分 正文·H1·H2·H3）
+- [ ] 图片插入为全屏微信式选择器（首格相机 + 多选编号 + 预览/原图/完成），非旧的相册/拍照 sheet。🚧 **未落地**（仍直连 gallery）
+- [ ] 详情页封面 + 九宫格点击能开全屏大图查看器、可左右滑；卡片封面图仍是整卡进详情。🚧 **未落地**（无 `photo_view`）
+- [x] 二级菜单仍是键盘位内联面板,**未被改成底部 sheet**。（`MobileToolbarV2` 未动）
+- [ ] 代码块已可用（§7）：格式面板有入口、`block_types` 注册 `code`、内容样式 mono+边框；插入代码块不再显示「[未支持块]」。
+- [ ] 工具栏精简为 8 件高频（§8a，含无序/有序列表），链接收进格式面板文字样式行；其余格式收进 `Aa·格式` 面板（§8b），状态与快捷件双向同步。
+- [ ] 新增标注块 callout 可插入并按 `--accent-soft` 渲染（§8c）。
+
+---
+
+## 7. 🟢 代码块：补齐为可用能力（已定调·原型已落地，待原生跟进）
+原型 `editor.html` 的 `rich` demo + DESIGN-REF §3c 一直把「代码块」列为能力，但此前两边工具栏都没入口、原生 `block_types.dart` 也没注册 → 会渲染成「[未支持块]」。**已定调：做（不删）**。原型侧 2026-06-04 已落地（格式面板「列表与块」加了代码块按钮 `data-block=code`，radio 互斥）。原生需补三处对齐：
+1. **工具栏/格式面板入口**：在格式 `withMenu` 的「列表与块」段加「代码块」项（与无序/有序/待办/引用/标注/分隔线并列）。
+2. **注册块**：`editor_block_registry.dart` 注册 AppFlowy 自带的 `CodeBlockComponentBuilder`；`block_types.dart` 的 `supported` 加入 `CodeBlockKeys.type`（`'code'`），让 `content_json` 里的代码块不再落到 `_UnknownBlockComponentBuilder`。
+3. **内容样式**：mono 字体 + `--bg-2` 底 + `--hairline` 边框，对齐原型 `pre.cb-codeblock`。
+> AppFlowy 自带 `CodeBlockKeys` / `CodeBlockComponentBuilder`，无需改包；选中态切换走 `formatNodeToType(node, CodeBlockKeys.type)`。
+
+---
+
+## 8. 🟢 工具栏重排 + 格式面板全集 + 标注块（已定调·原型已落地，待原生跟进）
+**背景**：旧工具栏一排 14 件按钮太长、易误触。2026-06-04 原型重排为「高频在外、全集在面板」，并**新增标注块（callout）**能力。
+
+### 8a 工具栏精简为 8 件高频
+`.toolbar.editor-dock` 只留：`Aa·格式`（开格式面板，`data-tb=format`）｜ 加粗 / 斜体 / 颜色 ｜ 无序列表 / 有序列表 / 待办（`data-tb-block=ul|ol|todo`，与面板块状态双向同步）｜ 图片。**链接较低频，收进格式面板「文字样式」行**（`data-mark=link`，点击拉起链接面板）。其余格式（段落级、列表与块全集、下划线/删除线/行内代码）**收进格式面板**——**additive**：面板列全集，工具栏快捷件在面板里也有，状态双向同步。
+- Flutter：`MobileToolbarV2` 的 item 列表对应这 8 件；`Aa` 是一个 `MobileToolbarItem.withMenu`，菜单内是下面的三段式；ul/ol/todo 走 `formatNodeToType`。链接项放进 `Aa` 菜单的文字样式段，点击走 `MobileLinkMenu`。
+
+### 8b 格式面板三段式（`data-panel=format` · `.kb` 键盘高）
+- **段落** `.tb-headings`：正文 / H1 / H2 / H3（沿用 §4 的四等分，含显式「正文」）。
+- **列表与块** `.tb-blocks`（3 列网格，radio 互斥）：无序 / 有序 / 待办 / 引用 / **代码块**（§7）/ **标注**（§8c）/ 分隔线（一次性插入）。与段落互斥。
+- **文字样式** `.tb-marks`：B / I / U / S / 行内代码（独立 toggle；B、I 与工具栏快捷件双向同步）。
+- 面板高度 `min-height:288px` 向软键盘看齐、内容多时自然生长（`max-height:62vh` 兜底滚动）——对齐用户「面板高度和输入法对齐」的要求。
+- Flutter：菜单内用 `Column` + 三个分段标题；段落/块项调 `formatNodeToType`，文字样式项调对应 `toggleAttribute`。面板高度对齐 `MediaQuery.viewInsets.bottom`（键盘高）。
+
+### 8c 新增能力：标注块 Callout `.cb-callout`
+日记场景常用「一句心得 / 提醒」高亮成块。AppFlowy 自带 `CalloutBlockKeys`，可直接落地。
+- 原型内容样式：`--accent-soft` 底 + `.ic` 信息图标（`--accent-ink`）+ `.tx` 文字，圆角 `--r-md`，**不做左边框配色那套俗套**。
+- Flutter：注册 `CalloutBlockComponentBuilder`；`block_types` 加 `CalloutBlockKeys.type`（`'callout'`）；背景用 `--accent-soft` 对应的 theme 色（随 data-theme+data-mode）。
+> §6 checklist 末两条对应 §7/§8 的原生跟进验收。
