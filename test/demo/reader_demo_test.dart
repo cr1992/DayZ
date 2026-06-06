@@ -5,7 +5,10 @@
 import 'package:dayz/demo/debug_home.dart';
 import 'package:dayz/demo/demo_entry.dart';
 import 'package:dayz/demo/reader_demo.dart';
+import 'package:dayz/gen/assets.gen.dart';
+import 'package:dayz/ui/components.dart';
 import 'package:dayz/ui/reader/reader_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,6 +38,25 @@ void main() {
 
     expect(find.text('只写文字的一天'), findsWidgets);
     expect(find.byKey(ReaderScreen.heroKey), findsNothing);
+  });
+
+  testWidgets('ReaderDemo opens viewer with visible demo asset images', (
+    tester,
+  ) async {
+    await tester.pumpWidget(localizedTestApp(child: const ReaderDemo()));
+    await tester.pump();
+
+    await tester.tap(find.byKey(ReaderScreen.heroKey));
+    await tester.pumpAndSettle();
+
+    final viewer = tester.widget<DayzImageViewer>(find.byType(DayzImageViewer));
+
+    expect(viewer.images, hasLength(11));
+    expect(viewer.images.first, isA<AssetImage>());
+    expect(
+      (viewer.images.first as AssetImage).assetName,
+      Assets.editor.demoImage.path,
+    );
   });
 
   testWidgets('Debug Home can navigate to reader demo', (tester) async {

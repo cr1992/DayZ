@@ -286,12 +286,13 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 ```
 日期：2026-05-31
 自动：`flutter test test/demo/reader_demo_test.dart`
+回归（2026-06-06）：针对 demo 打开 viewer 仍可能显示透明占位图的问题，`ReaderDemo.imageProviderFor` 改为 `AssetImage(Assets.editor.demoImage.path)`；`flutter test test/demo/reader_demo_test.dart` 通过（4/4，含 `ReaderDemo opens viewer with visible demo asset images`）。
 人工：@Ray 确认 OK
 ```
 
 -----
 
-- [ ] T8 · 内容图开大图查看器（详情封面 + 九宫格 → DayzImageViewer，卡片封面不接）
+- [-] T8 · 内容图开大图查看器（详情封面 + 九宫格 → DayzImageViewer，卡片封面不接）
 
 **同 spec 依赖：** T3, T6 ｜ **跨 spec 依赖：** ui-kit-components：DayzImageViewer（大图查看器组件 + barrel 导出，README 依赖列已登记）、design-tokens-theme（`dayzMotionDuration`）、e2e-harness（Patrol on-device 视觉跑）｜ **关联需求：** R10, NF2, NF3 ｜ **依据设计：** D1, D10 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart`、`patrol_test/reader_image_viewer_visual_test.dart` ｜ **验收基建：** `test/ui/reader/reader_image_viewer_test.dart`
 
@@ -332,7 +333,8 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-06-06
+自动：RED `flutter test test/ui/reader/reader_image_viewer_test.dart` 失败于封面 / 九宫格 tap 后找不到 `DayzImageViewer`（2 fail）；GREEN `dart analyze lib/ui/reader/reader_screen.dart test/ui/reader/reader_image_viewer_test.dart patrol_test/reader_image_viewer_visual_test.dart` No issues；`flutter test test/ui/reader/reader_image_viewer_test.dart` 通过（3/3）；`PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart` 通过（Total:1 Successful:1 Failed:0），截图：reader_image_viewer_page_2.png / reader_image_viewer_page_3.png。
+回归：提升权限重跑 `PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart --verbose --no-uninstall` 通过（Total:1 Failed:0），截图已复制到 `build/review/reader_image_viewer_page_2.png` / `build/review/reader_image_viewer_page_3.png`，目检：从 ReaderScreen 内容图进入 viewer 后图片非黑屏，`2 / 4`、`3 / 4` 无黄色下划线。
+人工：待 @Ray 复核 Patrol 截图与手感（核查人 @Ray）
 ```

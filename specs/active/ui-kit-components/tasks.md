@@ -284,7 +284,7 @@ FAB 速拨视觉外形（R6）：轻点 `onTap` 回调 + 长按 ~0.35s 展开二
 
 -----
 
-- [-] T8 · widgetbook 多状态画廊 + 挂 Debug Home
+- [x] T8 · widgetbook 多状态画廊 + 挂 Debug Home
 
 **同 spec 依赖：** T2, T3, T4, T5, T6, T7 ｜ **跨 spec 依赖：** design-tokens-theme（六套 ThemeData 供主题 addon）｜ **关联需求：** R7 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/widget_gallery_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/demo/widget_gallery_demo_test.dart`
 
@@ -317,12 +317,13 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 ```
 日期：2026-05-30
 自动：`dart analyze lib/demo/widget_gallery_demo.dart test/demo/widget_gallery_demo_test.dart lib/ui/widgets/dayz_text_field.dart` 无问题；`flutter test test/demo/widget_gallery_demo_test.dart` 通过（8/8，含真源标注、选择控件交互、弹窗取消按钮描边）。
-人工：待确认（核查人 @Ray）
+回归（2026-06-06）：画廊预览 `_images()` 改为 `AssetImage(Assets.editor.demoImage.path)`，避免九宫格 / 卡片封面仍显示透明占位图；`flutter test test/demo/widget_gallery_demo_test.dart` 通过（6/6）。
+人工：2026-06-06 @Ray 目检暂未发现问题，按通过记录。
 ```
 
 -----
 
-- [ ] T9 · 大图查看器组件（DayzImageViewer：全屏沉浸式可左右滑动看图）
+- [x] T9 · 大图查看器组件（DayzImageViewer：全屏沉浸式可左右滑动看图）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** design-tokens-theme（`--media-*` 暖近黑媒体层 token / `DayzIcons` 关闭 path / `dayzMotionDuration`，README 依赖列已登记）、e2e-harness（Patrol on-device 视觉跑）｜ **关联需求：** R9, NF1, NF3, NF4, NF5 ｜ **依据设计：** D1, D12 ｜ **可改文件：** `lib/ui/widgets/dayz_image_viewer.dart`、`lib/ui/components.dart`（补 export）、`pubspec.yaml`（加 `photo_view`）、`pubspec.lock`（pub get 锁定）、`patrol_test/dayz_image_viewer_visual_test.dart` ｜ **验收基建：** `test/ui/widgets/dayz_image_viewer_test.dart`
 
@@ -362,7 +363,8 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-06-06
+自动：`dart analyze patrol_test/dayz_image_viewer_visual_test.dart test/ui/widgets/dayz_image_viewer_test.dart` 无问题；`flutter test test/ui/widgets/dayz_image_viewer_test.dart` 通过（5/5，含真实横向 fling 更新计数）；提升权限后 `PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/dayz_image_viewer_visual_test.dart --verbose` 通过，`Total: 1 / Failed: 0`，产出 `dayz_image_viewer_page_1.png` 与 `dayz_image_viewer_page_2.png` 截图工件。
+回归：针对 viewer 透明 route 下继承 debug underline 的计数黄线问题，组件外层补 `Material(type: MaterialType.transparency)`，并在 `DefaultTextStyle` / counter / caption 显式 `TextDecoration.none`；`flutter test test/ui/widgets/dayz_image_viewer_test.dart` 通过（6/6，含 `counter clears inherited debug underline text decoration`）。提升权限重跑 `PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/dayz_image_viewer_visual_test.dart --verbose --no-uninstall` 通过（Total:1 Failed:0），截图已复制到 `build/review/dayz_image_viewer_page_1.png` / `build/review/dayz_image_viewer_page_2.png`，目检：图片非黑屏，`1 / 3`、`2 / 3` 无黄色下划线。
+人工：2026-06-06 @Ray 目检暂未发现问题，按通过记录。
 ```

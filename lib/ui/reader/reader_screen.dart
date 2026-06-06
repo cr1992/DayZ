@@ -154,6 +154,17 @@ class _ReaderLoadedScreen extends StatelessWidget {
     final data = controller.data;
     final l10n = AppLocalizations.of(context);
     final feedback = _WidgetReaderFeedback(context: context, onBack: onBack);
+    final cover = data.cover;
+    final galleryImages = data.galleryImages;
+    final coverProvider = cover == null ? null : imageProviderFor(cover);
+    final viewerImages = <ImageProvider>[
+      ?coverProvider,
+      for (final image in galleryImages) imageProviderFor(image),
+    ];
+    final galleryInitialIndexOffset = cover == null ? 0 : 1;
+    final galleryProviders = viewerImages
+        .skip(galleryInitialIndexOffset)
+        .toList(growable: false);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -197,11 +208,14 @@ class _ReaderLoadedScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (data.cover != null) ...[
+                    if (cover != null) ...[
                       _ReaderHero(
-                        media: data.cover!,
+                        media: cover,
                         thumbnailCache: thumbnailCache,
-                        imageProviderFor: imageProviderFor,
+                        imageProvider: coverProvider!,
+                        onTap: () {
+                          _openImageViewer(context, viewerImages, 0);
+                        },
                       ),
                       const SizedBox(height: DayzSpacing.s6),
                     ],
@@ -221,15 +235,19 @@ class _ReaderLoadedScreen extends StatelessWidget {
                       key: ReaderScreen.bodyKey,
                       child: ReaderBody(paragraphs: data.bodyParagraphs),
                     ),
-                    if (data.galleryImages.isNotEmpty) ...[
+                    if (galleryImages.isNotEmpty) ...[
                       const SizedBox(height: DayzSpacing.s5),
                       DayzGallery(
                         key: ReaderScreen.galleryKey,
-                        images: [
-                          for (final image in data.galleryImages)
-                            imageProviderFor(image),
-                        ],
+                        images: galleryProviders,
                         expanded: controller.galleryExpanded,
+                        onImageTap: (index) {
+                          _openImageViewer(
+                            context,
+                            viewerImages,
+                            galleryInitialIndexOffset + index,
+                          );
+                        },
                         onMoreTap: controller.toggleGalleryExpanded,
                       ),
                     ],
@@ -243,6 +261,38 @@ class _ReaderLoadedScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openImageViewer(
+    BuildContext context,
+    List<ImageProvider> images,
+    int initialIndex,
+  ) {
+    if (images.isEmpty) {
+      return;
+    }
+
+    final duration = dayzMotionDuration(context, DayzMotion.dur);
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: Colors.transparent,
+        transitionDuration: duration,
+        reverseTransitionDuration: duration,
+        pageBuilder: (routeContext, animation, secondaryAnimation) {
+          return FadeTransition(
+            opacity: animation,
+            child: DayzImageViewer(
+              images: images,
+              initialIndex: initialIndex,
+              onClose: () {
+                Navigator.of(routeContext).pop();
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -299,27 +349,38 @@ class _ReaderLoadedScreen extends StatelessWidget {
 class _ReaderHero extends StatelessWidget {
   const _ReaderHero({
     required this.media,
-    required this.imageProviderFor,
+    required this.imageProvider,
     this.thumbnailCache,
+    this.onTap,
   });
 
   final ReaderMediaViewData media;
   final ReaderThumbnailCache? thumbnailCache;
-  final ReaderImageProviderBuilder imageProviderFor;
+  final ImageProvider imageProvider;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final cache = thumbnailCache;
-    return ClipRRect(
-      key: ReaderScreen.heroKey,
+    final hero = ClipRRect(
       borderRadius: BorderRadius.circular(DayzRadii.lg),
       child: AspectRatio(
         aspectRatio: 4 / 3,
         child: cache == null
-            ? Image(image: imageProviderFor(media), fit: BoxFit.cover)
+            ? Image(image: imageProvider, fit: BoxFit.cover)
             : ReaderImage(mediaId: media.id, thumbnailCache: cache),
       ),
     );
+
+    final tap = onTap;
+    if (tap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(key: ReaderScreen.heroKey, onTap: tap, child: hero),
+      );
+    }
+
+    return KeyedSubtree(key: ReaderScreen.heroKey, child: hero);
   }
 }
 

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../gen/assets.gen.dart';
 import '../ui/components.dart';
 import '../ui/reader/reader_screen.dart';
 import '../ui/reader/reader_view_data.dart';
@@ -60,6 +61,7 @@ class _ReaderDemoState extends State<ReaderDemo> {
                 entryId: 'demo-entry',
                 repository: _repository,
                 loadData: (_) => _loadDemoData(),
+                imageProviderFor: _demoImageProviderFor,
                 onBack: () {},
                 onEdit: (_) {},
               ),
@@ -84,6 +86,10 @@ class _ReaderDemoState extends State<ReaderDemo> {
 }
 
 enum _ReaderDemoStateValue { defaultEntry, textOnly, loading, missing }
+
+ImageProvider _demoImageProviderFor(ReaderMediaViewData media) {
+  return AssetImage(Assets.editor.demoImage.path);
+}
 
 class _DemoReaderRepository implements ReaderRepository {
   @override
