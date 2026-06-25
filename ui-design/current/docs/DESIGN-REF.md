@@ -91,7 +91,7 @@
 | 字体 | `--font-sans`(UI) `--font-serif`(标题/日记) `--font-diary`(=serif) `--font-mono` |
 | 动效 | `--ease` `--dur`(220ms) |
 
-> **字体加载（克制 · 偏原生）**：仅联网加载两套**小体积 Latin 品牌字**——`Newsreader`(衬线) + `Hanken Grotesk`(无衬线)；**中文不加载 Web 字体**，一律走系统原生（衬线 `Songti SC`/`SimSun`，无衬线 `PingFang SC` 等）。字体栈即「Latin 品牌字优先 → 原生 CJK」，按字符自动回退。已**移除 `Noto Serif/Sans SC`** 这两套 MB 级 CJK Web 字体。产品(Flutter)端两套 Latin 以打包资源引入。
+> **字体加载（打包思源 · 跨平台一致）**：Latin 两套**小体积品牌字**——`Newsreader`(衬线) + `Hanken Grotesk`(无衬线)；**中文打包思源**——`Noto Serif SC`(衬线/日记) + `Noto Sans SC`(无衬线/UI)，全简体 ~8200 字子集、OFL-1.1，产品 Flutter 端打包约 23MB（4 字重）。字体栈即「Latin 品牌字 → 思源 SC → 系统字」，按字符自动回退；系统 `Songti SC`/`PingFang SC` 退为思源未覆盖生僻字的深层兜底。原型 serif 用内联思源宋静态子集保 WYSIWYG。（推翻早前「偏原生·移除 Noto」决定，详见 CHANGELOG 2026-06-26。）
 
 ### 2.4 排版类（直接套用）
 `.t-display` `.t-h1` `.t-h2`（衬线）· `.t-h3`（无衬线粗）· `.t-body`（UI 正文 1.7）· `.t-diary`（日记衬线 1.85）· `.t-caption` · `.t-overline`

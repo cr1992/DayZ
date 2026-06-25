@@ -5,10 +5,28 @@
    模式：data-mode  = light  | dark
    ============================================================ */
 
+/* 原型 serif WYSIWYG：思源宋体静态子集（pages/screens + design-system 的 CJK 并集
+   848 字，weights 400/600，无斜体）。产品端打包全字集；原型只内联用到的字以保
+   离线/秒开。build-standalone.py 会把下面的 woff2 自动 base64 内联 + 去重。 */
+@font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/NotoSerifSC-subset-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/NotoSerifSC-subset-600.woff2") format("woff2");
+}
+
 :root {
   /* ---- 字体 ---- */
-  --font-sans: "Hanken Grotesk", -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-  --font-serif: "Newsreader", "Songti SC", "SimSun", "Noto Serif SC", Georgia, serif;
+  --font-sans: "Hanken Grotesk", "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
   --font-diary: var(--font-serif);
   --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
 

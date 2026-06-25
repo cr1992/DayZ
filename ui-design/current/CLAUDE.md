@@ -16,7 +16,7 @@
 - 模式：**浅色 + 深色都要**。浅色为暖白纸感，深色为暖炭黑（非纯黑）。
 - 排版：**中文为主、兼顾英文**。正文/日记用衬线，UI 用无衬线。
   - **Latin** 用品牌字体：衬线 **Newsreader**、无衬线 **Hanken Grotesk**（体积小，产品 Flutter 端以**打包字体资源**下载引入；原型 HTML 用轻量 CDN 仅加载这两套）。
-  - **中文一律用系统原生字体**（衬线 Songti SC / 宋体，无衬线 PingFang SC 等），**不加载 Noto Serif/Sans SC 等大体积 CJK Web 字体**——克制、零下载。字体栈见 `tokens.css` 的 `--font-sans` / `--font-serif`（Latin 品牌字优先，其后接原生 CJK）。
+  - **中文打包设计字体**：衬线 **思源宋体**、无衬线 **思源黑体**（Noto Serif/Sans SC，全简体 ~8200 字子集，OFL-1.1，产品 Flutter 端打包约 23MB）作 CJK 主力，换取**各平台渲染一致**（不再依赖系统 Songti/PingFang）；系统字退为「思源未覆盖生僻字」的深层兜底。此体积代价为换一致性，已与用户确认（推翻早前「偏原生·零下载」基调）。字体栈见 `tokens.css` 的 `--font-sans` / `--font-serif`（Latin 品牌字 → 思源 SC → 系统字）。原型 HTML serif 用内联思源宋静态子集保 WYSIWYG。
 - 主题色：**三套独立的强调色体系** —— 雾紫 purple / 暖黄 amber / 雾绿 sage。每套都是完整的一套色板（accent / strong / soft / ink / on-accent），可整体切换。
 
 ## 设计 Token
