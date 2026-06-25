@@ -86,7 +86,13 @@ dependency_overrides:
 hooks:
   user_defines:
     sqlite3:
-      source: sqlite3mc
+      # 离线可复现构建：读取 third_party/sqlite3mc/ 下提交的 SQLite3MultipleCiphers
+      # 预编译库，而非每次构建从 GitHub release 下载（上游 hook 的 GitHub 下载在
+      # 部分网络/CI 上不稳，且缓存目录名走 Object.hash 随机种子、跨进程恒不命中而
+      # 反复重下——详见该目录 README）。`test-sqlite3mc` 是 sqlite3 hook 里从本地
+      # `directory` 读取（仍校验官方 sha256）的 source。刷新/换平台见 README。
+      source: test-sqlite3mc
+      directory: third_party/sqlite3mc/
 
 # Patrol E2E 测试配置（原生自动化用，仅 dev/测试期生效）
 patrol:
