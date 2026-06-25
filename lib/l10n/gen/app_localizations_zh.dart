@@ -538,7 +538,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorToolbarNumberedList => '有序列表';
 
   @override
-  String get editorToolbarTodoList => '待办列表';
+  String get editorToolbarTodoList => '待办清单';
 
   @override
   String get editorToolbarQuote => '引用';

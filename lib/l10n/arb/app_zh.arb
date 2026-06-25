@@ -323,7 +323,7 @@
   "editorToolbarColor": "颜色高亮",
   "editorToolbarBulletedList": "无序列表",
   "editorToolbarNumberedList": "有序列表",
-  "editorToolbarTodoList": "待办列表",
+  "editorToolbarTodoList": "待办清单",
   "editorToolbarQuote": "引用",
   "editorToolbarCallout": "标注",
   "editorToolbarLink": "链接",

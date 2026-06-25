@@ -347,6 +347,14 @@ bool _isHeadingActive(EditorState editorState, Selection selection) {
   return nodes.any((node) => node.type == HeadingBlockKeys.type);
 }
 
+// Dock「颜色 / 高亮」图标 = 设计稿的马克笔描边（editor.html dock `data-tb="color"`），
+// 走 DayZ 自有 SVG（与 search/close 等图标同一渲染口径），而非 AppFlowy 调色盘图标。
+const String _colorMarkerSvg =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+    'xmlns="http://www.w3.org/2000/svg">'
+    '<path d="${DayzIcons.colorMarkerPath}"/></svg>';
+
 MobileToolbarItem buildColorItem(AppLocalizations l10n) {
   // Feed the DayZ warm palette into AppFlowy's color menu (it exposes
   // textColorOptions / backgroundColorOptions hooks) — the inline keyboard
@@ -363,10 +371,14 @@ MobileToolbarItem buildColorItem(AppLocalizations l10n) {
       child: _toolbarItemFrame(
         context,
         dividerAfter: 'color',
-        child: AFMobileIcon(
-          afMobileIcons: AFMobileIcons.color,
-          color: _toolbarItemColor(context, selected: false),
-          size: 18,
+        child: SvgPicture.string(
+          _colorMarkerSvg,
+          width: 18,
+          height: 18,
+          colorFilter: ColorFilter.mode(
+            _toolbarItemColor(context, selected: false),
+            BlendMode.srcIn,
+          ),
         ),
       ),
     ),

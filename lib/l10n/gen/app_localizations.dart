@@ -1061,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @editorToolbarTodoList.
   ///
   /// In zh, this message translates to:
-  /// **'待办列表'**
+  /// **'待办清单'**
   String get editorToolbarTodoList;
 
   /// No description provided for @editorToolbarQuote.

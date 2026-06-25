@@ -42,4 +42,10 @@ abstract final class DayzIcons {
       'M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11zM12 12.4a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z';
   static const String tagPath =
       'M4 12V6a2 2 0 0 1 2-2h6l8 8-8 8zM9 10.4a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Z';
+
+  // 编辑器工具栏「颜色 / 高亮」= 设计稿的马克笔描边（真源：pages/screens/editor.html
+  // 的 dock `data-tb="color"`），不是调色盘。设计源两条 <path>（基线 + 笔尖）在此
+  // 合成单 path：第二段起点 `m14.5 4.5` 转绝对 `M14.5 4.5`，后续仍走相对 `l`，
+  // 避免接在基线末端被位移。
+  static const String colorMarkerPath = 'M4 20h16 M14.5 4.5l5 5-8 8-5 .9.9-5z';
 }
