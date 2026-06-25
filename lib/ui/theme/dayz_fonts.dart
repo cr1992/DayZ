@@ -7,6 +7,7 @@
 abstract final class DayzFonts {
   static const String sans = 'Hanken Grotesk';
   static const String serif = 'Newsreader';
+  static const String mono = 'SF Mono';
 
   static const List<String> sansFallback = [
     'PingFang SC',
@@ -23,5 +24,12 @@ abstract final class DayzFonts {
     'Noto Serif CJK SC',
     'Georgia',
     'serif',
+  ];
+
+  static const List<String> monoFallback = [
+    'ui-monospace',
+    'JetBrains Mono',
+    'Menlo',
+    'monospace',
   ];
 }

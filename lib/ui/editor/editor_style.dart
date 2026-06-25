@@ -5,9 +5,12 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dayz/ui/theme/dayz_colors.dart';
+import 'package:dayz/ui/theme/dayz_fonts.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
-import 'package:dayz/ui/theme/dayz_tokens.g.dart' as tokens;
 
+/// Builds the AppFlowy [EditorStyle] from DayZ design tokens.
+///
+/// Author: @Ray
 EditorStyle dayzEditorStyle(BuildContext context) {
   final colors = context.dayz;
   final text = context.dayzText;
@@ -29,7 +32,8 @@ EditorStyle dayzEditorStyle(BuildContext context) {
         decoration: TextDecoration.underline,
       ),
       code: text.body.copyWith(
-        fontFamily: tokens.DayzFonts.mono,
+        fontFamily: DayzFonts.mono,
+        fontFamilyFallback: DayzFonts.monoFallback,
         color: colors.ink,
         backgroundColor: colors.accentSoft,
       ),
