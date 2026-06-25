@@ -59,6 +59,13 @@
 - **upstream issue：** 暂无（待评估提 PR）。
 - **引入提交：** 待提交。
 
+### P007 · MobileToolbarV2 顶层按钮遵守 buttonHeight/buttonSpacing，并允许隐藏关闭键盘按钮
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart` → `MobileToolbarV2` / `_MobileToolbar` 新增 `showKeyboardDismissButton` 透传，`_ToolbarItemListView.build(...)` 的 toolbar item `IconButton` 包装，以及 `_CloseKeyboardOrMenuButton.build(...)` 的关闭按钮包装。
+- **原因：** AppFlowy `MobileToolbarV2` 已暴露 `buttonHeight` / `buttonSpacing` 参数，但顶层 toolbar item 仍使用 Flutter `IconButton` 默认 48px 盒子，且右侧硬编码追加关闭键盘按钮，导致 DayZ 编辑器 S2 的 8 件停靠设计在 390px 视口下第 8 项「图片」被挤出可见区域。改为用 `MobileToolbarTheme.buttonHeight` 约束顶层按钮盒、用 `buttonSpacing` 作为水平间距；默认 `40 + 8 = 48`，保持上游默认总宽口径。DayZ 传 `44 + 3` 保留移动端命中区，并通过 `showKeyboardDismissButton: false` 让 8 件设计动作全部可见。
+- **关联：** `editor-integration-screen` S2（8 件高频停靠 + 参数级还原 editor-dock）。
+- **upstream issue：** 暂无（可评估向 upstream 提 PR：顶层 toolbar item 应尊重已暴露的 style 参数）。
+- **引入提交：** 待提交。
+
 ---
 
 ## 自研包（self-authored · 无 upstream · 不进 Patch 台账）
@@ -78,6 +85,12 @@
 ---
 
 ## 变更历史（按日期）
+
+## [2026-06-06]
+
+### appflowy-editor
+- **MobileToolbarV2 顶层按钮尺寸参数生效**（Patch: `P007`）：
+  - 顶层 toolbar item 与关闭键盘按钮改为遵守 `buttonHeight` / `buttonSpacing`，并允许 DayZ 隐藏 AppFlowy 额外关闭键盘按钮，让编辑器 8 件停靠布局在 390px 视口内以 44px 命中区完整可见。
 
 ## [2026-06-01]
 

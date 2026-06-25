@@ -27,6 +27,7 @@ class MobileToolbarV2 extends StatefulWidget {
     this.buttonSpacing = 8.0,
     this.buttonBorderWidth = 1.0,
     this.buttonSelectedBorderWidth = 2.0,
+    this.showKeyboardDismissButton = true,
     required this.editorState,
     required this.toolbarItems,
     required this.child,
@@ -54,6 +55,7 @@ class MobileToolbarV2 extends StatefulWidget {
   final double buttonSpacing;
   final double buttonBorderWidth;
   final double buttonSelectedBorderWidth;
+  final bool showKeyboardDismissButton;
 
   @override
   State<MobileToolbarV2> createState() => _MobileToolbarV2State();
@@ -145,6 +147,7 @@ class _MobileToolbarV2State extends State<MobileToolbarV2> {
             child: _MobileToolbar(
               editorState: widget.editorState,
               toolbarItems: widget.toolbarItems,
+              showKeyboardDismissButton: widget.showKeyboardDismissButton,
             ),
           ),
         );
@@ -180,10 +183,12 @@ class _MobileToolbar extends StatefulWidget {
   const _MobileToolbar({
     required this.editorState,
     required this.toolbarItems,
+    required this.showKeyboardDismissButton,
   });
 
   final EditorState editorState;
   final List<MobileToolbarItem> toolbarItems;
+  final bool showKeyboardDismissButton;
 
   @override
   State<_MobileToolbar> createState() => _MobileToolbarState();
@@ -347,36 +352,41 @@ class _MobileToolbarState extends State<_MobileToolbar>
               },
             ),
           ),
-          // divider
-          const Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: 8,
+          // >>> DAYZ-PATCH[P007]: Allow DayZ to hide AppFlowy's extra keyboard
+          // dismiss affordance so the 8 design actions keep 44px hit targets.
+          if (widget.showKeyboardDismissButton) ...[
+            // divider
+            const Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: 8,
+              ),
+              child: VerticalDivider(
+                width: 1,
+              ),
             ),
-            child: VerticalDivider(
-              width: 1,
+            // close menu or close keyboard button
+            ValueListenableBuilder(
+              valueListenable: showMenuNotifier,
+              builder: (_, showingMenu, __) {
+                return _CloseKeyboardOrMenuButton(
+                  showingMenu: showingMenu,
+                  onPressed: () {
+                    if (showingMenu) {
+                      // close the menu and show the keyboard
+                      closeItemMenu();
+                      _showKeyboard();
+                    } else {
+                      closeKeyboardInitiative = true;
+                      // close the keyboard and clear the selection
+                      // if the selection is null, the keyboard and the toolbar will be hidden automatically
+                      widget.editorState.selection = null;
+                    }
+                  },
+                );
+              },
             ),
-          ),
-          // close menu or close keyboard button
-          ValueListenableBuilder(
-            valueListenable: showMenuNotifier,
-            builder: (_, showingMenu, __) {
-              return _CloseKeyboardOrMenuButton(
-                showingMenu: showingMenu,
-                onPressed: () {
-                  if (showingMenu) {
-                    // close the menu and show the keyboard
-                    closeItemMenu();
-                    _showKeyboard();
-                  } else {
-                    closeKeyboardInitiative = true;
-                    // close the keyboard and clear the selection
-                    // if the selection is null, the keyboard and the toolbar will be hidden automatically
-                    widget.editorState.selection = null;
-                  }
-                },
-              );
-            },
-          ),
+          ],
+          // <<< DAYZ-PATCH[P007]
           const SizedBox(
             width: 4.0,
           ),
@@ -455,6 +465,8 @@ class _ToolbarItemListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = MobileToolbarTheme.of(context);
+
     return ListView.builder(
       itemBuilder: (context, index) {
         final toolbarItem = toolbarItems[index];
@@ -466,23 +478,37 @@ class _ToolbarItemListView extends StatelessWidget {
         if (icon == null) {
           return const SizedBox.shrink();
         }
-        return IconButton(
-          icon: icon,
-          onPressed: () {
-            if (toolbarItem.hasMenu) {
-              // open /close current item menu through its parent widget(MobileToolbarWidget)
-              itemWithMenuOnPressed(index);
-            } else {
-              itemWithActionOnPressed(index);
-              // close menu if other item's menu is still on the screen
-              toolbarWidgetService.closeItemMenu();
-              toolbarItems[index].actionHandler?.call(
-                    context,
-                    editorState,
-                  );
-            }
-          },
+        // >>> DAYZ-PATCH[P007]: Honor MobileToolbarTheme button sizing so the
+        // DayZ editor dock can fit the 8-item design on a 390px viewport.
+        return Padding(
+          padding: EdgeInsetsDirectional.only(end: style.buttonSpacing),
+          child: SizedBox.square(
+            dimension: style.buttonHeight,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints.tightFor(
+                width: style.buttonHeight,
+                height: style.buttonHeight,
+              ),
+              icon: icon,
+              onPressed: () {
+                if (toolbarItem.hasMenu) {
+                  // open /close current item menu through its parent widget(MobileToolbarWidget)
+                  itemWithMenuOnPressed(index);
+                } else {
+                  itemWithActionOnPressed(index);
+                  // close menu if other item's menu is still on the screen
+                  toolbarWidgetService.closeItemMenu();
+                  toolbarItems[index].actionHandler?.call(
+                        context,
+                        editorState,
+                      );
+                }
+              },
+            ),
+          ),
         );
+        // <<< DAYZ-PATCH[P007]
       },
       itemCount: toolbarItems.length,
       scrollDirection: Axis.horizontal,
@@ -501,18 +527,30 @@ class _CloseKeyboardOrMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      padding: EdgeInsets.zero,
-      onPressed: onPressed,
-      icon: showingMenu
-          ? AFMobileIcon(
-              afMobileIcons: AFMobileIcons.close,
-              color: MobileToolbarTheme.of(context).iconColor,
-            )
-          : Icon(
-              Icons.keyboard_hide,
-              color: MobileToolbarTheme.of(context).iconColor,
-            ),
+    final style = MobileToolbarTheme.of(context);
+
+    // >>> DAYZ-PATCH[P007]: Match the close affordance to the configured
+    // toolbar button box instead of Flutter IconButton's default 48px box.
+    return SizedBox.square(
+      dimension: style.buttonHeight,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints.tightFor(
+          width: style.buttonHeight,
+          height: style.buttonHeight,
+        ),
+        onPressed: onPressed,
+        icon: showingMenu
+            ? AFMobileIcon(
+                afMobileIcons: AFMobileIcons.close,
+                color: style.iconColor,
+              )
+            : Icon(
+                Icons.keyboard_hide,
+                color: style.iconColor,
+              ),
+      ),
     );
+    // <<< DAYZ-PATCH[P007]
   }
 }
