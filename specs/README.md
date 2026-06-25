@@ -34,7 +34,7 @@
 |------|----------|------|--------|------------|
 | [timeline-screen](active/timeline-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-31 |
 | [reader-screen](active/reader-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache, e2e-harness | @Ray | 2026-05-31 |
-| [editor-integration-screen](active/editor-integration-screen/) | v1.0（+设计维护 S1/S2 进行中） | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft, editor-rich-blocks, e2e-harness | @Ray | 2026-06-01 |
+| [editor-integration-screen](active/editor-integration-screen/) | v1.0（+设计维护 S1 已验收 / S2 进行中） | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft, editor-rich-blocks, e2e-harness | @Ray | 2026-06-01 |
 | [settings-screen](active/settings-screen/) | v1.0（自动验收通过；多端 / 视觉人工终审随维护态后置） | design-tokens-theme, ui-kit-components, ui-shell-navigation, key-management | @Ray | 2026-06-06 |
 
 ## 执行顺序（派生快照）

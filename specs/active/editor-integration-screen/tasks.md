@@ -336,9 +336,9 @@ Debug Home 入口（真 UI 外壳就绪前/后均可走查）：`editor_screen_d
 
 -----
 
-- [ ] S1 · 微信式全屏图片选择器（单图 → 多选）
+- [x] S1 · 微信式全屏图片选择器（单图 → 多选）
 
-**同 spec 依赖：** T5（改写其产物 `editor_image_inserter.dart`）｜ **跨 spec 依赖：** `media-storage：MediaStore.put(stream,kind)/DMED/独立媒体key`、`data-layer：MediaRepo.addMeta`、`editor-json-contract：image 节点构造(media.id 落点 D2)`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，原生相册授权 E2E）` ｜ **关联需求：** R7（多图）, NF1, NF2, NF5 ｜ **依据设计：** D5, D11 ｜ **可改文件：** `lib/ui/editor/editor_image_inserter.dart`、`pubspec.yaml`、`pubspec.lock`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`patrol_test/editor_image_picker_test.dart` ｜ **验收基建：** `test/ui/editor/fakes/`（fake MediaStore/MediaRepo，T0 产出复用）
+**同 spec 依赖：** T5（改写其产物 `editor_image_inserter.dart`）｜ **跨 spec 依赖：** `media-storage：MediaStore.put(stream,kind)/DMED/独立媒体key`、`data-layer：MediaRepo.addMeta`、`editor-json-contract：image 节点构造(media.id 落点 D2)`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，原生相册授权 E2E）` ｜ **关联需求：** R7（多图）, NF1, NF2, NF5 ｜ **依据设计：** D5, D11 ｜ **可改文件：** `lib/ui/editor/editor_image_inserter.dart`、`pubspec.yaml`、`pubspec.lock`、`ios/Runner/Info.plist`、`android/app/src/main/AndroidManifest.xml`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`patrol_test/editor_image_picker_test.dart` ｜ **验收基建：** `test/ui/editor/fakes/`（fake MediaStore/MediaRepo，T0 产出复用）
 
 ### 背景
 设计稿把图片插入从「单图」定档为「微信式全屏多图选择器」（handoff §5a / DESIGN-REF §3c，D11/R7-多图）。旧 `editor_image_inserter.dart:24-26` 是 `ImagePicker().pickImage(source: ImageSource.gallery)`（单图）+ 旧「相册/拍照」二级 sheet。本卡改写**取图头段**（D5 的 put→addMeta→插块三段不变，对每张资产循环）。
@@ -374,19 +374,20 @@ Debug Home 入口（真 UI 外壳就绪前/后均可走查）：`editor_screen_d
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-06-06
+自动：`dart analyze lib/ui/editor/editor_image_inserter.dart test/ui/editor/editor_image_inserter_test.dart patrol_test/editor_image_picker_test.dart` 通过（No issues found）；`flutter test test/ui/editor/editor_image_inserter_test.dart` 通过（+3: All tests passed!）；`plutil -lint ios/Runner/Info.plist` 通过（OK）；`xmllint --noout android/app/src/main/AndroidManifest.xml` 通过；`bash scripts/check_arb_sync.sh` 通过（arb key sync OK — 191 keys aligned）；`flutter pub get` 普通沙箱因 Flutter SDK cache 写权限失败，提权重跑同命令通过（Got dependencies!）；`PATH="/Users/xiaji/.pub-cache/bin:$PATH" bash scripts/patrol_test.sh --target patrol_test/editor_image_picker_test.dart -d 66352C66-1646-410E-8FC9-16747B10398C` 通过（Total=1, Failed=0；用例处理 iOS 相册授权、seed 测试图、真实 wechat picker 选图，并断言 MediaStore.put / MediaRepo.addMeta / image node）
 人工：N/A
+补记（2026-06-25 · 收尾回收 main）：落 trunk 前对抗复审发现多图插入 path 双重位移——旧写法 `path.last + 1 + i` 与 `Transaction.add` 的自动 transform（后续 InsertOperation 各 +1）叠加，光标不在文档末尾时原后续节点被夹进图片之间（末尾插入因越界 index 被 `Node.insert` clamp 而侥幸连续，旧 `+3` 测试未覆盖中部、给了假信心）。已改恒定 `path.last + 1` 让事务 transform 负责位移、末尾光标落 `path.last + images.length`，并补「中部多图连续」回归测试（已先以旧码验证 RED）。`flutter test test/ui/editor/editor_image_inserter_test.dart` → +4、`flutter test test/ui/editor/` → +42、`dart analyze` No issues。
 ```
 
 -----
 
-- [ ] S2 · 工具栏 14→8 重排 + 三段格式面板 + 链接下沉
+- [-] S2 · 工具栏 14→8 重排 + 三段格式面板 + 链接下沉
 
-**同 spec 依赖：** T3（改写其产物 `editor_toolbar.dart`）｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbarItem.withMenu/formatNodeToType/MobileLinkMenu/toggleAttribute（vendored 包，读源码对齐 API）`、`editor-rich-blocks：callout 块类型（block_types+builder 注册）`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，工具栏视觉截图）` ｜ **关联需求：** R11（在 R4/R5/R6 之上）, NF3, NF4 ｜ **依据设计：** D3, D12 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`patrol_test/editor_toolbar_test.dart`
+**同 spec 依赖：** T3（改写其产物 `editor_toolbar.dart`）｜ **跨 spec 依赖：** `packages/appflowy-editor：MobileToolbarItem.withMenu/formatNodeToType/MobileLinkMenu/toggleAttribute/MobileToolbarV2 顶层按钮 sizing（vendored 包，读源码对齐 API；本轮 P007）`、`editor-rich-blocks：callout 块类型（block_types+builder 注册）`、`e2e-harness：Patrol harness（patrol_test/ + scripts/patrol_test.sh，工具栏视觉截图）` ｜ **关联需求：** R11（在 R4/R5/R6 之上）, NF3, NF4 ｜ **依据设计：** D3, D12 ｜ **可改文件：** `lib/ui/editor/editor_toolbar.dart`、`lib/ui/editor/editor_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`、`test/ui/editor/editor_toolbar_test.dart`、`patrol_test/editor_toolbar_test.dart`、`packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart`、`packages/CHANGELOG.md`
 
 ### 背景
-设计稿把工具栏从「一排 14 件」重排为「8 件高频停靠 + 全集进 `Aa·格式` 三段面板 + 链接下沉」（handoff §8a/§8b，D12/R11）。本卡改写 `editor_toolbar.dart` 的 item 装配与面板。**激活态机制（光标处生效样式）已在 HEAD `155d53d` 提交（`_isAttributeActive` + `ListenableBuilder(editorState.toggledStyleNotifier)`），本卡在其上建 B/I 双向同步，不重做该工作。**
+设计稿把工具栏从「一排 14 件」重排为「8 件高频停靠 + 全集进 `Aa·格式` 三段面板 + 链接下沉」（handoff §8a/§8b，D12/R11）。本卡改写 `editor_toolbar.dart` 的 item 装配与面板，并按 `editor.html` + `editor.css` / `spec.css` 做参数级还原：8 件、3 条分隔、3px gap、44 命中区、18 图标、Aa 17/600、面板 288 min / 62vh max、块项 46、文字样式项 44。**激活态机制（光标处生效样式）已在 HEAD `155d53d` 提交（`_isAttributeActive` + `ListenableBuilder(editorState.toggledStyleNotifier)`），本卡在其上建 B/I 双向同步，不重做该工作。**
 归属：工具栏重排/面板/双向同步/链接面板本卡；图片选择器改写归 S1（图片 item 的 onTap 入口接 S1 不变）；callout **块类型注册**归 `editor-rich-blocks`（本卡只调其 type 切换、不注册块）。
 
 ### 实施
@@ -398,33 +399,40 @@ Debug Home 入口（真 UI 外壳就绪前/后均可走查）：`editor_screen_d
 6. 面板高度对齐 `MediaQuery.viewInsets.bottom`（键盘高），最小 288。
 7. 新增/调整文案与 aria-label（格式/列表与块/文字样式/链接段标题等）补入 zh/en ARB（D10/NF3）。
 8. **本轮省略代码块入口**（延后 `editor-rich-blocks`，handoff §7）；callout 入口接 `editor-rich-blocks` 的 callout type，未就绪先灰/缺。
+9. 统一入口改为 `DayzEditorMobileToolbar`，真屏与测试共用同一组 `MobileToolbarV2` 参数：`surface/ink2/accentSoft/hairline` token、`toolbarHeight=52`、`buttonHeight=44`、`buttonSpacing=3`、`showKeyboardDismissButton=false`。
+10. `MobileToolbarV2` 顶层 item 原先未遵守 `buttonHeight/buttonSpacing` 且强追加关闭键盘按钮，导致 390px 视口第 8 件被挤出；本轮已按 appflowy-patch-tracking 声明并落 P007（成对 `DAYZ-PATCH[P007]` + `packages/CHANGELOG.md` 台账 + `check_patches.sh`）。
 
 ### 验收标准（做完即止）
 - 停靠条恒为 **8 件**（Aa/B/I/颜色/无序/有序/待办/图片），各可 `find.bySemanticsLabel(l10n.xxx)` 定位、命中区 ≥ 44×44（自动，R11/NF3）。
 - 打开 `Aa` 面板呈三段：段落四等分、列表与块网格、文字样式行；段落↔块互斥、块内 radio 互斥（自动：选某块项后再选段落项，前者退选；R11）。
 - 双向同步：在停靠条切 ul → 面板「无序」呈激活；在面板切 B → 停靠条 B 呈激活（反之亦然）（自动，R11；激活态复用 `155d53d` 机制）。
 - 链接项在文字样式段、点击拉起单 URL 字段的 `MobileLinkMenu`（无显示文本字段）（自动，R11）。
-- 面板高度 ≥ 288 且随注入的 `MediaQueryData(viewInsets.bottom)` 对齐键盘高（自动，R11）。
+- 停靠条 chrome 参数对齐 `editor-dock`：背景 `surface`、inactive `ink2`、active `accentInk`、选中底 `accentSoft`、描边 `hairline`、`toolbarHeight=52`、`buttonHeight=44`、`buttonSpacing=3`、额外关闭键盘按钮隐藏；390px 宽视口内 8 件全部可见（自动，NF3/NF4）。
+- 组分隔线对齐 `.toolbar .div`：Aa 后、颜色后、待办后各 1×22，颜色 `hairline2`；dock 图标 18px，Aa 17px/600（自动，NF4）。
+- 面板高度 ≥ 288、随注入的 `MediaQueryData(viewInsets.bottom)` 对齐键盘高，并按设计稿 `max-height:62vh` 封顶；列表与块项 3 列、每格 46px；文字样式行 6 个等宽 icon-only、每格 44px（自动，R11/NF4）。
 - 8 件停靠布局 + 面板贴键盘观感在真机/模拟器出截图工件、对照 editor.html（自动，Patrol 视觉，NF4）。
 
 ### 禁止
 - MUST NOT 自监听 `viewInsets.bottom` 顶起工具栏（R5，停靠仍交 AppFlowy）；MUST NOT 自管按钮高亮布尔（R6，复用 `155d53d` 选区派生）；MUST NOT 重做 `155d53d` 的光标处生效样式机制。
 - MUST NOT 在本卡注册 callout/code 块类型（归 `editor-rich-blocks`）；本轮 MUST NOT 放代码块入口（已知偏差，Patrol 视觉验收须知、不误报）。
-- 若需改 `packages/appflowy-editor` vendored 源码 → **停下声明**（走 appflowy-patch-tracking，不在本 spec 白名单）。
+- 若后续还需新增 `packages/appflowy-editor` vendored 源码改动 → **停下声明**（继续走 appflowy-patch-tracking + 独立 commit 纪律）。本轮参数级还原已声明并纳入 P007 三件套。
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/ui/editor/editor_toolbar_test.dart
+  flutter test test/ui/editor/
+  dart analyze lib/ui/editor/editor_toolbar.dart lib/ui/editor/editor_screen.dart test/ui/editor/editor_toolbar_test.dart patrol_test/editor_toolbar_test.dart packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart
+  bash scripts/check_patches.sh
   bash scripts/patrol_test.sh -d <ios-sim-id> --target patrol_test/editor_toolbar_test.dart
   ```
-  （widget test：断言 8 件停靠、三段面板、段落↔块/块内互斥、ul/ol/todo 与 B/I 双向同步、链接单 URL 面板、面板高度≥288 且随 viewInsets 对齐——**不** grep 工具栏源码。Patrol 视觉：8 件布局 + 面板贴键盘截图对照 editor.html；**校验 `Total:` 非零**，真实信号 = 截图工件，非「测试跑过」。）
+  （widget test：断言 8 件停靠、三段面板、段落↔块/块内互斥、ul/ol/todo 与 B/I 双向同步、链接单 URL 面板、chrome token、44 命中区、390 宽 8 件可见、分隔线 1×22、块项 46、文字样式项等宽 44、面板高度 288 min / 62vh max——**不** grep 工具栏源码。Patrol 视觉：8 件布局 + 面板贴键盘截图对照 editor.html；**校验 `Total:` 非零**，真实信号 = 截图工件，非「测试跑过」。）
 - 人工（仅当无法自动化时）：
   - 最终手感终签：六套主题×明暗下 8 件停靠 + 面板贴键盘观感无突兀（@Ray，仅 Patrol 截图无法定夺的手感差时）。
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-06-06
+自动：`flutter test test/ui/editor/editor_toolbar_test.dart` 通过（+17: All tests passed!）；`flutter test test/ui/editor/` 通过（+41: All tests passed!）；`dart analyze lib/ui/editor/editor_toolbar.dart lib/ui/editor/editor_screen.dart test/ui/editor/editor_toolbar_test.dart patrol_test/editor_toolbar_test.dart packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart` 通过（No issues found）；`bash scripts/check_patches.sh` 通过；`PATH="$HOME/.pub-cache/bin:$PATH" bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/editor_toolbar_test.dart` 通过（Total=1, Failed=0）；截图工件：`/private/tmp/dayz-patrol-screenshots/editor_toolbar_dock.png`、`/private/tmp/dayz-patrol-screenshots/editor_toolbar_format_panel.png`
+人工：待确认（核查人 @Ray；Patrol 已产截图，最终手感终签待确认）
 ```

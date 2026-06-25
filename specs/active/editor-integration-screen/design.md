@@ -104,7 +104,7 @@
 - **状态：** 采纳（2026-06-06，已交付 v1.0 后设计实质变更；**D3「能力由 AppFlowy mobile_toolbar 体系落地、停靠交 AppFlowy、激活态派生自选区」三条仍成立**，本 D 只重排「哪些在停靠条、哪些进面板」并补双向同步）
 - **背景：** 旧工具栏一排 14 件太长易误触（handoff §8 背景）。设计稿 2026-06-04 重排为「高频在外、全集在面板」并新增标注块（callout）能力。
 - **选项：** (A) 维持 14 件横排（被取代）；(B) 停靠条 8 件高频（`Aa·格式` withMenu｜B｜I｜颜色｜无序｜有序｜待办｜图片），`Aa` 菜单内放三段式全集面板（段落 / 列表与块 / 文字样式），链接下沉进文字样式段，停靠快捷件与面板状态双向同步——**additive**（面板列全集，停靠件是其子集快捷方式）。
-- **选择：** B。`editor_toolbar.dart` 的 `buildDayzToolbarItems` 重排为 8 件；`Aa` = `MobileToolbarItem.withMenu`，菜单 = `Column` 三段：①段落（复用既有 `_DayzHeadingMenu` 四等分，正文/H1/H2/H3）②列表与块（3 列网格 radio 互斥：无序/有序/待办/引用/标注/分隔线，经 `formatNodeToType` 或等价的 node type 切换，段落↔块互斥、块内 radio 互斥）③文字样式（B/I/U/S/行内代码，`toggleAttribute`；链接项点击拉起 `MobileLinkMenu` 单 URL 面板）。停靠 ul/ol/todo ↔ 面板同项双向同步、B/I ↔ 面板文字样式段双向同步——**复用 HEAD `155d53d` 已提交的「光标处生效样式」激活态机制（`_isAttributeActive` + `ListenableBuilder(editorState.toggledStyleNotifier)`），双向同步建在其上，不重做该工作**。面板高度对齐 `MediaQuery.viewInsets.bottom`（键盘高），最小 288。
+- **选择：** B。`editor_toolbar.dart` 的 `buildDayzToolbarItems` 重排为 8 件；`Aa` = `MobileToolbarItem.withMenu`，菜单 = `Column` 三段：①段落（复用既有 `_DayzHeadingMenu` 四等分，正文/H1/H2/H3）②列表与块（3 列网格 radio 互斥：无序/有序/待办/引用/标注/分隔线，经 `formatNodeToType` 或等价的 node type 切换，段落↔块互斥、块内 radio 互斥）③文字样式（B/I/U/S/行内代码，`toggleAttribute`；链接项点击拉起 `MobileLinkMenu` 单 URL 面板）。停靠 ul/ol/todo ↔ 面板同项双向同步、B/I ↔ 面板文字样式段双向同步——**复用 HEAD `155d53d` 已提交的「光标处生效样式」激活态机制（`_isAttributeActive` + `ListenableBuilder(editorState.toggledStyleNotifier)`），双向同步建在其上，不重做该工作**。参数按 `pages/screens/editor.html` + `pages/assets/editor.css` / `spec.css` 对齐：dock gap 3px、图标 18px、Aa 17px/600、`.div` 1×22、面板 288px min / 62vh max、块项 46px、文字样式项 44px。面板高度对齐 `MediaQuery.viewInsets.bottom`（键盘高），最小 288，62vh 封顶。
 - **理由：** 8 件高频降误触、面板全集不丢能力，双向同步让两处状态一致；复用已提交的激活态机制避免重造 R6。
 - **代价：** 「列表与块」段的 **标注（callout）插入项** 依赖 callout 块类型注册（`block_types` + builder），归 `editor-rich-blocks` spec（跨 spec 依赖，见 `## 已知风险`），未就绪则该入口先灰/缺；**代码块入口本轮省略**（代码块能力延后到 `editor-rich-blocks` 未来卡，handoff §7），与原型面板存在已知偏差（Patrol 视觉验收须知此偏差、不误报）。`formatNodeToType` / `MobileLinkMenu` / `CalloutBlockKeys` 的精确 vendored API 以 `packages/appflowy-editor` 源码为准，实现时读源码对齐（沿用 T3 同款核实纪律）。
 
@@ -159,6 +159,10 @@ graph TD
 - `pubspec.yaml`                                修改（加 `image_picker`；**设计维护 S1（2026-06-06）**：加 `wechat_assets_picker`（微信式全屏多图选择器，活跃维护；传递依赖 `photo_manager`）——`image_picker` 视相机路径取舍可保留或移除；白名单外共享依赖，显式列出）
 - `pubspec.lock`                                修改（`flutter pub get` 后锁定版本，避免「清单只写 pubspec.yaml 顺手改 lock」越界）
 
+**原生权限配置（设计维护 S1，2026-06-06）**
+- `ios/Runner/Info.plist`                       修改（补 `NSPhotoLibraryUsageDescription` / `NSCameraUsageDescription` / `NSPhotoLibraryAddUsageDescription`，支撑 `wechat_assets_picker` 相册读取与首格相机）
+- `android/app/src/main/AndroidManifest.xml`    修改（补 `READ_EXTERNAL_STORAGE`≤32、`READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO`/`READ_MEDIA_VISUAL_USER_SELECTED`、`CAMERA`，支撑 Android 8+ / 13+ 图片选择与首格相机）
+
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/editor_screen_demo.dart`            新建（编辑页 demo：用 stub 依赖 pump 三状态，真机走查；D9）
 - `lib/demo/demo_entry.dart`                    修改（**仅末尾追加一行**，不插中间、不改 `DemoEntry` 字段）
@@ -171,6 +175,10 @@ graph TD
 - `patrol_test/editor_image_picker_test.dart`   新建（S1：相册授权→微信式全屏选择器→加密 MediaStore→N 个 image node 的原生跨界 E2E，R7/NF2/权限）
 - `patrol_test/editor_toolbar_test.dart`        新建（S2：8 件停靠布局 + 面板贴键盘的视觉截图用例，对照 editor.html，R11/NF4）
 
+**Vendored package patch（设计维护 S2，2026-06-06；必须走 appflowy-patch-tracking 三件套 + packages 独立 commit 纪律）**
+- `packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart` 修改（P007：顶层 toolbar item 遵守 `buttonHeight/buttonSpacing`，并新增 `showKeyboardDismissButton`，让 DayZ 8 件停靠在 390px 视口内保持 44px 命中区完整可见）
+- `packages/CHANGELOG.md`                       修改（P007 台账 + 2026-06-06 变更记录）
+
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，多数尚未定稿；READY 门 = 全部前置「已完成」）**：
@@ -182,7 +190,7 @@ graph TD
   - `auto-save-draft`（README 依赖列）：`DraftCoordinator`（plain payload）、`forceFlush`、`startupCheck`、`DraftRecoveryStatus`、`lifecycle_bridge`。
   - `data-layer`（**非 README 依赖项？——见下「依赖闭合性待确认」**）：`EntryRepo`/`JournalRepo`/`TagRepo`/`MediaRepo`/`EditingSessionRepo` 是取数/写数入口（NF1）。
 - **依赖闭合性待确认（须 README 拍板）**：本屏取数/写元数据触及 `data-layer` 的 Repository，且 `media-storage`/`auto-save-draft`/`editor-json-contract` 自身又依赖 `data-layer`。题面给定 README 依赖列 = `design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft`，**未直列 `data-layer`**——其可经 media/auto-save/ui-shell 传递依赖覆盖。是否需把 `data-layer` 显式补进本屏 README 依赖列，**留 README 编排者拍板**（本屏不擅自改 README）。
-- **AppFlowy mobile_toolbar 能力覆盖待核实**：editor-dock 能力集（H/B/I/U/S/code/color/list×3/quote/link/divider/image）与 AppFlowy `packages/appflowy-editor` 内置 mobile toolbar items 的对应**实现首任务读源码核实**；缺失项写 AppFlowy 自定义 toolbar item（不脱离其体系，守 R5/R6）。若 vendored 包需改动以支持某能力，走 `packages/CHANGELOG.md` 三件套 + 独立 commit（AGENTS.md 红线）——**该改动若发生，属 `appflowy-patch-tracking` 流程、不在本 spec 文件变更白名单内，须停下声明**。
+- **AppFlowy mobile_toolbar 能力覆盖待核实**：editor-dock 能力集（H/B/I/U/S/code/color/list×3/quote/link/divider/image）与 AppFlowy `packages/appflowy-editor` 内置 mobile toolbar items 的对应**实现首任务读源码核实**；缺失项写 AppFlowy 自定义 toolbar item（不脱离其体系，守 R5/R6）。**设计维护 S2 已发生一次 vendored 参数补丁 P007**：`MobileToolbarV2` 顶层按钮遵守 `buttonHeight/buttonSpacing`，并允许隐藏 AppFlowy 额外关闭键盘按钮；该补丁已纳入本 spec 文件变更白名单、`DAYZ-PATCH[P007]` 成对标记、`packages/CHANGELOG.md` 台账与 `scripts/check_patches.sh` 验收。后续若再需新增 vendored 改动，仍须停下声明并走 appflowy-patch-tracking 三件套 + packages 独立 commit 纪律。
 - **`MobileToolbarStyle` 还原度**：工具栏外观能否逐像素等同 `editor-dock`（横向滚动、分隔 `.div`、激活态）受其可配项约束；像素差进 golden/SSIM advisory（design-sync 期二），不阻塞放行（方法论 §4 ④ 软闸）。
 - **编辑器 + 软键盘 + 工具栏停靠（NF5）**：iOS/Android 软键盘高度与 AppFlowy mobile_toolbar 停靠在真机的表现须各验一次（人工，NF5）；本屏不自管 viewInsets（R5）。
 - **`saturate` 玻璃顶栏像素差**：沿用 ui-kit `DayzGlassAppBar` 的 saturate 降级（其 D6），饱和度差进 advisory，不在本屏处理。
