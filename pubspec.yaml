@@ -182,3 +182,27 @@ flutter:
         - asset: assets/fonts/Newsreader-MediumItalic.ttf
           style: italic
           weight: 500
+
+    # 思源宋体 / 思源黑体——打包进 app 的简体中文设计字体（全简体覆盖 ~8200 字，
+    # OFL-1.1）。作为 CJK 主力，使中文在各平台一致渲染，不再依赖系统 Songti/PingFang。
+    - family: Noto Serif SC
+      fonts:
+        - asset: assets/fonts/NotoSerifSC-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSerifSC-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSerifSC-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSerifSC-Bold.ttf
+          weight: 700
+
+    - family: Noto Sans SC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansSC-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansSC-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansSC-Bold.ttf
+          weight: 700
