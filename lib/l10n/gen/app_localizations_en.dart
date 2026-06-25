@@ -520,6 +520,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get editorToolbarFormat => 'Aa · Format';
+
+  @override
   String get editorToolbarHeading => 'Heading';
 
   @override
@@ -553,6 +556,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorToolbarQuote => 'Quote';
 
   @override
+  String get editorToolbarCallout => 'Callout';
+
+  @override
   String get editorToolbarLink => 'Link';
 
   @override
@@ -560,6 +566,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorToolbarImage => 'Image';
+
+  @override
+  String get editorImagePickerDone => 'Done';
+
+  @override
+  String get editorImagePickerCancel => 'Cancel';
+
+  @override
+  String get editorImagePickerPreview => 'Preview';
+
+  @override
+  String get editorImagePickerOriginal => 'Original';
+
+  @override
+  String get editorImagePickerCamera => 'Camera';
+
+  @override
+  String get editorImagePickerAllPhotos => 'Recents';
+
+  @override
+  String get editorFormatSectionParagraph => 'Paragraph';
+
+  @override
+  String get editorFormatSectionBlocks => 'Lists & Blocks';
+
+  @override
+  String get editorFormatSectionText => 'Text Style';
 
   @override
   String get editorColorTextRust => 'Rust';

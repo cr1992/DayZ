@@ -328,7 +328,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: MobileToolbarV2(
+      body: DayzEditorMobileToolbar(
         editorState: _editorState,
         toolbarItems: buildDayzToolbarItems(
           context: context,
@@ -343,15 +343,6 @@ class _EditorScreenState extends State<EditorScreen> {
             );
           },
         ),
-        backgroundColor: colors.bg,
-        foregroundColor: colors.ink2,
-        iconColor: colors.ink,
-        itemHighlightColor: colors.accent,
-        primaryColor: colors.accent,
-        onPrimaryColor: colors.onAccent,
-        itemOutlineColor: colors.hairline,
-        outlineColor: colors.hairline,
-        clearDiagonalLineColor: colors.danger,
         child: mainContent,
       ),
     );
@@ -528,7 +519,9 @@ class _EditorBodyState extends State<_EditorBody> {
     super.initState();
     _focusNode = FocusNode();
     _isEmpty = _checkIsEmpty();
-    _subscription = widget.editorState.transactionStream.listen((_) => _handleDocChanged());
+    _subscription = widget.editorState.transactionStream.listen(
+      (_) => _handleDocChanged(),
+    );
   }
 
   @override
@@ -536,7 +529,9 @@ class _EditorBodyState extends State<_EditorBody> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.editorState != widget.editorState) {
       _subscription?.cancel();
-      _subscription = widget.editorState.transactionStream.listen((_) => _handleDocChanged());
+      _subscription = widget.editorState.transactionStream.listen(
+        (_) => _handleDocChanged(),
+      );
       _isEmpty = _checkIsEmpty();
     }
   }
@@ -558,7 +553,9 @@ class _EditorBodyState extends State<_EditorBody> {
   }
 
   bool _checkIsEmpty() {
-    final text = EditorDocCodec.extractPlainText(widget.editorState.document).trim();
+    final text = EditorDocCodec.extractPlainText(
+      widget.editorState.document,
+    ).trim();
     return text.isEmpty;
   }
 
@@ -607,9 +604,7 @@ class _EditorBodyState extends State<_EditorBody> {
       },
       child: Stack(
         children: [
-          const Positioned.fill(
-            child: SizedBox(),
-          ),
+          const Positioned.fill(child: SizedBox()),
           AppFlowyEditor(
             editorState: widget.editorState,
             focusNode: _focusNode,
@@ -638,9 +633,7 @@ class _EditorBodyState extends State<_EditorBody> {
               child: IgnorePointer(
                 child: Text(
                   content,
-                  style: text.diary.copyWith(
-                    color: Colors.transparent,
-                  ),
+                  style: text.diary.copyWith(color: Colors.transparent),
                 ),
               ),
             ),

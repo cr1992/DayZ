@@ -998,6 +998,12 @@ abstract class AppLocalizations {
   /// **'{date} {weekday}'**
   String editorDateKicker(String date, String weekday);
 
+  /// No description provided for @editorToolbarFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'Aa·格式'**
+  String get editorToolbarFormat;
+
   /// No description provided for @editorToolbarHeading.
   ///
   /// In zh, this message translates to:
@@ -1064,6 +1070,12 @@ abstract class AppLocalizations {
   /// **'引用'**
   String get editorToolbarQuote;
 
+  /// No description provided for @editorToolbarCallout.
+  ///
+  /// In zh, this message translates to:
+  /// **'标注'**
+  String get editorToolbarCallout;
+
   /// No description provided for @editorToolbarLink.
   ///
   /// In zh, this message translates to:
@@ -1081,6 +1093,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'图片'**
   String get editorToolbarImage;
+
+  /// No description provided for @editorImagePickerDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get editorImagePickerDone;
+
+  /// No description provided for @editorImagePickerCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get editorImagePickerCancel;
+
+  /// No description provided for @editorImagePickerPreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'预览'**
+  String get editorImagePickerPreview;
+
+  /// No description provided for @editorImagePickerOriginal.
+  ///
+  /// In zh, this message translates to:
+  /// **'原图'**
+  String get editorImagePickerOriginal;
+
+  /// No description provided for @editorImagePickerCamera.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get editorImagePickerCamera;
+
+  /// No description provided for @editorImagePickerAllPhotos.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近项目'**
+  String get editorImagePickerAllPhotos;
+
+  /// No description provided for @editorFormatSectionParagraph.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落'**
+  String get editorFormatSectionParagraph;
+
+  /// No description provided for @editorFormatSectionBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表与块'**
+  String get editorFormatSectionBlocks;
+
+  /// No description provided for @editorFormatSectionText.
+  ///
+  /// In zh, this message translates to:
+  /// **'文字样式'**
+  String get editorFormatSectionText;
 
   /// No description provided for @editorColorTextRust.
   ///

@@ -508,6 +508,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get editorToolbarFormat => 'Aa·格式';
+
+  @override
   String get editorToolbarHeading => '标题';
 
   @override
@@ -541,6 +544,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorToolbarQuote => '引用';
 
   @override
+  String get editorToolbarCallout => '标注';
+
+  @override
   String get editorToolbarLink => '链接';
 
   @override
@@ -548,6 +554,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorToolbarImage => '图片';
+
+  @override
+  String get editorImagePickerDone => '完成';
+
+  @override
+  String get editorImagePickerCancel => '取消';
+
+  @override
+  String get editorImagePickerPreview => '预览';
+
+  @override
+  String get editorImagePickerOriginal => '原图';
+
+  @override
+  String get editorImagePickerCamera => '拍照';
+
+  @override
+  String get editorImagePickerAllPhotos => '最近项目';
+
+  @override
+  String get editorFormatSectionParagraph => '段落';
+
+  @override
+  String get editorFormatSectionBlocks => '列表与块';
+
+  @override
+  String get editorFormatSectionText => '文字样式';
 
   @override
   String get editorColorTextRust => '红褐';

@@ -59,6 +59,7 @@ dependencies:
   image: ^4.1.7
   go_router: ^14.2.0
   tar: ^2.0.0
+  wechat_assets_picker: ^10.1.2
 
 dev_dependencies:
   flutter_test:
