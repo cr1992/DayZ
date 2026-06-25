@@ -82,7 +82,7 @@ class DayzTextTheme extends ThemeExtension<DayzTextTheme> {
         fontFamily: DayzFonts.serif, // var(--font-diary) resolves to --font-serif
         fontFamilyFallback: DayzFonts.serifFallback,
         fontSize: 18,
-        height: 1.85,
+        height: 1.8, // 对齐设计稿中文阅读行高规范（design-system 字体排印）
         leadingDistribution: TextLeadingDistribution.even,
         color: colors.ink,
       ),

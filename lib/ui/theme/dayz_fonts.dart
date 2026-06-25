@@ -9,19 +9,21 @@ abstract final class DayzFonts {
   static const String serif = 'Newsreader';
   static const String mono = 'SF Mono';
 
+  // 兜底栈对齐设计稿 tokens.css `--font-sans`。`-apple-system` 是 Web-only
+  // 关键字，Flutter 不识别，故不纳入（系统 UI 字本就是最终兜底）。
   static const List<String> sansFallback = [
     'PingFang SC',
-    'Heiti SC',
     'Microsoft YaHei',
-    'Noto Sans CJK SC',
+    'Noto Sans SC',
     'system-ui',
     'sans-serif',
   ];
 
+  // 兜底栈对齐设计稿 tokens.css `--font-serif`。
   static const List<String> serifFallback = [
     'Songti SC',
     'SimSun',
-    'Noto Serif CJK SC',
+    'Noto Serif SC',
     'Georgia',
     'serif',
   ];
