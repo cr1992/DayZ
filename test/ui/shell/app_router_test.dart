@@ -4,19 +4,37 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dayz/ui/shell/app_router.dart';
+import 'package:dayz/ui/shell/theme_controller.dart';
 import '../../l10n/localized_test_app.dart';
-
-/// Test application wrapper.
-Widget _routerTestApp() => localizedRouterTestApp(routerConfig: appRouter);
 
 /// Unit & widget tests for [appRouter] configuration.
 ///
 /// Author: @Ray
 void main() {
+  late ThemeController themeController;
+
+  setUp(() {
+    themeController = ThemeController();
+  });
+
+  tearDown(() {
+    themeController.dispose();
+  });
+
+  // The real app (lib/app.dart) exposes a [ThemeControllerScope] above the
+  // router so route builders such as the settings screen can read it. Mirror
+  // that here, otherwise navigating to those routes throws.
+  Widget routerTestApp() => localizedRouterTestApp(
+    routerConfig: appRouter,
+    builder: (context, child) => ThemeControllerScope(
+      controller: themeController,
+      child: child ?? const SizedBox.shrink(),
+    ),
+  );
   testWidgets('initial location is timeline placeholder screen', (
     tester,
   ) async {
-    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpWidget(routerTestApp());
     await tester.pumpAndSettle();
 
     expect(find.text(testL10n.timeline), findsAtLeastNWidgets(1));
@@ -27,7 +45,7 @@ void main() {
     tester,
   ) async {
     appRouter.go(Routes.timelinePath);
-    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpWidget(routerTestApp());
     await tester.pumpAndSettle();
 
     final onThisDayButton = find.bySemanticsLabel(testL10n.onThisDay);
@@ -43,7 +61,7 @@ void main() {
   testWidgets('navigating to all valid routes renders correct title', (
     tester,
   ) async {
-    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpWidget(routerTestApp());
     await tester.pumpAndSettle();
 
     final routesToTest = {
@@ -64,14 +82,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(entry.value), findsAtLeastNWidgets(1));
-      if (entry.key != Routes.debugHome) {
+      // Settings and Debug Home render real screens, not placeholders.
+      if (entry.key != Routes.debugHome && entry.key != Routes.settings) {
         expect(find.text(testL10n.shellPlaceholderSuffix), findsOneWidget);
       }
     }
   });
 
   testWidgets('path constants navigate to placeholder screens', (tester) async {
-    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpWidget(routerTestApp());
     await tester.pumpAndSettle();
 
     final pathsToTest = {
@@ -79,7 +98,8 @@ void main() {
       Routes.readerPath: testL10n.reader,
       Routes.onthisdayPath: testL10n.onThisDay,
       Routes.searchPath: testL10n.search,
-      Routes.settingsPath: testL10n.settings,
+      // Routes.settingsPath now renders a real screen; covered by
+      // settings_route_test.dart instead of this placeholder sweep.
       Routes.calendarPath: testL10n.calendar,
       Routes.favoritesPath: testL10n.favorites,
       Routes.trashPath: testL10n.trash,
@@ -98,7 +118,7 @@ void main() {
   testWidgets('navigating to invalid path redirects to error not-found page', (
     tester,
   ) async {
-    await tester.pumpWidget(_routerTestApp());
+    await tester.pumpWidget(routerTestApp());
     await tester.pumpAndSettle();
 
     appRouter.go('/some-invalid-path-that-does-not-exist');

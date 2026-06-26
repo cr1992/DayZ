@@ -12,25 +12,25 @@ import 'package:dayz/demo/timeline_demo.dart';
 import '../l10n/localized_test_app.dart';
 
 void main() {
-  testWidgets('TimelineDemo renders loaded timeline and can switch to empty state', (
-    tester,
-  ) async {
-    await tester.pumpWidget(localizedTestApp(child: const TimelineDemo()));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'TimelineDemo renders loaded timeline and can switch to empty state',
+    (tester) async {
+      await tester.pumpWidget(localizedTestApp(child: const TimelineDemo()));
+      await tester.pumpAndSettle();
 
-    expect(find.text('六月二十二日'), findsOneWidget);
+      expect(find.text('六月二十二日'), findsOneWidget);
 
-    await tester.tap(find.text(testL10n.timelineEmptyTitle));
-    await tester.pump();
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(testL10n.timelineEmptyTitle));
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-    expect(find.text(testL10n.timelineEmptyTitle), findsWidgets);
-    expect(find.text(testL10n.timelineEmptyDescription), findsOneWidget);
-  });
+      expect(find.text(testL10n.timelineEmptyTitle), findsWidgets);
+      expect(find.text(testL10n.timelineEmptyDescription), findsOneWidget);
+    },
+  );
 
-  testWidgets('demos appends timeline demo as the last entry', (tester) async {
-    final entry = demos.last;
-    expect(entry.title, '时间线屏 demo');
+  testWidgets('demos registers the timeline demo entry', (tester) async {
+    final entry = demos.firstWhere((e) => e.title == '时间线屏 demo');
 
     await tester.pumpWidget(
       localizedTestApp(child: Builder(builder: entry.builder)),

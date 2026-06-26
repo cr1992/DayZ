@@ -11,6 +11,7 @@ import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
+import 'package:dayz/ui/widgets/dayz_search_field.dart';
 
 import '../../l10n/localized_test_app.dart';
 import 'fake_entry_repo.dart';
@@ -84,10 +85,8 @@ void main() {
             GoRoute(
               name: Routes.timeline,
               path: Routes.timelinePath,
-              builder: (context, state) => TimelineShellPage(
-                repo: repo,
-                shellState: shellState,
-              ),
+              builder: (context, state) =>
+                  TimelineShellPage(repo: repo, shellState: shellState),
             ),
           ],
         ),
@@ -105,45 +104,54 @@ void main() {
     );
   });
 
-  testWidgets('shell journal selection reloads timeline without duplicate app bar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'shell journal selection reloads timeline without duplicate app bar',
+    (tester) async {
+      await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
+      await tester.pumpAndSettle();
 
-    expect(find.text('工作日志首篇'), findsOneWidget);
-    expect(find.text(testL10n.timeline), findsNothing);
-    expect(
-      find.byKey(const ValueKey<String>('timeline-page-title')),
-      findsNothing,
-    );
+      expect(find.text('工作日志首篇'), findsOneWidget);
+      expect(find.text(testL10n.timeline), findsNothing);
+      expect(
+        find.byKey(const ValueKey<String>('timeline-page-title')),
+        findsNothing,
+      );
 
-    await tester.tap(find.bySemanticsLabel(testL10n.menu));
-    await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsLabel('旅行手记'));
-    await tester.pump();
-    await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel(testL10n.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('旅行手记'));
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-    expect(repo.timelineJournalIds, ['journal-a', 'journal-b']);
-    expect(find.text('旅行手记首篇'), findsOneWidget);
-    expect(find.text('工作日志首篇'), findsNothing);
-  });
+      expect(repo.timelineJournalIds, ['journal-a', 'journal-b']);
+      expect(find.text('旅行手记首篇'), findsOneWidget);
+      expect(find.text('工作日志首篇'), findsNothing);
+    },
+  );
 
-  testWidgets('timeline shell actions navigate to search and on-this-day routes', (
-    tester,
-  ) async {
-    await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'timeline shell search submits to search route; on-this-day navigates directly',
+    (tester) async {
+      await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsLabel(testL10n.search));
-    await tester.pumpAndSettle();
-    expect(find.text('Search Route Content'), findsOneWidget);
+      // The search icon opens the inline search field; navigation to the search
+      // route only happens once a non-empty query is submitted.
+      await tester.tap(find.bySemanticsLabel(testL10n.search));
+      await tester.pumpAndSettle();
+      expect(find.byType(DayzSearchField), findsOneWidget);
 
-    router.pop();
-    await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(DayzSearchField.inputKey), '关键词');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      expect(find.text('Search Route Content'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel(testL10n.onThisDay));
-    await tester.pumpAndSettle();
-    expect(find.text('On This Day Route Content'), findsOneWidget);
-  });
+      router.pop();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.bySemanticsLabel(testL10n.onThisDay));
+      await tester.pumpAndSettle();
+      expect(find.text('On This Day Route Content'), findsOneWidget);
+    },
+  );
 }
