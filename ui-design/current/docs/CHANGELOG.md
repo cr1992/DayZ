@@ -29,7 +29,7 @@
 ## 2026-06-26
 - [设计规范/字体] **字体反转：中文改打包思源 SC（定档）**：推翻此前「字体瘦身·偏原生·零下载」决定——产品 Flutter 端打包**思源黑体/宋体**（Noto Sans/Serif SC，全简体 ~8200 字子集 × 4 字重，OFL-1.1，约 23MB）作 CJK 主力，换取各平台渲染一致；体积代价 Ray 主动接受。
   - `tokens.css`（×3：pages/design-system/app-icons）字体栈调为「Latin 品牌字 → 思源 SC → 系统字」，系统 Songti/PingFang 退为生僻字深层兜底；CLAUDE 设计基调 + DESIGN-REF §2.3 同口径改写。
-  - 原型 serif 走内联思源宋静态子集（`pages/screens` + `design-system` 的 CJK 并集 848 字，weights 400+600）保 WYSIWYG；onthisday 屏 Flutter 未落地，真机截图验收 defer（见 BACKLOG）。
+  - 原型 serif 内联思源宋子集保 WYSIWYG（`Noto Serif SC` 挂进各屏 Google Fonts `<link>`，build-standalone.py 构建期按可见字 `&text=` 子集化 + `__DZ_FONTS__` 去重，weights 400/600；产物 7.9MB、零外部请求）；onthisday 屏 Flutter 未落地，真机截图验收 defer（见 BACKLOG）。
 
 ## 2026-06-04
 - [编辑器] **工具栏二次调整：列表上提、链接下沉（定档）**：无序/有序列表提到工具栏（`data-tb-block=ul|ol|todo` 与面板块状态双向同步），工具栏由 7→8 件；链接较低频，收进格式面板「文字样式」行（`data-mark=link` 拉起链接面板）。同步 DESIGN-REF §3c + handoff §8a。
