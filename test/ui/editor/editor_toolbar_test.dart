@@ -69,19 +69,20 @@ void main() async {
         final colors = state.colors;
 
         // Helper to find the color of the bold icon inside toolbar
-        Finder findBoldIcon() {
+        // Dock 加粗钮现为字母文本（设计稿），读其 Text 颜色而非 AFMobileIcon。
+        Finder findBoldGlyph() {
           return find.descendant(
             of: find.descendant(
               of: find.byType(IconButton),
               matching: find.bySemanticsLabel(l10n.editorToolbarBold),
             ),
-            matching: find.byType(AFMobileIcon),
+            matching: find.byType(Text),
           );
         }
 
         // 1. Initial State: Bold is not active
-        var icon = tester.widget<AFMobileIcon>(findBoldIcon());
-        expect(icon.color, colors.ink2);
+        var color = tester.widget<Text>(findBoldGlyph()).style?.color;
+        expect(color, colors.ink2);
 
         // 2. Toggle Bold style on
         await tester.runAsync(() async {
@@ -89,8 +90,8 @@ void main() async {
         });
         await tester.pumpAndSettle();
 
-        icon = tester.widget<AFMobileIcon>(findBoldIcon());
-        expect(icon.color, colors.accentInk);
+        color = tester.widget<Text>(findBoldGlyph()).style?.color;
+        expect(color, colors.accentInk);
 
         // 3. Toggle Bold style off
         await tester.runAsync(() async {
@@ -98,8 +99,8 @@ void main() async {
         });
         await tester.pumpAndSettle();
 
-        icon = tester.widget<AFMobileIcon>(findBoldIcon());
-        expect(icon.color, colors.ink2);
+        color = tester.widget<Text>(findBoldGlyph()).style?.color;
+        expect(color, colors.ink2);
       },
     );
 
@@ -471,15 +472,15 @@ void main() async {
       );
       await tester.pumpAndSettle();
 
-      Finder boldIcon() => find.descendant(
+      Finder boldGlyph() => find.descendant(
         of: find.descendant(
           of: find.byType(IconButton),
           matching: find.bySemanticsLabel(l10n.editorToolbarBold),
         ),
-        matching: find.byType(AFMobileIcon),
+        matching: find.byType(Text),
       );
 
-      expect(tester.widget<AFMobileIcon>(boldIcon()).color, colors.ink2);
+      expect(tester.widget<Text>(boldGlyph()).style?.color, colors.ink2);
 
       await tester.tap(
         find.ancestor(
@@ -492,7 +493,7 @@ void main() async {
       // Toggling on a collapsed caret records the style in toggledStyle; the
       // button must light up immediately (it used to stay dark because the
       // toolbar only rebuilt item icons on selection changes).
-      expect(tester.widget<AFMobileIcon>(boldIcon()).color, colors.accentInk);
+      expect(tester.widget<Text>(boldGlyph()).style?.color, colors.accentInk);
       expect(
         editorState.toggledStyle.containsKey(AppFlowyRichTextKeys.bold),
         isTrue,
@@ -672,11 +673,12 @@ String? _currentNodeType(EditorState editorState) {
 }
 
 Color _toolbarIconColor(WidgetTester tester, String label) {
-  final svgIcon = find.descendant(
+  // Dock 加粗/斜体现为字母文本（设计稿）；读其 Text 颜色。
+  final glyph = find.descendant(
     of: _toolbarButton(label),
-    matching: find.byType(AFMobileIcon),
+    matching: find.byType(Text),
   );
-  return tester.widget<AFMobileIcon>(svgIcon).color!;
+  return tester.widget<Text>(glyph.first).style!.color!;
 }
 
 Color _menuIconColor(WidgetTester tester, String id) {

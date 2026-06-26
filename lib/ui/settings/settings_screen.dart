@@ -1,8 +1,8 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -388,12 +388,7 @@ class _SettingsIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.string(
-      _svg(path),
-      width: 18,
-      height: 18,
-      colorFilter: ColorFilter.mode(context.dayz.accentInk, BlendMode.srcIn),
-    );
+    return DayzIcon.path(path, size: 18, color: context.dayz.accentInk);
   }
 }
 
@@ -507,10 +502,4 @@ Color _themeSwatch(String themeName) {
     'sage' => DayzTokens.sageLightAccent,
     _ => DayzTokens.purpleLightAccent,
   };
-}
-
-String _svg(String path) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
 }

@@ -4,10 +4,10 @@
 import 'dart:async';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
@@ -116,21 +116,16 @@ class _FabSpeedDialState extends State<FabSpeedDial> {
               ),
             ),
             child: Center(
-              child: SvgPicture.string(
-                _svg(DayzIcons.plusPath),
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(colors.onAccent, BlendMode.srcIn),
+              child: DayzIcon.path(
+                DayzIcons.plusPath,
+                size: 24,
+                color: colors.onAccent,
               ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 }
 
@@ -353,14 +348,10 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
                                         ),
                                       ),
                                       child: Center(
-                                        child: SvgPicture.string(
-                                          _svg(action.iconPath),
-                                          width: 20,
-                                          height: 20,
-                                          colorFilter: ColorFilter.mode(
-                                            colors.accentInk,
-                                            BlendMode.srcIn,
-                                          ),
+                                        child: DayzIcon.path(
+                                          action.iconPath,
+                                          size: 20,
+                                          color: colors.accentInk,
                                         ),
                                       ),
                                     ),
@@ -415,14 +406,10 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
                     child: Center(
                       child: Transform.rotate(
                         angle: _fadeAnimation.value * (3.141592653589793 / 4), // 45 degrees
-                        child: SvgPicture.string(
-                          _svg(DayzIcons.plusPath),
-                          width: 24,
-                          height: 24,
-                          colorFilter: ColorFilter.mode(
-                            colors.onAccent,
-                            BlendMode.srcIn,
-                          ),
+                        child: DayzIcon.path(
+                          DayzIcons.plusPath,
+                          size: 24,
+                          color: colors.onAccent,
                         ),
                       ),
                     ),
@@ -434,10 +421,6 @@ class _FabMenuOverlayState extends State<_FabMenuOverlay>
         ],
       ),
     );
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 }
 

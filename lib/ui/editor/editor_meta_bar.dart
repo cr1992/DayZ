@@ -2,12 +2,12 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 class EditorMetaBar extends StatelessWidget {
@@ -158,14 +158,10 @@ class _MetaChip extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SvgPicture.string(
-                    _svg(iconPath),
-                    width: 14,
-                    height: 14,
-                    colorFilter: ColorFilter.mode(
-                      foreground,
-                      BlendMode.srcIn,
-                    ),
+                  DayzIcon.path(
+                    iconPath,
+                    size: 14,
+                    color: foreground,
                   ),
                   const SizedBox(width: DayzSpacing.s1),
                   Text(
@@ -185,10 +181,4 @@ class _MetaChip extends StatelessWidget {
       ),
     );
   }
-}
-
-String _svg(String path) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
 }

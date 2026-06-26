@@ -2,12 +2,12 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Cross-screen empty state with illustration badge and copy.
@@ -57,15 +57,13 @@ class DayzEmptyState extends StatelessWidget {
                     data: IconThemeData(color: colors.ink2, size: 30),
                     child:
                         illustration ??
-                        SvgPicture.string(
-                          _emptyIllustrationSvg,
+                        DayzIcon(
+                          '<path d="${DayzIcons.calendarPath}"/>'
+                          '<path d="M8 14h8M8 17h5"/>',
                           key: illustrationKey,
-                          width: 30,
-                          height: 30,
-                          colorFilter: ColorFilter.mode(
-                            colors.ink2,
-                            BlendMode.srcIn,
-                          ),
+                          size: 30,
+                          color: colors.ink2,
+                          strokeWidth: 1.8,
                         ),
                   ),
                 ),
@@ -106,9 +104,3 @@ class DayzEmptyState extends StatelessWidget {
     );
   }
 }
-
-const String _emptyIllustrationSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.calendarPath}"/>'
-    '<path d="M8 14h8M8 17h5"/></svg>';

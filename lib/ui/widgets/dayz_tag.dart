@@ -2,12 +2,12 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Visual variants for [DayzTag].
@@ -98,14 +98,10 @@ class DayzTag extends StatelessWidget {
                   ),
                   tooltip: effectiveRemoveSemanticLabel,
                   onPressed: onRemove,
-                  icon: SvgPicture.string(
-                    _svg(DayzIcons.closePath),
-                    width: 14,
-                    height: 14,
-                    colorFilter: ColorFilter.mode(
-                      foreground.withValues(alpha: 0.62),
-                      BlendMode.srcIn,
-                    ),
+                  icon: DayzIcon.path(
+                    DayzIcons.closePath,
+                    size: 14,
+                    color: foreground.withValues(alpha: 0.62),
                   ),
                 ),
               ),
@@ -131,9 +127,5 @@ class DayzTag extends StatelessWidget {
     }
 
     return chip;
-  }
-
-  static String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 }

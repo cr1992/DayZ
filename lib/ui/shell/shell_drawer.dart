@@ -1,11 +1,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
@@ -268,14 +267,10 @@ class ShellDrawer extends StatelessWidget {
                         width: 44,
                         height: 44,
                       ),
-                      icon: SvgPicture.string(
-                        _svg(DayzIcons.plusPath),
-                        width: 15,
-                        height: 15,
-                        colorFilter: ColorFilter.mode(
-                          colors.ink3,
-                          BlendMode.srcIn,
-                        ),
+                      icon: DayzIcon.path(
+                        DayzIcons.plusPath,
+                        size: 15,
+                        color: colors.ink3,
                       ),
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -461,15 +456,6 @@ class ShellDrawer extends StatelessWidget {
   }
 
   Widget _buildSvgIcon(String path, Color color) {
-    return SvgPicture.string(
-      _svg(path),
-      width: 19,
-      height: 19,
-      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-    );
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
+    return DayzIcon.path(path, size: 19, color: color);
   }
 }

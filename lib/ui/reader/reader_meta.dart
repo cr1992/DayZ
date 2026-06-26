@@ -7,8 +7,8 @@ import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
 /// Reader metadata block for date, optional meta chips, and tags.
@@ -197,11 +197,10 @@ class _ReaderKicker extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.string(
-              _svg(DayzIcons.calendarPath),
-              width: 16,
-              height: 16,
-              colorFilter: ColorFilter.mode(colors.ink3, BlendMode.srcIn),
+            DayzIcon.path(
+              DayzIcons.calendarPath,
+              size: 16,
+              color: colors.ink3,
             ),
             const SizedBox(width: DayzSpacing.s2),
             Text(
@@ -221,12 +220,6 @@ class _ReaderKicker extends StatelessWidget {
       ),
     );
   }
-}
-
-String _svg(String path) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
 }
 
 class _ReaderMetaPill extends StatelessWidget {

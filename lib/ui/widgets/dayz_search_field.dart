@@ -2,12 +2,12 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Search header input skeleton with search, clear, and cancel affordances.
@@ -110,14 +110,10 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
                   ),
                   child: Row(
                     children: [
-                      SvgPicture.string(
-                        _searchSvg,
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          colors.ink3,
-                          BlendMode.srcIn,
-                        ),
+                      DayzIcon.path(
+                        DayzIcons.searchPath,
+                        size: 18,
+                        color: colors.ink3,
                       ),
                       const SizedBox(width: DayzSpacing.s2),
                       Expanded(
@@ -159,14 +155,10 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
                             height: 44,
                           ),
                           padding: EdgeInsets.zero,
-                          icon: SvgPicture.string(
-                            _clearSvg,
-                            width: 18,
-                            height: 18,
-                            colorFilter: ColorFilter.mode(
-                              colors.ink3,
-                              BlendMode.srcIn,
-                            ),
+                          icon: DayzIcon.path(
+                            DayzIcons.closePath,
+                            size: 18,
+                            color: colors.ink3,
                           ),
                         ),
                     ],
@@ -210,13 +202,3 @@ class _DayzSearchFieldState extends State<DayzSearchField> {
     widget.onClear?.call();
   }
 }
-
-const String _searchSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.searchPath}"/></svg>';
-
-const String _clearSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.closePath}"/></svg>';

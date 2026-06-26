@@ -5,13 +5,13 @@ import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/editor/contract/block_types.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 abstract final class EditorToolbarKeys {
@@ -75,12 +75,14 @@ List<MobileToolbarItem> buildDayzToolbarItems({
     buildFormatItem(l10n),
     buildTextDecorationItem(
       attributeName: AppFlowyRichTextKeys.bold,
-      icon: AFMobileIcons.bold,
+      glyph: 'B',
+      glyphWeight: FontWeight.w700,
       semanticLabel: l10n.editorToolbarBold,
     ),
     buildTextDecorationItem(
       attributeName: AppFlowyRichTextKeys.italic,
-      icon: AFMobileIcons.italic,
+      glyph: 'I',
+      glyphStyle: FontStyle.italic,
       semanticLabel: l10n.editorToolbarItalic,
     ),
     buildColorItem(l10n),
@@ -263,7 +265,9 @@ Future<void> _toggleAttribute(
 
 MobileToolbarItem buildTextDecorationItem({
   required String attributeName,
-  required AFMobileIcons icon,
+  required String glyph,
+  FontWeight glyphWeight = FontWeight.w600,
+  FontStyle glyphStyle = FontStyle.normal,
   required String semanticLabel,
 }) {
   return MobileToolbarItem.action(
@@ -285,10 +289,13 @@ MobileToolbarItem buildTextDecorationItem({
           );
           return Semantics(
             label: semanticLabel,
-            child: AFMobileIcon(
-              afMobileIcons: icon,
-              color: _toolbarItemColor(context, selected: isSelected),
+            child: _dzToolbarGlyph(
+              context,
+              glyph,
+              _toolbarItemColor(context, selected: isSelected),
               size: 18,
+              weight: glyphWeight,
+              style: glyphStyle,
             ),
           );
         },
@@ -347,14 +354,6 @@ bool _isHeadingActive(EditorState editorState, Selection selection) {
   return nodes.any((node) => node.type == HeadingBlockKeys.type);
 }
 
-// Dock「颜色 / 高亮」图标 = 设计稿的马克笔描边（editor.html dock `data-tb="color"`），
-// 走 DayZ 自有 SVG（与 search/close 等图标同一渲染口径），而非 AppFlowy 调色盘图标。
-const String _colorMarkerSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg">'
-    '<path d="${DayzIcons.colorMarkerPath}"/></svg>';
-
 MobileToolbarItem buildColorItem(AppLocalizations l10n) {
   // Feed the DayZ warm palette into AppFlowy's color menu (it exposes
   // textColorOptions / backgroundColorOptions hooks) — the inline keyboard
@@ -371,14 +370,9 @@ MobileToolbarItem buildColorItem(AppLocalizations l10n) {
       child: _toolbarItemFrame(
         context,
         dividerAfter: 'color',
-        child: SvgPicture.string(
-          _colorMarkerSvg,
-          width: 18,
-          height: 18,
-          colorFilter: ColorFilter.mode(
-            _toolbarItemColor(context, selected: false),
-            BlendMode.srcIn,
-          ),
+        child: DayzIcon(
+          DayzIcons.marker,
+          color: _toolbarItemColor(context, selected: false),
         ),
       ),
     ),
@@ -420,10 +414,9 @@ MobileToolbarItem buildBulletedListItem(AppLocalizations l10n) {
       );
       return Semantics(
         label: l10n.editorToolbarBulletedList,
-        child: AFMobileIcon(
-          afMobileIcons: AFMobileIcons.bulletedList,
+        child: DayzIcon(
+          DayzIcons.listBulleted,
           color: _toolbarItemColor(context, selected: isSelected),
-          size: 18,
         ),
       );
     },
@@ -447,10 +440,9 @@ MobileToolbarItem buildNumberedListItem(AppLocalizations l10n) {
       );
       return Semantics(
         label: l10n.editorToolbarNumberedList,
-        child: AFMobileIcon(
-          afMobileIcons: AFMobileIcons.numberedList,
+        child: DayzIcon(
+          DayzIcons.listNumbered,
           color: _toolbarItemColor(context, selected: isSelected),
-          size: 18,
         ),
       );
     },
@@ -474,10 +466,9 @@ MobileToolbarItem buildTodoListItem(AppLocalizations l10n) {
         child: _toolbarItemFrame(
           context,
           dividerAfter: 'todo',
-          child: AFMobileIcon(
-            afMobileIcons: AFMobileIcons.checkbox,
+          child: DayzIcon(
+            DayzIcons.checklist,
             color: _toolbarItemColor(context, selected: isSelected),
-            size: 18,
           ),
         ),
       );
@@ -554,12 +545,7 @@ MobileToolbarItem buildImageItem(
     itemIconBuilder: (context, _, _) {
       return Semantics(
         label: l10n.editorToolbarImage,
-        child: SvgPicture.string(
-          _svg(DayzIcons.imagePath),
-          width: 18,
-          height: 18,
-          colorFilter: ColorFilter.mode(context.dayz.ink2, BlendMode.srcIn),
-        ),
+        child: DayzIcon(DayzIcons.imageOutline, color: context.dayz.ink2),
       );
     },
     actionHandler: (context, editorState) {
@@ -568,8 +554,36 @@ MobileToolbarItem buildImageItem(
   );
 }
 
-String _svg(String path) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
+// 工具栏图标统一走可复用的 DayzIcon(DayzIcons.xxx)（块/列表 18px、文字样式 svg
+// 20px、icon↔文字 gap 8px），不再用 AppFlowy AFMobileIcons（其无序列表是冒号点、
+// 有序列表数字挤成一列，且 size/间距对不上）。
+//
+// 文字样式 B/I/U/S：设计稿用带样式的字母文本（.tb-mark，sans），非图标。
+Widget _dzToolbarGlyph(
+  BuildContext context,
+  String glyph,
+  Color color, {
+  double size = 16,
+  FontWeight weight = FontWeight.w500,
+  FontStyle style = FontStyle.normal,
+  TextDecoration decoration = TextDecoration.none,
+}) {
+  // 字母本身不贡献语义（语义标签由外层 Semantics(label) 给）——与 Aa 触发钮一致，
+  // 否则 dock 上 find.bySemanticsLabel 会被字母 'B'/'I' 的文本语义干扰。
+  return ExcludeSemantics(
+    child: Text(
+      glyph,
+      style: context.dayzText.body.copyWith(
+        fontSize: size,
+        height: 1,
+        color: color,
+        fontWeight: weight,
+        fontStyle: style,
+        decoration: decoration,
+        decorationColor: color,
+      ),
+    ),
+  );
 }
 
 class _DayzFormatPanel extends StatefulWidget {
@@ -646,7 +660,8 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                 editorState: widget.editorState,
                 selection: widget.selection,
                 label: widget.l10n.editorToolbarBold,
-                icon: AFMobileIcons.bold,
+                leading: (ctx, c) =>
+                    _dzToolbarGlyph(ctx, 'B', c, weight: FontWeight.w700),
                 attributeName: AppFlowyRichTextKeys.bold,
               ),
               const SizedBox(width: DayzSpacing.s2),
@@ -655,7 +670,8 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                 editorState: widget.editorState,
                 selection: widget.selection,
                 label: widget.l10n.editorToolbarItalic,
-                icon: AFMobileIcons.italic,
+                leading: (ctx, c) =>
+                    _dzToolbarGlyph(ctx, 'I', c, style: FontStyle.italic),
                 attributeName: AppFlowyRichTextKeys.italic,
               ),
               const SizedBox(width: DayzSpacing.s2),
@@ -664,7 +680,12 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                 editorState: widget.editorState,
                 selection: widget.selection,
                 label: widget.l10n.editorToolbarUnderline,
-                icon: AFMobileIcons.underline,
+                leading: (ctx, c) => _dzToolbarGlyph(
+                  ctx,
+                  'U',
+                  c,
+                  decoration: TextDecoration.underline,
+                ),
                 attributeName: AppFlowyRichTextKeys.underline,
               ),
               const SizedBox(width: DayzSpacing.s2),
@@ -673,7 +694,12 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                 editorState: widget.editorState,
                 selection: widget.selection,
                 label: widget.l10n.editorToolbarStrikethrough,
-                icon: AFMobileIcons.strikethrough,
+                leading: (ctx, c) => _dzToolbarGlyph(
+                  ctx,
+                  'S',
+                  c,
+                  decoration: TextDecoration.lineThrough,
+                ),
                 attributeName: AppFlowyRichTextKeys.strikethrough,
               ),
               const SizedBox(width: DayzSpacing.s2),
@@ -682,7 +708,7 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                 editorState: widget.editorState,
                 selection: widget.selection,
                 label: widget.l10n.editorToolbarCode,
-                icon: AFMobileIcons.code,
+                leading: (ctx, c) => DayzIcon(DayzIcons.code, size: 20, color: c),
                 attributeName: AppFlowyRichTextKeys.code,
               ),
               const SizedBox(width: DayzSpacing.s2),
@@ -691,7 +717,7 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
                   itemKey: EditorToolbarKeys.formatPanelItemKey('link'),
                   label: widget.l10n.editorToolbarLink,
                   selected: _hasLinkAttribute(),
-                  icon: AFMobileIcons.link,
+                  leading: (ctx, c) => DayzIcon(DayzIcons.link, size: 20, color: c),
                   onTap: () => setState(() => _showLinkMenu = true),
                 ),
               ),
@@ -707,37 +733,37 @@ class _DayzFormatPanelState extends State<_DayzFormatPanel> {
       _NodeFormatSpec(
         id: 'bulleted-list',
         label: widget.l10n.editorToolbarBulletedList,
-        icon: AFMobileIcons.bulletedList,
+        svg: DayzIcons.listBulleted,
         type: BulletedListBlockKeys.type,
       ),
       _NodeFormatSpec(
         id: 'numbered-list',
         label: widget.l10n.editorToolbarNumberedList,
-        icon: AFMobileIcons.numberedList,
+        svg: DayzIcons.listNumbered,
         type: NumberedListBlockKeys.type,
       ),
       _NodeFormatSpec(
         id: 'todo-list',
         label: widget.l10n.editorToolbarTodoList,
-        icon: AFMobileIcons.checkbox,
+        svg: DayzIcons.checklist,
         type: TodoListBlockKeys.type,
       ),
       _NodeFormatSpec(
         id: 'quote',
         label: widget.l10n.editorToolbarQuote,
-        icon: AFMobileIcons.quote,
+        svg: DayzIcons.quote,
         type: QuoteBlockKeys.type,
       ),
       _NodeFormatSpec(
         id: 'callout',
         label: widget.l10n.editorToolbarCallout,
-        materialIcon: Icons.info_outline_rounded,
+        svg: DayzIcons.callout,
         type: EditorBlockTypes.callout,
       ),
       _NodeFormatSpec(
         id: 'divider',
         label: widget.l10n.editorToolbarDivider,
-        icon: AFMobileIcons.divider,
+        svg: DayzIcons.divider,
         type: DividerBlockKeys.type,
       ),
     ];
@@ -837,8 +863,7 @@ class _NodeFormatButtonState extends State<_NodeFormatButton> {
         widget.selection,
         widget.spec.type,
       ),
-      icon: widget.spec.icon,
-      materialIcon: widget.spec.materialIcon,
+      svg: widget.spec.svg,
       onTap: () async {
         await _toggleNodeType(
           widget.editorState,
@@ -857,7 +882,7 @@ class _InlineFormatButton extends StatefulWidget {
     required this.editorState,
     required this.selection,
     required this.label,
-    required this.icon,
+    required this.leading,
     required this.attributeName,
   });
 
@@ -865,7 +890,7 @@ class _InlineFormatButton extends StatefulWidget {
   final EditorState editorState;
   final Selection selection;
   final String label;
-  final AFMobileIcons icon;
+  final Widget Function(BuildContext context, Color color) leading;
   final String attributeName;
 
   @override
@@ -887,7 +912,7 @@ class _InlineFormatButtonState extends State<_InlineFormatButton> {
               widget.selection,
               widget.attributeName,
             ),
-            icon: widget.icon,
+            leading: widget.leading,
             onTap: () async {
               await _toggleAttribute(
                 widget.editorState,
@@ -908,14 +933,14 @@ class _TextStyleFormatButton extends StatelessWidget {
     required this.itemKey,
     required this.label,
     required this.selected,
-    required this.icon,
+    required this.leading,
     required this.onTap,
   });
 
   final Key itemKey;
   final String label;
   final bool selected;
-  final AFMobileIcons icon;
+  final Widget Function(BuildContext context, Color color) leading;
   final VoidCallback onTap;
 
   @override
@@ -943,13 +968,7 @@ class _TextStyleFormatButton extends StatelessWidget {
                 color: selected ? Colors.transparent : colors.hairline,
               ),
             ),
-            child: Center(
-              child: AFMobileIcon(
-                afMobileIcons: icon,
-                color: foreground,
-                size: 20,
-              ),
-            ),
+            child: Center(child: leading(context, foreground)),
           ),
         ),
       ),
@@ -963,16 +982,14 @@ class _FormatPanelButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.icon,
-    this.materialIcon,
+    required this.svg,
   });
 
   final Key itemKey;
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final AFMobileIcons? icon;
-  final IconData? materialIcon;
+  final String svg;
 
   @override
   Widget build(BuildContext context) {
@@ -980,12 +997,7 @@ class _FormatPanelButton extends StatelessWidget {
     final text = context.dayzText;
     final foreground = selected ? colors.accentInk : colors.ink2;
 
-    Widget leading;
-    if (icon != null) {
-      leading = AFMobileIcon(afMobileIcons: icon!, color: foreground, size: 20);
-    } else {
-      leading = Icon(materialIcon, size: 20, color: foreground);
-    }
+    final leading = DayzIcon(svg, size: 18, color: foreground);
 
     return Semantics(
       key: itemKey,
@@ -1011,7 +1023,7 @@ class _FormatPanelButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 leading,
-                const SizedBox(width: DayzSpacing.s1),
+                const SizedBox(width: DayzSpacing.s2),
                 Flexible(
                   child: Text(
                     label,
@@ -1037,15 +1049,13 @@ class _NodeFormatSpec {
     required this.id,
     required this.label,
     required this.type,
-    this.icon,
-    this.materialIcon,
-  }) : assert(icon != null || materialIcon != null);
+    required this.svg,
+  });
 
   final String id;
   final String label;
   final String type;
-  final AFMobileIcons? icon;
-  final IconData? materialIcon;
+  final String svg;
 }
 
 /// Heading panel matching the design's four equal options

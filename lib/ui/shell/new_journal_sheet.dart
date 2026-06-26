@@ -2,8 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/widgets/dayz_text_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
@@ -82,10 +82,6 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
   Color _parseColor(String hex) {
     final cleanHex = hex.replaceFirst('#', '');
     return Color(int.parse('FF$cleanHex', radix: 16));
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 
   @override
@@ -185,14 +181,11 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
                           ),
                           child: isSelected
                               ? Center(
-                                  child: SvgPicture.string(
-                                    _svg(DayzIcons.checkPath),
-                                    width: 13,
-                                    height: 13,
-                                    colorFilter: const ColorFilter.mode(
-                                      Colors.white,
-                                      BlendMode.srcIn,
-                                    ),
+                                  child: DayzIcon.path(
+                                    DayzIcons.checkPath,
+                                    size: 13,
+                                    color: Colors.white,
+                                    strokeWidth: 3,
                                   ),
                                 )
                               : null,

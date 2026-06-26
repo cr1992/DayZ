@@ -2,10 +2,10 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 
 import '../theme/dayz_colors.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Favorite star button using the canonical DayZ star path.
@@ -40,25 +40,17 @@ class DayzFavoriteStar extends StatelessWidget {
           constraints: const BoxConstraints.tightFor(width: 44, height: 44),
           tooltip: label,
           onPressed: onPressed,
-          icon: SvgPicture.string(
-            _starSvg(filled: isFavorite),
+          icon: DayzIcon.path(
+            DayzIcons.favoriteStarPath,
             key: ValueKey(
               'dayz-favorite-star-${isFavorite ? 'filled' : 'outline'}',
             ),
-            width: size,
-            height: size,
-            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            size: size,
+            color: color,
+            filled: isFavorite,
           ),
         ),
       ),
     );
-  }
-
-  static String _starSvg({required bool filled}) {
-    if (filled) {
-      return '<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.favoriteStarPath}"/></svg>';
-    }
-
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.favoriteStarPath}"/></svg>';
   }
 }

@@ -2,13 +2,13 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
 import 'package:dayz/ui/shell/fab_speed_dial.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/widgets/dayz_search_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
@@ -146,14 +146,10 @@ class _AppShellState extends State<AppShell> {
                           height: 44,
                         ),
                         tooltip: l10n.menu,
-                        icon: SvgPicture.string(
-                          _svg(DayzIcons.menuPath),
-                          width: 24,
-                          height: 24,
-                          colorFilter: ColorFilter.mode(
-                            colors.ink,
-                            BlendMode.srcIn,
-                          ),
+                        icon: DayzIcon.path(
+                          DayzIcons.menuPath,
+                          size: 24,
+                          color: colors.ink,
                         ),
                         onPressed: () {
                           Scaffold.of(context).openDrawer();
@@ -242,12 +238,7 @@ class _AppShellState extends State<AppShell> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints.tightFor(width: 44, height: 44),
           tooltip: label,
-          icon: SvgPicture.string(
-            _svg(path),
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(colors.ink, BlendMode.srcIn),
-          ),
+          icon: DayzIcon.path(path, size: 24, color: colors.ink),
           onPressed: onPressed,
         ),
       ),
@@ -261,9 +252,5 @@ class _AppShellState extends State<AppShell> {
     } catch (_) {
       return null;
     }
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 }

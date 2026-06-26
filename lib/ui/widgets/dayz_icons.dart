@@ -43,9 +43,26 @@ abstract final class DayzIcons {
   static const String tagPath =
       'M4 12V6a2 2 0 0 1 2-2h6l8 8-8 8zM9 10.4a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Z';
 
-  // 编辑器工具栏「颜色 / 高亮」= 设计稿的马克笔描边（真源：pages/screens/editor.html
-  // 的 dock `data-tb="color"`），不是调色盘。设计源两条 <path>（基线 + 笔尖）在此
-  // 合成单 path：第二段起点 `m14.5 4.5` 转绝对 `M14.5 4.5`，后续仍走相对 `l`，
-  // 避免接在基线末端被位移。
-  static const String colorMarkerPath = 'M4 20h16 M14.5 4.5l5 5-8 8-5 .9.9-5z';
+  // ── 复合标记图标：含 <rect>/<circle>，单 <path> 装不下；配合 DayzIcon(markup) 用。
+  // 真源：ui-design/current/pages/screens/editor.html 的编辑器工具栏 lucide 图标。
+  // 命名按语义（非编辑器专属），其他页面也可直接复用。
+  static const String listBulleted =
+      '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>';
+  static const String listNumbered =
+      '<path d="M10 6h10M10 12h10M10 18h10M4 5h1.4v3.4M4 13.2c.3-.6 1.6-.6 1.6.3 0 .7-1.6 1.3-1.6 2.5h1.8"/>';
+  static const String checklist =
+      '<rect x="3.5" y="4.2" width="7" height="7" rx="2"/><path d="m4.8 7.6 1.3 1.3 2.3-2.6M14 7.5h6M3.5 15.2h7M14 16.5h6"/>';
+  static const String quote =
+      '<path d="M9 7H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3M20 7h-4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a3 3 0 0 1-3 3"/>';
+  static const String callout =
+      '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6h.01"/>';
+  static const String divider =
+      '<path d="M4 12h5M15 12h5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>';
+  static const String imageOutline =
+      '<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="m4 17 4.5-4 3 2.5L16 11l4 4.5"/>';
+  static const String code = '<path d="m8 8-4 4 4 4M16 8l4 4-4 4"/>';
+  static const String link =
+      '<path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.6 5.6l-1.5 1.5M13 17.5 11.5 19a4 4 0 0 1-5.6-5.6l1.5-1.5"/>';
+  static const String marker =
+      '<path d="M4 20h16"/><path d="m14.5 4.5 5 5-8 8-5 .9.9-5z"/>';
 }
