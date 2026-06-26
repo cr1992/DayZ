@@ -33,7 +33,7 @@ void main() {
     final text = tester.widget<Text>(find.text(_paragraphs.first));
     final style = text.style!;
 
-    expect(style.height, 1.85);
+    expect(style.height, 1.8);
     expect(style.leadingDistribution, TextLeadingDistribution.even);
     expect(style.fontFamily, DayzFonts.serif);
     expect(style.fontFamilyFallback, DayzFonts.serifFallback);
@@ -66,7 +66,7 @@ Finder _paragraphTexts() {
     (widget) =>
         widget is Text &&
         _paragraphs.contains(widget.data) &&
-        widget.style?.height == 1.85,
+        widget.style?.height == 1.8,
   );
 }
 

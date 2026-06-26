@@ -34,8 +34,8 @@ void main() {
       expect(textTheme.body.height, 1.7);
       expect(textTheme.body.leadingDistribution, TextLeadingDistribution.even);
 
-      // Diary height is 1.85
-      expect(textTheme.diary.height, 1.85);
+      // Diary height is 1.8 (对齐设计稿中文阅读行高规范)
+      expect(textTheme.diary.height, 1.8);
       expect(textTheme.diary.leadingDistribution, TextLeadingDistribution.even);
 
       // Other items have even leading distribution
@@ -62,7 +62,7 @@ void main() {
 
       final lerped = a.lerp(b, 0.5);
       expect(lerped.body.height, 1.7);
-      expect(lerped.diary.height, 1.85);
+      expect(lerped.diary.height, 1.8);
       expect(lerped.body.color, Color.lerp(a.body.color, b.body.color, 0.5));
     });
 
