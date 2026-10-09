@@ -80,6 +80,16 @@ While 九宫格第 9 格为 `+N` 收起态，单篇阅读屏 SHALL 在点击该 
 - 操作：⋯ → 移到日记本 → 选一个目标日记本。
 - 结果：选择器各行带色点（`journal.color`）与篇数；当前本右侧打勾；选定后 `EntryRepo` 更新 journalId、toast「已移到「目标本名」」。
 
+### R10 · 内容图开大图查看器（详情封面 + 九宫格 → DayzImageViewer，边界：卡片封面不接）
+单篇阅读屏 SHALL 把**详情页内容型图片**（`read-hero` 封面 + `DayzGallery` 九宫格）接到 ui-kit 的 `DayzImageViewer`：点封面打开查看器、点九宫格第 i 张以 `initialIndex == i` 打开（点谁从谁开），一组图为「封面 + 九宫格全部图」（与原型 `editor.md §5(b)` / DESIGN-REF §3c `data-lightbox` 自动接线一致）。**边界（Day One 同此）**：时间线 / 收藏 / 往年今日的**卡片封面图不接查看器**——整卡点击 = 打开这篇日记（已由各来源屏接 `Routes.reader` 导航，归各来源屏 spec）；只有「进了详情后」的内容图才开查看器。
+- 前提：进入本屏（详情态），有封面或九宫格图。
+- 操作：点详情封面，或点九宫格第 i 张。
+- 结果：
+  - 点封面 → 推 `DayzImageViewer`（该组图，`initialIndex` 指向封面）。
+  - 点九宫格第 i 张 → 推 `DayzImageViewer`，`initialIndex == i`（点谁从谁开）。
+  - 打开查看器**不改变当前路由 entry**（查看器是本屏内的覆盖层 / 同栈推入，退出回到本屏，不导航到别的日记）。
+  - **不接**：本屏不触发任何「卡片封面 → 查看器」逻辑（卡片在来源屏，整卡点击是进详情，不在本 spec）；编辑只读 `.cb-img` 行内图是**后续消费方**，不在本卡范围。
+
 ## 非功能需求
 
 ### NF1 · Repository 边界（硬红线）

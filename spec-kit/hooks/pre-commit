@@ -109,6 +109,8 @@ fi
 # 临时镜像里没有这些，只有真实工作树能正确判定可达性。
 run_gate check_dead_links.sh "死链检查" "specs" "$ROOT"
 run_gate check_specs_index.sh "Specs 索引一致性检查" "specs" "$ROOT"
+# 结构合规：跑工作树全量（档判定需同目录 verification.md 是否在，暂存镜像可能缺兄弟文件）。
+run_gate lint_spec_structure.sh "Spec 结构合规检查" "specs" "$ROOT"
 
 if [ "$fail" -ne 0 ]; then
   echo "" >&2

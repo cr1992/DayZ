@@ -86,6 +86,11 @@ void main() {
 
       final mayHeader = find.byKey(timelineMonthHeaderTestKey(2026, 5));
       expect(mayHeader, findsOneWidget);
+      final mayHeaderRect = tester.getRect(mayHeader);
+      expect(
+        mayHeaderRect.top,
+        moreOrLessEquals(kToolbarHeight, epsilon: 1),
+      );
 
       semantics.dispose();
     });

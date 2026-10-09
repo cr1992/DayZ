@@ -4,123 +4,154 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:dayz/app.dart';
-import 'package:dayz/app/app_services.dart';
-import 'package:dayz/data/time_zone_triple.dart';
-import 'package:dayz/l10n/locale_controller.dart';
 import 'package:dayz/ui/shell/app_router.dart';
+import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
-import 'package:dayz/ui/timeline/timeline_month_section.dart';
+import 'package:dayz/ui/shell/shell_state.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
+import 'package:dayz/ui/widgets/dayz_search_field.dart';
 
-import '../../app/app_test_db.dart';
+import '../../l10n/localized_test_app.dart';
+import 'fake_entry_repo.dart';
 
 void main() {
-  late AppServices services;
-  late LocaleController locale;
+  late ShellState shellState;
+  late FakeEntryRepo repo;
+  late GoRouter router;
 
-  setUpAll(initTimezoneData);
-
-  setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    locale = LocaleController();
-    await locale.setLocale(const Locale('zh'));
-    services = inMemoryServices();
-    shellState.setJournals(const []);
-    shellState.selectJournal(null);
-    appRouter.go(Routes.timelinePath);
-  });
-
-  tearDown(() async {
-    locale.dispose();
-    await services.close();
-  });
-
-  Future<void> settle(WidgetTester tester) async {
-    for (var i = 0; i < 6; i++) {
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-      await tester.pump(const Duration(milliseconds: 50));
-    }
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> pumpApp(WidgetTester tester) async {
-    await tester.pumpWidget(
-      DayZApp(localeController: locale, services: services),
+  setUp(() {
+    shellState = ShellState(
+      initialJournals: const [
+        JournalSummary(
+          id: 'journal-a',
+          name: '工作日志',
+          color: '#786CAD',
+          count: 1,
+        ),
+        JournalSummary(
+          id: 'journal-b',
+          name: '旅行手记',
+          color: '#C67D33',
+          count: 1,
+        ),
+      ],
+      initialJournalId: 'journal-a',
     );
-    await settle(tester);
-  }
-
-  // push 的页面在匹配栈顶，取最后一个匹配的路径。
-  String currentPath() =>
-      appRouter.routerDelegate.currentConfiguration.last.matchedLocation;
-
-  testWidgets('menu button opens the shell drawer', (tester) async {
-    await pumpApp(tester);
-    expect(find.byType(ShellDrawer), findsNothing);
-
-    await tester.tap(find.byKey(TimelinePage.menuButtonKey));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(ShellDrawer), findsOneWidget);
-  });
-
-  testWidgets('search and on-this-day buttons navigate to their routes', (
-    tester,
-  ) async {
-    await pumpApp(tester);
-
-    await tester.tap(find.byKey(TimelinePage.searchButtonKey));
-    await tester.pumpAndSettle();
-    expect(currentPath(), Routes.searchPath);
-
-    appRouter.go(Routes.timelinePath);
-    await settle(tester);
-
-    await tester.tap(find.byKey(TimelinePage.onThisDayButtonKey));
-    await tester.pumpAndSettle();
-    expect(currentPath(), Routes.onthisdayPath);
-  });
-
-  testWidgets('selecting a journal in the drawer re-scopes the timeline', (
-    tester,
-  ) async {
-    late String workEntry;
-    late String lifeEntry;
-    await tester.runAsync(() async {
-      final work = await services.journals.create('工作');
-      final life = await services.journals.create('生活', sortOrder: 1);
-      workEntry = (await addEntry(
-        services,
-        journalId: work.id,
-        utc: DateTime.utc(2026, 9, 2),
-        text: 'w',
-      )).id;
-      lifeEntry = (await addEntry(
-        services,
-        journalId: life.id,
-        utc: DateTime.utc(2026, 9, 5),
-        text: 'l',
-      )).id;
-    });
-    await pumpApp(tester);
-    expect(find.byKey(timelineEntryCardTestKey(workEntry)), findsOneWidget);
-    expect(find.byKey(timelineEntryCardTestKey(lifeEntry)), findsOneWidget);
-
-    await tester.tap(find.byKey(TimelinePage.menuButtonKey));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.descendant(of: find.byType(ShellDrawer), matching: find.text('生活')),
+    repo = FakeEntryRepo(
+      entries: [
+        fakeEntry(
+          id: 'journal-a-entry',
+          journalId: 'journal-a',
+          entryDtUtc: DateTime.utc(2026, 6, 18, 10),
+          localYear: 2026,
+          localMonth: 6,
+          localDay: 18,
+          contentPlain: '工作日志首篇\nSummary',
+        ),
+        fakeEntry(
+          id: 'journal-b-entry',
+          journalId: 'journal-b',
+          entryDtUtc: DateTime.utc(2026, 6, 16, 10),
+          localYear: 2026,
+          localMonth: 6,
+          localDay: 16,
+          contentPlain: '旅行手记首篇\nSummary',
+        ),
+      ],
     );
-    await settle(tester);
-    if (find.byType(ShellDrawer).evaluate().isNotEmpty) {
-      Navigator.of(tester.element(find.byType(ShellDrawer))).pop();
-      await settle(tester);
-    }
-
-    expect(find.byKey(timelineEntryCardTestKey(lifeEntry)), findsOneWidget);
-    expect(find.byKey(timelineEntryCardTestKey(workEntry)), findsNothing);
+    router = GoRouter(
+      initialLocation: Routes.timelinePath,
+      routes: [
+        ShellRoute(
+          builder: (context, state, child) {
+            return ListenableBuilder(
+              listenable: shellState,
+              builder: (context, _) {
+                return AppShell(
+                  body: child,
+                  journals: shellState.journals,
+                  currentJournalId: shellState.currentJournalId,
+                  currentRoute: state.topRoute?.name ?? state.name,
+                  onSelectJournal: shellState.selectJournal,
+                  onNavigate: (route) => context.pushNamed(route),
+                  onNewJournal: () {},
+                );
+              },
+            );
+          },
+          routes: [
+            GoRoute(
+              name: Routes.timeline,
+              path: Routes.timelinePath,
+              builder: (context, state) =>
+                  TimelineShellPage(repo: repo, shellState: shellState),
+            ),
+          ],
+        ),
+        GoRoute(
+          name: Routes.search,
+          path: Routes.searchPath,
+          builder: (context, state) => const Text('Search Route Content'),
+        ),
+        GoRoute(
+          name: Routes.onthisday,
+          path: Routes.onthisdayPath,
+          builder: (context, state) => const Text('On This Day Route Content'),
+        ),
+      ],
+    );
   });
+
+  testWidgets(
+    'shell journal selection reloads timeline without duplicate app bar',
+    (tester) async {
+      await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.text('工作日志首篇'), findsOneWidget);
+      expect(find.text(testL10n.timeline), findsNothing);
+      expect(
+        find.byKey(const ValueKey<String>('timeline-page-title')),
+        findsNothing,
+      );
+
+      await tester.tap(find.bySemanticsLabel(testL10n.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('旅行手记'));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(repo.timelineJournalIds, ['journal-a', 'journal-b']);
+      expect(find.text('旅行手记首篇'), findsOneWidget);
+      expect(find.text('工作日志首篇'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'timeline shell search submits to search route; on-this-day navigates directly',
+    (tester) async {
+      await tester.pumpWidget(localizedRouterTestApp(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      // The search icon opens the inline search field; navigation to the search
+      // route only happens once a non-empty query is submitted.
+      await tester.tap(find.bySemanticsLabel(testL10n.search));
+      await tester.pumpAndSettle();
+      expect(find.byType(DayzSearchField), findsOneWidget);
+
+      await tester.enterText(find.byKey(DayzSearchField.inputKey), '关键词');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      expect(find.text('Search Route Content'), findsOneWidget);
+
+      router.pop();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.bySemanticsLabel(testL10n.onThisDay));
+      await tester.pumpAndSettle();
+      expect(find.text('On This Day Route Content'), findsOneWidget);
+    },
+  );
 }

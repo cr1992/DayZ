@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'dart:async';
+
 import 'package:dayz/data/database.dart';
 import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/ui/timeline/timeline_controller.dart';
@@ -15,7 +17,14 @@ class FakeEntryRepo
   FakeEntryRepo({List<Entry> entries = const <Entry>[]})
     : _entries = _sortEntries(entries);
 
-  final List<Entry> _entries;
+  List<Entry> _entries;
+
+  /// Simulates a write landing in the entries table (keeps timeline order).
+  void addEntry(Entry entry) {
+    _entries = _sortEntries([..._entries, entry]);
+    changes.add(null);
+  }
+
   final List<String?> timelineJournalIds = <String?>[];
   int timelineCallCount = 0;
   Future<void> Function()? beforeTimelineResponse;
@@ -111,6 +120,17 @@ class FakeEntryRepo
   Future<void> softDelete(String id) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> restore(String id) {
+    throw UnimplementedError();
+  }
+
+  /// Tests push into this to simulate entries-table writes.
+  final StreamController<void> changes = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> watchChanges() => changes.stream;
 
   @override
   Future<EntryTimelinePage> timeline({

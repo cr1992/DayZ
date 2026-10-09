@@ -2,20 +2,21 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
 import 'package:dayz/ui/shell/fab_speed_dial.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
+import 'package:dayz/ui/widgets/dayz_search_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 
 /// The layout shell for DayZ pages containing shared drawer, glass app bar, and FAB.
 ///
 /// Author: @Ray
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   final Widget body;
   final List<JournalSummary> journals;
   final String? currentJournalId;
@@ -27,7 +28,6 @@ class AppShell extends StatelessWidget {
   final VoidCallback onNewJournal;
 
   /// 页面自带 sliver 顶栏时为 true：外壳不再叠加顶栏，只提供 drawer / FAB / 让位。
-  final bool pageOwnsAppBar;
 
   const AppShell({
     required this.body,
@@ -39,113 +39,167 @@ class AppShell extends StatelessWidget {
     required this.onSelectJournal,
     required this.onNavigate,
     required this.onNewJournal,
-    this.pageOwnsAppBar = false,
     super.key,
   });
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  bool _isSearching = false;
+  bool _renderSearch = false;
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final l10n = AppLocalizations.of(context);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
+    final route = widget.currentRoute ?? _getRouteName(context);
 
     return Scaffold(
       backgroundColor: colors.bg,
       drawer: ShellDrawer(
-        journals: journals,
-        currentJournalId: currentJournalId,
-        allJournalCount: allJournalCount,
-        favoriteCount: favoriteCount,
-        onSelectJournal: onSelectJournal,
-        onNavigate: onNavigate,
-        onNewJournal: onNewJournal,
+        journals: widget.journals,
+        currentJournalId: widget.currentJournalId,
+        allJournalCount: widget.allJournalCount,
+        favoriteCount: widget.favoriteCount,
+        onSelectJournal: widget.onSelectJournal,
+        onNavigate: widget.onNavigate,
+        onNewJournal: widget.onNewJournal,
       ),
       floatingActionButton: const FabSpeedDial(),
       drawerEnableOpenDragGesture: !disableAnimations,
-      body: pageOwnsAppBar
-          ? SafeArea(top: false, bottom: true, child: body)
-          : NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  DayzGlassAppBar(
-                    title: Text(_getTitle(context, l10n)),
-                    leading: Builder(
-                      builder: (context) {
-                        return Semantics(
-                          button: true,
-                          label: l10n.menu,
-                          child: SizedBox.square(
-                            dimension: 44,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints.tightFor(
-                                width: 44,
-                                height: 44,
-                              ),
-                              tooltip: l10n.menu,
-                              icon: SvgPicture.string(
-                                _svg(DayzIcons.menuPath),
-                                width: 24,
-                                height: 24,
-                                colorFilter: ColorFilter.mode(
-                                  colors.ink,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              onPressed: () {
-                                Scaffold.of(context).openDrawer();
-                              },
-                            ),
-                          ),
-                        );
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            DayzGlassAppBar(
+              isSearching: _isSearching,
+              searchWidget: _renderSearch
+                  ? DayzSearchField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      hintText: l10n.searchHint,
+                      onCancel: () {
+                        setState(() {
+                          _isSearching = false;
+                        });
+                        _searchController.clear();
+                        _searchFocusNode.unfocus();
+                        Future.delayed(const Duration(milliseconds: 200), () {
+                          if (mounted && !_isSearching) {
+                            setState(() {
+                              _renderSearch = false;
+                            });
+                          }
+                        });
                       },
-                    ),
-                    actions: [
-                      Semantics(
-                        button: true,
-                        label: l10n.search,
-                        child: SizedBox.square(
-                          dimension: 44,
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 44,
-                              height: 44,
-                            ),
-                            tooltip: l10n.search,
-                            icon: SvgPicture.string(
-                              _svg(DayzIcons.searchPath),
-                              width: 24,
-                              height: 24,
-                              colorFilter: ColorFilter.mode(
-                                colors.ink,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            onPressed: () {
-                              context.pushNamed(Routes.search);
-                            },
-                          ),
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          widget.onNavigate(Routes.search);
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            if (mounted) {
+                              setState(() {
+                                _isSearching = false;
+                              });
+                              _searchController.clear();
+                              _searchFocusNode.unfocus();
+                              Future.delayed(const Duration(milliseconds: 200), () {
+                                if (mounted && !_isSearching) {
+                                  setState(() {
+                                    _renderSearch = false;
+                                  });
+                                }
+                              });
+                            }
+                          });
+                        }
+                      },
+                    )
+                  : null,
+              title: Text(_getTitle(route, l10n)),
+              leading: Builder(
+                builder: (context) {
+                  return Semantics(
+                    button: true,
+                    label: l10n.menu,
+                    child: SizedBox.square(
+                      dimension: 44,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 44,
+                          height: 44,
                         ),
+                        tooltip: l10n.menu,
+                        icon: DayzIcon.path(
+                          DayzIcons.menuPath,
+                          size: 24,
+                          color: colors.ink,
+                        ),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
                       ),
-                    ],
-                  ),
-                ];
-              },
-              body: SafeArea(
-                top: false, // NestedScrollView handles top padding
-                bottom: true,
-                child: body,
+                    ),
+                  );
+                },
               ),
+              actions: [
+                _buildActionButton(
+                  label: l10n.search,
+                  path: DayzIcons.searchPath,
+                  colors: colors,
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                      _renderSearch = true;
+                    });
+                    _searchFocusNode.requestFocus();
+                  },
+                ),
+                if (route == Routes.timeline) ...[
+                  const SizedBox(width: 6.0),
+                  _buildActionButton(
+                    label: l10n.onThisDay,
+                    path: DayzIcons.historyClockPath,
+                    colors: colors,
+                    onPressed: () => widget.onNavigate(Routes.onthisday),
+                  ),
+                ],
+              ],
             ),
+          ];
+        },
+        body: SafeArea(
+          top: false, // NestedScrollView handles top padding
+          bottom: true,
+          child: widget.body,
+        ),
+      ),
     );
   }
 
-  String _getTitle(BuildContext context, AppLocalizations l10n) {
-    final route = currentRoute ?? _getRouteName(context);
+  String _getTitle(String? route, AppLocalizations l10n) {
     switch (route) {
       case Routes.timeline:
-        return l10n.timeline;
+        return '';
       case Routes.reader:
         return l10n.reader;
       case Routes.editor:
@@ -171,15 +225,34 @@ class AppShell extends StatelessWidget {
     }
   }
 
+  Widget _buildActionButton({
+    required String label,
+    required String path,
+    required DayzColors colors,
+    required VoidCallback onPressed,
+  }) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: SizedBox.square(
+        dimension: 44,
+        child: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+          tooltip: label,
+          icon: DayzIcon.path(path, size: 24, color: colors.ink),
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+
   String? _getRouteName(BuildContext context) {
     try {
-      return GoRouterState.of(context).name;
+      return GoRouterState.of(context).topRoute?.name ??
+          GoRouterState.of(context).name;
     } catch (_) {
       return null;
     }
-  }
-
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
   }
 }

@@ -24,6 +24,7 @@ migrate_working_dir/
 .vscode/
 
 # Flutter/Dart/Pub related
+devtools_options.yaml
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -87,9 +88,13 @@ app.*.map.json
 # Test outputs
 test/thumbnails/**
 !test/thumbnails/**/*.dart
+**/failures/
 
 # AI Agent workspace config & local tools
 .agents/
 
 # spec-kit 写时白名单：每个会话/任务各自维护，不入库
 .spec-task-whitelist
+
+# Patrol：每次 `patrol test` 自动重新生成的测试 bundle，不入库
+patrol_test/test_bundle.dart

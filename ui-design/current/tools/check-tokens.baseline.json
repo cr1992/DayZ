@@ -1,0 +1,816 @@
+{
+  "note": "已认证保留的 token 违规清单。新增违规需修代码或显式加到这里。",
+  "generatedAt": "2026-06-03",
+  "reason": "prototype-kit 拿走 DayZ 具体设计后 burn-down（移除 9 处 DayZ 硬编码色）",
+  "totalEntries": 156,
+  "files": {
+    "design-system/assets/spec.css": [
+      {
+        "line": 72,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 73,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 74,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 300,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 316,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 446,
+        "kind": "bare-rgba",
+        "match": "rgba(20, 16, 10, 0.46)"
+      },
+      {
+        "line": 447,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 550,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.4)"
+      },
+      {
+        "line": 556,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.7)"
+      },
+      {
+        "line": 576,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.1)"
+      },
+      {
+        "line": 716,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 724,
+        "kind": "bare-rgba",
+        "match": "rgba(38, 30, 18, 0.45)"
+      },
+      {
+        "line": 725,
+        "kind": "bare-rgba",
+        "match": "rgba(38, 30, 18, 0.28)"
+      },
+      {
+        "line": 733,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.16)"
+      },
+      {
+        "line": 733,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0)"
+      },
+      {
+        "line": 737,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.3)"
+      },
+      {
+        "line": 737,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.4)"
+      },
+      {
+        "line": 738,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.3)"
+      },
+      {
+        "line": 738,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.5)"
+      },
+      {
+        "line": 739,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 915,
+        "kind": "bare-rgba",
+        "match": "rgba(60, 50, 35, 0.22)"
+      }
+    ],
+    "design-system/design-system.html": [
+      {
+        "line": 83,
+        "kind": "bare-hex",
+        "match": "#FAF7F1"
+      },
+      {
+        "line": 84,
+        "kind": "bare-hex",
+        "match": "#E9EFE4"
+      },
+      {
+        "line": 85,
+        "kind": "bare-hex",
+        "match": "#E8EEF1"
+      },
+      {
+        "line": 86,
+        "kind": "bare-hex",
+        "match": "#ECEBE8"
+      },
+      {
+        "line": 200,
+        "kind": "bare-hex",
+        "match": "#FAF7F1"
+      },
+      {
+        "line": 201,
+        "kind": "bare-hex",
+        "match": "#E9EFE4"
+      },
+      {
+        "line": 202,
+        "kind": "bare-hex",
+        "match": "#E8EEF1"
+      },
+      {
+        "line": 203,
+        "kind": "bare-hex",
+        "match": "#ECEBE8"
+      },
+      {
+        "line": 204,
+        "kind": "bare-hex",
+        "match": "#FCFAF6"
+      },
+      {
+        "line": 205,
+        "kind": "bare-hex",
+        "match": "#FCFAF6"
+      }
+    ],
+    "pages/assets/editor.css": [
+      {
+        "line": 14,
+        "kind": "bare-rgba",
+        "match": "rgba(60, 50, 35, 0.22)"
+      }
+    ],
+    "pages/assets/editor.js": [
+      {
+        "line": 22,
+        "kind": "bare-hex",
+        "match": "#B5524B"
+      },
+      {
+        "line": 23,
+        "kind": "bare-hex",
+        "match": "#C2772F"
+      },
+      {
+        "line": 24,
+        "kind": "bare-hex",
+        "match": "#B07D2A"
+      },
+      {
+        "line": 25,
+        "kind": "bare-hex",
+        "match": "#5E7F4E"
+      },
+      {
+        "line": 26,
+        "kind": "bare-hex",
+        "match": "#4E7A99"
+      },
+      {
+        "line": 27,
+        "kind": "bare-hex",
+        "match": "#7A6BA8"
+      },
+      {
+        "line": 32,
+        "kind": "bare-hex",
+        "match": "#F2E3B0"
+      },
+      {
+        "line": 33,
+        "kind": "bare-hex",
+        "match": "#D8E6CE"
+      },
+      {
+        "line": 34,
+        "kind": "bare-hex",
+        "match": "#D2E0EC"
+      },
+      {
+        "line": 35,
+        "kind": "bare-hex",
+        "match": "#E2DAEF"
+      },
+      {
+        "line": 36,
+        "kind": "bare-hex",
+        "match": "#F1DBDE"
+      },
+      {
+        "line": 81,
+        "kind": "bare-hex",
+        "match": "#2C2823"
+      }
+    ],
+    "pages/assets/pages.css": [
+      {
+        "line": 7,
+        "kind": "bare-hex",
+        "match": "#CFC8B9"
+      },
+      {
+        "line": 7,
+        "kind": "bare-hex",
+        "match": "#E7E2D8"
+      },
+      {
+        "line": 8,
+        "kind": "bare-hex",
+        "match": "#0F0E0A"
+      },
+      {
+        "line": 8,
+        "kind": "bare-hex",
+        "match": "#211E17"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#131316"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#1C1C1F"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#2B2B2F"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#3A3A3E"
+      },
+      {
+        "line": 52,
+        "kind": "bare-hex",
+        "match": "#060607"
+      },
+      {
+        "line": 52,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.10)"
+      },
+      {
+        "line": 53,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,10,0.40)"
+      },
+      {
+        "line": 53,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,10,0.45)"
+      },
+      {
+        "line": 57,
+        "kind": "bare-hex",
+        "match": "#000"
+      },
+      {
+        "line": 57,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.07)"
+      },
+      {
+        "line": 58,
+        "kind": "bare-rgba",
+        "match": "rgba(0,0,0,0.6)"
+      },
+      {
+        "line": 58,
+        "kind": "bare-rgba",
+        "match": "rgba(0,0,0,0.7)"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 61,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 144,
+        "kind": "bare-hex",
+        "match": "#EDE8DD"
+      },
+      {
+        "line": 149,
+        "kind": "bare-hex",
+        "match": "#ABA496"
+      }
+    ],
+    "pages/assets/screen.css": [
+      {
+        "line": 22,
+        "kind": "bare-hex",
+        "match": "#000"
+      },
+      {
+        "line": 27,
+        "kind": "bare-hex",
+        "match": "#05060a"
+      },
+      {
+        "line": 27,
+        "kind": "bare-hex",
+        "match": "#1d2433"
+      },
+      {
+        "line": 185,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.1)"
+      },
+      {
+        "line": 195,
+        "kind": "bare-hex",
+        "match": "#fff"
+      }
+    ],
+    "pages/assets/screen.js": [
+      {
+        "line": 153,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 154,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 155,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#4F86A8"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#9A6A4B"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#B05C77"
+      },
+      {
+        "line": 224,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 299,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 300,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 301,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      }
+    ],
+    "pages/assets/spec.css": [
+      {
+        "line": 72,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 73,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 74,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 300,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 316,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 446,
+        "kind": "bare-rgba",
+        "match": "rgba(20, 16, 10, 0.46)"
+      },
+      {
+        "line": 447,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 550,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.4)"
+      },
+      {
+        "line": 556,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.7)"
+      },
+      {
+        "line": 576,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.1)"
+      },
+      {
+        "line": 716,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 724,
+        "kind": "bare-rgba",
+        "match": "rgba(38, 30, 18, 0.45)"
+      },
+      {
+        "line": 725,
+        "kind": "bare-rgba",
+        "match": "rgba(38, 30, 18, 0.28)"
+      },
+      {
+        "line": 733,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.16)"
+      },
+      {
+        "line": 733,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0)"
+      },
+      {
+        "line": 737,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.3)"
+      },
+      {
+        "line": 737,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.4)"
+      },
+      {
+        "line": 738,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.3)"
+      },
+      {
+        "line": 738,
+        "kind": "bare-rgba",
+        "match": "rgba(38,30,18,0.5)"
+      },
+      {
+        "line": 739,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 915,
+        "kind": "bare-rgba",
+        "match": "rgba(60, 50, 35, 0.22)"
+      }
+    ],
+    "pages/assets/timeline.css": [
+      {
+        "line": 30,
+        "kind": "bare-rgba",
+        "match": "rgba(60, 50, 35, 0.34)"
+      },
+      {
+        "line": 31,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.6)"
+      }
+    ],
+    "pages/screens/memory.html": [
+      {
+        "line": 28,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.3)"
+      },
+      {
+        "line": 28,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.5)"
+      },
+      {
+        "line": 47,
+        "kind": "bare-hex",
+        "match": "#1a1712"
+      },
+      {
+        "line": 50,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,12,0.82)"
+      },
+      {
+        "line": 50,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,12,0)"
+      },
+      {
+        "line": 52,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.82)"
+      },
+      {
+        "line": 53,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 54,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.86)"
+      },
+      {
+        "line": 60,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.78)"
+      },
+      {
+        "line": 62,
+        "kind": "bare-hex",
+        "match": "#1a1712"
+      },
+      {
+        "line": 62,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 70,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.3)"
+      },
+      {
+        "line": 70,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.5)"
+      },
+      {
+        "line": 91,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.3)"
+      }
+    ],
+    "pages/screens/timeline.html": [
+      {
+        "line": 129,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 130,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 131,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      }
+    ],
+    "prototype-kit/assets/pages.css": [
+      {
+        "line": 7,
+        "kind": "bare-hex",
+        "match": "#CFC8B9"
+      },
+      {
+        "line": 7,
+        "kind": "bare-hex",
+        "match": "#E7E2D8"
+      },
+      {
+        "line": 8,
+        "kind": "bare-hex",
+        "match": "#0F0E0A"
+      },
+      {
+        "line": 8,
+        "kind": "bare-hex",
+        "match": "#211E17"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#131316"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#1C1C1F"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#2B2B2F"
+      },
+      {
+        "line": 51,
+        "kind": "bare-hex",
+        "match": "#3A3A3E"
+      },
+      {
+        "line": 52,
+        "kind": "bare-hex",
+        "match": "#060607"
+      },
+      {
+        "line": 52,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.10)"
+      },
+      {
+        "line": 53,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,10,0.40)"
+      },
+      {
+        "line": 53,
+        "kind": "bare-rgba",
+        "match": "rgba(20,16,10,0.45)"
+      },
+      {
+        "line": 57,
+        "kind": "bare-hex",
+        "match": "#000"
+      },
+      {
+        "line": 57,
+        "kind": "bare-rgba",
+        "match": "rgba(255,255,255,0.07)"
+      },
+      {
+        "line": 58,
+        "kind": "bare-rgba",
+        "match": "rgba(0,0,0,0.6)"
+      },
+      {
+        "line": 58,
+        "kind": "bare-rgba",
+        "match": "rgba(0,0,0,0.7)"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 60,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 61,
+        "kind": "bare-hex",
+        "match": "#18181b"
+      },
+      {
+        "line": 144,
+        "kind": "bare-hex",
+        "match": "#EDE8DD"
+      },
+      {
+        "line": 149,
+        "kind": "bare-hex",
+        "match": "#ABA496"
+      }
+    ],
+    "prototype-kit/assets/screen.css": [
+      {
+        "line": 22,
+        "kind": "bare-hex",
+        "match": "#000"
+      },
+      {
+        "line": 27,
+        "kind": "bare-hex",
+        "match": "#05060a"
+      },
+      {
+        "line": 27,
+        "kind": "bare-hex",
+        "match": "#1d2433"
+      }
+    ],
+    "prototype-kit/assets/spec.css": [
+      {
+        "line": 72,
+        "kind": "bare-hex",
+        "match": "#786CAD"
+      },
+      {
+        "line": 73,
+        "kind": "bare-hex",
+        "match": "#C8993E"
+      },
+      {
+        "line": 74,
+        "kind": "bare-hex",
+        "match": "#5C8A68"
+      },
+      {
+        "line": 300,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 316,
+        "kind": "bare-hex",
+        "match": "#fff"
+      },
+      {
+        "line": 405,
+        "kind": "bare-rgba",
+        "match": "rgba(40, 32, 22, 0.4)"
+      },
+      {
+        "line": 411,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.7)"
+      },
+      {
+        "line": 431,
+        "kind": "bare-rgba",
+        "match": "rgba(0, 0, 0, 0.1)"
+      }
+    ]
+  }
+}

@@ -4,7 +4,7 @@
 > 同一批 `screens/*.html`,**原型模式**当 iframe「活」嵌进 iPhone 里跑真交互(带 iOS 推入/返回转场 + 路由栈),
 > **画布模式**把它们按状态平铺在可平移缩放的无限画布上看效果。改一处屏幕,两种呈现同时更新。
 >
-> 本套来自 DayZ 项目的 `pages/`,已抽成业务无关的启动套件。完整架构 + Flutter 落地映射见 `../docs/PROTOTYPE-ARCH.md`。
+> 本套**脱胎自一个真实日记 App 项目**,已抽成业务无关的启动套件。完整架构 + Flutter 落地映射见 `../docs/PROTOTYPE-ARCH.md`。
 
 > 🚀 **新项目从 0 到 1 怎么走?先读 [`GETTING-STARTED.md`](GETTING-STARTED.md)** —— 设计操盘手册(定基调 → 搭设计系统 → 立文档 → 画屏 → 定档维护)。下面是浓缩版流程 + 坑。
 
@@ -70,7 +70,7 @@ prototype-kit/
    └─ detail.html          示例:详情 + 返回(顶栏 ⋯ 演示 DZ.sheet 动作菜单)
 ```
 
-直接打开 `index.html` 就能跑(默认带 DayZ 的 token 作示例视觉)。
+直接打开 `index.html` 就能跑(默认带一套示例 token 作占位视觉)。
 
 ---
 
@@ -93,7 +93,7 @@ prototype-kit/
 - 多状态:块上加 `data-when="xxx"`,`?state=xxx` 命中才显示;并在 `SCREENS[].states` 登记。
 - 跳转:元素加 `data-nav="<目标屏id>"`(前进)或 `data-nav-back`(返回)。
   → `screen.js` 转 `postMessage`;原型模式真路由,画布模式忽略。
-- 可选:`.drawer-stage`+`.scrim`+`.drawer`(抽屉)、`.fab-wrap`(FAB)、`.toolbar.editor-dock`(底栏)。
+- 可选:`.drawer-stage`+`.scrim`+`.drawer`(抽屉)、`.fab-wrap`(FAB)。
 
 ## 登记一屏(`app.js` 的 `SCREENS[]`)
 ```js

@@ -155,6 +155,9 @@ graph TD
 - `test/ui/memory_card_export/`                                新建（屏 / 卡片 / 底栏 / exporter widget test）
 - `test/demo/memory_card_export_demo_test.dart`               新建（demo + Debug Home 入口测试）
 
+**Patrol E2E（原生权限 / 系统面板，放 `patrol_test/`，dependsOn `e2e-harness`）**
+- `patrol_test/memory_card_export_native_test.dart`            新建（保存到相册 Photos/MediaStore 权限 + 系统分享面板 E2E；经 `scripts/patrol_test.sh` 跑，校验 `Total:` 非零）
+
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，多数尚未实现 / 未定稿；本屏照实声明、不假装已存在）**：

@@ -27,13 +27,12 @@ void main() {
       final scrollView = tester.widget<CustomScrollView>(
         find.byType(CustomScrollView),
       );
-      expect(scrollView.slivers, hasLength(8));
+      expect(scrollView.slivers, hasLength(5));
       expect(scrollView.slivers.first, isA<DayzGlassAppBar>());
       expect(scrollView.slivers.last, isA<SliverToBoxAdapter>());
-      expect(scrollView.slivers[1], isA<SliverPersistentHeader>());
-      expect(scrollView.slivers[2], isA<SliverList>());
-      expect(scrollView.slivers[3], isA<SliverPersistentHeader>());
-      expect(scrollView.slivers[4], isA<SliverList>());
+      expect(scrollView.slivers[1], isA<SliverMainAxisGroup>());
+      expect(scrollView.slivers[2], isA<SliverMainAxisGroup>());
+      expect(scrollView.slivers[3], isA<SliverMainAxisGroup>());
 
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -320));
       await tester.pumpAndSettle();
@@ -76,10 +75,14 @@ void main() {
       await tester.pumpAndSettle();
 
       final visibleHeaderRects = [
-        tester.getRect(find.byKey(timelineMonthHeaderTestKey(2026, 6))),
-        tester.getRect(find.byKey(timelineMonthHeaderTestKey(2026, 5))),
-        tester.getRect(find.byKey(timelineMonthHeaderTestKey(2026, 4))),
-      ].where((rect) => rect.bottom > 0).toList(growable: false);
+        find.byKey(timelineMonthHeaderTestKey(2026, 6)),
+        find.byKey(timelineMonthHeaderTestKey(2026, 5)),
+        find.byKey(timelineMonthHeaderTestKey(2026, 4)),
+      ]
+          .where((finder) => finder.evaluate().isNotEmpty)
+          .map(tester.getRect)
+          .where((rect) => rect.bottom > 0)
+          .toList(growable: false);
 
       final minVisibleTop = visibleHeaderRects
           .map((rect) => rect.top)

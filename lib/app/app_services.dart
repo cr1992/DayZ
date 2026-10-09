@@ -19,14 +19,18 @@ import 'package:dayz/ui/shell/shell_state.dart';
 /// Author: @Ray
 class AppServices {
   AppServices.forDatabase(this.database)
-    : entries = EntryRepo(database),
-      timelineRepo = TimelineRepositoryAdapter(database),
+    : timelineRepo = TimelineRepositoryAdapter(database),
       journals = JournalRepo(database),
       editingSessions = EditingSessionRepo(database);
 
   final AppDatabase database;
-  final EntryRepo entries;
+
+  /// 时间线用的条目仓（journal 过滤 + 月计数走 SQL）。
   final TimelineRepositoryAdapter timelineRepo;
+
+  /// 全 App 共用**同一个** EntryRepo 实例：[EntryRepo.watchChanges] 是实例级流，
+  /// 写入方（编辑器 / 示例数据 / 阅读屏恢复）与时间线必须同一实例才能互相感知。
+  EntryRepo get entries => timelineRepo;
   final JournalRepo journals;
   final EditingSessionRepo editingSessions;
 

@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('EditorBlockTypes', () {
-    test('supported inventory matches MVP contract exactly', () {
+    test('supported inventory matches active contract exactly', () {
       expect(
         EditorBlockTypes.supported,
         equals({
@@ -19,6 +19,7 @@ void main() {
           'quote',
           'divider',
           'image',
+          'callout',
           'location',
           'weather',
         }),
@@ -37,6 +38,7 @@ void main() {
     });
 
     test('custom block and data key constants are fixed', () {
+      expect(EditorBlockTypes.callout, 'callout');
       expect(EditorBlockTypes.location, 'location');
       expect(EditorBlockTypes.weather, 'weather');
 

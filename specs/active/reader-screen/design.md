@@ -85,6 +85,18 @@
 - **理由：** 单点收敛，杜绝逐处漏判；与 ui-kit 一致。
 - **代价：** 无。
 
+### D10 · 内容图开大图查看器：复用 ui-kit `DayzImageViewer`，只接详情封面 + 九宫格（R10）
+- **状态：** 采纳
+- **背景：** R10 要详情封面 + 九宫格点开全屏可左右滑大图，且与时间线 / 收藏 / 往年今日「整卡点击进详情」的边界划清（Day One 同此）。原型 `editor.md §5(b)` / DESIGN-REF §3c `data-lightbox` 明确：内容型图片（详情封面 / 九宫格）接，卡片封面图不接；Flutter 落地件钦定 ui-kit 的 `photo_view` 大图查看器。
+- **选择：**
+  - 复用 ui-kit `DayzImageViewer`（**不在本屏自造查看器**，D1 不重造原则；查看器组件本体 + `photo_view` 依赖归 `ui-kit-components`，本屏只消费 barrel 导出件）。
+  - 一组图 = `read-hero` 封面 + `DayzGallery` 九宫格全部图，按渲染顺序构建 `ImageProvider` 列表（provider 来自 `reader_image.dart` 的异步缩略图 / 已就绪 handle，**沿用既有加密媒体链路与 `warmup`，不为查看器另起同步重建**，NF2）。
+  - 接线落在 `reader_screen.dart`（屏装配处）：封面外层包点击 → 以封面在组内的下标打开；`DayzGallery(onImageTap: (i) => 打开查看器(initialIndex: i))` —— 点谁从谁开（`DayzGallery.onImageTap` 已是 `ValueChanged<int>`，下标即九宫格内下标，叠加封面偏移后映射到组内 `initialIndex`）。
+  - 打开方式：经同栈推入覆盖层（`Navigator.push` 透明路由 / `Overlay`），退出回本屏、**不改变当前 entry 路由**；查看器退场动效经 `dayzMotionDuration`（NF3，由 ui-kit 组件保证）。
+  - **边界硬规则**：本屏只接「详情内容图」；卡片封面 → 查看器逻辑**不属本屏**（卡片在来源屏，整卡点击经 `Routes.reader` 进详情，归各来源屏 spec）。编辑只读 `.cb-img` 行内图是 `DayzImageViewer` 的**后续消费方**，不在本卡范围（待只读富文本渲染器接入时另接）。
+- **理由：** 查看器是跨屏复用的沉浸式媒体壳，收口在 ui-kit 让 reader / 后续编辑只读共用一份；本屏只做「内容图 → 打开查看器」的接线 + 边界划清，不碰组件本体。
+- **代价：** 依赖 ui-kit `DayzImageViewer` 就绪（跨 spec 依赖，已登记；未就绪则本卡阻塞，验收用占位 provider 的内存假数据 pump）。
+
 ## 架构
 
 ```mermaid
@@ -114,7 +126,7 @@ graph TD
 > 这是本 spec 任务「可改文件」的**唯一来源与上界**；任一任务可改文件 MUST ⊆ 本清单。新建 Dart 文件 MUST 加 MPL-2.0 头注。**不列入** `lib/ui/theme/`（tokens-theme）、`lib/ui/widgets/`·`lib/ui/shell/`（ui-kit / shell）、`lib/data/`（data-layer）、`lib/media/`·`lib/thumbnails/`（media / thumbnail）等其它 spec 拥有的文件；文案仅补 zh/en ARB 与 gen-l10n 产物。
 
 **屏体 `lib/ui/reader/`**
-- `lib/ui/reader/reader_screen.dart`          新建（屏装配：Scaffold + CustomScrollView + DayzGlassAppBar + 版式，三态渲染，D1/D3）
+- `lib/ui/reader/reader_screen.dart`          新建（屏装配：Scaffold + CustomScrollView + DayzGlassAppBar + 版式，三态渲染，D1/D3；详情封面 + 九宫格点击 → 推 ui-kit `DayzImageViewer`（点谁从谁开、`initialIndex`），卡片封面不接，R10/D10）
 - `lib/ui/reader/reader_view_data.dart`        新建（只读视图模型 `ReaderViewData` + 从 `EntryRepo`/`TagRepo` 组合结果映射的装配函数，D2；**不持 Drift**，NF1）
 - `lib/ui/reader/reader_controller.dart`       新建（`ChangeNotifier`：favorite / galleryExpanded + toggleFavorite/delete/moveToJournal/share 编排，D6/D7）
 - `lib/ui/reader/reader_body.dart`             新建（`.r-body` 衬线段落只读正文，预留只读渲染器注入点，D5）
@@ -132,12 +144,13 @@ graph TD
 **测试目录（白名单 hook 对 `test/**/*_test.dart` 自动放行；非 `_test.dart` 的共享基建由任务 `验收基建` 字段预批）**
 - `test/ui/reader/`                            新建（屏 / controller / 版式 / 图加载 widget test 目录）
 - `test/demo/reader_demo_test.dart`            新建（demo + Debug Home 入口测试）
+- `patrol_test/reader_image_viewer_visual_test.dart`  新建（T8：详情封面/九宫格开 DayzImageViewer 的真机视觉截图 E2E，dependsOn e2e-harness；非 `test/**` 不走自动放行，故列本清单 + 任务可改文件）
 
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 → READY 门 / 降级）：**
   - `design-tokens-theme`（README 依赖列已登记）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations` 约定、`.t-diary`/`.t-h1` 排版角色。**强依赖**，未定稿则本屏阻塞。
-  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；2026-05-31 已按当前代码确认 `DayzGallery(images, expanded, onMoreTap)`、`DayzSheet.actions/picker/confirm`、`DayzGlassAppBar` 与 `components.dart` barrel 均存在。若后续 ui-kit API 再变更，先回填本设计与任务白名单，再改 reader 屏实现。
+  - `ui-kit-components`（已登记）：`DayzGlassAppBar`/`DayzGallery`/`DayzWeatherChip`/`DayzTag`/`DayzFavoriteStar`/`DayzToast`/`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzEmptyState`/`DayzImageViewer`（大图查看器，R10/D10 消费）/`dayzMotionDuration`/`dayz_icons.dart`/`components.dart` barrel。**强依赖**；2026-05-31 已按当前代码确认 `DayzGallery(images, expanded, onMoreTap)`、`DayzSheet.actions/picker/confirm`、`DayzGlassAppBar` 与 `components.dart` barrel 均存在；`DayzImageViewer` 为 ui-kit T9 新增件（本屏 R10 接线消费，若 ui-kit 该件 API 未定稿则本卡阻塞）。若后续 ui-kit API 再变更，先回填本设计与任务白名单，再改 reader 屏实现。
   - `ui-shell-navigation`（已登记）：`Routes.reader`/`Routes.editor` 常量、`go_router` 的 `CupertinoPageRoute` 转场配置。**强依赖**；路由名是跨 spec 契约，引常量不写裸字符串。本屏被某来源屏跳转（时间线 / 搜索 / 收藏 / 往年今日）= 那些屏在其元素上接 `Routes.reader` 导航（归各来源屏 spec），本 spec 只负责「进入本屏后」与「从本屏导航编辑 / 返回」。
   - `data-layer`（已登记）：`EntryRepo`（组合查询 entry+媒体+标签 D6、`softDelete`/`hardDelete` D7、更新 favorite / journalId / 时区三件套封装 D5）、`MediaRepo`（媒体元数据）、`JournalRepo`（日记本列表）、`TagRepo`。**取数唯一入口（NF1 红线）**。未就绪时本屏用内存假 `ReaderViewData` / 假 Repo（demo + 测试），真接线作为依赖就绪后的后续，**MUST NOT 为赶进度在屏内直连 Drift / 写 SQL**。
   - `media-storage`（已登记）：`MediaStore.openRead(rel_path) → Stream<List<int>>`、`DMED` 加密容器、设备媒体密钥（独立于主密码、不参与 rekey）。本屏只消费读取入口。

@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-05-31
 文档状态：草稿
 ---
 
@@ -30,7 +30,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 往年今日数据视图模型（纯数据 VM）
+- [x] T1 · 往年今日数据视图模型（纯数据 VM）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R3, R4, R6 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/onthisday/onthisday_view_model.dart` ｜ **验收基建：** `test/ui/onthisday/onthisday_view_model_test.dart`
 
@@ -57,8 +57,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/onthisday/onthisday_view_model_test.dart` 通过（3 tests）；RED 阶段先因 `lib/ui/onthisday/onthisday_view_model.dart` 缺失失败，补实现后通过。
 人工：N/A
 ```
 

@@ -43,7 +43,28 @@
 - **upstream issue：** 暂无（属上游对新 SDK 的兼容滞后，可向 upstream 提 PR）。
 - **引入提交：** `eb2b46e`（2026-05-24，随源码引入一并改入）。
 
+### P005 · 点击空编辑器或边界选取手势时防爆 clamp 崩溃
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/editor_component/service/selection/shared.dart` → `EditorStateSelection` 中的 `getNodeInOffset` 与 `_findCloseNode`。
+- **原因：** 当 `sortedNodes` 为空列表或 `children` 经过过滤变为空时，`getNodeInOffset` 会传入 `start = 0, end = -1`。这会导致 `_findCloseNode` 内调用 `min.clamp(0, -1)` 从而抛出 `ArgumentError: Invalid argument(s): 0` 崩溃（因为 clamp 的下限大于上限）。我们在 `getNodeInOffset` 首部对 `sortedNodes.isEmpty` 进行了提前拦截返回 null，并在 `_findCloseNode` 首部增加了 `start > end` 的边界防爆逻辑。
+- **关联：** Bug（点击空编辑器或边界选取手势导致 `int.clamp` 抛出 Invalid argument(s) 崩溃）。
+- **upstream issue：** 暂无。
+- **引入提交：** 待提交。
+
 > 说明：`delta_input_service.dart` 同提交内的其余 diff 仅为 `dart format` 风格差异（无逻辑改动），不分配 patch ID、不打标记。
+
+### P006 · 大行高下光标对齐可见字形框（不再浮在文字上方）
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/block_component/rich_text/appflowy_rich_text.dart` → `getCursorRectInPosition(...)` 末尾，紧随上游 `widget.cursorHeight != null` 分支后新增的 `else if` 分支。
+- **原因：** DayZ 正文用 1.85 大行高 + `leadingDistribution: even`，AppFlowy 默认光标取整行盒高度（`getFullHeightForCaret`）。在换行 / 非首行（应用了完整行距）时，光标顶部浮在字形上方约 4px 且整体偏高；空节点上光标又退化到 Latin 空格 placeholder 的度量（约 18px），比 CJK 正文 / hint（约 25px）矮。两者真机走查均明显可见。本改动在未显式指定 `cursorHeight` 时，把光标对齐到可见字形 tight 框（`getBoxesForSelection(..., BoxHeightStyle.tight)` 的 top + height）：非空节点取相邻字符的字形框；空节点用 `TextPainter` 在节点文本样式下测量一个 CJK 参考字（`永`）的字形高（仅取高度、保留原行顶位置），使空态光标与 CJK hint 等高。`永` 为本 app 中文为主场景的度量参考；纯拉丁内容空态会略偏高。
+- **关联：** 编辑器真机走查 Bug（光标明显高于输入文字 / hint）；回归守卫 `integration_test/editor_caret_e2e.dart`。
+- **upstream issue：** 暂无（待评估提 PR）。
+- **引入提交：** 待提交。
+
+### P007 · MobileToolbarV2 顶层按钮遵守 buttonHeight/buttonSpacing，并允许隐藏关闭键盘按钮
+- **文件定位：** `packages/appflowy-editor/lib/src/editor/toolbar/mobile/mobile_toolbar_v2.dart` → `MobileToolbarV2` / `_MobileToolbar` 新增 `showKeyboardDismissButton` 透传，`_ToolbarItemListView.build(...)` 的 toolbar item `IconButton` 包装，以及 `_CloseKeyboardOrMenuButton.build(...)` 的关闭按钮包装。
+- **原因：** AppFlowy `MobileToolbarV2` 已暴露 `buttonHeight` / `buttonSpacing` 参数，但顶层 toolbar item 仍使用 Flutter `IconButton` 默认 48px 盒子，且右侧硬编码追加关闭键盘按钮，导致 DayZ 编辑器 S2 的 8 件停靠设计在 390px 视口下第 8 项「图片」被挤出可见区域。改为用 `MobileToolbarTheme.buttonHeight` 约束顶层按钮盒、用 `buttonSpacing` 作为水平间距；默认 `40 + 8 = 48`，保持上游默认总宽口径。DayZ 传 `44 + 3` 保留移动端命中区，并通过 `showKeyboardDismissButton: false` 让 8 件设计动作全部可见。
+- **关联：** `editor-integration-screen` S2（8 件高频停靠 + 参数级还原 editor-dock）。
+- **upstream issue：** 暂无（可评估向 upstream 提 PR：顶层 toolbar item 应尊重已暴露的 style 参数）。
+- **引入提交：** 待提交。
 
 ---
 
@@ -64,6 +85,18 @@
 ---
 
 ## 变更历史（按日期）
+
+## [2026-06-06]
+
+### appflowy-editor
+- **MobileToolbarV2 顶层按钮尺寸参数生效**（Patch: `P007`）：
+  - 顶层 toolbar item 与关闭键盘按钮改为遵守 `buttonHeight` / `buttonSpacing`，并允许 DayZ 隐藏 AppFlowy 额外关闭键盘按钮，让编辑器 8 件停靠布局在 390px 视口内以 44px 命中区完整可见。
+
+## [2026-06-01]
+
+### appflowy-editor
+- **修复选择手势防爆崩溃**（Patch: `P005`）：
+  - 拦截空节点列表的 `getNodeInOffset` 计算，并在 `_findCloseNode` 引入区间防爆，避免 `int.clamp` 发生 `lowerLimit > upperLimit` 的 ArgumentError 异常崩溃。
 
 ## [2026-05-30]
 

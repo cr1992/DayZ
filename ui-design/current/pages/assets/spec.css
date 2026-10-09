@@ -253,7 +253,7 @@ h3.sub {
   font-family: inherit; font-size: 15px; font-weight: 600;
   border-radius: var(--r-full); padding: 11px 20px; cursor: pointer;
   border: 1px solid transparent; transition: all var(--dur) var(--ease);
-  display: inline-flex; align-items: center; gap: 8px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1;
 }
 .btn:active { transform: translateY(1px); }
 .btn-primary { background: var(--accent); color: var(--on-accent); }
@@ -917,3 +917,165 @@ h3.sub {
 
 /* ---- 搜索命中高亮 ---- */
 .hl { background: var(--accent-soft-2); color: var(--accent-ink); border-radius: 3px; padding: 0 2px; }
+
+/* ============================================================
+   沉浸式媒体层：大图查看器 lightbox（DZ.lightbox）+ 全屏选择器 picker（DZ.picker）
+   覆盖整个手机视口（含状态栏/Home 条），暖近黑底（--media-*），强调色走 accent。
+   Flutter：lightbox → PhotoViewGallery.builder + PageController(initialPage)，
+            背景暖近黑、onPageChanged 更新计数；
+            picker  → wechat_assets_picker（AssetPicker.pickAssets：maxAssets/预览/原图内置）
+                      或 photo_manager + 自绘 GridView。
+   ============================================================ */
+
+/* ---------- 大图查看器 ---------- */
+.lbx {
+  position: absolute; inset: 0; z-index: 60;
+  background: var(--media-bg);
+  display: flex; flex-direction: column;
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.lbx.in { opacity: 1; }
+.lbx-track {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.lbx-track::-webkit-scrollbar { display: none; }
+.lbx-slide {
+  flex: 0 0 100%; width: 100%; height: 100%;
+  scroll-snap-align: center;
+  display: grid; place-items: center;
+  padding: calc(54px + var(--sp-8)) var(--sp-3) var(--sp-10);
+}
+.lbx-slide img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; border-radius: var(--r-xs);
+  -webkit-user-select: none; user-select: none;
+}
+.lbx-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(54px + var(--sp-1)) var(--sp-4) var(--sp-3);
+  background: linear-gradient(180deg, var(--media-scrim) 0%, transparent 100%);
+  pointer-events: none;
+}
+.lbx-top > * { pointer-events: auto; }
+.lbx-close {
+  position: absolute; left: var(--sp-4); top: calc(54px - 2px);
+  width: 34px; height: 34px; border-radius: var(--r-full); border: 0; cursor: pointer;
+  display: grid; place-items: center;
+  background: var(--media-chip); color: var(--media-ink);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.lbx-close svg { width: 19px; height: 19px; }
+.lbx-count {
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+  color: var(--media-ink); letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px var(--media-scrim);
+}
+.lbx-foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: var(--sp-4) var(--sp-5) calc(var(--sp-6) + 6px); text-align: center;
+  font-family: var(--font-serif); font-size: 14px; line-height: 1.6; color: var(--media-ink);
+  background: linear-gradient(0deg, var(--media-scrim) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ---------- 全屏选择器（微信式：多选编号 / 相机格 / 预览 / 原图 / 完成）---------- */
+.pk {
+  position: absolute; inset: 0; z-index: 60;
+  background: var(--media-bg);
+  display: flex; flex-direction: column;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.pk.in { opacity: 1; transform: none; }
+.pk-top {
+  position: relative; flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: calc(54px + var(--sp-1)) var(--sp-4) var(--sp-3);
+  color: var(--media-ink);
+}
+.pk-cancel {
+  border: 0; background: none; cursor: pointer; padding: 4px 2px;
+  font-family: var(--font-sans); font-size: 15px; color: var(--media-ink-2);
+}
+.pk-album {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  border: 0; background: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--media-ink);
+}
+.pk-album svg { width: 15px; height: 15px; }
+.pk-grid {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;
+  padding: 0 3px 3px; align-content: start;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.pk-grid::-webkit-scrollbar { display: none; }
+.pk-cam, .pk-cell {
+  position: relative; aspect-ratio: 1 / 1; border: 0; padding: 0; margin: 0;
+  cursor: pointer; overflow: hidden; background: var(--media-surface);
+}
+.pk-cam { display: grid; place-items: center; color: var(--media-ink-2); gap: 4px; }
+.pk-cam svg { width: 26px; height: 26px; }
+.pk-cam span { font-family: var(--font-sans); font-size: 11px; }
+.pk-cell img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform var(--dur) var(--ease);
+}
+.pk-cell.sel img { transform: scale(0.88); }
+.pk-cell::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 3px var(--accent);
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.pk-cell.sel::after { opacity: 1; }
+.pk-badge {
+  position: absolute; top: 6px; right: 6px;
+  min-width: 21px; height: 21px; border-radius: var(--r-full);
+  display: grid; place-items: center; padding: 0 5px;
+  font-family: var(--font-sans); font-size: 12px; font-weight: 700; line-height: 1;
+  color: var(--media-ink); background: var(--media-chip);
+  box-shadow: inset 0 0 0 1.25px var(--media-ink-2);
+}
+.pk-cell.sel .pk-badge {
+  color: var(--on-accent); background: var(--accent); box-shadow: none;
+}
+.pk-foot {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + 8px);
+  background: var(--media-surface);
+  box-shadow: 0 -0.5px 0 var(--media-hairline);
+}
+.pk-preview {
+  border: 0; background: none; cursor: pointer; padding: 6px 2px;
+  font-family: var(--font-sans); font-size: 15px; color: var(--media-ink);
+}
+.pk-preview:disabled { color: var(--media-ink-2); cursor: default; }
+.pk-orig {
+  margin-left: auto; border: 0; background: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans); font-size: 14px; color: var(--media-ink-2);
+}
+.pk-orig .box {
+  width: 17px; height: 17px; border-radius: var(--r-full);
+  display: grid; place-items: center; color: var(--on-accent);
+  box-shadow: inset 0 0 0 1px var(--media-ink-2);
+}
+.pk-orig.on { color: var(--media-ink); }
+.pk-orig.on .box { background: var(--accent); box-shadow: none; }
+.pk-orig .box svg { width: 11px; height: 11px; }
+.pk-done {
+  border: 0; cursor: pointer; border-radius: var(--r-sm); white-space: nowrap;
+  padding: 9px 16px; font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+  background: var(--accent); color: var(--on-accent);
+  transition: opacity var(--dur) var(--ease);
+}
+.pk-done:disabled {
+  background: var(--media-surface); color: var(--media-ink-2); cursor: default;
+  box-shadow: inset 0 0 0 1px var(--media-hairline);
+}

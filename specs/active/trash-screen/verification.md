@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-06-06
 文档状态：草稿
 ---
 
@@ -22,7 +22,7 @@
 | 空态 | 无软删条目 / 恢复或清空致空 | 仅 `DayzEmptyState`（标题/说明），隐列表 + 提示条，顶栏「清空」仍在位 | R5 | 自动 |
 | 返回 | 点顶栏返回钮 | 本屏出栈回上一屏 | R7 | 自动 |
 | Debug Home 入口 | 进 Debug Home → 回收站 demo | 可 pump 进入 demo、演示四类交互 | R8 | 自动 |
-| 删除链路闭环（跨屏） | reader/onthisday 删除 → 入回收站 → 恢复 → 回时间线 | 软删落回收站、恢复后回时间线 | R1, R2 | 人工（@Ray，跨屏，见下「跨屏说明」）|
+| 删除链路闭环（跨屏） | reader 删除 → 入回收站 → 恢复 → 回时间线 | 软删后来源不可见、回收站可见、恢复后时间线可见，`Total:` 非零 | R1, R2, R7 | 自动（E2E，依赖 e2e-harness）|
 
 ## 专项检查
 > 对应 requirement 的 NF 编号。无障碍按本屏实际渲染断言，**不 grep 被改文件自身**。
@@ -66,16 +66,20 @@
 - [ ] iOS 13+ 真机/模拟器：返回手势、intl 中文日期/相对时间、`.btn-sm` 命中、移出动效、中文衬线标题回退正常 — 人工（@Ray）
 - [ ] Android 8+ 真机/模拟器：同上，中文衬线落系统字观感可接受 — 人工（@Ray）
 
+### 跨屏闭环（Patrol · T7）
+- [ ] reader 删除 → 回收站出现 → 恢复 → 时间线可见的真实 app 闭环 — 自动：`bash scripts/patrol_test.sh -d <device-id> --target patrol_test/trash_restore_flow_test.dart`（校验 `Total:` 非零、`Failed:` = 0，真实信号 = 删除后来源不可见 + 回收站可见 + 恢复后时间线可见）
+- [ ] 跨屏跳转、toast、回收站列表状态和恢复后落点无突兀 — 人工（@Ray，复核 Patrol 截图 / 录屏工件；不再承担机械回归）
+
 ### 栅格观感（golden 兜底 · 半确定性）
 - [ ] 列表态 / 空态 golden 基线无破坏（六套主题抽样）— 自动：`flutter test test/ui/trash/`（golden）+ 人工复核（@Ray）
 > 对设计稿源屏 `trash.html` 的区域化 SSIM/pixelmatch 比框属 `design-sync-automation`（跨 spec 依赖），残余低分进 SYNC_REPORT 标红、不在本 spec 阻塞。
 
 > 数据迁移 / 回滚：本屏无持久化 schema 变更或数据格式演进（软删字段由 data-layer 既有 schema 提供，本屏经 `EntryRepo` 只读/改）→ 整段不涉及，省略。
 
-## 跨屏说明（端到端闭环，非本 spec 单独可验）
+## 跨屏说明（端到端闭环）
 > 「删除 = 移到回收站」完整闭环需多 spec 协同（设计 D3 / 已知风险），本 spec 单独验证范围 = 「给定软删数据 → 列表/恢复/彻底删/清空/空态」。
 - 删除发起方（reader/onthisday/时间线的删除按钮 + 二次确认 + 可撤销 toast → `EntryRepo.softDelete`）归各自页面级 spec。
-- `EntryRepo`「列回收站条目」查询 + 「恢复」方法是 data-layer 待确认缺口（见 design 已知风险）；data-layer 就绪前本屏端到端只能用 `FakeEntryRepo`，真闭环走查待 data-layer + 发起方屏就绪后由 @Ray 人工核（上表末行）。
+- `EntryRepo`「列回收站条目」查询 + 「恢复」方法是 data-layer 待确认缺口（见 design 已知风险）；data-layer + 发起方屏就绪前本屏端到端只能用 `FakeEntryRepo`，就绪后由 T7 的 Patrol 用例覆盖真闭环，@Ray 只复核截图 / 录屏终签。
 
 ## 回归检查
 - [ ] Debug Home 仍可正常构建与遍历（回收站 demo 追加未破坏既有 demo）— 自动：`flutter test test/demo/debug_home_test.dart`（回归）
@@ -90,6 +94,7 @@
 ```bash
 flutter test test/ui/trash/        # DTO/banner/card/controller/screen/contrast + golden
 flutter test test/demo/            # 回收站 demo + Debug Home 回归
+bash scripts/patrol_test.sh -d <device-id> --target patrol_test/trash_restore_flow_test.dart  # 跨屏删除/恢复闭环
 flutter analyze
 ```
 

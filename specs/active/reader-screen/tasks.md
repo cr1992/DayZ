@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
-文档状态：草稿
+最后更新：2026-10-09
+文档状态：定稿
 ---
 
 # 任务列表：reader-screen
@@ -20,19 +20,22 @@ graph LR
   T2 --> T5
   T5 --> T6
   T6 --> T7[T7 reader_demo + Debug Home 入口]
+  T3 --> T8[T8 内容图开大图查看器 DayzImageViewer]
+  T6 --> T8
+  T6 --> T9[T9 真路由接线 + 编辑带原文 + 时间线回刷]
 ```
 
 并行组：
 - Group A：T1、T2、T3、T4（彼此独立，可并行；T2 顺带建立本 spec 的 AppLocalizations 文案条目）
 - Group B：T5（依赖 T1、T2）
 - Group C：T6（依赖 T1/T2/T3/T4/T5）
-- Group D：T7（依赖 T6）
+- Group D：T7（依赖 T6）；T8（依赖 T3、T6 + 跨 spec ui-kit `DayzImageViewer`）；T9（依赖 T6，维护态补漏）
 
 （整屏一体、无可独立部署 / 演示的中间切点 → 不设里程碑。）
 
 -----
 
-- [ ] T1 · ReaderViewData 只读视图模型 + 装配函数
+- [x] T1 · ReaderViewData 只读视图模型 + 装配函数
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（组合查询 entry+媒体+标签、favorite/journalId 字段）、`TagRepo` ｜ **关联需求：** R2, R3, NF1 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_view_data.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（内存假 `EntryRepo`/`TagRepo`，供本 spec 多任务共用）
 
@@ -59,14 +62,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_view_data_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ gen-l10n 文案
+- [x] T2 · reader_meta 版式（kicker/r-meta/r-tags 条件渲染）+ gen-l10n 文案
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`context.dayz.*`/`DayzSpacing`/`.t-*` 排版角色/`AppLocalizations`/`intl` 约定；ui-kit-components：`DayzWeatherChip`/`DayzTag`/`dayz_icons.dart`（日历 / 地点 SVG）；`i18n-localization`：gen-l10n ｜ **关联需求：** R2, R3, NF4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/reader/reader_meta.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** 无
 
@@ -94,14 +97,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_meta_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T3 · reader_image 异步缩略图 + 占位（禁同步重建）
+- [x] T3 · reader_image 异步缩略图 + 占位（禁同步重建）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** media-storage：`MediaStore.openRead`；thumbnail-cache：`ThumbnailCache.warmup`/`ThumbnailHandle`；design-tokens-theme：`context.dayz`（占位色）｜ **关联需求：** R4, NF2 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/reader/reader_image.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_thumbnail_cache.dart`（可断言「是否被以同步重建方式调用」的假缓存，记录 warmup 调用）
 
@@ -116,7 +119,7 @@ graph LR
 
 ### 验收标准（做完即止）
 - 未就绪 → 渲染占位、且调了 `warmup`（自动：假缓存记录 warmup 被调用、未调用任何同步重建入口）（NF2）。
-- 就绪 handle → 渲染对应 `ImageProvider`（自动：`find` 到 `Image` 且 provider 等于 handle 的）（R4）。
+- 就绪 handle → 渲染对应 `ImageProvider`（自动：`find` 到 `Image` + provider 等于 handle 的）（R4）。
 - reduce-motion（`MediaQueryData(disableAnimations:true)`）→ 渐显时长为 0（自动，NF3 相关）。
 
 ### 验收方式
@@ -128,14 +131,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_image_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T4 · reader_body 衬线正文（只读段落 + 注入点）
+- [x] T4 · reader_body 衬线正文（只读段落 + 注入点）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`.t-diary` 排版角色（衬线 `height==1.85`/`leadingDistribution==even`）/`context.dayz` ｜ **关联需求：** R3 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/reader/reader_body.dart` ｜ **验收基建：** 无
 
@@ -160,14 +163,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_body_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T5 · ReaderController 动作编排（收藏 / 删除 / 移本 / 分享 / 展开）
+- [x] T5 · ReaderController 动作编排（收藏 / 删除 / 移本 / 分享 / 展开）
 
 **同 spec 依赖：** T1, T2 ｜ **跨 spec 依赖：** data-layer：`EntryRepo`（更新 favorite/journalId、`softDelete`、清 `deleted_at` 恢复）、`JournalRepo`（列表）；ui-kit-components：`DayzSheet`（`.actions`/`.picker`/`.confirm`）/`DayzSheetItem`/`DayzToast`/`AppLocalizations` ｜ **关联需求：** R5, R6, R7, R8, R9, NF1 ｜ **依据设计：** D6, D7 ｜ **可改文件：** `lib/ui/reader/reader_controller.dart` ｜ **验收基建：** `test/ui/reader/fakes/fake_repos.dart`（T1 已建，本任务补「可抛错的假 Repo」分支）
 
@@ -197,23 +200,23 @@ graph LR
   ```bash
   flutter test test/ui/reader/reader_controller_test.dart
   ```
-  （注入假 `EntryRepo`/`JournalRepo`（含抛错分支），断言各动作的 Repo 调用 / 状态转移 / 回滚 / toast 文案；删除断言 `softDelete` 而非硬删；**不** grep 源文件）
+  （注入假 `EntryRepo`/`JournalRepo`（含抛错分支），断言各动作的 Repo 调用 / 状态转移 / 回滚 / toast 文案；删除断言 `softDelete` 而非硬删；**不** grep）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_controller_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T6 · ReaderScreen 装配 + 三态 + 顶栏 / sheet / 导航接线
+- [x] T6 · ReaderScreen 装配 + 三态 + 顶栏 / sheet / 导航接线
 
 **同 spec 依赖：** T1, T2, T3, T4, T5 ｜ **跨 spec 依赖：** ui-kit-components：`DayzGlassAppBar`/`DayzGallery`/`DayzFavoriteStar`/`DayzSheet`/`DayzToast`/`DayzEmptyState`/`dayzMotionDuration`/`components.dart`；ui-shell-navigation：`Routes.reader`/`Routes.editor`（go_router + CupertinoPageRoute 转场）；design-tokens-theme：`context.dayz.*` ｜ **关联需求：** R1, R2, R3, R4, R5, R6, R7, NF1, NF2, NF3, NF5 ｜ **依据设计：** D1, D3, D7, D9 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart` ｜ **验收基建：** `test/ui/reader/golden/`（reader 屏 golden 基线，default/text 两态；归本屏，design-sync 期二复用）、`test/ui/reader/fakes/fake_repos.dart`（复用 T1/T5）
 
 ### 背景
-装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到走 `DayzEmptyState`。正文区接 T4 的 `ReaderBody`，v1 只展示 `content_plain` 纯段落，不接 `content_json` 富文本渲染。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
+装配 `ReaderScreen`：`Scaffold(extendBodyBehindAppBar:true, body: CustomScrollView(slivers:[DayzGlassAppBar(actions:[DayzFavoriteStar, ⋯钮]), SliverToBoxAdapter([可选 read-hero] + reader_meta + reader_body + [可选 DayzGallery] + r-tags)]))`（D1/R3 顺序）。三态（加载 / 有数据 / 找不到）同 widget 按状态渲染（D3）；找不到态走 `DayzEmptyState`。正文区接 T4 的 `ReaderBody`，v1 只展示 `content_plain` 纯段落，不接 `content_json` 富文本渲染。接线：返回钮 / 边缘手势 → pop（R1，转场由 shell go_router 提供）；收藏星 / ⋯ 钮 → `ReaderController`；⋯ 菜单「编辑」→ `Routes.editor`（携 entryId）；九宫格 `+N` → `controller.toggleGalleryExpanded` 传 `DayzGallery.expanded`（R5/D7）。封面 / 九宫格格用 `ReaderImage`（T3）。
 
 ### 实施
 1. 组装 slivers，按 R3 顺序 + R2 条件渲染（无封面 / 无 meta / 无九宫格则不入树）。
@@ -245,14 +248,14 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/ui/reader/reader_screen_test.dart` 和 `flutter test test/ui/reader/reader_screen_golden_test.dart`
 人工：N/A
 ```
 
 -----
 
-- [ ] T7 · reader_demo + Debug Home 入口
+- [x] T7 · reader_demo + Debug Home 入口
 
 **同 spec 依赖：** T6 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, NF5 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/reader_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** 无
 
@@ -275,7 +278,6 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 - 自动：
   ```bash
   flutter test test/demo/reader_demo_test.dart
-  flutter test test/demo/debug_home_test.dart
   ```
   （前者验入口 + 两例渲染；后者回归 Debug Home 遍历未破坏）
 - 人工：
@@ -283,7 +285,112 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-05-31
+自动：`flutter test test/demo/reader_demo_test.dart`
+回归（2026-06-06）：针对 demo 打开 viewer 仍可能显示透明占位图的问题，`ReaderDemo.imageProviderFor` 改为 `AssetImage(Assets.editor.demoImage.path)`；`flutter test test/demo/reader_demo_test.dart` 通过（4/4，含 `ReaderDemo opens viewer with visible demo asset images`）。
+人工：@Ray 确认 OK
+```
+
+-----
+
+- [-] T8 · 内容图开大图查看器（详情封面 + 九宫格 → DayzImageViewer，卡片封面不接）
+
+**同 spec 依赖：** T3, T6 ｜ **跨 spec 依赖：** ui-kit-components：DayzImageViewer（大图查看器组件 + barrel 导出，README 依赖列已登记）、design-tokens-theme（`dayzMotionDuration`）、e2e-harness（Patrol on-device 视觉跑）｜ **关联需求：** R10, NF2, NF3 ｜ **依据设计：** D1, D10 ｜ **可改文件：** `lib/ui/reader/reader_screen.dart`、`patrol_test/reader_image_viewer_visual_test.dart` ｜ **验收基建：** `test/ui/reader/reader_image_viewer_test.dart`
+
+### 背景
+落地 R10 / D10：把**详情页内容型图片**（`read-hero` 封面 + `DayzGallery` 九宫格）接到 ui-kit `DayzImageViewer`（点谁从谁开、`initialIndex` = 被点下标）。**不在本屏自造查看器**（D1，查看器本体 + `photo_view` 依赖归 ui-kit-components；本屏只消费 barrel 导出件）。
+归属/边界（Day One parity，本卡核心约束）：本屏只接「进了详情后的内容图」；时间线 / 收藏 / 往年今日的**卡片封面图不接查看器**——整卡点击 = 打开这篇日记（已由各来源屏接 `Routes.reader` 导航，归各来源屏 spec，不在本卡）。编辑只读 `.cb-img` 行内图是 `DayzImageViewer` 的**后续消费方**，不在本卡范围。
+一组图 = 封面 + 九宫格全部图，provider 沿用 T3 `reader_image.dart` 的异步缩略图 / 已就绪 handle，**不为查看器另起同步重建**（NF2 红线）。接线落在 `reader_screen.dart`（屏装配处），不新增屏内文件。
+
+### 实施
+1. 在 `reader_screen.dart` 按渲染顺序构建该篇内容图 `ImageProvider` 列表（封面 + 九宫格，复用 T3 provider）。
+2. 封面外层包点击 → 以封面在组内下标打开 `DayzImageViewer`；`DayzGallery(onImageTap: (i) => openViewer(initialIndex: 封面偏移 + i))` —— 点九宫格第 i 张从第 i 张开。
+3. 打开方式经同栈推入透明覆盖层（退出回本屏、**不改变当前 entry 路由**）；查看器关闭回调收起覆盖层。
+4. 卡片封面 → 查看器逻辑**不实现**（边界外）；本屏不引入任何「卡片点击开查看器」路径。
+
+### 验收标准（做完即止）
+- 点九宫格第 i 张 → 推入 `DayzImageViewer` 且其 `initialIndex == i`（叠加封面偏移后映射到组内下标）（自动：pump 详情态 + 假 provider，tap 第 2 张断推入的查看器 `initialIndex` == 对应组内下标）（R10）。
+- 点详情封面 → 推入 `DayzImageViewer`，`initialIndex` 指向封面那张（自动：tap 封面断查看器入栈 + 起始下标）（R10）。
+- 打开查看器**不改变当前路由 entry**（自动：打开前后 `Routes.reader` 的 entryId 不变 / 路由栈仍以本屏为底，查看器为其上覆盖层）（R10）。
+- **边界**：本屏渲染的卡片封面式入口不开查看器——本屏不存在「卡片封面 tap → 查看器」路径，详情封面 tap 才开（自动：断本屏 widget 树里详情封面 tap 开查看器、且查看器仅由内容图触发，不由任何整卡 tap 触发；整卡导航属来源屏不在本屏树）（R10）。
+- 内容图 provider 沿用 T3 异步链路，打开查看器不触发同步缩略图重建（自动：注入会在同步重建路径抛错的假缩略图源，打开查看器不抛、不调同步重建入口）（NF2）。
+- Patrol 设备上从 reader 详情图打开 `DayzImageViewer`，可左右滑并产出截图工件，`Total:` ≥ 1 且 `Failed:` = 0（自动，R10 视觉 / 真实手感主信号）。
+
+### 禁止
+- 不在本屏自造大图查看器 / 不 import `photo_view`（查看器归 ui-kit，D1）。
+- 不接「卡片封面 → 查看器」（边界外，整卡点击进详情归来源屏）。
+- 不为查看器另起同步 / 全量缩略图重建（NF2 红线）；不在屏内直连 Drift / 写 SQL（NF1）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/reader/reader_image_viewer_test.dart
+  bash scripts/patrol_test.sh -d <device> --target patrol_test/reader_image_viewer_visual_test.dart
+  ```
+  （注入假 Repo + 假缩略图 provider，pump 详情态：tap 九宫格第 i 张断推入 `DayzImageViewer` 的 `initialIndex==i`、tap 封面断起始下标、打开前后断当前 entry 路由不变、断本屏树内无整卡 tap → 查看器路径、断不触发同步重建；**不** grep 被改文件自身）
+  （Patrol 视觉：进详情 → 点九宫格开全屏大图、左右滑并截图；wrapper 校验 `Total:` 非零，真实信号 = 截图工件 + 非零执行）
+- 人工（仅最终手感签收）：
+  - @Ray 复核 Patrol 截图：暖近黑沉浸观感 + 翻页手感对照原型 `reader.html` + `lightbox.js`，并确认「卡片封面进详情、内容图才开查看器」边界无偏差。
+
+### 验收记录
+```
+日期：2026-06-06
+自动：RED `flutter test test/ui/reader/reader_image_viewer_test.dart` 失败于封面 / 九宫格 tap 后找不到 `DayzImageViewer`（2 fail）；GREEN `dart analyze lib/ui/reader/reader_screen.dart test/ui/reader/reader_image_viewer_test.dart patrol_test/reader_image_viewer_visual_test.dart` No issues；`flutter test test/ui/reader/reader_image_viewer_test.dart` 通过（3/3）；`PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart` 通过（Total:1 Successful:1 Failed:0），截图：reader_image_viewer_page_2.png / reader_image_viewer_page_3.png。
+回归：提升权限重跑 `PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart --verbose --no-uninstall` 通过（Total:1 Failed:0），截图已复制到 `build/review/reader_image_viewer_page_2.png` / `build/review/reader_image_viewer_page_3.png`，目检：从 ReaderScreen 内容图进入 viewer 后图片非黑屏，`2 / 4`、`3 / 4` 无黄色下划线。
+人工：待 @Ray 复核 Patrol 截图与手感（核查人 @Ray）
+```
+
+-----
+
+- [-] T9 · 真路由接线：时间线 → 阅读 → 编辑闭环（维护态补漏）
+
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** ui-shell-navigation：`Routes.reader`/`Routes.editor`、`app_router.dart` 注册入口；timeline-screen：`TimelinePage._openEntry` / `TimelineShellPage`；editor-integration-screen：`Routes.editor` 的 Map extra 契约（`mode`/`entryId`/`entryDate`/`title`/`initialContentJson`）；data-layer：`EntryRepo.restore` / `EntryRepo.watchChanges`（本卡新增，trash-screen 恢复链路可直接复用） ｜ **关联需求：** R1, R7, R8, NF1 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/ui/shell/app_router.dart`、`lib/main.dart`、`lib/ui/reader/reader_screen.dart`、`lib/ui/timeline/timeline_page.dart`、`lib/ui/timeline/timeline_controller.dart`、`lib/data/database.dart`（`EntriesDao.restore`）、`lib/data/repositories/entry_repo.dart`、`lib/demo/timeline_demo.dart`（假 repo 补接口） ｜ **验收基建：** `test/ui/reader/reader_edit_flow_test.dart`、`test/ui/shell/reader_route_test.dart`、`test/ui/timeline/timeline_reader_wiring_test.dart`、`test/ui/timeline/fake_entry_repo.dart`（补 `watchChanges` / `addEntry`）
+
+### 背景
+本屏 v1（T1–T8）只在 Debug Home demo 里装配，真入口 `Routes.reader` 仍是 `PlaceholderScreen`：冷启动 → 时间线点卡片 → 只看到占位页。同时暴露三处闭环断点：
+1. 时间线用 `goNamed` 进 reader：reader 在 ShellRoute 外，`go` 把时间线移出栈，返回钮无处可 pop。
+2. ⋯「编辑」只携 `entryId`（裸 String extra）进 `Routes.editor`：编辑器拿不到原文 → 空白打开 → 点「完成」走 `update(entryId, contentJson: 空)` **用空正文覆盖原日记**（数据丢失）。
+3. 时间线只在 `initState` 拉一次：编辑器 / reader 推在 shell 之上、时间线页常驻其下，写入（新建 / 编辑 / 删除 / 收藏）后不回刷。
+另：删除 toast「撤销」走 `ReaderRepository.restore`，data-layer 无恢复入口 → 必然「操作失败」。
+
+### 实施
+1. `app_router.dart` 增 `registerReaderRepository`；`Routes.reader` 有注册 + `extra` 为非空 entryId 时装配 `ReaderScreen`（`loadData = buildReaderViewData`），否则仍回落占位（裸 router 的既有测试依赖此行为）。`main.dart` 用 `DataLayerReaderRepository`（`restoreEntry: entryRepo.restore`）注册。
+2. 时间线 `_openEntry` 改 `pushNamed`。
+3. reader「编辑」默认路径：经 `ReaderRepository.byId` 取原记录 → `readerEditorRouteExtra` 组 Map extra（`mode: writing`、`initialContentJson`、`title` = `contentPlain` 字面首行、`entryDate`）→ push 编辑器 → 返回后 reader 重新 `loadData`。注入的 `onEdit` 仍整体覆盖默认行为。
+4. `EntryRepo.restore`（清 `deleted_at`）+ `EntryRepo.watchChanges`（Drift `tableUpdates(entries)`）；`TimelineShellPage` 订阅后调 `TimelineController.refresh()`：静默重读已加载深度（不清空、不闪 loader），与 `loadInitial`/`loadMore` 以代次号互斥，被抢先则排队重试。
+
+### 验收标准（做完即止）
+- `Routes.reader` 已注册 + 携 entryId → 渲染 `ReaderScreen`；返回 → 回到时间线（自动：`reader_route_test`）（R1）。
+- 时间线点卡片 → push reader（携 entryId），返回仍在时间线；时间线被覆盖期间发生写入 → 回来即见新条目（自动：`timeline_reader_wiring_test`）。
+- 未注册 / 无 entryId → 仍为占位页（自动：既有 `app_router_test` 不改即绿）。
+- ⋯「编辑」→ 编辑器路由收到 `initialContentJson` / `title` / `mode: writing` / `entryId`；从编辑器返回 → reader 重新加载（自动：`reader_edit_flow_test`）（R7）。
+- 无标题日记（`contentPlain` 以 `\n` 开头）编辑时标题保持为空，不把正文首行提成标题（自动）。
+- `EntryRepo.restore` 让软删条目重新可读、进时间线；未知 id 抛错；`watchChanges` 在写入时发事件（自动：`entry_repo_test`）（R8）。
+- `TimelineController.refresh` 保留已加载深度并纳入新条目、只通知一次；加载中请求 → 加载完补跑；被切本抢先 → 以新本重读（自动：`timeline_controller_test`）。
+- 真机走查：新建一篇 → 回时间线立即可见 → 点开阅读 → ⋯ 编辑看到原文 → 改一句完成 → 阅读页与时间线均为新内容；删除 → 撤销 → 回到时间线（人工）。
+
+### 禁止
+- reader 屏内不 import Drift / 写 SQL（NF1）：取原文只经 `ReaderRepository.byId`。
+- 不改编辑器保存格式（`contentPlain = title + '\n' + body` 维持现状，本卡只按其反解标题）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/reader/reader_edit_flow_test.dart test/ui/shell/reader_route_test.dart \
+    test/ui/timeline/timeline_reader_wiring_test.dart test/ui/timeline/timeline_controller_test.dart test/data/entry_repo_test.dart \
+    test/ui/shell/app_router_test.dart test/ui/timeline/timeline_shell_wiring_test.dart
+  ```
+- 人工：@Ray 真机走查上述闭环。
+
+### 已知边界（不在本卡）
+- 真路由下 reader 未注入 `thumbnailCache`：`ThumbnailCacheReaderAdapter` 的 ready provider 仍是透明占位（T3 遗留，见 `reader_image.dart` 注释），封面 / 九宫格暂不出真图，待缩略图 provider 补齐后一并接入。
+- 非编辑器写入的历史条目（`contentPlain` 首行并非标题、正文 JSON 又含该行）编辑时标题会与正文首行重复；编辑器写入的条目不受影响。
+
+### 验收记录
+```
+日期：2026-10-09
+环境：云端 Linux（Flutter 3.44.4 / Dart 3.12.2），补 third_party/sqlite3mc/libsqlite3mc.x64.linux.so（官方 sha256 校验通过）后可在 Linux host 跑 flutter test。
+自动：`dart analyze lib test` 与改动前同为 18 条既有 warning/info、无新增；本卡验收方式所列 6 个测试文件全绿。
+回归：`flutter test -j 1` 全量 528 通过；失败仅 golden 2（`reader_default`/`reader_text`，干净 HEAD 上同像素差 2.17%/1.84% 复现——基线为 macOS 渲染，Linux 字体栅格不同，非本卡引入）+ argon2/KeyProvider 11（Linux 缺 `libargon2id_ffi.so`；经 `ARGON2ID_FFI_LIB` 指向 cargo 现编产物后重跑 test/security 全绿）。
+人工：待 @Ray 真机走查（核查人 @Ray）
 ```

@@ -219,5 +219,133 @@ void main() {
         expect(controller.contentEpoch, 1);
       },
     );
+
+    test(
+      'refresh keeps the loaded window and picks up a newly written entry',
+      () async {
+        final repo = FakeEntryRepo(
+          entries: [
+            for (var day = 5; day >= 1; day--)
+              fakeEntry(
+                id: 'e$day',
+                entryDtUtc: DateTime.utc(2026, 5, day, 10),
+                localYear: 2026,
+                localMonth: 5,
+                localDay: day,
+                contentPlain: 'Entry $day\nBody',
+              ),
+          ],
+        );
+        final controller = TimelineController(repo: repo, pageSize: 2);
+        await controller.loadInitial(null);
+        await controller.loadMore();
+        expect(controller.sections.expand((s) => s.entries).map((e) => e.id), [
+          'e5',
+          'e4',
+          'e3',
+          'e2',
+        ]);
+
+        var notifications = 0;
+        controller.addListener(() => notifications += 1);
+        repo.addEntry(
+          fakeEntry(
+            id: 'e6',
+            entryDtUtc: DateTime.utc(2026, 6, 1, 10),
+            localYear: 2026,
+            localMonth: 6,
+            localDay: 1,
+            contentPlain: 'New entry\nBody',
+          ),
+        );
+        await controller.refresh();
+
+        // Loaded depth (4) is re-read, so the new entry is prepended and the
+        // previously visible rows stay — nothing collapses back to one page.
+        expect(controller.sections.expand((s) => s.entries).map((e) => e.id), [
+          'e6',
+          'e5',
+          'e4',
+          'e3',
+        ]);
+        expect(controller.reachedEnd, isFalse);
+        // Silent reload: one notification at the end, no empty interim state.
+        expect(notifications, 1);
+        controller.dispose();
+      },
+    );
+
+    test('refresh requested mid-load runs once the load finishes', () async {
+      final gate = Completer<void>();
+      final repo = FakeEntryRepo(
+        entries: [
+          fakeEntry(
+            id: 'e1',
+            entryDtUtc: DateTime.utc(2026, 5, 1, 10),
+            localYear: 2026,
+            localMonth: 5,
+            localDay: 1,
+          ),
+        ],
+      );
+      repo.beforeTimelineResponse = () => gate.future;
+      final controller = TimelineController(repo: repo);
+      final initial = controller.loadInitial(null);
+      await Future<void>.delayed(Duration.zero);
+
+      await controller.refresh();
+      expect(repo.timelineCallCount, 1);
+
+      repo.beforeTimelineResponse = null;
+      gate.complete();
+      await initial;
+      await pumpEventQueue();
+      expect(repo.timelineCallCount, 2);
+      controller.dispose();
+    });
+
+    test(
+      'a refresh overtaken by a journal switch retries on the new journal',
+      () async {
+        final gate = Completer<void>();
+        final repo = FakeEntryRepo(
+          entries: [
+            fakeEntry(
+              id: 'a1',
+              journalId: 'journal-a',
+              entryDtUtc: DateTime.utc(2026, 5, 2, 10),
+              localYear: 2026,
+              localMonth: 5,
+              localDay: 2,
+            ),
+            fakeEntry(
+              id: 'b1',
+              journalId: 'journal-b',
+              entryDtUtc: DateTime.utc(2026, 5, 1, 10),
+              localYear: 2026,
+              localMonth: 5,
+              localDay: 1,
+            ),
+          ],
+        );
+        final controller = TimelineController(repo: repo);
+        await controller.loadInitial('journal-a');
+
+        repo.beforeTimelineResponse = () => gate.future;
+        final refresh = controller.refresh();
+        await Future<void>.delayed(Duration.zero);
+        repo.beforeTimelineResponse = null;
+        await controller.switchJournal('journal-b');
+        gate.complete();
+        await refresh;
+        await pumpEventQueue();
+
+        expect(controller.sections.expand((s) => s.entries).map((e) => e.id), [
+          'b1',
+        ]);
+        expect(repo.timelineJournalIds.last, 'journal-b');
+        controller.dispose();
+      },
+    );
   });
 }

@@ -2,7 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
@@ -35,6 +37,12 @@ class TimelineController extends ChangeNotifier {
   List<MonthSection> _sections = const <MonthSection>[];
   EntryTimelineCursor? _cursor;
   bool _isLoading = false;
+  bool _refreshing = false;
+  bool _refreshQueued = false;
+  bool _disposed = false;
+  // Bumped by every list-shaping load so an in-flight [refresh] can tell its
+  // snapshot went stale (journal switch / page appended) and retry instead.
+  int _generation = 0;
   bool _reachedEnd = false;
   String? _journalId;
   int _contentEpoch = 0;
@@ -65,6 +73,7 @@ class TimelineController extends ChangeNotifier {
   }
 
   Future<void> loadInitial(String? journalId) async {
+    _generation += 1;
     _journalId = journalId;
     _cursor = null;
     _reachedEnd = false;
@@ -82,6 +91,7 @@ class TimelineController extends ChangeNotifier {
       return;
     }
 
+    _generation += 1;
     _isLoading = true;
     notifyListeners();
 
@@ -99,8 +109,76 @@ class TimelineController extends ChangeNotifier {
       );
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) {
+        notifyListeners();
+      }
     }
+    _drainQueuedRefresh();
+  }
+
+  /// Re-reads the already-loaded window after entries changed elsewhere (a new,
+  /// edited or deleted entry). Unlike [loadInitial] it keeps the current list on
+  /// screen while reloading and re-fetches as many rows as were loaded, so the
+  /// user's scroll depth survives.
+  Future<void> refresh() async {
+    if (_disposed) {
+      return;
+    }
+    if (_isLoading || _refreshing) {
+      _refreshQueued = true;
+      return;
+    }
+
+    final generation = _generation;
+    final loadedCount = _sections.fold<int>(
+      0,
+      (sum, section) => sum + section.entries.length,
+    );
+    _refreshing = true;
+    try {
+      final monthCounts = await _loadMonthCounts();
+      final page = await _loadTimelinePage(
+        cursor: null,
+        limit: math.max(pageSize, loadedCount),
+      );
+      if (_disposed) {
+        return;
+      }
+      if (generation != _generation) {
+        _refreshQueued = true;
+        return;
+      }
+      _loadedEntryDays.clear();
+      _resolvedEntryDays.clear();
+      final entries = _mapPageEntries(page.items);
+      _monthCounts = monthCounts;
+      _cursor = page.nextCursor;
+      _reachedEnd = page.nextCursor == null;
+      _sections = mergeMonthSections(
+        current: const <MonthSection>[],
+        incomingEntries: entries,
+        monthCounts: monthCounts,
+      );
+      notifyListeners();
+    } finally {
+      _refreshing = false;
+      // In `finally` so the stale-snapshot early return above still retries.
+      _drainQueuedRefresh();
+    }
+  }
+
+  void _drainQueuedRefresh() {
+    if (!_refreshQueued || _disposed || _isLoading) {
+      return;
+    }
+    _refreshQueued = false;
+    unawaited(refresh());
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   Future<void> jumpToMonth(int year, int month) async {

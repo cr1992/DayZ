@@ -5,6 +5,8 @@ import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart';
 
+import 'plain_text_extractor.dart';
+
 abstract final class EditorDocCodec {
   static const int currentDocVersion = 1;
 
@@ -55,5 +57,9 @@ abstract final class EditorDocCodec {
     throw FormatException(
       'Editor docVersion must be an integer when present, got: $rawVersion',
     );
+  }
+
+  static String extractPlainText(Document document) {
+    return EditorPlainTextExtractor.extract(document);
   }
 }

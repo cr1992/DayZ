@@ -273,17 +273,18 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：2026-10-09
-自动：`flutter test test/ui/timeline/timeline_shell_wiring_test.dart` 3 项通过（菜单钮开抽屉、搜索 / 往年今日钮导航、抽屉选本后时间线只剩该本条目）；连带 test/ui/timeline + test/ui/shell + test/app 共 121 项通过
+日期：2026-05-31
+自动：`flutter test test/ui/timeline/timeline_shell_wiring_test.dart`
+补记 2026-10-09：本地分支曾在 TimelinePage 内另做一版顶栏按钮（commit d632fad），合并 origin/main 时以外壳持有顶栏的实现为准，该版撤销；切本后只剩该本条目的断言并入 test/ui/timeline/timeline_shell_wiring_test.dart。
 人工：N/A
 备注：① journalId 注入与切本由 app-composition-root 的 `TimelineHost` 承担（监听 ShellState → `switchJournal`），本屏不持 ShellState；生产路由挂载亦归该 spec T3。② 修复切本淡入期间新旧子树共用月份头 GlobalKey 的断言崩溃（commit 35ef617）。③ 真机发现：手势导航下左缘右滑被系统返回手势截获，菜单钮是唯一的抽屉入口。
 ```
 
 -----
 
-- [ ] T8 · Debug Home demo + 入口
+- [x] T8 · Debug Home demo + 入口
 
-**同 spec 依赖：** T5, T6, T7 ｜ **跨 spec 依赖：** 无（demo 用本屏自带最小 Scaffold + 假 Repo，不强依赖 shell 就绪）｜ **关联需求：** R8 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/timeline_demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T5, T6, T7 ｜ **跨 spec 依赖：** 无（demo 用本屏自带最小 Scaffold + 假 Repo，不强依赖 shell就绪）｜ **关联需求：** R8 ｜ **依据设计：** D8 ｜ **可改文件：** `lib/demo/timeline_demo.dart`, `lib/demo/demo_entry.dart`
 
 ### 背景
 用内存假 `EntryRepo`（T2）注入 `TimelineController`，在一台模拟设备框内渲染 `TimelinePage`（可滚动/向上分页/开日历面板/切空与有内容两态/开抽屉与 FAB），作为真机走查与可独立 pump 的 widget 测试入口。`lib/demo/demo_entry.dart` 的 `demos` 列表**末尾追加一行**（不插中间、不改 `DemoEntry` 字段）。
@@ -307,8 +308,8 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-05-31
+自动：`flutter test test/demo/timeline_demo_test.dart`
 人工：N/A
 ```
 

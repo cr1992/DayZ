@@ -15,6 +15,10 @@ import 'package:dayz/media/demo.dart';
 import 'package:dayz/thumbnails/demo.dart';
 import 'package:dayz/demo/shell_nav_demo.dart';
 import 'package:dayz/backup/demo.dart';
+import 'package:dayz/demo/reader_demo.dart';
+import 'package:dayz/demo/timeline_demo.dart';
+import 'package:dayz/demo/editor_screen_demo.dart';
+import 'package:dayz/demo/settings_screen_demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -96,6 +100,26 @@ final List<DemoEntry> demos = [
     title: '备份与恢复 demo',
     subtitle: '整库备份（.mydiary）与覆盖式还原演示',
     builder: (context) => const BackupDemo(),
+  ),
+  DemoEntry(
+    title: 'Reader demo',
+    subtitle: '阅读页 UI 状态演示',
+    builder: (context) => const ReaderDemo(),
+  ),
+  DemoEntry(
+    title: '编辑页 demo',
+    subtitle: '编辑页三状态与六套主题演示',
+    builder: (context) => const EditorScreenDemo(),
+  ),
+  DemoEntry(
+    title: '时间线屏 demo',
+    subtitle: '时间线首页、月级跳转与空态切换',
+    builder: (context) => const TimelineDemo(),
+  ),
+  DemoEntry(
+    title: '设置屏 demo',
+    subtitle: '设置屏、红线文案与回调上抬演示',
+    builder: (context) => const SettingsScreenDemo(),
   ),
   DemoEntry(
     title: '示例数据',

@@ -33,11 +33,19 @@ void main() {
       ),
     );
 
+    // The canonical key now sits on the [DayzIcon] wrapper; the actual painted
+    // SvgPicture is its descendant.
     final filledSvg = tester.widget<SvgPicture>(
-      find.byKey(const ValueKey('dayz-favorite-star-filled')),
+      find.descendant(
+        of: find.byKey(const ValueKey('dayz-favorite-star-filled')),
+        matching: find.byType(SvgPicture),
+      ),
     );
     final outlineSvg = tester.widget<SvgPicture>(
-      find.byKey(const ValueKey('dayz-favorite-star-outline')),
+      find.descendant(
+        of: find.byKey(const ValueKey('dayz-favorite-star-outline')),
+        matching: find.byType(SvgPicture),
+      ),
     );
 
     expect(

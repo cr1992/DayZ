@@ -2,34 +2,102 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/dayz_glass_app_bar.dart';
+import 'package:dayz/ui/shell/shell_state.dart';
 import 'package:dayz/ui/util/dayz_motion.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/widgets/dayz_empty_state.dart';
-import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 import 'timeline_calendar_panel.dart';
 import 'timeline_controller.dart';
 import 'timeline_loader.dart';
 import 'timeline_month_section.dart';
 
+class TimelineShellPage extends StatefulWidget {
+  const TimelineShellPage({
+    super.key,
+    required this.repo,
+    required this.shellState,
+  });
+
+  final EntryRepo repo;
+  final ShellState shellState;
+
+  @override
+  State<TimelineShellPage> createState() => _TimelineShellPageState();
+}
+
+class _TimelineShellPageState extends State<TimelineShellPage> {
+  late final TimelineController _controller;
+  late final StreamSubscription<void> _entryChanges;
+  String? _activeJournalId;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TimelineController(repo: widget.repo);
+    _activeJournalId = widget.shellState.currentJournalId;
+    widget.shellState.addListener(_handleShellJournalChanged);
+    // Writes happen on routes pushed above the shell (editor / reader), which
+    // keep this page alive underneath — refresh in place when they land.
+    _entryChanges = widget.repo.watchChanges().listen(
+      (_) => unawaited(_controller.refresh()),
+    );
+    unawaited(_controller.loadInitial(_activeJournalId));
+  }
+
+  @override
+  void didUpdateWidget(covariant TimelineShellPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shellState != widget.shellState) {
+      oldWidget.shellState.removeListener(_handleShellJournalChanged);
+      _activeJournalId = widget.shellState.currentJournalId;
+      widget.shellState.addListener(_handleShellJournalChanged);
+      unawaited(_controller.switchJournal(_activeJournalId));
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.shellState.removeListener(_handleShellJournalChanged);
+    unawaited(_entryChanges.cancel());
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TimelinePage(controller: _controller, showAppBar: false);
+  }
+
+  void _handleShellJournalChanged() {
+    final nextJournalId = widget.shellState.currentJournalId;
+    if (nextJournalId == _activeJournalId) {
+      return;
+    }
+    _activeJournalId = nextJournalId;
+    unawaited(_controller.switchJournal(nextJournalId));
+  }
+}
+
 class TimelinePage extends StatefulWidget {
-  const TimelinePage({super.key, required this.controller});
+  const TimelinePage({
+    super.key,
+    required this.controller,
+    this.showAppBar = true,
+  });
 
   final TimelineController controller;
-
-  static const Key menuButtonKey = ValueKey<String>('timeline-menu-button');
-  static const Key searchButtonKey = ValueKey<String>('timeline-search-button');
-  static const Key onThisDayButtonKey = ValueKey<String>(
-    'timeline-onthisday-button',
-  );
+  final bool showAppBar;
 
   @override
   State<TimelinePage> createState() => _TimelinePageState();
@@ -37,11 +105,9 @@ class TimelinePage extends StatefulWidget {
 
 class _TimelinePageState extends State<TimelinePage> {
   late final ScrollController _scrollController;
-  // 月份头 GlobalKey 按内容代次分组：切本淡入期间新旧两棵子树同时在树上，
-  // 共用同一 GlobalKey 会触发重复 key / 布局期重挂断言。
-  Map<TimelineMonthKey, GlobalKey> _headerKeys =
+  final Map<TimelineMonthKey, GlobalKey> _headerKeys =
       <TimelineMonthKey, GlobalKey>{};
-  ValueKey<String>? _headerKeysContent;
+  int _headerKeyEpoch = 0;
   TimelineMonthKey? _expandedCalendarMonth;
   TimelineMonthKey? _pendingScrollMonth;
 
@@ -64,13 +130,10 @@ class _TimelinePageState extends State<TimelinePage> {
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (context, _) {
+        _syncHeaderKeysEpoch();
         final contentKey = ValueKey<String>(
           'timeline-content-${widget.controller.contentEpoch}-${widget.controller.journalId ?? 'all'}',
         );
-        if (_headerKeysContent != contentKey) {
-          _headerKeysContent = contentKey;
-          _headerKeys = <TimelineMonthKey, GlobalKey>{};
-        }
         return AnimatedSwitcher(
           key: const ValueKey<String>('timeline-content-switcher'),
           duration: dayzMotionDuration(context),
@@ -81,40 +144,14 @@ class _TimelinePageState extends State<TimelinePage> {
                 CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                    DayzGlassAppBar(
-                      scrollController: _scrollController,
-                      leading: Builder(
-                        builder: (context) => _TopBarIconButton(
-                          key: TimelinePage.menuButtonKey,
-                          label: l10n.menu,
-                          iconPath: DayzIcons.menuPath,
-                          onPressed: () {
-                            final scaffold = Scaffold.maybeOf(context);
-                            if (scaffold != null && scaffold.hasDrawer) {
-                              scaffold.openDrawer();
-                            }
-                          },
+                    if (widget.showAppBar)
+                      DayzGlassAppBar(
+                        scrollController: _scrollController,
+                        title: Text(
+                          l10n.timeline,
+                          key: const ValueKey<String>('timeline-page-title'),
                         ),
                       ),
-                      title: Text(
-                        l10n.timeline,
-                        key: ValueKey<String>('timeline-page-title'),
-                      ),
-                      actions: [
-                        _TopBarIconButton(
-                          key: TimelinePage.searchButtonKey,
-                          label: l10n.search,
-                          iconPath: DayzIcons.searchPath,
-                          onPressed: () => context.pushNamed(Routes.search),
-                        ),
-                        _TopBarIconButton(
-                          key: TimelinePage.onThisDayButtonKey,
-                          label: l10n.onThisDay,
-                          iconPath: DayzIcons.historyClockPath,
-                          onPressed: () => context.pushNamed(Routes.onthisday),
-                        ),
-                      ],
-                    ),
                     ..._buildBodySlivers(context, l10n),
                   ],
                 ),
@@ -194,7 +231,7 @@ class _TimelinePageState extends State<TimelinePage> {
 
     return [
       for (final section in widget.controller.sections)
-        ...buildTimelineMonthSlivers(
+        buildTimelineMonthSliverGroup(
           section: section,
           headerKey: _headerKeyFor(section.key),
           headerOnTap: () => _toggleCalendar(section.key),
@@ -220,8 +257,21 @@ class _TimelinePageState extends State<TimelinePage> {
     );
   }
 
+  void _syncHeaderKeysEpoch() {
+    final currentEpoch = widget.controller.contentEpoch;
+    if (_headerKeyEpoch == currentEpoch) {
+      return;
+    }
+
+    _headerKeyEpoch = currentEpoch;
+    _headerKeys.clear();
+  }
+
   void _openEntry(BuildContext context, String entryId) {
-    context.goNamed(Routes.reader, extra: entryId);
+    // Push (not go): reader lives outside the ShellRoute, so `go` would drop
+    // the timeline from the stack and leave the reader's back button nowhere
+    // to pop to.
+    context.pushNamed(Routes.reader, extra: entryId);
   }
 
   void _toggleCalendar(TimelineMonthKey key) {
@@ -305,12 +355,7 @@ class _TimelinePageState extends State<TimelinePage> {
     final desiredTop = MediaQuery.paddingOf(context).top + kToolbarHeight;
     final currentTop = renderObject.localToGlobal(Offset.zero).dy;
     final delta = currentTop - desiredTop;
-    final pinnedAdjustment =
-        widget.controller.sections.isNotEmpty &&
-            widget.controller.sections.first.key != key
-        ? TimelineMonthHeaderDelegate.extent
-        : 0.0;
-    final targetOffset = (_scrollController.offset + delta + pinnedAdjustment)
+    final targetOffset = (_scrollController.offset + delta)
         .clamp(0.0, _scrollController.position.maxScrollExtent);
     final duration = dayzMotionDuration(context);
 
@@ -349,44 +394,5 @@ class _TimelinePageState extends State<TimelinePage> {
             );
           });
         });
-  }
-}
-
-/// 顶栏 44×44 图标钮，与外壳顶栏同一配方（菜单 / 搜索 / 往年今日）。
-class _TopBarIconButton extends StatelessWidget {
-  const _TopBarIconButton({
-    super.key,
-    required this.label,
-    required this.iconPath,
-    required this.onPressed,
-  });
-
-  final String label;
-  final String iconPath;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: SizedBox.square(
-        dimension: 44,
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-          tooltip: label,
-          icon: SvgPicture.string(
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-            'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-            'xmlns="http://www.w3.org/2000/svg"><path d="$iconPath"/></svg>',
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(context.dayz.ink, BlendMode.srcIn),
-          ),
-          onPressed: onPressed,
-        ),
-      ),
-    );
   }
 }

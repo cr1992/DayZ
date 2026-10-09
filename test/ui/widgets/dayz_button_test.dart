@@ -99,7 +99,7 @@ void main() {
       expect(decorationFor(disabledKey).color, DayzColors.purpleLight.bg2);
 
       expect(find.bySemanticsLabel(testL10n.more), findsOneWidget);
-      expect(tester.getSize(find.byKey(iconKey)), const Size.square(44));
+      expect(tester.getSize(find.byKey(iconKey)), const Size.square(42));
 
       await tester.tap(find.text('Primary'));
       await tester.tap(find.text('Disabled'));

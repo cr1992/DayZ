@@ -13,6 +13,7 @@ export 'widgets/dayz_entry_card.dart';
 export 'widgets/dayz_favorite_star.dart';
 export 'widgets/dayz_gallery.dart';
 export 'widgets/dayz_icons.dart';
+export 'widgets/dayz_image_viewer.dart';
 export 'widgets/dayz_mood_chip.dart';
 export 'widgets/dayz_month_header.dart';
 export 'widgets/dayz_option.dart';

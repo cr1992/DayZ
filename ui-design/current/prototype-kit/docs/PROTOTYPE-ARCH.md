@@ -1,4 +1,4 @@
-# DayZ 页面原型架构（PROTOTYPE-ARCH）
+# 页面原型架构（PROTOTYPE-ARCH）
 
 > 本文件沉淀 `pages/` 这套**「一套屏幕源、两种呈现」**的设计原型架构，并给出**对应的 Flutter 落地映射**。
 > 定位：`pages/` 是**设计原型**（HTML，用于评审与交互演示），**不是产品代码**；真实产品是 Flutter。本文件让两边对得上。
@@ -66,13 +66,13 @@
 </head>
 <body>
   <div class="pg [drawer-stage] [has-dock]">
-    <div class="app-top">…固定头…</div>      <!-- 或 .search-head -->
+    <div class="app-top">…固定头…</div>
     <div class="app-scroll">
       <div data-when="default">…默认状态内容…</div>
       <div class="empty" data-when="empty">…空状态…</div>
       <!-- 多状态：data-when="a b" 命中任一即显示 -->
     </div>
-    <!-- 可选：.scrim + .drawer（抽屉）、.fab-wrap（FAB）、.toolbar.editor-dock -->
+    <!-- 可选：.scrim + .drawer（抽屉）、.fab-wrap（FAB） -->
   </div>
   <script src="../assets/screen.js"></script>
 </body>
@@ -105,7 +105,7 @@
 | 屏 → 外壳 | `{type:'setmode', appearance}` | 请求外观 light/dark/system（system 用 `matchMedia(prefers-color-scheme)`） |
 | 外壳 → 屏 | `{type:'theme', theme, mode}` | 下发主题/明暗，屏即时换肤 |
 
-> 屏内交互例：**顶栏展开搜索**——点 `[data-search-open]` 使 `.app-top` 加 `.searching` 展开 `.topsearch` 输入框，回车发 `{type:'nav',to:'search'}`；`[data-search-close]` 收起。全由 `screen.js` 处理，不需外壳参与。
+> 屏内交互例：**分段控件**、**抽屉开关**、**FAB 导航**等由 `screen.js` 统一处理；业务专属交互在各屏自行添加。全由 `screen.js` 处理，不需外壳参与。
 
 主题切换：外壳改自身 `data-theme/mode` 后，向**所有** `.workspace iframe` 广播 `theme` 消息；新建/预热的 iframe 在 `ready` 时主动拉一次，避免初始不同步。
 
@@ -115,7 +115,7 @@
 - 外壳维护 `stack`（id 数组）+ `pageCache`（id→已建 iframe 页）。
 - `pushScreen`：复用缓存页，仅调 `z-index` 与转场 class（`is-entering`→入场，前页 `is-behind`）。
 - `popScreen`：顶页 `is-leaving` 滑出，到期 `is-parked` 泊到屏外，**不销毁 iframe**。
-- **预热**：首屏 `timeline` 就绪后，空闲时段（`requestIdleCallback`）预建其余屏 iframe（泊在屏外 `is-parked`）。→ 后续跳转无加载等待，搜索/往年今日等秒开。
+- **预热**：首屏就绪后，空闲时段（`requestIdleCallback`）预建其余屏 iframe（泊在屏外 `is-parked`）。→ 后续跳转无加载等待，秒开。开。
 - ⚠️ iframe **重新挂载 DOM 会重载**，所以缓存页只移 `z-index`/class，绝不 reparent。
 
 ---
@@ -152,15 +152,11 @@
 | iOS chrome（状态栏/灵动岛/Home 条） | 真机系统提供；用 `SafeArea` + `MediaQuery.padding` 让位，不要自绘 |
 | 固定头 `.app-top` + `.app-scroll` | `Scaffold(appBar: …)` 或 `CustomScrollView` + `SliverAppBar(pinned:true)` |
 | 抽屉 `.drawer-stage` | `Scaffold(drawer: Drawer(...))`，`scrim` 与滑动系统内置 |
-| FAB `.fab-wrap`（轻点写/长按展开） | `FloatingActionButton` + 自定义 `GestureDetector(onLongPress)`；展开用 `showModalBottomSheet` 或自绘 speed-dial |
-| FAB 立体（渐变+多层影+顶高光） | `Container(decoration: BoxDecoration(gradient: LinearGradient(...), boxShadow: [BoxShadow×3], shape: circle))`；顶高光用顶部浅色渐变或 0.5px 白色半透明 `Border`（Flutter 无 inset 阴影） |
-| 主题 token（`tokens.css`） | `ThemeData` + 自定义 `ThemeExtension`（三主题×明暗 = 6 套）；token 名一一对应 |
+| FAB `.fab-wrap`（轻点动作） | `FloatingActionButton`（`onPressed`→导航/动作） |
+| 主题 token（`tokens.css`） | `ThemeData` + 自定义 `ThemeExtension`（多主题×明暗）；token 名一一对应 |
 | 底部弹层 `.sheet`（`DZ.sheet` / `DZ.confirm`：动作菜单/选择器/轻表单/确认） | `showModalBottomSheet`（圆角顶 + 拖拽柄 + `SafeArea` 底部留白）；确认用 `showModalBottomSheet`/`AlertDialog`，单选用 `ListTile`+`trailing: check` |
 | 设置选择器 → `settheme/setmode` | 设置页改 `ThemeData` / `ThemeMode`，全树 rebuild；「跟随系统」= `ThemeMode.system` + `MediaQuery.platformBrightness` |
-| 顶栏展开搜索（`.topsearch` + `data-search-*`） | `SearchAnchor`/`showSearch(SearchDelegate)`，或 `AppBar` 内 `TextField` 切换；提交 → push 搜索结果页 |
 | 主题广播到 iframe | 顶层 `ThemeData` 切换，全树自动 rebuild；无需广播 |
-| 富文本编辑器（`editor.html` 工具栏） | **AppFlowy Editor**（`packages/appflowy-editor`），工具集即 §DESIGN-REF 所列；内容存 `content_json` + `content_plain` |
-| 图标点缀色 `--ic-*` | 同名常量 / `ThemeExtension`；分类图标着色，chrome 图标用 `IconTheme` 当前色 |
 | 画布多状态平铺 / 浏览 | **无运行时对应**——纯设计评审视图；Flutter 侧用 widgetbook/storybook 看各状态 |
 | 氛围占位图 `assets/img/*` | 真实用户照片（本地相册）；占位图仅原型用 |
 
@@ -177,7 +173,7 @@
 ---
 
 ## 8. 复用这套框架做新原型（移植指南）
-> 这套「一套屏幕源、两种呈现（原型 iPhone 路由 + 无限画布浏览）」是**与业务解耦的通用外壳**，以后做别的原型可直接照搬。外壳代码不含 DayZ 业务，唯一的项目耦合点是 `SCREENS[]` 清单 + 视觉 token + 屏幕本体。
+> 这套「一套屏幕源、两种呈现（原型 iPhone 路由 + 无限画布浏览）」是**与业务解耦的通用外壳**，以后做别的原型可直接照搬。外壳代码不含任何业务，唯一的项目耦合点是 `SCREENS[]` 清单 + 视觉 token + 屏幕本体。
 
 **外壳文件（直接复制，几乎不改）**
 - `pages/index.html`（壳容器：顶栏 + iPhone 框 + 原型栈 + 画布）— 改标题/品牌字样即可。

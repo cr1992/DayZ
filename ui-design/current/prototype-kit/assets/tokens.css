@@ -1,7 +1,6 @@
 /* ============================================================
-   DayZ Design Tokens
-   本地优先 · 注重隐私 · 温润安静的日记 App
-   主题：data-theme = purple | amber | sage
+   Design Tokens（示例视觉 · 换成你的设计规范）
+   主题：data-theme = purple | amber | sage（示例三套，可换/增删）
    模式：data-mode  = light  | dark
    ============================================================ */
 
@@ -9,7 +8,6 @@
   /* ---- 字体 ---- */
   --font-sans: "Hanken Grotesk", -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
   --font-serif: "Newsreader", "Songti SC", "SimSun", "Noto Serif SC", Georgia, serif;
-  --font-diary: var(--font-serif);
   --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
 
   /* ---- 间距（4px 基准）---- */
@@ -55,7 +53,6 @@
   --overlay:       rgba(44, 40, 33, 0.40);
   --danger:        #C0553F;
   --danger-soft:   #F7E7E1;
-  --favorite:      #D6A23A;  /* 收藏星标 */
 
   --shadow-sm: 0 1px 2px rgba(60, 50, 35, 0.06), 0 1px 3px rgba(60, 50, 35, 0.05);
   --shadow-md: 0 2px 8px rgba(60, 50, 35, 0.07), 0 10px 28px rgba(60, 50, 35, 0.07);
@@ -76,7 +73,6 @@
   --overlay:       rgba(0, 0, 0, 0.58);
   --danger:        #E08068;
   --danger-soft:   #3A241D;
-  --favorite:      #E5BC5E;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.46);

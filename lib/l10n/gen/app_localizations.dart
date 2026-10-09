@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'取消搜索'**
   String get searchCancel;
 
+  /// 搜索输入框的占位提示词
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索日记、标签、地点'**
+  String get searchHint;
+
   /// No description provided for @clear.
   ///
   /// In zh, this message translates to:
@@ -446,22 +452,28 @@ abstract class AppLocalizations {
   /// **'新建日记本'**
   String get newJournal;
 
+  /// No description provided for @sheetCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建'**
+  String get sheetCreate;
+
   /// No description provided for @journalNameInputPlaceholder.
   ///
   /// In zh, this message translates to:
-  /// **'请输入日记本名称'**
+  /// **'例如：读书、健身、远行'**
   String get journalNameInputPlaceholder;
 
   /// No description provided for @journalNameLabel.
   ///
   /// In zh, this message translates to:
-  /// **'日记本名称'**
+  /// **'名称'**
   String get journalNameLabel;
 
   /// No description provided for @journalColorLabel.
   ///
   /// In zh, this message translates to:
-  /// **'日记本颜色'**
+  /// **'封面色'**
   String get journalColorLabel;
 
   /// No description provided for @settings.
@@ -469,6 +481,198 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'设置'**
   String get settings;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsGroupPrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私与加密'**
+  String get settingsGroupPrivacy;
+
+  /// No description provided for @settingsGroupBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与导出'**
+  String get settingsGroupBackup;
+
+  /// No description provided for @settingsGroupAppearance.
+  ///
+  /// In zh, this message translates to:
+  /// **'外观'**
+  String get settingsGroupAppearance;
+
+  /// No description provided for @settingsGroupWriting.
+  ///
+  /// In zh, this message translates to:
+  /// **'书写'**
+  String get settingsGroupWriting;
+
+  /// 设置页账户头卡统计
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{{count} 篇}} · 本地库 {size}'**
+  String settingsAccountStats(int count, String size);
+
+  /// No description provided for @settingsAppLockTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'App 锁'**
+  String get settingsAppLockTitle;
+
+  /// No description provided for @settingsAppLockSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Face ID / 密码解锁'**
+  String get settingsAppLockSubtitle;
+
+  /// No description provided for @settingsDbEncryptionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据库加密'**
+  String get settingsDbEncryptionTitle;
+
+  /// No description provided for @settingsDbEncryptionSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'SQLCipher · 始终开启'**
+  String get settingsDbEncryptionSubtitle;
+
+  /// No description provided for @settingsDbEncryptedValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'已加密'**
+  String get settingsDbEncryptedValue;
+
+  /// No description provided for @settingsMediaNotLockedByPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置主密码不会加密照片，照片始终用设备密钥保护'**
+  String get settingsMediaNotLockedByPassword;
+
+  /// No description provided for @settingsBackupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地备份'**
+  String get settingsBackupTitle;
+
+  /// No description provided for @settingsBackupSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次 · 今天 08:30'**
+  String get settingsBackupSubtitle;
+
+  /// No description provided for @settingsExportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出'**
+  String get settingsExportTitle;
+
+  /// No description provided for @settingsExportSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'PDF · Markdown · JSON'**
+  String get settingsExportSubtitle;
+
+  /// No description provided for @settingsThemeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'主题色'**
+  String get settingsThemeTitle;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾紫 / 暖黄 / 雾绿'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsAppearanceModeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'外观模式'**
+  String get settingsAppearanceModeTitle;
+
+  /// No description provided for @settingsAppearanceModeSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get settingsAppearanceModeSubtitle;
+
+  /// No description provided for @settingsDraftRecoveryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复未完成的编辑'**
+  String get settingsDraftRecoveryTitle;
+
+  /// No description provided for @settingsDraftRecoverySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动时提示残留草稿'**
+  String get settingsDraftRecoverySubtitle;
+
+  /// No description provided for @settingsThemePurple.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾紫'**
+  String get settingsThemePurple;
+
+  /// No description provided for @settingsThemeAmber.
+  ///
+  /// In zh, this message translates to:
+  /// **'暖黄'**
+  String get settingsThemeAmber;
+
+  /// No description provided for @settingsThemeSage.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾绿'**
+  String get settingsThemeSage;
+
+  /// No description provided for @settingsModeSystem.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get settingsModeSystem;
+
+  /// No description provided for @settingsModeLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色'**
+  String get settingsModeLight;
+
+  /// No description provided for @settingsModeDark.
+  ///
+  /// In zh, this message translates to:
+  /// **'深色'**
+  String get settingsModeDark;
+
+  /// No description provided for @settingsBackSemanticLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get settingsBackSemanticLabel;
+
+  /// No description provided for @settingsAppLockSemanticLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'App 锁开关'**
+  String get settingsAppLockSemanticLabel;
+
+  /// No description provided for @settingsDraftRecoverySemanticLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复未完成的编辑开关'**
+  String get settingsDraftRecoverySemanticLabel;
+
+  /// No description provided for @settingsActionUnavailableToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'功能稍后支持'**
+  String get settingsActionUnavailableToast;
 
   /// No description provided for @timeline.
   ///
@@ -481,6 +685,180 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'阅读'**
   String get reader;
+
+  /// No description provided for @readerMetaDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'日期'**
+  String get readerMetaDate;
+
+  /// No description provided for @readerMetaWeather.
+  ///
+  /// In zh, this message translates to:
+  /// **'天气'**
+  String get readerMetaWeather;
+
+  /// No description provided for @readerMetaPlace.
+  ///
+  /// In zh, this message translates to:
+  /// **'地点'**
+  String get readerMetaPlace;
+
+  /// No description provided for @readerMetaMood.
+  ///
+  /// In zh, this message translates to:
+  /// **'心情'**
+  String get readerMetaMood;
+
+  /// No description provided for @readerMetaTags.
+  ///
+  /// In zh, this message translates to:
+  /// **'标签'**
+  String get readerMetaTags;
+
+  /// 阅读页日期语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'日记日期：{date}'**
+  String readerDateSemantic(String date);
+
+  /// 阅读页天气语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'天气：{weather}'**
+  String readerWeatherSemantic(String weather);
+
+  /// 阅读页地点语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'地点：{place}'**
+  String readerPlaceSemantic(String place);
+
+  /// 阅读页心情语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'心情：{mood}'**
+  String readerMoodSemantic(String mood);
+
+  /// 阅读页标签语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'标签：{tag}'**
+  String readerTagSemantic(String tag);
+
+  /// No description provided for @readerActionsSemantic.
+  ///
+  /// In zh, this message translates to:
+  /// **'阅读页操作'**
+  String get readerActionsSemantic;
+
+  /// No description provided for @readerActionEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get readerActionEdit;
+
+  /// No description provided for @readerActionShare.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get readerActionShare;
+
+  /// No description provided for @readerActionMoveToJournal.
+  ///
+  /// In zh, this message translates to:
+  /// **'移到日记本'**
+  String get readerActionMoveToJournal;
+
+  /// No description provided for @readerActionFavorite.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get readerActionFavorite;
+
+  /// No description provided for @readerActionUnfavorite.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消收藏'**
+  String get readerActionUnfavorite;
+
+  /// No description provided for @readerActionDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get readerActionDelete;
+
+  /// No description provided for @readerDeleteTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除这篇日记？'**
+  String get readerDeleteTitle;
+
+  /// No description provided for @readerDeleteMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除后会移到回收站，可在回收站恢复。'**
+  String get readerDeleteMessage;
+
+  /// No description provided for @readerDeleteConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'移到回收站'**
+  String get readerDeleteConfirm;
+
+  /// No description provided for @readerEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到这篇日记'**
+  String get readerEmptyTitle;
+
+  /// No description provided for @readerEmptyDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'它可能已被删除，或不在当前日记本中。'**
+  String get readerEmptyDescription;
+
+  /// No description provided for @readerToastFavoriteAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'已收藏'**
+  String get readerToastFavoriteAdded;
+
+  /// No description provided for @readerToastFavoriteRemoved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消收藏'**
+  String get readerToastFavoriteRemoved;
+
+  /// No description provided for @readerToastDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已移到回收站'**
+  String get readerToastDeleted;
+
+  /// No description provided for @readerToastRestored.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复'**
+  String get readerToastRestored;
+
+  /// 阅读页移本成功 toast
+  ///
+  /// In zh, this message translates to:
+  /// **'已移到「{journalName}」'**
+  String readerToastMovedToJournal(String journalName);
+
+  /// No description provided for @readerToastSharePending.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享功能稍后支持'**
+  String get readerToastSharePending;
+
+  /// No description provided for @readerToastActionFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败，请重试'**
+  String get readerToastActionFailed;
 
   /// No description provided for @editor.
   ///
@@ -529,6 +907,342 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未找到'**
   String get notFound;
+
+  /// No description provided for @editorTitleNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'新日记'**
+  String get editorTitleNew;
+
+  /// No description provided for @editorTitleDraftSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'草稿已存'**
+  String get editorTitleDraftSaved;
+
+  /// No description provided for @editorTitlePlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get editorTitlePlaceholder;
+
+  /// No description provided for @editorBodyPlaceholderEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'写点什么吧……'**
+  String get editorBodyPlaceholderEmpty;
+
+  /// No description provided for @editorBodyPlaceholderWriting.
+  ///
+  /// In zh, this message translates to:
+  /// **'在这里继续写下今天的故事'**
+  String get editorBodyPlaceholderWriting;
+
+  /// No description provided for @editorDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get editorDone;
+
+  /// No description provided for @editorCloseSemanticLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭编辑页'**
+  String get editorCloseSemanticLabel;
+
+  /// No description provided for @editorDoneSemanticLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成并返回'**
+  String get editorDoneSemanticLabel;
+
+  /// No description provided for @editorMetaMood.
+  ///
+  /// In zh, this message translates to:
+  /// **'心情'**
+  String get editorMetaMood;
+
+  /// No description provided for @editorMetaWeather.
+  ///
+  /// In zh, this message translates to:
+  /// **'天气'**
+  String get editorMetaWeather;
+
+  /// No description provided for @editorMetaLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'地点'**
+  String get editorMetaLocation;
+
+  /// No description provided for @editorMetaTags.
+  ///
+  /// In zh, this message translates to:
+  /// **'标签'**
+  String get editorMetaTags;
+
+  /// No description provided for @editorMetaPlaceholderSheet.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择器将在后续规格中接入'**
+  String get editorMetaPlaceholderSheet;
+
+  /// 编辑页今天日期 kicker
+  ///
+  /// In zh, this message translates to:
+  /// **'今天 · {date} {weekday}'**
+  String editorDateKickerToday(String date, String weekday);
+
+  /// 编辑页非今天日期 kicker
+  ///
+  /// In zh, this message translates to:
+  /// **'{date} {weekday}'**
+  String editorDateKicker(String date, String weekday);
+
+  /// No description provided for @editorToolbarFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'Aa·格式'**
+  String get editorToolbarFormat;
+
+  /// No description provided for @editorToolbarHeading.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get editorToolbarHeading;
+
+  /// No description provided for @editorToolbarBold.
+  ///
+  /// In zh, this message translates to:
+  /// **'粗体'**
+  String get editorToolbarBold;
+
+  /// No description provided for @editorToolbarItalic.
+  ///
+  /// In zh, this message translates to:
+  /// **'斜体'**
+  String get editorToolbarItalic;
+
+  /// No description provided for @editorToolbarUnderline.
+  ///
+  /// In zh, this message translates to:
+  /// **'下划线'**
+  String get editorToolbarUnderline;
+
+  /// No description provided for @editorToolbarStrikethrough.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除线'**
+  String get editorToolbarStrikethrough;
+
+  /// No description provided for @editorToolbarCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'行内代码'**
+  String get editorToolbarCode;
+
+  /// No description provided for @editorToolbarColor.
+  ///
+  /// In zh, this message translates to:
+  /// **'颜色高亮'**
+  String get editorToolbarColor;
+
+  /// No description provided for @editorToolbarBulletedList.
+  ///
+  /// In zh, this message translates to:
+  /// **'无序列表'**
+  String get editorToolbarBulletedList;
+
+  /// No description provided for @editorToolbarNumberedList.
+  ///
+  /// In zh, this message translates to:
+  /// **'有序列表'**
+  String get editorToolbarNumberedList;
+
+  /// No description provided for @editorToolbarTodoList.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办清单'**
+  String get editorToolbarTodoList;
+
+  /// No description provided for @editorToolbarQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'引用'**
+  String get editorToolbarQuote;
+
+  /// No description provided for @editorToolbarCallout.
+  ///
+  /// In zh, this message translates to:
+  /// **'标注'**
+  String get editorToolbarCallout;
+
+  /// No description provided for @editorToolbarLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接'**
+  String get editorToolbarLink;
+
+  /// No description provided for @editorToolbarDivider.
+  ///
+  /// In zh, this message translates to:
+  /// **'分隔线'**
+  String get editorToolbarDivider;
+
+  /// No description provided for @editorToolbarImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get editorToolbarImage;
+
+  /// No description provided for @editorImagePickerDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get editorImagePickerDone;
+
+  /// No description provided for @editorImagePickerCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get editorImagePickerCancel;
+
+  /// No description provided for @editorImagePickerPreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'预览'**
+  String get editorImagePickerPreview;
+
+  /// No description provided for @editorImagePickerOriginal.
+  ///
+  /// In zh, this message translates to:
+  /// **'原图'**
+  String get editorImagePickerOriginal;
+
+  /// No description provided for @editorImagePickerCamera.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get editorImagePickerCamera;
+
+  /// No description provided for @editorImagePickerAllPhotos.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近项目'**
+  String get editorImagePickerAllPhotos;
+
+  /// No description provided for @editorFormatSectionParagraph.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落'**
+  String get editorFormatSectionParagraph;
+
+  /// No description provided for @editorFormatSectionBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表与块'**
+  String get editorFormatSectionBlocks;
+
+  /// No description provided for @editorFormatSectionText.
+  ///
+  /// In zh, this message translates to:
+  /// **'文字样式'**
+  String get editorFormatSectionText;
+
+  /// No description provided for @editorColorTextRust.
+  ///
+  /// In zh, this message translates to:
+  /// **'红褐'**
+  String get editorColorTextRust;
+
+  /// No description provided for @editorColorTextAmber.
+  ///
+  /// In zh, this message translates to:
+  /// **'暖橙'**
+  String get editorColorTextAmber;
+
+  /// No description provided for @editorColorTextBronze.
+  ///
+  /// In zh, this message translates to:
+  /// **'金棕'**
+  String get editorColorTextBronze;
+
+  /// No description provided for @editorColorTextOlive.
+  ///
+  /// In zh, this message translates to:
+  /// **'橄榄'**
+  String get editorColorTextOlive;
+
+  /// No description provided for @editorColorTextSlate.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾蓝'**
+  String get editorColorTextSlate;
+
+  /// No description provided for @editorColorTextLilac.
+  ///
+  /// In zh, this message translates to:
+  /// **'雾紫'**
+  String get editorColorTextLilac;
+
+  /// No description provided for @editorColorHighlightYellow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暖黄'**
+  String get editorColorHighlightYellow;
+
+  /// No description provided for @editorColorHighlightGreen.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅绿'**
+  String get editorColorHighlightGreen;
+
+  /// No description provided for @editorColorHighlightBlue.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅蓝'**
+  String get editorColorHighlightBlue;
+
+  /// No description provided for @editorColorHighlightPurple.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅紫'**
+  String get editorColorHighlightPurple;
+
+  /// No description provided for @editorColorHighlightPink.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅粉'**
+  String get editorColorHighlightPink;
+
+  /// No description provided for @editorHeadingParagraphGlyph.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文'**
+  String get editorHeadingParagraphGlyph;
+
+  /// No description provided for @editorHeadingParagraphLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落'**
+  String get editorHeadingParagraphLabel;
+
+  /// No description provided for @editorHeadingLabelH1.
+  ///
+  /// In zh, this message translates to:
+  /// **'大标题'**
+  String get editorHeadingLabelH1;
+
+  /// No description provided for @editorHeadingLabelH2.
+  ///
+  /// In zh, this message translates to:
+  /// **'中标题'**
+  String get editorHeadingLabelH2;
+
+  /// No description provided for @editorHeadingLabelH3.
+  ///
+  /// In zh, this message translates to:
+  /// **'小标题'**
+  String get editorHeadingLabelH3;
 }
 
 class _AppLocalizationsDelegate

@@ -242,6 +242,66 @@ class _AppFlowyRichTextState extends State<AppFlowyRichText>
       );
       cursorHeight = widget.cursorHeight;
     }
+    // >>> DAYZ-PATCH[P006]: 无显式 cursorHeight 时把光标对齐到可见字形框（空节点用 CJK 参考字测量字形高），修大行高(1.85)下换行/非首行光标用满行盒偏高、以及空态光标退化到 Latin placeholder 度量而比 CJK 文字/hint 矮
+    else if (cursorHeight != null) {
+      // Align the caret to the visible glyph box rather than the full line
+      // box. With a generous line-height (e.g. a diary body at 1.85), the
+      // full-line caret floats above the glyphs on wrapped / non-first lines;
+      // on an empty node it collapses to the Latin placeholder metrics, which
+      // reads shorter than CJK content / the hint. Size + place the caret to
+      // the glyph box of the adjacent character (or, for an empty node, a CJK
+      // reference grapheme measured in the node's text style) so it hugs the
+      // text it edits.
+      double? glyphTop;
+      double? glyphHeight;
+      if (delta != null && delta.isNotEmpty && _renderParagraph != null) {
+        final length = delta.length;
+        final probe = position.offset < length
+            ? TextSelection(
+                baseOffset: position.offset,
+                extentOffset: position.offset + 1,
+              )
+            : TextSelection(baseOffset: length - 1, extentOffset: length);
+        final boxes = _renderParagraph!.getBoxesForSelection(
+          probe,
+          boxHeightStyle: BoxHeightStyle.tight,
+        );
+        if (boxes.isNotEmpty) {
+          final glyph = boxes.first.toRect();
+          glyphTop = glyph.top;
+          glyphHeight = glyph.height;
+        }
+      } else {
+        final style = _renderParagraph?.text.style ??
+            _placeholderRenderParagraph?.text.style;
+        if (style != null) {
+          final painter = TextPainter(
+            text: TextSpan(text: '永', style: style),
+            textDirection: textDirection(),
+            textScaler: TextScaler.linear(
+              widget.editorState.editorStyle.textScaleFactor,
+            ),
+          )..layout();
+          final boxes = painter.getBoxesForSelection(
+            const TextSelection(baseOffset: 0, extentOffset: 1),
+            boxHeightStyle: BoxHeightStyle.tight,
+          );
+          if (boxes.isNotEmpty) {
+            // Keep the existing (line-top) caret offset; only adopt the glyph
+            // height so the empty caret matches the hint instead of the bare
+            // Latin font default.
+            glyphTop = cursorOffset.dy;
+            glyphHeight = boxes.first.toRect().height;
+          }
+          painter.dispose();
+        }
+      }
+      if (glyphTop != null && glyphHeight != null && glyphHeight > 0) {
+        cursorOffset = Offset(cursorOffset.dx, glyphTop);
+        cursorHeight = glyphHeight;
+      }
+    }
+    // <<< DAYZ-PATCH[P006]
     final rect = Rect.fromLTWH(
       max(0, cursorOffset.dx - (widget.cursorWidth / 2.0)),
       cursorOffset.dy,

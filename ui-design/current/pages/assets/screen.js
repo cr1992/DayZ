@@ -72,13 +72,11 @@
       var sec = dwi.closest(".dw-section");
       sec.querySelectorAll(".dw-item").forEach(function (i) { i.classList.remove("on"); });
       dwi.classList.add("on");
-      /* 切换日记本：更新顶栏标题 + 通知屏内刷新列表 */
+      /* 切换日记本：通知屏内刷新列表（不在顶栏展示日记本名称） */
       var label = sec.querySelector(".dw-label");
       if (label && /日记本/.test(label.textContent)) {
         var nameEl = dwi.querySelector(".name");
         var jName = nameEl ? nameEl.textContent.trim() : "";
-        var titleEl = document.querySelector(".app-top .title");
-        if (titleEl) titleEl.textContent = (jName === "全部日记") ? "" : jName;
         document.dispatchEvent(new CustomEvent("dayz:journalchange", { detail: { name: jName } }));
       }
       /* 抽屉的选择类操作（切日记本 / 切浏览视图）选完即关闭抽屉 */
@@ -241,12 +239,21 @@
     var ref = DZ.sheet({
       title: "新建日记本",
       content: body,
-      primary: { label: "创建", onTap: function () {
-        var name = (body.querySelector(".nj-name").value || "").trim() || "新日记本";
+      primary: { label: "创建", disabled: true, onTap: function () {
+        var name = (body.querySelector(".nj-name").value || "").trim();
+        if (!name) return false;           /* 空名不提交（按钮本就禁用，双保险）*/
         addJournalToDrawer(name, picked);
         if (DZ.toast) DZ.toast({ text: "已创建「" + name + "」", tone: "ok" });
       } }
     });
+    /* 名称为空 → 「创建」置灰（禁用态）；输入即时解锁 */
+    var nameInput = body.querySelector(".nj-name");
+    var createBtn = body.closest(".sheet") && body.closest(".sheet").querySelector(".sheet-foot .btn-primary");
+    if (nameInput && createBtn) {
+      nameInput.addEventListener("input", function () {
+        createBtn.disabled = !nameInput.value.trim();
+      });
+    }
     setTimeout(function () { var i = body.querySelector(".nj-name"); if (i) i.focus(); }, 260);
     return ref;
   }

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dayz/app.dart';
 import 'package:dayz/app/app_services.dart';
+import 'package:dayz/app/router_ports.dart';
 import 'package:dayz/data/time_zone_triple.dart';
 import 'package:dayz/demo/demo_entry.dart';
 import 'package:dayz/demo/dev_seed_demo.dart';
@@ -75,6 +76,8 @@ void main() {
     shellState.setJournals(const []);
     shellState.selectJournal(null);
     appRouter.go(Routes.timelinePath);
+    bindRouterPorts(services);
+    addTearDown(unbindRouterPorts);
 
     Future<void> settle() async {
       for (var i = 0; i < 8; i++) {

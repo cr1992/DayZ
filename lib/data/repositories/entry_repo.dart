@@ -238,6 +238,21 @@ class EntryRepo {
     await _db.entriesDao.softDelete(id);
   }
 
+  /// Clears `deleted_at` so a soft-deleted entry returns to the timeline.
+  Future<void> restore(String id) async {
+    final entry = await _db.entriesDao.byId(id);
+    if (entry == null) {
+      throw StateError('Entry not found: $id');
+    }
+    await _db.entriesDao.restore(id);
+  }
+
+  /// Emits whenever the entries table is written (create / update / soft
+  /// delete / restore / hard delete), so list screens can refresh.
+  Stream<void> watchChanges() {
+    return _db.tableUpdates(TableUpdateQuery.onTable(_db.entries)).map((_) {});
+  }
+
   Future<void> hardDelete(String id) async {
     await _db.entriesDao.hardDelete(id);
   }

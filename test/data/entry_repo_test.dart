@@ -139,4 +139,46 @@ void main() {
     await repo.hardDelete(entry.id);
     expect(await db.entriesDao.byId(entry.id), isNull);
   });
+
+  test('restore clears deleted_at and returns the entry to reads', () async {
+    final entry = await repo.create(
+      contentJson: '{"insert":"x"}',
+      contentPlain: 'x',
+      entryDtUtc: DateTime.utc(2026, 5, 30, 12),
+      entryTz: 'UTC',
+    );
+    await repo.softDelete(entry.id);
+    expect(await repo.byId(entry.id), isNull);
+
+    await repo.restore(entry.id);
+
+    final restored = await repo.byId(entry.id);
+    expect(restored, isNotNull);
+    expect(restored!.deletedAt, isNull);
+    expect((await repo.timeline()).items.map((row) => row.id), [entry.id]);
+  });
+
+  test('restore of an unknown id throws', () async {
+    expect(() => repo.restore('missing'), throwsStateError);
+  });
+
+  test('watchChanges emits on entries-table writes', () async {
+    final events = <void>[];
+    final sub = repo.watchChanges().listen(events.add);
+    addTearDown(sub.cancel);
+
+    final entry = await repo.create(
+      contentJson: '{"insert":"x"}',
+      contentPlain: 'x',
+      entryDtUtc: DateTime.utc(2026, 5, 30, 12),
+      entryTz: 'UTC',
+    );
+    await pumpEventQueue();
+    final afterCreate = events.length;
+    expect(afterCreate, greaterThan(0));
+
+    await repo.update(entry.id, isFavorite: true);
+    await pumpEventQueue();
+    expect(events.length, greaterThan(afterCreate));
+  });
 }

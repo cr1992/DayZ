@@ -19,6 +19,7 @@ import 'package:dayz/data/time_zone_triple.dart';
 import 'package:dayz/demo/dev_seed_demo.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 import 'package:dayz/ui/shell/placeholder_screen.dart';
+import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/timeline/timeline_month_section.dart';
 import 'package:dayz/ui/timeline/timeline_page.dart';
@@ -56,7 +57,10 @@ void main() {
     );
 
     // 抽屉日记本来自库：两本示例日记本都在。
-    await tester.tap(find.byKey(TimelinePage.menuButtonKey));
+    // 顶栏归外壳所有：菜单钮是 AppShell 顶栏的 leading IconButton。
+    await tester.tap(
+      find.descendant(of: find.byType(AppShell), matching: find.byType(IconButton)).first,
+    );
     await tester.pumpAndSettle();
     final drawer = find.byType(ShellDrawer);
     expect(drawer, findsOneWidget);

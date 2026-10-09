@@ -4,13 +4,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/app/app_services.dart';
-import 'package:dayz/app/timeline_host.dart';
 import 'package:dayz/demo/debug_home.dart';
+import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/reader/reader_screen.dart';
+import 'package:dayz/ui/reader/reader_view_data.dart';
+import 'package:dayz/ui/settings/settings_screen.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
+import 'package:dayz/ui/shell/theme_controller.dart';
+import 'package:dayz/ui/timeline/timeline_page.dart';
 import 'placeholder_screen.dart';
+import 'package:dayz/ui/editor/editor_screen.dart';
 
 /// Route identifiers alignment with pages.
 ///
@@ -41,11 +47,40 @@ abstract final class Routes {
   static const String debugHomePath = '/debugHome';
 }
 
-/// Global shared state container for the shell.
+// Global shared state container for the shell.
 final ShellState shellState = ShellState();
+dynamic _timelineEntryRepo;
+dynamic _draftCoordinator;
+dynamic _mediaStore;
+dynamic _mediaRepo;
+ReaderRepository? _readerRepository;
+ReaderDataLoader? _readerLoadData;
 
-/// 自带 sliver 顶栏的页面路径；装配了真实页面时外壳不再叠加顶栏。
-const Set<String> _routesWithOwnAppBar = {Routes.timelinePath};
+void registerTimelineEntryRepo(dynamic repo) {
+  _timelineEntryRepo = repo;
+}
+
+void registerEditorServices({
+  dynamic draftCoordinator,
+  dynamic mediaStore,
+  dynamic mediaRepo,
+}) {
+  _draftCoordinator = draftCoordinator;
+  _mediaStore = mediaStore;
+  _mediaRepo = mediaRepo;
+}
+
+/// Registers the data port behind [Routes.reader]. Until registered the route
+/// stays a placeholder (widget tests that pump the bare router rely on this).
+void registerReaderRepository(ReaderRepository? repository) {
+  _readerRepository = repository;
+  // Built once here, not per route build: ReaderScreen reloads whenever the
+  // loader's identity changes, and go_router rebuilds this route on every
+  // push/pop above it.
+  _readerLoadData = repository == null
+      ? null
+      : (id) => buildReaderViewData(id, repository);
+}
 
 /// The global routing configuration for the DayZ application.
 ///
@@ -58,6 +93,8 @@ final GoRouter appRouter = GoRouter(
     // Shell bounded routes
     ShellRoute(
       builder: (context, state, child) {
+        // 组合根（lib/app）就绪时，抽屉日记本来自库、新建日记本落库；
+        // 未就绪（库打不开 / 裸路由测试）退回内存列表。
         final services = AppServicesScope.maybeOf(context);
         return _ShellJournalsHydrator(
           services: services,
@@ -68,9 +105,7 @@ final GoRouter appRouter = GoRouter(
                 body: child,
                 journals: shellState.journals,
                 currentJournalId: shellState.currentJournalId,
-                pageOwnsAppBar:
-                    services != null &&
-                    _routesWithOwnAppBar.contains(state.uri.path),
+                currentRoute: state.topRoute?.name ?? state.name,
                 onSelectJournal: (id) => shellState.selectJournal(id),
                 onNavigate: (route) => context.pushNamed(route),
                 onNewJournal: () {
@@ -106,72 +141,154 @@ final GoRouter appRouter = GoRouter(
           name: Routes.timeline,
           path: Routes.timelinePath,
           builder: (context, state) {
-            final services = AppServicesScope.maybeOf(context);
-            if (services == null) {
+            final repo = _timelineEntryRepo;
+            if (repo == null) {
               return PlaceholderScreen(titleBuilder: (l10n) => l10n.timeline);
             }
-            return ListenableBuilder(
-              listenable: shellState,
-              builder: (context, _) => TimelineHost(
-                repo: services.timelineRepo,
-                journalId: shellState.currentJournalId,
-                contentRevision: services.contentRevision,
-              ),
-            );
+            return TimelineShellPage(repo: repo, shellState: shellState);
           },
-        ),
-        GoRoute(
-          name: Routes.reader,
-          path: Routes.readerPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.reader),
-        ),
-        GoRoute(
-          name: Routes.onthisday,
-          path: Routes.onthisdayPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.onThisDay),
-        ),
-        GoRoute(
-          name: Routes.settings,
-          path: Routes.settingsPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.settings),
-        ),
-        GoRoute(
-          name: Routes.calendar,
-          path: Routes.calendarPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.calendar),
-        ),
-        GoRoute(
-          name: Routes.favorites,
-          path: Routes.favoritesPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.favorites),
-        ),
-        GoRoute(
-          name: Routes.trash,
-          path: Routes.trashPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.trash),
-        ),
-        GoRoute(
-          name: Routes.memory,
-          path: Routes.memoryPath,
-          builder: (context, state) =>
-              PlaceholderScreen(titleBuilder: (l10n) => l10n.memoryCardExport),
         ),
       ],
     ),
     // Bounded-free standalone routes
     GoRoute(
-      name: Routes.editor,
-      path: Routes.editorPath,
+      name: Routes.reader,
+      path: Routes.readerPath,
+      builder: (context, state) {
+        final repository = _readerRepository;
+        final loadData = _readerLoadData;
+        final entryId = state.extra;
+        if (repository == null ||
+            loadData == null ||
+            entryId is! String ||
+            entryId.isEmpty) {
+          return PlaceholderScreen(
+            titleBuilder: (l10n) => l10n.reader,
+            showAppBar: true,
+          );
+        }
+        return ReaderScreen(
+          key: ValueKey<String>('reader-route-$entryId'),
+          entryId: entryId,
+          repository: repository,
+          loadData: loadData,
+          onBack: () => context.goNamed(Routes.timeline),
+        );
+      },
+    ),
+    GoRoute(
+      name: Routes.onthisday,
+      path: Routes.onthisdayPath,
       builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.editor,
+        titleBuilder: (l10n) => l10n.onThisDay,
         showAppBar: true,
       ),
+    ),
+    GoRoute(
+      name: Routes.settings,
+      path: Routes.settingsPath,
+      builder: (context, state) {
+        final themeController = ThemeControllerScope.of(context);
+        return SettingsScreen(
+          accountStats: const SettingsAccountStats(
+            displayName: 'DayZ',
+            initials: 'D',
+            entryCount: 0,
+            localLibraryBytes: 0,
+          ),
+          currentThemeName: themeController.choice.themeName,
+          currentMode: themeController.choice.mode,
+          appLockEnabled: false,
+          draftRecoveryEnabled: true,
+          onPickTheme: themeController.setTheme,
+          onPickMode: themeController.setMode,
+          onAppLockChanged: (_) => _showSettingsUnavailable(context),
+          onDraftRecoveryChanged: (_) => _showSettingsUnavailable(context),
+          onTapBackup: () => _showSettingsUnavailable(context),
+          onTapExport: () => _showSettingsUnavailable(context),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            context.goNamed(Routes.timeline);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      name: Routes.calendar,
+      path: Routes.calendarPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.calendar,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.favorites,
+      path: Routes.favoritesPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.favorites,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.trash,
+      path: Routes.trashPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.trash,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.memory,
+      path: Routes.memoryPath,
+      builder: (context, state) => PlaceholderScreen(
+        titleBuilder: (l10n) => l10n.memoryCardExport,
+        showAppBar: true,
+      ),
+    ),
+    GoRoute(
+      name: Routes.editor,
+      path: Routes.editorPath,
+      builder: (context, state) {
+        final rawExtra = state.extra;
+        // Tolerate any extra shape: a Map (the structured contract), a bare
+        // String (e.g. an entryId from a caller that predates the Map
+        // contract), or null. A blind `as Map` cast throws _TypeError on a
+        // String and drops the user on an error screen, so normalize instead.
+        final extra = rawExtra is Map
+            ? Map<String, dynamic>.from(rawExtra)
+            : <String, dynamic>{};
+        if (rawExtra is String && rawExtra.isNotEmpty) {
+          extra['entryId'] ??= rawExtra;
+          extra['mode'] ??= EditorScreenMode.writing;
+        }
+        final mode = extra['mode'] as EditorScreenMode? ?? EditorScreenMode.empty;
+        final entryDate = extra['entryDate'] as DateTime? ?? DateTime.now();
+        final title = extra['title'] as String?;
+        final bodyPreview = extra['bodyPreview'] as String?;
+        final entryId = extra['entryId'] as String? ??
+            (mode == EditorScreenMode.empty ? 'new_${DateTime.now().millisecondsSinceEpoch}' : null);
+        final initialContentJson = extra['initialContentJson'] as String?;
+        final draftCoordinator = extra['draftCoordinator'] ?? _draftCoordinator;
+        final entryRepo = extra['entryRepo'] ?? _timelineEntryRepo;
+        final mediaStore = extra['mediaStore'] ?? _mediaStore;
+        final mediaRepo = extra['mediaRepo'] ?? _mediaRepo;
+
+        return EditorScreen(
+          mode: mode,
+          entryDate: entryDate,
+          title: title,
+          bodyPreview: bodyPreview,
+          entryId: entryId,
+          initialContentJson: initialContentJson,
+          draftCoordinator: draftCoordinator,
+          entryRepo: entryRepo,
+          mediaStore: mediaStore,
+          mediaRepo: mediaRepo,
+        );
+      },
     ),
     GoRoute(
       name: Routes.search,
@@ -189,7 +306,23 @@ final GoRouter appRouter = GoRouter(
   ],
 );
 
-/// 组合根就绪后，从库水合一次抽屉日记本列表。
+void _showSettingsUnavailable(BuildContext context) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) {
+    return;
+  }
+  messenger
+    ..clearSnackBars()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).settingsActionUnavailableToast,
+        ),
+      ),
+    );
+}
+
+/// 组合根就绪后，从库水合一次抽屉日记本列表（含每本篇数）。
 class _ShellJournalsHydrator extends StatefulWidget {
   const _ShellJournalsHydrator({required this.services, required this.child});
 

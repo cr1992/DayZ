@@ -4,7 +4,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -12,6 +11,7 @@ import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../util/dayz_motion.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Sticky timeline month trigger shape.
@@ -100,14 +100,10 @@ class DayzMonthHeader extends StatelessWidget {
               scale: expanded ? 0.92 : 1,
               duration: dayzMotionDuration(context),
               curve: Curves.easeOutCubic,
-              child: SvgPicture.string(
-                _calendarSvg,
-                width: calendarIconSize,
-                height: calendarIconSize,
-                colorFilter: ColorFilter.mode(
-                  expanded ? colors.accentInk : colors.ink3,
-                  BlendMode.srcIn,
-                ),
+              child: DayzIcon.path(
+                DayzIcons.calendarPath,
+                size: calendarIconSize,
+                color: expanded ? colors.accentInk : colors.ink3,
               ),
             ),
           ],
@@ -140,8 +136,3 @@ String _localeTagOf(BuildContext context) {
   return Localizations.maybeLocaleOf(context)?.toLanguageTag() ??
       Intl.getCurrentLocale();
 }
-
-const String _calendarSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.calendarPath}"/></svg>';

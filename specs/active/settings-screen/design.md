@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-05-31
+文档状态：定稿
 ---
 
 # 设计：settings-screen
@@ -66,6 +66,21 @@
 - **理由：** 满足 Debug Home 约定；真外壳/`theme_controller` 接线由 `ui-shell-navigation` 提供，demo 用最小控制器即可独立演示换肤效果。
 - **代价：** demo 用假数据与最小控制器，与真外壳略重复；换来可独立 pump 测试 + 真机走查入口，值。
 
+### D8 · 路由接入：本屏替换 `Routes.settings` 的占位 builder
+- **状态：** 采纳
+- **背景：** R1/R7 要求从外壳进入 `Routes.settings` 时看到真实设置屏，而当前 `ui-shell-navigation` 只交付了 `Routes.settings` 常量与 `PlaceholderScreen` builder。页面级 spec 若不替换自己那一行 builder，会出现 demo 可看、真路由仍是占位页的断层。
+- **选项：** (A) 不改路由，只交付 demo；(B) 本 spec 在 `lib/ui/shell/app_router.dart` 中仅替换 `Routes.settings` 对应 builder 为 `SettingsScreen`；(C) 回到 `ui-shell-navigation` 另开返工 spec 统一接所有页面。
+- **选择：** B。`settings-screen` 可改 `lib/ui/shell/app_router.dart` 的**唯一范围**是：导入 `settings_screen.dart`，把 `Routes.settings` 那一行 builder 从 `PlaceholderScreen` 换成 `SettingsScreen`，并从当前外壳主题状态 / 占位统计状态向 `SettingsScreen` 注入 `accountStats`、`currentThemeName`、`currentMode`、`onPickTheme`、`onPickMode`、开关与导航回调。导航类行未有真实目标时，回调可先进入已存在 placeholder route 或显示占位反馈，但不得静默无响应。其它 `Routes` 常量、其它屏 builder、抽屉结构均不动。
+- **理由：** 路由接线是本页面“能从产品入口到达”的一部分；只改 `Routes.settings` builder 能把跨 spec 修改压到单行级别，仍保持 shell 的单一常量来源。
+- **代价：** `app_router.dart` 是 shell 文件，属于跨归属接线；因此任务必须锁定只改 settings builder，并用路由测试防止误改其它屏。
+
+### D9 · 返回行为：优先 pop，栈底回时间线
+- **状态：** 采纳
+- **背景：** 设计稿顶栏有 `data-nav-back`；Flutter 真路由里设置页既可能由抽屉 push 进入，也可能作为深链/冷启动目标进入。单纯 `context.pop()` 在栈底场景可能不可用。
+- **选择：** 顶栏返回按钮行为集中在 `SettingsScreen`：`if (context.canPop()) context.pop(); else context.goNamed(Routes.timeline);`。demo 环境可注入替代 `onBack` 或用测试路由验证该行为。
+- **理由：** 与原型 `data-nav-back` 语义一致，同时避免深链进入设置页后返回无效。
+- **代价：** 屏体需要引用 `go_router` / `Routes.timeline` 或接收 `onBack` 回调；为保持可测性，优先用构造入参 `onBack` 覆盖默认行为。
+
 ## 架构
 
 ```mermaid
@@ -77,6 +92,7 @@ graph TD
   STR[lib/l10n/arb/app_zh.arb + app_en.arb · settings 文案 key] --> SS
   SS -. onPickTheme/onPickMode 上抛 .-> TC[ui-shell-navigation: theme_controller.setTheme/setMode]
   SS -. onTapBackup/onTapExport 导航上抛 .-> R[ui-shell-navigation: Routes.* / GoRouter]
+  R --> APP[lib/ui/shell/app_router.dart · Routes.settings builder 接 SettingsScreen]
   SS -. accountStats 入参（外壳经 JournalRepo 取，NF4 禁直连）.-> REPO[data-layer: JournalRepo]
   DEMO[lib/demo/settings_screen_demo.dart · 假数据 + 最小控制器] --> SS
   DEMO --> DH[lib/demo/demo_entry.dart · demos 末尾追加一行]
@@ -95,27 +111,33 @@ graph TD
 - `lib/l10n/gen/app_localizations*.dart`                           修改（`flutter gen-l10n` 生成产物）
 
 **Debug Home 入口 `lib/demo/`**
-- `lib/demo/settings_screen_demo.dart`           新建（假数据 + 最小控制器演示换肤/回调，D7）
+- `lib/demo/settings_screen_demo.dart`           新建（假数据 + 最小控制器演示换肤/开关回写/回调，D7）
 - `lib/demo/demo_entry.dart`                     修改（**仅末尾追加一行**，不插中间、不改 `DemoEntry` 字段）
+
+**路由接入 `lib/ui/shell/`**
+- `lib/ui/shell/app_router.dart`                 修改（**仅**替换 `Routes.settings` builder 为 `SettingsScreen` 并做最小入参接线，D8/D9）
+- `lib/ui/shell/theme_controller.dart`           修改（必要时新增 `ThemeControllerScope`/读取 helper，供 settings route builder 取当前主题选择并调用 `setTheme/setMode`，不改持久化策略）
+- `lib/app.dart`                                 修改（必要时用 `ThemeControllerScope` 包裹 `MaterialApp.router`，让路由 builder 可读主题控制器）
 
 **测试目录（白名单 hook 对 `test/**/*_test.dart` 自动放行；非 `_test.dart` 的共享基建由任务 `验收基建` 字段预批）**
 - `test/ui/settings/`                            新建（设置屏 widget test：结构/选择器回调/只读加密行/红线文案/无障碍/几何）
 - `test/ui/settings/settings_screen.golden`      新建（golden 基线兜栅格，验收基建预批）
 - `test/demo/settings_screen_demo_test.dart`     新建（demo + Debug Home 入口测试）
 
-> **不列入**：`lib/ui/widgets/`（组件归 ui-kit）、`lib/ui/shell/`（外壳/路由/`theme_controller` 归 ui-shell-navigation）、`lib/ui/theme/`（token 归 tokens-theme）、`lib/data`/`lib/security`（数据/密钥归底层 spec，NF4 禁连）。本屏不改 `pubspec.yaml`（`flutter_svg` 已由 ui-kit 引入、`intl` 为 SDK 传递依赖）——**若执行时发现需新增依赖，停下回填本清单并触发跨模块复核，不擅自改 pubspec**。
+> **不列入**：`lib/ui/widgets/`（组件归 ui-kit）、`lib/ui/shell/` 除 `app_router.dart` 的 `Routes.settings` builder 接线、`theme_controller.dart` 的控制器读取 scope、`app.dart` 的 scope 包裹外的任何文件、`lib/ui/theme/`（token 归 tokens-theme）、`lib/data`/`lib/security`（数据/密钥归底层 spec，NF4 禁连）。本屏不改 `pubspec.yaml`（`flutter_svg`/`go_router` 已由 ui-kit/shell 引入、`intl` 为 SDK 传递依赖）——**若执行时发现需新增依赖，停下回填本清单并触发跨模块复核，不擅自改 pubspec**。
 
 ## 已知风险
 
 - **跨 spec 依赖（按交付物名引用，可能尚未实现 / READY 门管控）**：
   - `design-tokens-theme`（README 依赖列）：`context.dayz.*`、`DayzSpacing/DayzRadii/DayzMotion`、六套 `ThemeData`、`AppLocalizations` 约定、对比度判定族。**强依赖**，未定稿则本 spec 阻塞。
   - `ui-kit-components`（README 依赖列）：`DayzSetRow`/`DayzSetGroup`（账户头卡 + `.set-group`/`.lab`/`.set-row` + 右侧 switch/val/chev + tappable）、`DayzSwitch`、`DayzSheet.picker`、`DayzGlassAppBar`、`dayz_icons.dart`、`dayzMotionDuration`、`app_zh.arb` / `app_en.arb`（既有）。**强依赖**——本屏几乎全是组合它们。**待确认**：`DayzSetRow`/`DayzSetGroup` 的确切 API（尾随件槽、tappable、分组脚注槽 D5、val+chev 复合右件）以 ui-kit 定稿为准；与设计稿 `.set-*` 不符处，回 ui-kit 增量、不在本屏自造列表件。未就绪时本 spec 阻塞（不降级自造，避免与 ui-kit 撞归属）。
-  - `ui-shell-navigation`（README 依赖列）：`Routes.settings`、`theme_controller.setTheme/setMode`（`settheme/setmode` 上抛换肤的接收端）、外壳脚手架/`DayzGlassAppBar` 装配。**本屏只暴露 `onPickTheme/onPickMode/onTap*` 回调**，接到 `theme_controller`/`GoRouter` 的接线在 demo 与真外壳一侧；未就绪时 demo 用最小本地控制器演示换肤（D7）。
+  - `ui-shell-navigation`（README 依赖列）：`Routes.settings`、`theme_controller.setTheme/setMode`（`settheme/setmode` 上抛换肤的接收端）、外壳脚手架/`DayzGlassAppBar` 装配。**本屏只暴露 `onPickTheme/onPickMode/onTap*` 回调**，接到 `theme_controller`/`GoRouter` 的接线在 demo 与真外壳一侧；未就绪时 demo 用最小本地控制器演示换肤（D7）。真路由接入时若 `ThemeController` 尚未有树内访问入口，本 spec 可在 `theme_controller.dart` 增加最小 `ThemeControllerScope`（InheritedNotifier）并在 `DayZApp` 包裹，供 `app_router.dart` builder 读取当前选择与回调；不得引入第三方状态库。
   - `key-management`（README 依赖列）：R4「DB 恒加密只读已加密」、R5「主密码锁不住照片」的产品行为来源（D7 `getDeviceMediaKey`、`app_password_mode`、媒体 key 独立不参与 rekey）。**本屏只渲染合规文案，不调任何密钥/ rekey 接口**（NF4）。App 锁开关在本屏只做 `onChanged` 上抬展示态，真实启停 / 生物识别授权归 key-management 页面级 spec。
   - `data-layer`（**非直接依赖、明确禁连** NF4）：账户头卡的「篇数 / 本地库大小」需 `JournalRepo`/统计查询，但本屏 MUST NOT 直连——经入参 `accountStats` 注入，取数编排归外壳；data-layer 未就绪时 demo/外壳喂假统计。
   - `backup-full-snapshot` / `auto-save-draft`：「本地备份」「导出」「恢复未完成的编辑」三项的真实业务归彼处；本屏只渲染状态 + 导航/回调上抬，**不实现备份执行 / 导出生成 / 草稿偏好落库**。
 - **媒体红线文案落点待确认（D5）**：依赖 `DayzSetGroup` 是否有分组脚注槽；无则用不可交互说明行承载，实现时按 ui-kit 实际 API 定，文案 MUST 进 `AppLocalizations`、MUST 显形（不可省）。
 - **换肤端到端效果分层**：本屏 widget test 只验「选择器出现 + 选中触发 `onPickTheme/onPickMode` + 传值」；真正「全树 rebuild 换肤」效果由 demo/真外壳接 `theme_controller` 后在 verification 验（经 demo 接线的端到端场景）。
+- **路由接入的占位数据**：真 `Routes.settings` 初次接入时，账户统计 / App 锁 / 草稿恢复偏好若尚无外壳编排来源，允许先用显式 demo-like 占位入参或内存态；但必须保证导航行和开关有反馈，MUST NOT 直连 data/key 层绕过 NF4。后续真实统计 / 偏好持久化由对应底层或后续页面 spec 接线替换。
 - **golden 跨主题**：六套主题 golden 兜栅格属 advisory（design-sync-automation 期二接 SSIM）；本 spec 先建 light/purple 一套 golden 基线作回归锁，多主题/SSIM 不在本 spec 重造 harness（依赖 design-sync-automation，非 README 依赖、仅验证基建关系）。
 - **无持久化 schema 变更 → 无数据迁移/回滚要素**（本屏不碰 DB；偏好/统计经外壳与底层 spec）。
 - **新文件加 MPL-2.0 头注**：`lib/ui/settings/*.dart`、`lib/demo/settings_screen_demo.dart` 等全部新建 Dart 文件 MUST 在文件顶部加 MPL-2.0 头注（模板见 AGENTS.md / README「License」）。

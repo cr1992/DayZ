@@ -2,12 +2,12 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
+import 'dayz_icon.dart';
 import 'dayz_icons.dart';
 
 /// Settings row with icon, labels, value, chevron, trailing, or switch affordance.
@@ -399,12 +399,11 @@ class _TrailingContent extends StatelessWidget {
             showChevron)
           const SizedBox(width: DayzSpacing.s2),
         if (showChevron)
-          SvgPicture.string(
-            _chevronSvg,
+          DayzIcon.path(
+            DayzIcons.chevronRightPath,
             key: DayzSetRow.chevronKey,
-            width: 18,
-            height: 18,
-            colorFilter: ColorFilter.mode(colors.ink4, BlendMode.srcIn),
+            size: 18,
+            color: colors.ink4,
           ),
       ],
     );
@@ -447,8 +446,3 @@ class _AccountAvatar extends StatelessWidget {
     );
   }
 }
-
-const String _chevronSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
-    'xmlns="http://www.w3.org/2000/svg"><path d="${DayzIcons.chevronRightPath}"/></svg>';

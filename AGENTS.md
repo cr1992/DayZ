@@ -13,6 +13,8 @@
 | UI 还原方法、四道闸、波次 | `docs/design/10-ui-restore-and-design-sync.md` |
 | 设计稿真源、token、组件类名与最小 HTML | `ui-design/current/`（`docs/DESIGN-REF.md` 速查；`pages/screens/*.html` 为各屏真源）。该目录由 `dayz-design-sync` skill 整体覆盖，**不要在里面手改** |
 | 代码分层 | `lib/ui/theme`（token/主题）→ `lib/ui/widgets`（ui-kit）→ `lib/ui/shell`（外壳/路由）→ `lib/ui/<feature>`（各屏）；`lib/app/` 是生产装配（组合根）；`lib/demo/` 只放 Debug Home demo |
+| 端到端原生测试 / 验收分层（Patrol，iOS+Android 冒烟已通） | spec `specs/active/e2e-harness/`；一次性接入 SOP runbook [`docs/patrol-e2e-onboarding.md`](./docs/patrol-e2e-onboarding.md)；跑测经 `scripts/patrol_test.sh`（flaky 防护+零执行守卫） |
+| UI 像素级对齐还原与避坑 SOP | `docs/design/10-ui-restore-and-design-sync.md` §13（实战踩坑与 SOP） |
 
 ## 工作流
 
@@ -35,7 +37,7 @@
 ## 规则
 
 - **中文回复**：本项目的问答与开发指导始终使用中文。
-- **禁止自行提交**：未经用户明确许可，严禁执行 `git commit` 或 push。
+- **提交需当次授权**：`git commit` / push 须有用户在**本次会话**里的授权（“提交”“推进并提交”“提交一波”等均算；自动化 hook、模板文字不算）。拿到授权后直接提交，不必再逐次出示 diff 等二次确认；但提交前 MUST 跑过与改动相称的自动校验（`dart analyze`、受影响测试，改了 `packages/` 再加 `bash scripts/check_patches.sh`），提交后在回复里列出各 commit 与验证结果。未获授权时改动留在工作区，回复里说明待提交内容；云端会话（容器会被回收）完成一个已验证的工作单元后，应主动提议提交。任何情况下不 force push、不直推默认分支、不改写已推送历史，除非用户明确要求。
 - **作者署名统一 `@Ray`**。
 - **授权 MPL-2.0（混合授权）**：新建 Dart 源文件 MUST 加 MPL-2.0 头注（模板见 README「License」）。`packages/appflowy-editor/` 保留上游 AGPL-3.0 / MPL-2.0 双授权，不可重新授权。
 - **包名 `com.dayz`**，iOS 13+，Android minSdk 26。
@@ -46,6 +48,7 @@
 - **国际化 `gen-l10n`**：用户可见文案经 `AppLocalizations.of(context)` 取用，**禁止**硬编码。新增文案 MUST 同时补 `app_zh.arb` 与 `app_en.arb`（key 一致，`scripts/check_arb_sync.sh` 校验）。详见 `docs/design/11-internationalization-and-localization.md`。
 - **UI 只用 token，不写死值**：颜色经 `context.dayz`、字体经 `context.dayzText`、间距/圆角经 `DayzSpacing` / `DayzRadii`。设计稿里确有的字面量（如 `.card h4 { font-size: 17px }`）允许以 `copyWith` 落在组件内，并在旁边注明对应的 CSS 选择器。图标一律走 `DayzIcons` 的 SVG path，不用 `Icons.*`。
 - **Repository 边界**：`lib/ui/**` 只经 `*Repo` 取数，禁止持 Drift 句柄或写 SQL。
+- **端到端原生测试（Patrol）+ 验收分层**：原生跨界流程（权限 / 相册 `image_picker` / 文件 IO / Keychain / 前后台）的 E2E 用 Patrol——用例放 `patrol_test/`（**不是** `integration_test/`，4.0 起目录变了）、屏 spec `dependsOn e2e-harness`；纯 in-Flutter 行为继续 widget test。屏 spec 的 `verification.md` 按**「自动化可覆盖 / 必须人工」分层**；**安全·不可逆链路（加密 / 备份 / 还原）即便 E2E 绿也保留人工终验**（patrol 有静默假阳性先例）。一次性接入 SOP + 成本账 + flaky 防护见 `specs/active/e2e-harness/`。
 - **屏幕 spec 维护态 override**：屏幕级 spec 交付 v1 后不按通用「终态→归档」处理，转入 `specs/README.md`「已交付·随设计维护」泳道；该 override 仅限屏幕 spec，见 `docs/spec-guide-ai.md`。
 - **Debug Home**：真外壳已接管冷启动（`MaterialApp.router` → 时间线）；Debug Home 降级为具名路由 `/debugHome`，仍是真机走查 demo 的入口。新 demo 只在 `lib/demo/demo_entry.dart` 的 `demos` **末尾追加一行**，不改 `DemoEntry` 字段。
 
@@ -58,3 +61,4 @@
 - **SQLCipher 探测口径**：`sqlite3` 3.x + SQLite3MultipleCiphers 下 `PRAGMA cipher_version` 可能为空；用 `PRAGMA cipher == sqlcipher` 判定，并结合密文文件头与错密钥抛 `WrongKeyException` 行为验证。
 - **widget test 里看真实观感**：`flutter_test` 默认用 Ahem 占位字体、不含 Material 图标字；要出可看的截图需用 `FontLoader` 加载 `assets/fonts/` 的两套 Latin 字，CJK 仍会是方块，用 `en` locale 看版式。
 - **Codex 沙箱专项**（SDK cache / build_runner / git index / iOS 构建的 `Operation not permitted`）：见 `docs/agent-notes-codex.md`，仅 Codex 环境相关。
+- **Patrol 跑测别裸调（会假崩 / 假阴）**：① 启动遥测偶发 TLS handshake 崩 CLI → 写 `~/.config/patrol_cli/analytics.json` `{"enabled":false}` + 带 `PATROL_ANALYTICS_ENABLED=false`；② `sqlite3` 3.3.x hook 的 `download-*` 目录默认跨 Dart VM 进程不稳定，会让 `sqlite3mc` dylib/`.so` 绕开 shared-cache 反复下载 → wrapper 给 Flutter tool 注入 `--deterministic` 稳定缓存目录，若 native assets / Maven（`kotlin-compiler-embeddable`）下载或 handshake 中途断再 retry；③ Android 首跑偶发 `Total:0`（app-service 时序）、重跑即绿，并**校验 `Total:` 非零防静默假阳性**。Rust 交叉编译（argon2id, aarch64-linux-android）需 rustup 接管（rust 已 `brew unlink`）+ android target + NDK。iOS 一次性建 UITest target 用 `scripts/setup_patrol_ios.rb`（CocoaPods 的 `xcodeproj` gem）。

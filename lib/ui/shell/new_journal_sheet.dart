@@ -2,21 +2,22 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 import 'package:dayz/ui/widgets/dayz_icons.dart';
+import 'package:dayz/ui/widgets/dayz_text_field.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_text_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 
 /// Predefined colors for new journals (3 theme colors + 3 extension colors).
 const List<String> kJournalColorPalette = [
-  '#786CAD', // Purple Accent
-  '#C67D33', // Amber Accent
-  '#5A8E72', // Sage Accent
-  '#4A90E2', // Blue
-  '#D0021B', // Red
-  '#9B9B9B', // Grey
+  '#786CAD', // 紫色
+  '#5C8A68', // 绿色
+  '#C8993E', // 黄色
+  '#B05C77', // 玫瑰红/粉红色
+  '#4F86A8', // 蓝灰色
+  '#9A6A4B', // 棕色/咖啡色
 ];
 
 /// Displays the bottom sheet form for creating a new journal.
@@ -83,10 +84,6 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
     return Color(int.parse('FF$cleanHex', radix: 16));
   }
 
-  String _svg(String path) {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>';
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
@@ -103,52 +100,44 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title
-          Text(
-            l10n.newJournal,
-            style: textTheme.h2.copyWith(color: colors.ink),
-          ),
-          const SizedBox(height: DayzSpacing.s3),
-
-          // Name Input Field
-          Text(
-            l10n.journalNameLabel,
-            style: textTheme.overline.copyWith(color: colors.ink2),
-          ),
-          const SizedBox(height: DayzSpacing.s1),
-          TextField(
-            controller: _nameController,
-            autofocus: true,
-            style: textTheme.body.copyWith(color: colors.ink),
-            decoration: InputDecoration(
-              hintText: l10n.journalNameInputPlaceholder,
-              hintStyle: textTheme.body.copyWith(color: colors.ink3),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: DayzSpacing.s3,
-                vertical: DayzSpacing.s2 + 2.0,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DayzRadii.md),
-                borderSide: BorderSide(color: colors.hairline),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DayzRadii.md),
-                borderSide: BorderSide(color: colors.accent, width: 1.5),
+          // Centered Title
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              l10n.newJournal,
+              style: textTheme.h3.copyWith(
+                color: colors.ink,
+                fontSize: 17.0,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           const SizedBox(height: DayzSpacing.s4),
 
-          // Color Selector Title
-          Text(
-            l10n.journalColorLabel,
-            style: textTheme.overline.copyWith(color: colors.ink2),
+          // Name Input Field (DayzTextField)
+          DayzTextField(
+            controller: _nameController,
+            autofocus: true,
+            label: l10n.journalNameLabel,
+            hintText: l10n.journalNameInputPlaceholder,
+            maxWidth: null,
           ),
-          const SizedBox(height: DayzSpacing.s2),
+          // Color Selector Title with CSS margin/padding alignment
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 10.0, left: 2.0),
+            child: Text(
+              l10n.journalColorLabel,
+              style: textTheme.overline.copyWith(
+                color: colors.ink3,
+                fontSize: 12.5,
+              ),
+            ),
+          ),
 
-          // Color Palette Selectors
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Color Palette Selectors with 12px gap (sp-3)
+          Wrap(
+            spacing: 12.0,
+            runSpacing: 12.0,
             children: kJournalColorPalette.map((colorHex) {
               final color = _parseColor(colorHex);
               final isSelected = _selectedColor == colorHex;
@@ -164,34 +153,43 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
                         _selectedColor = colorHex;
                       });
                     },
-                    child: Container(
+                    child: SizedBox(
                       width: 44,
                       height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: colors.accent, width: 2.0)
-                            : null,
-                      ),
-                      padding: const EdgeInsets.all(4.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: color,
-                        ),
-                        child: isSelected
-                            ? Center(
-                                child: SvgPicture.string(
-                                  _svg(DayzIcons.checkPath),
-                                  width: 16,
-                                  height: 16,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.white,
-                                    BlendMode.srcIn,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: color,
+                                      spreadRadius: 4.0,
+                                      blurRadius: 0,
+                                    ),
+                                    BoxShadow(
+                                      color: colors.surface,
+                                      spreadRadius: 2.0,
+                                      blurRadius: 0,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: DayzIcon.path(
+                                    DayzIcons.checkPath,
+                                    size: 13,
+                                    color: Colors.white,
+                                    strokeWidth: 3,
                                   ),
-                                ),
-                              )
-                            : null,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                   ),
@@ -201,63 +199,38 @@ class _NewJournalSheetState extends State<_NewJournalSheet> {
           ),
           const SizedBox(height: DayzSpacing.s5),
 
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: DayzSpacing.s3,
-                    ),
-                    side: BorderSide(color: colors.hairline),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(DayzRadii.md),
-                    ),
-                  ),
-                  child: Text(
-                    l10n.sheetCancel,
-                    style: textTheme.body.copyWith(
-                      color: colors.ink2,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+          // Single Full Width Rounded Primary Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _canSubmit
+                  ? () {
+                      widget.onSubmit(
+                        _nameController.text.trim(),
+                        _selectedColor,
+                      );
+                      Navigator.pop(context);
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.accent,
+                disabledBackgroundColor: colors.hairline,
+                padding: const EdgeInsets.symmetric(
+                  vertical: DayzSpacing.s3 + 2.0,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DayzRadii.full),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                l10n.sheetCreate,
+                style: textTheme.body.copyWith(
+                  color: _canSubmit ? colors.onAccent : colors.ink3,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: DayzSpacing.s3),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _canSubmit
-                      ? () {
-                          widget.onSubmit(
-                            _nameController.text.trim(),
-                            _selectedColor,
-                          );
-                          Navigator.pop(context);
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.accent,
-                    disabledBackgroundColor: colors.hairline,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: DayzSpacing.s3,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(DayzRadii.md),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    l10n.sheetConfirm,
-                    style: textTheme.body.copyWith(
-                      color: _canSubmit ? colors.onAccent : colors.ink3,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

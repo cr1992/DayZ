@@ -23,6 +23,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Patrol：原生 instrumentation 测试 runner
+        testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
     }
 
     buildTypes {
@@ -31,6 +34,11 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+
+    // Patrol：用 AndroidX Test Orchestrator 跑（每用例独立进程、支持 clearPackageData）
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 }
 
@@ -42,4 +50,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Patrol：测试编排器（配合 testOptions 的 ANDROIDX_TEST_ORCHESTRATOR）
+    androidTestUtil("androidx.test:orchestrator:1.5.1")
 }

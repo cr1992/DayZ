@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dayz/app.dart';
 import 'package:dayz/app/app_services.dart';
+import 'package:dayz/app/router_ports.dart';
 import 'package:dayz/data/time_zone_triple.dart';
 import 'package:dayz/l10n/locale_controller.dart';
 import 'package:dayz/ui/shell/app_router.dart';
@@ -31,12 +32,14 @@ void main() {
     localeController = LocaleController();
     await localeController.setLocale(const Locale('zh'));
     services = inMemoryServices();
+    bindRouterPorts(services);
     shellState.setJournals(const []);
     shellState.selectJournal(null);
     appRouter.go(Routes.timelinePath);
   });
 
   tearDown(() async {
+    unbindRouterPorts();
     localeController.dispose();
     await services.close();
   });
@@ -74,26 +77,21 @@ void main() {
     expect(find.text(testL10n.timelineEmptyTitle), findsOneWidget);
   });
 
-  testWidgets(
-    'timeline owns the only app bar; placeholders keep the shell bar',
-    (tester) async {
-      await pumpApp(tester);
-      expect(find.byType(DayzGlassAppBar), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(TimelinePage),
-          matching: find.byType(DayzGlassAppBar),
-        ),
-        findsOneWidget,
-      );
-
-      appRouter.go(Routes.settingsPath);
-      await tester.pumpAndSettle();
-      expect(find.byType(PlaceholderScreen), findsOneWidget);
-      expect(find.byType(DayzGlassAppBar), findsOneWidget);
-      expect(find.byType(NestedScrollView), findsOneWidget);
-    },
-  );
+  testWidgets('shell owns the only app bar above the real timeline', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    // 顶栏归外壳：时间线页在外壳内不再自带第二条顶栏。
+    expect(find.byType(DayzGlassAppBar), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(TimelinePage),
+        matching: find.byType(DayzGlassAppBar),
+      ),
+      findsNothing,
+    );
+    expect(find.byType(NestedScrollView), findsOneWidget);
+  });
 
   testWidgets('drawer journals come from the database with entry counts', (
     tester,

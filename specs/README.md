@@ -13,20 +13,19 @@
 |------|--------|------|------|--------|------|
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
-| [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
-| [timeline-screen](active/timeline-screen/) | P2 | 进行中（T1–T4、T6、T9 已完成；T5 日历面板、T7 顶栏/导航接线、T8 Debug Home 待做） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [reader-screen](active/reader-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
-| [editor-integration-screen](active/editor-integration-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-05-29 |
-| [onthisday-screen](active/onthisday-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
+| [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（T1 已完成） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [settings-screen](active/settings-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, key-management | @Ray | 2026-05-29 |
 | [calendar-screen](active/calendar-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
-| [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage | @Ray | 2026-05-29 |
+| [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, reader-screen, timeline-screen, e2e-harness | @Ray | 2026-05-29 |
+| [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage, e2e-harness | @Ray | 2026-05-29 |
+| [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | 无 | @Ray | 2026-06-04 |
+| [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 草稿（2026-06-06 设计同步实质档派生：编辑器新增块类型；本轮实现 callout 标注块，code 代码块占位后置） | editor-json-contract, e2e-harness | @Ray | 2026-06-06 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
+
+> **验收分层**（随 [e2e-harness](active/e2e-harness/) 落地）：屏 / 功能 spec 的 `verification.md` 把验收项分两类——**自动化可覆盖**（widget test 或 Patrol E2E）与**必须人工**（设计目检 + 加密/备份/还原等不可逆链路的终验）。判据：纯 in-Flutter 行为 → widget test 即可，不强制 E2E；**有原生跨界 / 不可逆副作用**的链路 → 标「需 E2E」并依赖 `e2e-harness`。安全 / 不可逆链路即便 E2E 全绿也**保留人工终验**（patrol_cli 有静默假阳性 + iOS 模拟器 CI flaky 先例）。**新屏可复制的两栏骨架**见 [`active/e2e-harness/verification-skeleton.md`](active/e2e-harness/verification-skeleton.md)；**Patrol 一次性接入 SOP** 见 [`docs/patrol-e2e-onboarding.md`](../docs/patrol-e2e-onboarding.md)。
 
 ## 已交付·随设计维护
 
@@ -34,18 +33,21 @@
 
 | 功能 | 当前对齐 | 依赖 | 负责人 | 进入维护态 |
 |------|----------|------|--------|------------|
-| — | — | — | — | — |
+| [timeline-screen](active/timeline-screen/) | v1.0 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-31 |
+| [reader-screen](active/reader-screen/) | v1.0（+T9 真路由接线自动验收通过 / 待真机走查） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache, e2e-harness | @Ray | 2026-05-31 |
+| [editor-integration-screen](active/editor-integration-screen/) | v1.0（+设计维护 S1 已验收 / S2 进行中） | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft, editor-rich-blocks, e2e-harness | @Ray | 2026-06-01 |
+| [settings-screen](active/settings-screen/) | v1.0（自动验收通过；多端 / 视觉人工终审随维护态后置） | design-tokens-theme, ui-kit-components, ui-shell-navigation, key-management | @Ray | 2026-06-06 |
 
 ## 执行顺序（派生快照）
 
 > **选取规则**（同 spec-guide）：在「待实现 / 进行中」**且依赖就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
 > 下表是当前快照（`app-scaffold` / `key-management` / `data-layer` / `media-storage` / `thumbnail-cache` / `auto-save-draft` / `observability` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）‖ `design-sync-automation`(P2，期二：首屏已挂真库、顶栏已接线，可随 `timeline-screen` T5/T8 收口后启动)
+1. **现在就绪**：W2 页面级屏 spec 依各自底层依赖解锁（`search/calendar/favorites/trash` 等数据依赖已就绪；`onthisday` 媒体与缩略图依赖已就绪；`settings/timeline/reader/editor-integration` 已进入维护态；`memory-card-export` 仍需 `onthisday-screen`）‖ `design-sync-automation`(P2，期二：首屏已挂真库并进入维护态，可启动)
 
 > ★＝数据/加密主干剩余链当前只余 `backup-full-snapshot`；`media-storage` / `thumbnail-cache` / `auto-save-draft` / `key-management` / `data-layer` 均已归档完成。
 >
-> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation` 期一 M1 已完成 → W1 `ui-kit-components` 已交付可被外壳复用的 T1–T7，T8 画廊目检作为收尾项保留、不阻塞 `ui-shell-navigation` → W2 十个页面级屏 spec（`*-screen` / `memory-card-export`，各 dependsOn tokens+ui-kit+shell + 各自数据/编辑器/媒体底层 spec，故仍按各自底层依赖解锁）+ `design-sync-automation` 期二（等首屏+shell 落后补）。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
+> **UI 轨（并行于主干，波次见 [doc 10](../docs/design/10-ui-restore-and-design-sync.md) §9）**：W0 `design-tokens-theme` 已归档，`design-sync-automation` 期一 M1 已完成 → W1 `ui-kit-components` T1–T9 已验收，待归档整理 → W2 页面级屏 spec（`settings/timeline/reader/editor-integration` 已交付 v1 并随设计维护；其余 `*-screen` / `memory-card-export` 继续按各自底层依赖解锁）+ `design-sync-automation` 期二（等首屏+shell 落后补）。UI 页面级 spec 全列 P2（依赖较深、非主干），波次内细分见 §9，不靠 P 区分。
 
 ## 已归档
 
@@ -53,6 +55,7 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [ui-kit-components](archive/2026-06-06-ui-kit-components/) | 已完成 | 2026-06-06 |
 | [app-composition-root](archive/2026-10-09-app-composition-root/) | 已完成 | 2026-10-09 |
 | [ui-shell-navigation](archive/2026-05-31-ui-shell-navigation/) | 已完成 | 2026-05-31 |
 | [thumbnail-cache](archive/2026-05-30-thumbnail-cache/) | 已完成（单元测试 Benchmark 耗时 8.0ms/张，支持 Isolate 限制并发、设备密钥加密落盘、一致性补偿） | 2026-05-30 |
