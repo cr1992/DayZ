@@ -281,6 +281,15 @@ class EntriesDao extends DatabaseAccessor<AppDatabase> with _$EntriesDaoMixin {
     );
   }
 
+  Future<int> restore(String id) {
+    return (update(entries)..where((table) => table.id.equals(id))).write(
+      EntriesCompanion(
+        deletedAt: const Value(null),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
   Future<int> hardDelete(String id) {
     return (delete(entries)..where((table) => table.id.equals(id))).go();
   }

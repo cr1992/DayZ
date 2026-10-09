@@ -194,6 +194,14 @@ class _TimelineDemoRepo
   }
 
   @override
+  Future<void> restore(String id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Stream<void> watchChanges() => const Stream<void>.empty();
+
+  @override
   Future<EntryTimelinePage> timeline({
     String? journalId,
     EntryTimelineCursor? cursor,

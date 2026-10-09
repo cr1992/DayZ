@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../components.dart';
+import '../editor/editor_screen.dart';
 import '../shell/app_router.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
@@ -116,12 +117,41 @@ class _ReaderScreenState extends State<ReaderScreen> {
               thumbnailCache: widget.thumbnailCache,
               imageProviderFor: widget.imageProviderFor,
               onBack: _goBack,
-              onEdit: widget.onEdit,
+              onEdit: _editEntry,
             );
           },
         );
       },
     );
+  }
+
+  void _reload() {
+    setState(() {
+      _controller?.dispose();
+      _controller = null;
+      _dataFuture = widget.loadData(widget.entryId);
+    });
+  }
+
+  Future<void> _editEntry(String entryId) async {
+    final edit = widget.onEdit;
+    if (edit != null) {
+      edit(entryId);
+      return;
+    }
+    // The editor only knows what it is handed: without the stored document it
+    // opens blank and "done" would overwrite the entry with that blank body.
+    final record = await widget.repository.byId(entryId);
+    if (!mounted || record == null) {
+      return;
+    }
+    await context.pushNamed<void>(
+      Routes.editor,
+      extra: readerEditorRouteExtra(record),
+    );
+    if (mounted) {
+      _reload();
+    }
   }
 
   void _goBack() {
@@ -147,7 +177,7 @@ class _ReaderLoadedScreen extends StatelessWidget {
   final ReaderThumbnailCache? thumbnailCache;
   final ReaderImageProviderBuilder imageProviderFor;
   final VoidCallback onBack;
-  final ValueChanged<String>? onEdit;
+  final ValueChanged<String> onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -326,12 +356,7 @@ class _ReaderLoadedScreen extends StatelessWidget {
   ) {
     switch (type) {
       case ReaderActionMenuItemType.edit:
-        final edit = onEdit;
-        if (edit != null) {
-          edit(controller.entryId);
-        } else {
-          context.pushNamed(Routes.editor, extra: controller.entryId);
-        }
+        onEdit(controller.entryId);
       case ReaderActionMenuItemType.share:
         controller.share(l10n, feedback);
       case ReaderActionMenuItemType.moveToJournal:
@@ -469,6 +494,25 @@ class _WidgetReaderFeedback implements ReaderFeedback {
             ),
     );
   }
+}
+
+/// Route extra that opens [Routes.editor] on an existing entry with its stored
+/// document, title line and date, so saving updates rather than blanks it.
+///
+/// The editor saves `contentPlain` as `title + '\n' + body`, so the title is
+/// the literal first line (possibly empty), not the first non-empty one.
+Map<String, Object?> readerEditorRouteExtra(ReaderEntryRecord record) {
+  final firstNewline = record.contentPlain.indexOf('\n');
+  final title = firstNewline < 0
+      ? record.contentPlain
+      : record.contentPlain.substring(0, firstNewline);
+  return <String, Object?>{
+    'mode': EditorScreenMode.writing,
+    'entryId': record.id,
+    'entryDate': record.entryDtUtc.toLocal(),
+    'title': title.trim(),
+    'initialContentJson': record.contentJson,
+  };
 }
 
 ImageProvider _defaultImageProvider(ReaderMediaViewData media) {

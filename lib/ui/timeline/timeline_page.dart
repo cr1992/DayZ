@@ -38,6 +38,7 @@ class TimelineShellPage extends StatefulWidget {
 
 class _TimelineShellPageState extends State<TimelineShellPage> {
   late final TimelineController _controller;
+  late final StreamSubscription<void> _entryChanges;
   String? _activeJournalId;
 
   @override
@@ -46,6 +47,11 @@ class _TimelineShellPageState extends State<TimelineShellPage> {
     _controller = TimelineController(repo: widget.repo);
     _activeJournalId = widget.shellState.currentJournalId;
     widget.shellState.addListener(_handleShellJournalChanged);
+    // Writes happen on routes pushed above the shell (editor / reader), which
+    // keep this page alive underneath — refresh in place when they land.
+    _entryChanges = widget.repo.watchChanges().listen(
+      (_) => unawaited(_controller.refresh()),
+    );
     unawaited(_controller.loadInitial(_activeJournalId));
   }
 
@@ -63,6 +69,7 @@ class _TimelineShellPageState extends State<TimelineShellPage> {
   @override
   void dispose() {
     widget.shellState.removeListener(_handleShellJournalChanged);
+    unawaited(_entryChanges.cancel());
     _controller.dispose();
     super.dispose();
   }
@@ -261,7 +268,10 @@ class _TimelinePageState extends State<TimelinePage> {
   }
 
   void _openEntry(BuildContext context, String entryId) {
-    context.goNamed(Routes.reader, extra: entryId);
+    // Push (not go): reader lives outside the ShellRoute, so `go` would drop
+    // the timeline from the stack and leave the reader's back button nowhere
+    // to pop to.
+    context.pushNamed(Routes.reader, extra: entryId);
   }
 
   void _toggleCalendar(TimelineMonthKey key) {
