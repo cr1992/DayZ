@@ -30,7 +30,7 @@
 
 新增功能或重大改动 → 先开 spec，不在源码里直接做。开 spec 时按 spec-guide「排序维护纪律」**想清依赖、相对现有 spec 定优先级**，并落到 `specs/README.md` 的依赖 / 优先级列——别留空或无脑同档。spec 已经写明的事，不要在这里、commit message、PR 描述里重复。
 
-**多会话并行**：同一仓库可能同时有多个 agent 会话各推一个 spec。规则：① 一个会话只认领一个 spec，不碰别人 spec 的「文件变更」清单；② 共享文件（`lib/app.dart`、`lib/main.dart`、`lib/ui/shell/app_router.dart`、`lib/ui/shell/app_shell.dart`、`lib/demo/demo_entry.dart`、两份 arb、`pubspec.*`）同一时间只允许一个会话改，开工前 `git status` 看一眼谁已经动了；③ `.spec-task-whitelist` 是单文件，先到的会话把并行会话的可改文件也列进去（注释注明），后到的只追加不覆盖；④ 跨会话改动靠小步 commit 交接，不靠口头同步。
+**多会话并行 = 各开 worktree**：同一仓库同时有多个 agent 会话时，每个会话 MUST 在自己的 `git worktree`（独立分支）里干活，不共用主工作区——共用一个工作区就共用一个 index，2026-10-09 实测：A 会话 `git add` 的文件被 B 会话的 commit 顺手带走，`.spec-task-whitelist` 互相覆盖，pre-commit 闸拦的是对方的改动。规则：① 一个 worktree 一个 spec，分支名 `<spec>/<task>`；② 共享文件（`lib/app.dart`、`lib/main.dart`、`lib/ui/shell/app_router.dart`、`lib/ui/shell/app_shell.dart`、`lib/demo/demo_entry.dart`、两份 arb、`pubspec.*`）谁的 spec「文件变更」列了谁改，合回 main 时冲突由后合的解；③ 合回前先 rebase main 并跑第 4 步的闸；④ 跨会话交接靠 commit 和 spec 任务卡的验收记录，不靠口头。
 
 ## 规则
 
