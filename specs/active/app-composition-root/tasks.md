@@ -145,7 +145,7 @@ T1 → T2 → T3 → T4 → T5
 
 -----
 
-- [ ] T5 · 真机冷启动集成测试
+- [x] T5 · 真机冷启动集成测试
 
 **同 spec 依赖：** T3, T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `integration_test/app_cold_start_test.dart`
 
@@ -166,7 +166,7 @@ T1 → T2 → T3 → T4 → T5
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-09
+自动：`flutter test integration_test/app_cold_start_test.dart -d Y9XSLVVO6TJR55PN`（Xiaomi 24129RT7CC / Android）通过：真机 SQLCipher 库打开 → 示例数据 → 时间线当月月份头可见、无占位 → 抽屉列出两本示例日记本 → 选「旅行」后只剩旅行条目
 人工：N/A
 ```
