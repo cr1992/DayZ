@@ -64,6 +64,23 @@ class FakeEntryRepo
   }
 
   @override
+  Future<Map<(int, int), int>> countByMonth({String? journalId}) async {
+    return {
+      for (final entry in (await monthCounts(journalId)).entries)
+        (entry.key.year, entry.key.month): entry.value,
+    };
+  }
+
+  @override
+  Future<Set<int>> entryDaysOfMonth({
+    String? journalId,
+    required int year,
+    required int month,
+  }) {
+    return entryDaysInMonth(journalId, year, month);
+  }
+
+  @override
   Future<void> hardDelete(String id) {
     throw UnimplementedError();
   }

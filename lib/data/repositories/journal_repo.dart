@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 
 import '../database.dart';
 import '../ids.dart';
@@ -14,6 +14,20 @@ class JournalRepo {
 
   Future<List<Journal>> list() {
     return _db.journalsDao.active().get();
+  }
+
+  /// 各日记本的未删除条目数（未归属日记本的条目不计入）。
+  Future<Map<String, int>> entryCounts() async {
+    final count = _db.entries.id.count();
+    final query = _db.selectOnly(_db.entries)
+      ..addColumns([_db.entries.journalId, count])
+      ..where(_db.entries.deletedAt.isNull() & _db.entries.journalId.isNotNull())
+      ..groupBy([_db.entries.journalId]);
+
+    final rows = await query.get();
+    return {
+      for (final row in rows) row.read(_db.entries.journalId)!: row.read(count)!,
+    };
   }
 
   Future<Journal> create(

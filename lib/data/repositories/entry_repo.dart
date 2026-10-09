@@ -28,6 +28,7 @@ class EntryRepo {
   EntryRepo(this._db);
 
   Future<EntryTimelinePage> timeline({
+    String? journalId,
     EntryTimelineCursor? cursor,
     int limit = 30,
   }) async {
@@ -42,7 +43,10 @@ class EntryRepo {
             : table.entryDtUtc.isSmallerThanValue(cursor.entryDtUtc.toUtc()) |
                   (table.entryDtUtc.equals(cursor.entryDtUtc.toUtc()) &
                       table.id.isSmallerThanValue(cursor.id));
-        return table.deletedAt.isNull() & cursorPredicate;
+        final journalPredicate = journalId == null
+            ? const Variable(true)
+            : table.journalId.equals(journalId);
+        return table.deletedAt.isNull() & journalPredicate & cursorPredicate;
       })
       ..orderBy([
         (table) =>
@@ -61,6 +65,47 @@ class EntryRepo {
         : null;
 
     return EntryTimelinePage(items: items, nextCursor: nextCursor);
+  }
+
+  /// 按 (localYear, localMonth) 统计未删除条目数；[journalId] 为空表示全部日记本。
+  Future<Map<(int, int), int>> countByMonth({String? journalId}) async {
+    final count = _db.entries.id.count();
+    final query = _db.selectOnly(_db.entries)
+      ..addColumns([_db.entries.localYear, _db.entries.localMonth, count])
+      ..where(_activeInJournal(journalId))
+      ..groupBy([_db.entries.localYear, _db.entries.localMonth]);
+
+    final rows = await query.get();
+    return {
+      for (final row in rows)
+        (row.read(_db.entries.localYear)!, row.read(_db.entries.localMonth)!):
+            row.read(count)!,
+    };
+  }
+
+  /// 指定月份内有未删除条目的本地日（1–31）集合。
+  Future<Set<int>> entryDaysOfMonth({
+    String? journalId,
+    required int year,
+    required int month,
+  }) async {
+    final query = _db.selectOnly(_db.entries, distinct: true)
+      ..addColumns([_db.entries.localDay])
+      ..where(
+        _activeInJournal(journalId) &
+            _db.entries.localYear.equals(year) &
+            _db.entries.localMonth.equals(month),
+      );
+
+    final rows = await query.get();
+    return {for (final row in rows) row.read(_db.entries.localDay)!};
+  }
+
+  Expression<bool> _activeInJournal(String? journalId) {
+    final active = _db.entries.deletedAt.isNull();
+    return journalId == null
+        ? active
+        : active & _db.entries.journalId.equals(journalId);
   }
 
   Future<List<Entry>> onThisDay(int month, int day) {
