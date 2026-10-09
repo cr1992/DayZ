@@ -1,6 +1,7 @@
 # Specs 索引
 
 > 本文件是功能生命周期的**唯一来源**。tasks 完成情况驱动状态更新；归档后将该行移入「已归档」表。
+> tasks.md 里的 `- [-]` = 自动验收已过、**只差 @Ray 人工复核**的任务；它不算完成，归档前必须收口为 `[x]`（人工确认）或拆成后置 spec。
 
 > **编辑器选型 = A (AppFlowy Editor)** — 2026-05-29 @Ray 拍板（见 [archive/2026-05-29-editor-research](archive/2026-05-29-editor-research/)）。后续编辑器集成、JSON 契约、PDF 导出均以方案 A 为准。
 
@@ -15,7 +16,7 @@
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-kit-components](active/ui-kit-components/) | P1 | 进行中（T1–T7 已完成；T8 自动验收通过，画廊目检收尾不阻塞 UI 轨推进） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
-| [timeline-screen](active/timeline-screen/) | P2 | 待实现 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
+| [timeline-screen](active/timeline-screen/) | P2 | 进行中（T1–T4、T6、T9 已完成；T5 日历面板、T7 顶栏/导航接线、T8 Debug Home 待做） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [reader-screen](active/reader-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [editor-integration-screen](active/editor-integration-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, editor-json-contract, media-storage, auto-save-draft | @Ray | 2026-05-29 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
@@ -41,7 +42,7 @@
 > **选取规则**（同 spec-guide）：在「待实现 / 进行中」**且依赖就绪**（依赖列前置全「已完成」）的 spec 里挑优先级最高的；同级按创建序。**串行**＝照此逐个推进；**并行**＝同时开所有就绪项，容量不足时按优先级让路。
 > 下表是当前快照（`app-scaffold` / `key-management` / `data-layer` / `media-storage` / `thumbnail-cache` / `auto-save-draft` / `observability` / `design-tokens-theme` / `editor-json-contract` / `assets-management` / `dayz-security-rust` 已归档完成）；**真源＝上方「优先级」+「依赖」列**，spec 增删后据此重新派生，不手工同步本表。‖＝可并行。
 
-1. **现在就绪**：W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）‖ `design-sync-automation`(P2，期二 blocked：待首屏)
+1. **现在就绪**：W2 页面级屏 spec 依各自底层依赖解锁（`timeline/search/calendar/favorites/trash/settings` 等数据依赖已就绪；`reader/onthisday` 媒体与缩略图依赖已就绪；`editor-integration` 编辑器/媒体/草稿依赖已就绪；`memory-card-export` 仍需 `onthisday-screen`）‖ `app-composition-root`(P1，让已交付的时间线挂真库，2026-10-09 起推进) ‖ `design-sync-automation`(P2，期二等首屏 `timeline-screen` T7 + `app-composition-root` 落地后启动)
 
 > ★＝数据/加密主干剩余链当前只余 `backup-full-snapshot`；`media-storage` / `thumbnail-cache` / `auto-save-draft` / `key-management` / `data-layer` 均已归档完成。
 >

@@ -182,7 +182,7 @@ W3  依附件（undo-redo / media-picker / autosave-recovery 等）   W4  后置
 
 ## 10. 动 `lib/ui/` 前的红线 / 白名单【引自 AGENTS.md / CLAUDE.md】
 
-`lib/ui/`（及 backup/data/drafts/media/security/thumbnails）目前只有 `.gitkeep`。动它之前：
+`lib/ui/` 现已按 spec 分层落地（`theme/` ← design-tokens-theme，`widgets/` ← ui-kit-components，`shell/` ← ui-shell-navigation，`<feature>/` ← 各屏 spec）；立 spec 前它只有 `.gitkeep`，下列红线仍然适用。动它之前：
 
 1. **先有 spec**：四件套已立、档位锁定、`design.md`「文件变更」逐个列出要新建的 `lib/ui/<feature>/*.dart`——这份清单才是任务「可改文件」白名单来源，没 spec 不得写 `lib/ui`。
 2. **先立视觉底座**：第一个落 `design-tokens-theme`，其余全 dependsOn 它，不许每屏硬编码颜色/字号。
@@ -209,7 +209,7 @@ W3  依附件（undo-redo / media-picker / autosave-recovery 等）   W4  后置
 - 屏 HTML（有哪些屏以目录为准）：`ui-design/current/pages/screens/`
 - 设计参考：`ui-design/current/docs/{DESIGN-REF,PROTOTYPE-ARCH,CHANGELOG,BACKLOG}.md`
 - 同步 skill：`.claude/skills/dayz-design-sync/SKILL.md`
-- 目标落地目录（待动土）：`lib/ui/`（现仅 `.gitkeep`）
+- 落地目录：`lib/ui/{theme,widgets,shell,<feature>}/`（各层归属见 §10 首段）；生产装配（单库 + Repo 注入路由）归 `lib/app/`（spec `app-composition-root`）
 
 -----
 
