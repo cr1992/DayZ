@@ -90,3 +90,6 @@ test/thumbnails/**
 
 # AI Agent workspace config & local tools
 .agents/
+
+# spec-kit 写时白名单：每个会话/任务各自维护，不入库
+.spec-task-whitelist

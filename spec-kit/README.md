@@ -122,7 +122,7 @@ bash spec-kit/scripts/check_specs_index.sh path/to/specs
 - `codex-pretooluse-whitelist.sh`（Codex `PreToolUse`，解析 `apply_patch` 信封头行取多路径；不用 set -e 防 fail-open）
 - `kiro-pretooluse-whitelist.sh`（Kiro `preToolUse`，取 `operations[].path`，`exit 2 + stderr` 表达 deny）
 
-命中清单内、或 `test/**/*_test.dart` 则放行；命中清单外则按 `DECISION` 处置（核心退出码 0=放行 / 10=越界并逐行打越界路径 / 2=环境错）。
+命中清单内、或 `test/**/*_test.dart`、或**仓库外路径**（agent 的记忆文件、临时目录、别的仓库——不归本仓库任务白名单管）则放行；命中清单外则按 `DECISION` 处置（核心退出码 0=放行 / 10=越界并逐行打越界路径 / 2=环境错）。
 **默认 `DECISION=deny`（真阻断）**：越界写被拦下，并把原因经 `permissionDecisionReason`/`additionalContext`
 **反馈给模型**，模型据此停手/改道/请示——这才挡得住 AI 跑偏。
 （关键事实：PreToolUse 的 `systemMessage` 只给**用户**看、**模型不可见**，所以 `warn` 模式拦不住模型；warn 已改为

@@ -2,7 +2,7 @@
 # spec-kit · whitelist_core.sh —— 与 agent 无关的「写白名单」判定核心 + 工具。
 #
 # 它把「定位仓库根 / 路径归一化（含相对路径按 cwd 锚定、新建文件祖先物理化）/ glob 匹配 /
-# test 自动放行 / 无白名单则全放行」收成单一真相；各 agent 适配器只翻译自家 I/O 后调它，
+# test 自动放行 / 仓库外路径放行 / 无白名单则全放行」收成单一真相；各 agent 适配器只翻译自家 I/O 后调它，
 # 不再各写一套 glob（避免双源真理）。
 #
 # 用法（CLI）:
@@ -40,10 +40,10 @@ wl_json_escape() {
   printf '%s' "$1" | LC_ALL=C tr '\000-\037' ' ' | LC_ALL=C sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
 }
 
-# ---- 路径归一化为「相对仓库根」----
-# 依赖全局 ROOT / ROOT_P（由 wl_init 设置）。处理：① 相对路径按进程 cwd 锚定；
-# ② symlink 根（/tmp vs /private/tmp）；③ 目标/父目录尚不存在的新建文件（物理化最近已存在祖先）。
-wl_rel() {
+# ---- 路径归一化为「物理绝对路径」----
+# 处理：① 相对路径按进程 cwd 锚定；② symlink 根（/tmp vs /private/tmp）；
+# ③ 目标/父目录尚不存在的新建文件（物理化最近已存在祖先）。
+wl_abs() {
   p="$1"
   case "$p" in
     /*)  : ;;                          # 绝对路径
@@ -56,11 +56,24 @@ wl_rel() {
     anc="$(dirname "$anc")"
   done
   ancp="$(cd "$anc" 2>/dev/null && pwd -P || printf '%s' "$anc")"
-  full="$ancp${rest:+/$rest}"
+  printf '%s' "$ancp${rest:+/$rest}"
+}
+
+# ---- 是否落在仓库内（依赖全局 ROOT / ROOT_P，由 wl_init 设置）----
+wl_in_repo() {
+  case "$(wl_abs "$1")" in
+    "$ROOT_P"/*|"$ROOT"/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# ---- 路径归一化为「相对仓库根」；仓库外原样返回（调用方应先用 wl_in_repo 判定）----
+wl_rel() {
+  full="$(wl_abs "$1")"
   case "$full" in
     "$ROOT_P"/*) printf '%s' "${full#"$ROOT_P"/}" ;;
     "$ROOT"/*)   printf '%s' "${full#"$ROOT"/}" ;;
-    *)           printf '%s' "$1" ;;   # 仓库外 → 原样（必落到清单外）
+    *)           printf '%s' "$1" ;;
   esac
 }
 
@@ -92,6 +105,8 @@ wl_cmd_check() {
   [ -f "$WL" ] || exit 0          # ★ 无白名单 → 全允许（锁定）
   viol=0
   for raw in "$@"; do
+    # 仓库外路径（agent 记忆文件、临时目录、其他仓库）不归本仓库的任务白名单管 → 放行。
+    wl_in_repo "$raw" || continue
     rel="$(wl_rel "$raw")"
     if wl_is_allowed "$rel" "$WL"; then :; else printf '%s\n' "$rel"; viol=1; fi
   done
@@ -111,8 +126,10 @@ wl_cmd_selftest() {
     bash "$self" "lib/data/x.dart" >/dev/null 2>&1; rc=$?       # C 在内 → 0
     bash "$self" "test/data/x_test.dart" >/dev/null 2>&1; rd=$? # D 测试 → 0
     om="$(bash "$self" "lib/data/ok.dart" "lib/ui/bad.dart" 2>/dev/null)"; rm=$?  # E 多路径一越界
+    bash "$self" "/outside-of-any-repo-$$/memory.md" >/dev/null 2>&1; rf=$?  # F 仓库外 → 0
     [ "$ra" = 0 ] && [ "$rb" = 10 ] && [ "$ob" = "lib/ui/x.dart" ] \
-      && [ "$rc" = 0 ] && [ "$rd" = 0 ] && [ "$rm" = 10 ] && [ "$om" = "lib/ui/bad.dart" ]
+      && [ "$rc" = 0 ] && [ "$rd" = 0 ] && [ "$rm" = 10 ] && [ "$om" = "lib/ui/bad.dart" ] \
+      && [ "$rf" = 0 ]
   )
 }
 
