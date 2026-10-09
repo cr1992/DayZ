@@ -79,7 +79,7 @@ T1 → T2 → T3 → T4 → T5
 
 -----
 
-- [ ] T3 · 路由与外壳接线
+- [x] T3 · 路由与外壳接线
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-shell-navigation：appRouter / AppShell / ShellState / showNewJournalSheet` ｜ **关联需求：** R2, R3, R5 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/ui/shell/app_router.dart`, `lib/ui/shell/app_shell.dart`
 
@@ -106,8 +106,8 @@ T1 → T2 → T3 → T4 → T5
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-09
+自动：`flutter test test/app/app_wiring_test.dart test/ui/shell test/app_router_mount_test.dart` 通过；全量 `flutter test -j 1` 除 `test/security` 11 项（宿主机缺 argon2id_ffi 原生资产，改动前即失败，与本任务无关）外全部通过
 人工：N/A
 ```
 

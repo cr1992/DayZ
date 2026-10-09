@@ -26,6 +26,9 @@ class AppShell extends StatelessWidget {
   final ValueChanged<String> onNavigate;
   final VoidCallback onNewJournal;
 
+  /// 页面自带 sliver 顶栏时为 true：外壳不再叠加顶栏，只提供 drawer / FAB / 让位。
+  final bool pageOwnsAppBar;
+
   const AppShell({
     required this.body,
     this.journals = const [],
@@ -36,6 +39,7 @@ class AppShell extends StatelessWidget {
     required this.onSelectJournal,
     required this.onNavigate,
     required this.onNewJournal,
+    this.pageOwnsAppBar = false,
     super.key,
   });
 
@@ -58,80 +62,82 @@ class AppShell extends StatelessWidget {
       ),
       floatingActionButton: const FabSpeedDial(),
       drawerEnableOpenDragGesture: !disableAnimations,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            DayzGlassAppBar(
-              title: Text(_getTitle(context, l10n)),
-              leading: Builder(
-                builder: (context) {
-                  return Semantics(
-                    button: true,
-                    label: l10n.menu,
-                    child: SizedBox.square(
-                      dimension: 44,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 44,
-                          height: 44,
-                        ),
-                        tooltip: l10n.menu,
-                        icon: SvgPicture.string(
-                          _svg(DayzIcons.menuPath),
-                          width: 24,
-                          height: 24,
-                          colorFilter: ColorFilter.mode(
-                            colors.ink,
-                            BlendMode.srcIn,
+      body: pageOwnsAppBar
+          ? SafeArea(top: false, bottom: true, child: body)
+          : NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  DayzGlassAppBar(
+                    title: Text(_getTitle(context, l10n)),
+                    leading: Builder(
+                      builder: (context) {
+                        return Semantics(
+                          button: true,
+                          label: l10n.menu,
+                          child: SizedBox.square(
+                            dimension: 44,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 44,
+                                height: 44,
+                              ),
+                              tooltip: l10n.menu,
+                              icon: SvgPicture.string(
+                                _svg(DayzIcons.menuPath),
+                                width: 24,
+                                height: 24,
+                                colorFilter: ColorFilter.mode(
+                                  colors.ink,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              onPressed: () {
+                                Scaffold.of(context).openDrawer();
+                              },
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              actions: [
-                Semantics(
-                  button: true,
-                  label: l10n.search,
-                  child: SizedBox.square(
-                    dimension: 44,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 44,
-                        height: 44,
-                      ),
-                      tooltip: l10n.search,
-                      icon: SvgPicture.string(
-                        _svg(DayzIcons.searchPath),
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                          colors.ink,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {
-                        context.pushNamed(Routes.search);
+                        );
                       },
                     ),
+                    actions: [
+                      Semantics(
+                        button: true,
+                        label: l10n.search,
+                        child: SizedBox.square(
+                          dimension: 44,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 44,
+                              height: 44,
+                            ),
+                            tooltip: l10n.search,
+                            icon: SvgPicture.string(
+                              _svg(DayzIcons.searchPath),
+                              width: 24,
+                              height: 24,
+                              colorFilter: ColorFilter.mode(
+                                colors.ink,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            onPressed: () {
+                              context.pushNamed(Routes.search);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ];
+              },
+              body: SafeArea(
+                top: false, // NestedScrollView handles top padding
+                bottom: true,
+                child: body,
+              ),
             ),
-          ];
-        },
-        body: SafeArea(
-          top: false, // NestedScrollView handles top padding
-          bottom: true,
-          child: body,
-        ),
-      ),
     );
   }
 
