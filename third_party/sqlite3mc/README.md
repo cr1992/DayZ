@@ -29,9 +29,9 @@ hooks:
 ```
 
 > 注：`source` 是**全局**的——凡是构建的平台都从本目录读，所以本目录必须含该平台的库，
-> 否则该平台构建失败。当前覆盖 **iOS + Android + macOS**（见下）。其中 macOS 是 host 工具链
+> 否则该平台构建失败。当前覆盖 **iOS + Android + macOS + Linux x64**（见下；Linux 供云端会话 / CI 跑 `flutter test`）。其中 macOS 是 host 工具链
 > 必需：`flutter test` / 桌面构建跑在 macOS 上，也会经本 hook 取 `libsqlite3mc.*.macos.dylib`，
-> 缺了会在原生资产构建阶段直接失败。新增其他平台（如 Linux/Windows）需把对应库补进来。
+> 缺了会在原生资产构建阶段直接失败。新增其他平台（如 Windows）需把对应库补进来。
 
 ## 内容（release `sqlite3-3.3.2`，官方 sha256）
 
@@ -46,6 +46,7 @@ hooks:
 | Android x86         | `libsqlite3mc.ia32.android.so`  | `1255471a06a22c4d554f64364fd52bfafcb0f26ae5b76d03fcbb639229669850` |
 | macOS arm64 (host/test) | `libsqlite3mc.arm64.macos.dylib` | `a4d0ec57e6a3404a38f25f0d403c3a753614e0414ca1c58a83156862b93b6aed` |
 | macOS x64 (host/test)   | `libsqlite3mc.x64.macos.dylib`   | `3815b4abce0882b6da2ef31ee17380a164e8f00d5d5f92bd341e2b527693c1c6` |
+| Linux x64 (host/test, 云端 / CI) | `libsqlite3mc.x64.linux.so` | `e16048533f6a10d6de678ccf8144dfb8b08a484d0eab9cb0b22490f9ff0e90b3` |
 
 来源 URL 形如
 `https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.2/<文件名>`。

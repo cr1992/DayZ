@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-10-09
 文档状态：定稿
 ---
 
@@ -22,13 +22,14 @@ graph LR
   T6 --> T7[T7 reader_demo + Debug Home 入口]
   T3 --> T8[T8 内容图开大图查看器 DayzImageViewer]
   T6 --> T8
+  T6 --> T9[T9 真路由接线 + 编辑带原文 + 时间线回刷]
 ```
 
 并行组：
 - Group A：T1、T2、T3、T4（彼此独立，可并行；T2 顺带建立本 spec 的 AppLocalizations 文案条目）
 - Group B：T5（依赖 T1、T2）
 - Group C：T6（依赖 T1/T2/T3/T4/T5）
-- Group D：T7（依赖 T6）；T8（依赖 T3、T6 + 跨 spec ui-kit `DayzImageViewer`）
+- Group D：T7（依赖 T6）；T8（依赖 T3、T6 + 跨 spec ui-kit `DayzImageViewer`）；T9（依赖 T6，维护态补漏）
 
 （整屏一体、无可独立部署 / 演示的中间切点 → 不设里程碑。）
 
@@ -337,4 +338,59 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 自动：RED `flutter test test/ui/reader/reader_image_viewer_test.dart` 失败于封面 / 九宫格 tap 后找不到 `DayzImageViewer`（2 fail）；GREEN `dart analyze lib/ui/reader/reader_screen.dart test/ui/reader/reader_image_viewer_test.dart patrol_test/reader_image_viewer_visual_test.dart` No issues；`flutter test test/ui/reader/reader_image_viewer_test.dart` 通过（3/3）；`PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart` 通过（Total:1 Successful:1 Failed:0），截图：reader_image_viewer_page_2.png / reader_image_viewer_page_3.png。
 回归：提升权限重跑 `PATROL_NO_RESET=1 PATH=/Users/xiaji/.pub-cache/bin:$PATH bash scripts/patrol_test.sh -d 66352C66-1646-410E-8FC9-16747B10398C --target patrol_test/reader_image_viewer_visual_test.dart --verbose --no-uninstall` 通过（Total:1 Failed:0），截图已复制到 `build/review/reader_image_viewer_page_2.png` / `build/review/reader_image_viewer_page_3.png`，目检：从 ReaderScreen 内容图进入 viewer 后图片非黑屏，`2 / 4`、`3 / 4` 无黄色下划线。
 人工：待 @Ray 复核 Patrol 截图与手感（核查人 @Ray）
+```
+
+-----
+
+- [-] T9 · 真路由接线：时间线 → 阅读 → 编辑闭环（维护态补漏）
+
+**同 spec 依赖：** T6 ｜ **跨 spec 依赖：** ui-shell-navigation：`Routes.reader`/`Routes.editor`、`app_router.dart` 注册入口；timeline-screen：`TimelinePage._openEntry` / `TimelineShellPage`；editor-integration-screen：`Routes.editor` 的 Map extra 契约（`mode`/`entryId`/`entryDate`/`title`/`initialContentJson`）；data-layer：`EntryRepo.restore` / `EntryRepo.watchChanges`（本卡新增，trash-screen 恢复链路可直接复用） ｜ **关联需求：** R1, R7, R8, NF1 ｜ **依据设计：** D1, D3 ｜ **可改文件：** `lib/ui/shell/app_router.dart`、`lib/main.dart`、`lib/ui/reader/reader_screen.dart`、`lib/ui/timeline/timeline_page.dart`、`lib/ui/timeline/timeline_controller.dart`、`lib/data/database.dart`（`EntriesDao.restore`）、`lib/data/repositories/entry_repo.dart`、`lib/demo/timeline_demo.dart`（假 repo 补接口） ｜ **验收基建：** `test/ui/reader/reader_edit_flow_test.dart`、`test/ui/shell/reader_route_test.dart`、`test/ui/timeline/timeline_reader_wiring_test.dart`、`test/ui/timeline/fake_entry_repo.dart`（补 `watchChanges` / `addEntry`）
+
+### 背景
+本屏 v1（T1–T8）只在 Debug Home demo 里装配，真入口 `Routes.reader` 仍是 `PlaceholderScreen`：冷启动 → 时间线点卡片 → 只看到占位页。同时暴露三处闭环断点：
+1. 时间线用 `goNamed` 进 reader：reader 在 ShellRoute 外，`go` 把时间线移出栈，返回钮无处可 pop。
+2. ⋯「编辑」只携 `entryId`（裸 String extra）进 `Routes.editor`：编辑器拿不到原文 → 空白打开 → 点「完成」走 `update(entryId, contentJson: 空)` **用空正文覆盖原日记**（数据丢失）。
+3. 时间线只在 `initState` 拉一次：编辑器 / reader 推在 shell 之上、时间线页常驻其下，写入（新建 / 编辑 / 删除 / 收藏）后不回刷。
+另：删除 toast「撤销」走 `ReaderRepository.restore`，data-layer 无恢复入口 → 必然「操作失败」。
+
+### 实施
+1. `app_router.dart` 增 `registerReaderRepository`；`Routes.reader` 有注册 + `extra` 为非空 entryId 时装配 `ReaderScreen`（`loadData = buildReaderViewData`），否则仍回落占位（裸 router 的既有测试依赖此行为）。`main.dart` 用 `DataLayerReaderRepository`（`restoreEntry: entryRepo.restore`）注册。
+2. 时间线 `_openEntry` 改 `pushNamed`。
+3. reader「编辑」默认路径：经 `ReaderRepository.byId` 取原记录 → `readerEditorRouteExtra` 组 Map extra（`mode: writing`、`initialContentJson`、`title` = `contentPlain` 字面首行、`entryDate`）→ push 编辑器 → 返回后 reader 重新 `loadData`。注入的 `onEdit` 仍整体覆盖默认行为。
+4. `EntryRepo.restore`（清 `deleted_at`）+ `EntryRepo.watchChanges`（Drift `tableUpdates(entries)`）；`TimelineShellPage` 订阅后调 `TimelineController.refresh()`：静默重读已加载深度（不清空、不闪 loader），与 `loadInitial`/`loadMore` 以代次号互斥，被抢先则排队重试。
+
+### 验收标准（做完即止）
+- `Routes.reader` 已注册 + 携 entryId → 渲染 `ReaderScreen`；返回 → 回到时间线（自动：`reader_route_test`）（R1）。
+- 时间线点卡片 → push reader（携 entryId），返回仍在时间线；时间线被覆盖期间发生写入 → 回来即见新条目（自动：`timeline_reader_wiring_test`）。
+- 未注册 / 无 entryId → 仍为占位页（自动：既有 `app_router_test` 不改即绿）。
+- ⋯「编辑」→ 编辑器路由收到 `initialContentJson` / `title` / `mode: writing` / `entryId`；从编辑器返回 → reader 重新加载（自动：`reader_edit_flow_test`）（R7）。
+- 无标题日记（`contentPlain` 以 `\n` 开头）编辑时标题保持为空，不把正文首行提成标题（自动）。
+- `EntryRepo.restore` 让软删条目重新可读、进时间线；未知 id 抛错；`watchChanges` 在写入时发事件（自动：`entry_repo_test`）（R8）。
+- `TimelineController.refresh` 保留已加载深度并纳入新条目、只通知一次；加载中请求 → 加载完补跑；被切本抢先 → 以新本重读（自动：`timeline_controller_test`）。
+- 真机走查：新建一篇 → 回时间线立即可见 → 点开阅读 → ⋯ 编辑看到原文 → 改一句完成 → 阅读页与时间线均为新内容；删除 → 撤销 → 回到时间线（人工）。
+
+### 禁止
+- reader 屏内不 import Drift / 写 SQL（NF1）：取原文只经 `ReaderRepository.byId`。
+- 不改编辑器保存格式（`contentPlain = title + '\n' + body` 维持现状，本卡只按其反解标题）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/reader/reader_edit_flow_test.dart test/ui/shell/reader_route_test.dart \
+    test/ui/timeline/timeline_reader_wiring_test.dart test/ui/timeline/timeline_controller_test.dart test/data/entry_repo_test.dart \
+    test/ui/shell/app_router_test.dart test/ui/timeline/timeline_shell_wiring_test.dart
+  ```
+- 人工：@Ray 真机走查上述闭环。
+
+### 已知边界（不在本卡）
+- 真路由下 reader 未注入 `thumbnailCache`：`ThumbnailCacheReaderAdapter` 的 ready provider 仍是透明占位（T3 遗留，见 `reader_image.dart` 注释），封面 / 九宫格暂不出真图，待缩略图 provider 补齐后一并接入。
+- 非编辑器写入的历史条目（`contentPlain` 首行并非标题、正文 JSON 又含该行）编辑时标题会与正文首行重复；编辑器写入的条目不受影响。
+
+### 验收记录
+```
+日期：2026-10-09
+环境：云端 Linux（Flutter 3.44.4 / Dart 3.12.2），补 third_party/sqlite3mc/libsqlite3mc.x64.linux.so（官方 sha256 校验通过）后可在 Linux host 跑 flutter test。
+自动：`dart analyze lib test` 与改动前同为 18 条既有 warning/info、无新增；本卡验收方式所列 6 个测试文件全绿。
+回归：`flutter test -j 1` 全量 528 通过；失败仅 golden 2（`reader_default`/`reader_text`，干净 HEAD 上同像素差 2.17%/1.84% 复现——基线为 macOS 渲染，Linux 字体栅格不同，非本卡引入）+ argon2/KeyProvider 11（Linux 缺 `libargon2id_ffi.so`；经 `ARGON2ID_FFI_LIB` 指向 cargo 现编产物后重跑 test/security 全绿）。
+人工：待 @Ray 真机走查（核查人 @Ray）
 ```

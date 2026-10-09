@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dayz/demo/debug_home.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/reader/reader_screen.dart';
+import 'package:dayz/ui/reader/reader_view_data.dart';
 import 'package:dayz/ui/settings/settings_screen.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
@@ -50,6 +52,8 @@ dynamic _timelineEntryRepo;
 dynamic _draftCoordinator;
 dynamic _mediaStore;
 dynamic _mediaRepo;
+ReaderRepository? _readerRepository;
+ReaderDataLoader? _readerLoadData;
 
 void registerTimelineEntryRepo(dynamic repo) {
   _timelineEntryRepo = repo;
@@ -63,6 +67,18 @@ void registerEditorServices({
   _draftCoordinator = draftCoordinator;
   _mediaStore = mediaStore;
   _mediaRepo = mediaRepo;
+}
+
+/// Registers the data port behind [Routes.reader]. Until registered the route
+/// stays a placeholder (widget tests that pump the bare router rely on this).
+void registerReaderRepository(ReaderRepository? repository) {
+  _readerRepository = repository;
+  // Built once here, not per route build: ReaderScreen reloads whenever the
+  // loader's identity changes, and go_router rebuilds this route on every
+  // push/pop above it.
+  _readerLoadData = repository == null
+      ? null
+      : (id) => buildReaderViewData(id, repository);
 }
 
 /// The global routing configuration for the DayZ application.
@@ -123,10 +139,27 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.reader,
       path: Routes.readerPath,
-      builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.reader,
-        showAppBar: true,
-      ),
+      builder: (context, state) {
+        final repository = _readerRepository;
+        final loadData = _readerLoadData;
+        final entryId = state.extra;
+        if (repository == null ||
+            loadData == null ||
+            entryId is! String ||
+            entryId.isEmpty) {
+          return PlaceholderScreen(
+            titleBuilder: (l10n) => l10n.reader,
+            showAppBar: true,
+          );
+        }
+        return ReaderScreen(
+          key: ValueKey<String>('reader-route-$entryId'),
+          entryId: entryId,
+          repository: repository,
+          loadData: loadData,
+          onBack: () => context.goNamed(Routes.timeline),
+        );
+      },
     ),
     GoRoute(
       name: Routes.onthisday,
