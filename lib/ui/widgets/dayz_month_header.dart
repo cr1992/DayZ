@@ -31,6 +31,9 @@ class DayzMonthHeader extends StatelessWidget {
     'dayz-month-header-calendar',
   );
 
+  /// `button.tl-month .tl-cal { width: 16px; height: 16px }`.
+  static const double calendarIconSize = 16;
+
   final DateTime month;
   final int entryCount;
   final bool expanded;
@@ -62,21 +65,23 @@ class DayzMonthHeader extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Flexible(
-              child: Text(
-                monthLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: typography.h2.copyWith(
-                  color: colors.ink,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
+            // Month label is inflexible (a loose Flexible would leave its
+            // unused slot as trailing free space and un-pin the icon).
+            Text(
+              monthLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: typography.h2.copyWith(
+                color: colors.ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0,
               ),
             ),
             const SizedBox(width: DayzSpacing.s2),
-            Flexible(
+            // Meta takes the remaining width so the calendar icon is pushed
+            // to the trailing edge (`.tl-month .tl-cal { margin-left: auto }`).
+            Expanded(
               child: Text(
                 metaLabel,
                 maxLines: 1,
@@ -97,8 +102,8 @@ class DayzMonthHeader extends StatelessWidget {
               curve: Curves.easeOutCubic,
               child: SvgPicture.string(
                 _calendarSvg,
-                width: 18,
-                height: 18,
+                width: calendarIconSize,
+                height: calendarIconSize,
                 colorFilter: ColorFilter.mode(
                   expanded ? colors.accentInk : colors.ink3,
                   BlendMode.srcIn,

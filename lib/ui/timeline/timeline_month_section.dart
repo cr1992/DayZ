@@ -3,10 +3,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/widgets/dayz_entry_card.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:dayz/ui/widgets/dayz_month_header.dart';
 
 @immutable
@@ -209,10 +211,43 @@ List<DayzEntryMeta> _buildEntryMeta(TimelineEntry entry) {
   final meta = <DayzEntryMeta>[];
 
   if (entry.placeName != null && entry.placeName!.isNotEmpty) {
-    meta.add(DayzEntryMeta(label: entry.placeName!));
+    meta.add(
+      DayzEntryMeta(
+        label: entry.placeName!,
+        icon: const _TimelineMetaIcon(
+          key: ValueKey<String>('timeline-meta-place-icon'),
+          path: DayzIcons.pinPath,
+        ),
+      ),
+    );
   }
 
   return List<DayzEntryMeta>.unmodifiable(meta);
+}
+
+/// Line icon of a card meta item (`.card .foot .meta svg`, 12px, ink-3).
+/// Colour and size come from the surrounding [IconTheme] set by the card.
+class _TimelineMetaIcon extends StatelessWidget {
+  const _TimelineMetaIcon({super.key, required this.path});
+
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconTheme = IconTheme.of(context);
+    final size = iconTheme.size ?? 12;
+    return SvgPicture.string(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+      'xmlns="http://www.w3.org/2000/svg"><path d="$path"/></svg>',
+      width: size,
+      height: size,
+      colorFilter: ColorFilter.mode(
+        iconTheme.color ?? context.dayz.ink3,
+        BlendMode.srcIn,
+      ),
+    );
+  }
 }
 
 class TimelineMonthHeaderDelegate extends SliverPersistentHeaderDelegate {

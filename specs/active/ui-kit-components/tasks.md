@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
+最后更新：2026-10-09
 文档状态：草稿
 ---
 
@@ -317,4 +317,35 @@ widgetbook 画廊（D8）：默认首屏为可直接目检的组件总览，组�
 日期：2026-05-30
 自动：`dart analyze lib/demo/widget_gallery_demo.dart test/demo/widget_gallery_demo_test.dart lib/ui/widgets/dayz_text_field.dart` 无问题；`flutter test test/demo/widget_gallery_demo_test.dart` 通过（8/8，含真源标注、选择控件交互、弹窗取消按钮描边）。
 人工：待确认（核查人 @Ray）
+```
+
+-----
+
+- [x] T9 · 时间线走查发现的组件偏差修正（卡片收藏星 / 月份头图标 / 日期栏字距 / 地点图标）
+
+**同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R2, R3, NF1 ｜ **依据设计：** D2, D3（`spec.css` `.card .head` / `.entry .date .m` / `.tl-month .tl-cal`、`timeline.css` `button.tl-month .tl-cal`）｜ **可改文件：** `lib/ui/widgets/dayz_entry_card.dart`、`lib/ui/widgets/dayz_month_header.dart`、`lib/ui/widgets/dayz_icons.dart` ｜ **验收基建：** `test/ui/widgets/dayz_entry_card_test.dart`、`test/ui/widgets/dayz_month_header_test.dart`
+
+### 背景
+2026-10-09 用假数据 + 真字体渲染 `TimelinePage` 对照 `ui-design/screenshots/timeline.png` 走查，发现四处组件级偏差：① 收藏星的 44px 命中区与标题同行顶对齐，有星的卡片标题下方多出约 23px 空白（设计稿 `.head` 星与标题居中对齐、不撑行高）；② 月份头日历图标紧贴元信息文字，设计稿 `margin-left:auto` 靠右，且尺寸应为 16px 而非 18px；③ 日期栏月份缩写缺 `letter-spacing: 0.06em`；④ 卡片 meta 缺地点 pin 图标（`DayzIcons` 无该 path）。
+
+### 实施
+1. `dayz_entry_card.dart`：body 改 `Stack`，星以 `Positioned` 叠在标题首行中心（`top = s3 + 17×1.25/2 − 22`，`right = s4 + 8 − 22`），标题右侧预留 24px；命中区仍 44×44；月份缩写 `letterSpacing: 0.66`。
+2. `dayz_month_header.dart`：月份名改为非弹性 `Text`，元信息改 `Expanded`，图标被推到尾部；图标常量 `calendarIconSize = 16`。
+3. `dayz_icons.dart`：新增 `pinPath`（spec.css `.card .foot .meta svg` 的定位针）。
+
+### 验收标准（做完即止）
+- 有星卡片：星 44×44、星中心 y 与标题首行中心偏差 < 1.5px、星中心距卡片右缘 24px；有/无星时摘要距标题 6px（自动，`tester.getRect`）。
+- 月份头 390px 宽时：图标 16px，右缘距头部右缘 16px；元信息紧随月份名而非靠右（自动）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/widgets/dayz_entry_card_test.dart test/ui/widgets/dayz_month_header_test.dart test/ui/timeline/
+  ```
+
+### 验收记录
+```
+日期：2026-10-09
+自动：`flutter test test/ui/widgets test/ui/timeline test/ui/shell test/demo` 通过（123/123，含新增 3 条几何/样式断言）；`flutter analyze` 触及文件无问题。
+人工：N/A（走查截图见会话附件；真机复核随 timeline-screen T8 一并做）
 ```

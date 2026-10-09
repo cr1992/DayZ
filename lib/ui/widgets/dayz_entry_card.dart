@@ -98,49 +98,40 @@ class DayzEntryCard extends StatelessWidget {
                       child: Image(image: cover!, fit: BoxFit.cover),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    DayzSpacing.s4,
-                    DayzSpacing.s3,
-                    DayzSpacing.s4,
-                    DayzSpacing.s4,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
+                // `.card .body` + `.head`: the 44px star hit target is laid
+                // over the body so it never inflates the title row
+                // (spec.css aligns the 16px star with the title centre).
+                Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        DayzSpacing.s4,
+                        DayzSpacing.s3,
+                        DayzSpacing.s4,
+                        DayzSpacing.s4,
+                      ),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
+                          Padding(
+                            padding: EdgeInsets.only(
+                              right: showFavorite ? _starSize + DayzSpacing.s2 : 0,
+                            ),
                             child: Text(
                               title,
+                              key: titleKey,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: text.h2.copyWith(
-                                fontSize: 17,
+                                fontSize: _titleFontSize,
                                 fontWeight: FontWeight.w600,
-                                height: 1.25,
+                                height: _titleLineHeight,
                                 color: colors.ink,
                               ),
                             ),
                           ),
-                          if (showFavorite)
-                            Semantics(
-                              container: true,
-                              button: onFavoritePressed != null,
-                              label: favorite ? l10n.unfavorite : l10n.favorite,
-                              child: ExcludeSemantics(
-                                child: DayzFavoriteStar(
-                                  isFavorite: favorite,
-                                  onPressed: onFavoritePressed,
-                                  size: 16,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      if (summary.isNotEmpty) ...[
+                          if (summary.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
                           summary,
@@ -171,8 +162,30 @@ class DayzEntryCard extends StatelessWidget {
                           ],
                         ),
                       ],
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                    if (showFavorite)
+                      Positioned(
+                        // Centre of the 44px box == centre of the title's
+                        // first line (s3 + 17 * 1.25 / 2); icon sits 16px in
+                        // from the right edge like `.card .head`.
+                        top: _starBoxTop,
+                        right: _starBoxRight,
+                        child: Semantics(
+                          container: true,
+                          button: onFavoritePressed != null,
+                          label: favorite ? l10n.unfavorite : l10n.favorite,
+                          child: ExcludeSemantics(
+                            child: DayzFavoriteStar(
+                              isFavorite: favorite,
+                              onPressed: onFavoritePressed,
+                              size: _starSize,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -181,6 +194,18 @@ class DayzEntryCard extends StatelessWidget {
       ],
     );
   }
+
+  /// `Key` of the title text, for layout assertions.
+  static const Key titleKey = ValueKey<String>('dayz-entry-card-title');
+
+  static const double _titleFontSize = 17;
+  static const double _titleLineHeight = 1.25;
+  static const double _starSize = 16;
+  static const double _starHitSize = 44;
+  static const double _starBoxTop =
+      DayzSpacing.s3 + _titleFontSize * _titleLineHeight / 2 - _starHitSize / 2;
+  static const double _starBoxRight =
+      DayzSpacing.s4 + _starSize / 2 - _starHitSize / 2;
 }
 
 class _EntrySurface extends StatelessWidget {
@@ -251,7 +276,8 @@ class _DateRail extends StatelessWidget {
             style: text.caption.copyWith(
               fontSize: 11,
               color: colors.ink3,
-              letterSpacing: 0,
+              // `.entry .date .m { letter-spacing: 0.06em }`
+              letterSpacing: 0.06 * 11,
               height: 1.2,
             ),
           ),

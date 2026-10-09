@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
+最后更新：2026-10-09
 文档状态：定稿
 ---
 
@@ -309,5 +309,35 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 ```
 日期：—
 自动：—
+人工：N/A
+```
+
+-----
+
+- [x] T9 · 走查样式修正：loader 样式参数 + 地点 meta 图标接线
+
+**同 spec 依赖：** T4, T6 ｜ **跨 spec 依赖：** `ui-kit-components T9`（`DayzIcons.pinPath`）｜ **关联需求：** R2, NF8 ｜ **依据设计：** D3（`timeline.css` `.tl-loader` / `.tl-loader.done`）、D4（卡片 meta）｜ **可改文件：** `lib/ui/timeline/timeline_loader.dart`、`lib/ui/timeline/timeline_month_section.dart` ｜ **验收基建：** `test/ui/timeline/timeline_loader_test.dart`
+
+### 背景
+同 ui-kit-components T9 的走查：尾部 loader 用了默认 16px `ink` 正文样式，设计稿是 12.5px、`ink-3`（取尽后 `ink-4`）、15px 细环；卡片地点 meta 无图标。属样式参数闸（②）范畴，`design-sync-automation` 的 fixture 未就绪，先以常量 + 断言锁定。
+
+### 实施
+1. `timeline_loader.dart`：文案走 `caption` 12.5px，颜色按状态取 `ink3` / `ink4`；转圈 15px、2px、`accent` 上色 + `hairline2` 底环；上内边距 `s5`。
+2. `timeline_month_section.dart`：地点 meta 带 `DayzIcons.pinPath` 线图标（尺寸/颜色由卡片 `IconTheme` 给，12px `ink-3`）。
+
+### 验收标准（做完即止）
+- `reachedEnd` 文案 12.5px、颜色 `ink4`、无转圈；`isLoading` 文案 `ink3`、转圈 15×15（自动）。
+- 既有 `test/ui/timeline/` 全绿（回归）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test test/ui/timeline/
+  ```
+
+### 验收记录
+```
+日期：2026-10-09
+自动：`flutter test test/ui/widgets test/ui/timeline test/ui/shell test/demo` 通过（123/123）。
 人工：N/A
 ```
