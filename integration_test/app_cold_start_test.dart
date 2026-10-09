@@ -6,7 +6,8 @@
 //
 // 跑法：flutter test integration_test/app_cold_start_test.dart -d <android 设备 id>
 //
-// 只增删带 DevSeed 标记的示例数据，设备上的其他条目不受影响。
+// 测试本身只增删带 DevSeed 标记的示例数据；但 `flutter test -d <设备>` 跑完会**卸载 App**，
+// 设备上该 App 的全部数据（含加密库与设备密钥）随之清空。走查数据要在测试后重新写入。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
