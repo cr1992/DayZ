@@ -29,8 +29,11 @@ class TimelinePage extends StatefulWidget {
 
 class _TimelinePageState extends State<TimelinePage> {
   late final ScrollController _scrollController;
-  final Map<TimelineMonthKey, GlobalKey> _headerKeys =
+  // 月份头 GlobalKey 按内容代次分组：切本淡入期间新旧两棵子树同时在树上，
+  // 共用同一 GlobalKey 会触发重复 key / 布局期重挂断言。
+  Map<TimelineMonthKey, GlobalKey> _headerKeys =
       <TimelineMonthKey, GlobalKey>{};
+  ValueKey<String>? _headerKeysContent;
   TimelineMonthKey? _expandedCalendarMonth;
   TimelineMonthKey? _pendingScrollMonth;
 
@@ -56,6 +59,10 @@ class _TimelinePageState extends State<TimelinePage> {
         final contentKey = ValueKey<String>(
           'timeline-content-${widget.controller.contentEpoch}-${widget.controller.journalId ?? 'all'}',
         );
+        if (_headerKeysContent != contentKey) {
+          _headerKeysContent = contentKey;
+          _headerKeys = <TimelineMonthKey, GlobalKey>{};
+        }
         return AnimatedSwitcher(
           key: const ValueKey<String>('timeline-content-switcher'),
           duration: dayzMotionDuration(context),
