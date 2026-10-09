@@ -1,26 +1,32 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 import 'package:flutter/material.dart';
 import 'package:dayz/app.dart';
-import 'package:dayz/data/database.dart';
-import 'package:dayz/data/repositories/editing_session_repo.dart';
+import 'package:dayz/app/app_services.dart';
 import 'package:dayz/drafts/draft_coordinator.dart';
 import 'package:dayz/drafts/draft_recovery_status.dart';
 import 'package:dayz/data/time_zone_triple.dart';
-import 'package:dayz/security/key_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initTimezoneData();
 
-  final coordinator = await createProductionDraftCoordinator();
-  await initializeDraftRecovery(coordinator);
+  final services = await AppServices.open();
+  DraftCoordinator? coordinator;
+  if (services != null) {
+    coordinator = createDraftCoordinator(services);
+    await initializeDraftRecovery(coordinator);
+  }
 
-  runApp(DayZApp(draftCoordinator: coordinator));
+  runApp(DayZApp(services: services, draftCoordinator: coordinator));
 }
 
-Future<DraftCoordinator> createProductionDraftCoordinator() async {
-  final database = await AppDatabase.open(KeyProvider());
-  final repo = EditingSessionRepo(database);
-  return DraftCoordinator(store: EditingSessionDraftStore(repo));
+DraftCoordinator createDraftCoordinator(AppServices services) {
+  return DraftCoordinator(
+    store: EditingSessionDraftStore(services.editingSessions),
+  );
 }
 
 Future<DraftRecoveryStatus> initializeDraftRecovery(

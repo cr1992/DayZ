@@ -44,6 +44,7 @@
 - `lib/demo/dev_seed_demo.dart`  新建（R6）
 - `lib/demo/demo_entry.dart`  修改（仅末尾追加一行）
 - `test/ui/timeline/fake_entry_repo.dart`  修改（验收基建：补 `EntryRepo` 新增方法）
+- `test/app/app_test_db.dart`  新建（验收基建：内存库组合根 helper）
 - `test/data/`、`test/app/`、`test/ui/shell/`、`test/demo/`  新建 / 修改 `*_test.dart`
 - `integration_test/app_cold_start_test.dart`  新建（真机冷启动集成测试）
 

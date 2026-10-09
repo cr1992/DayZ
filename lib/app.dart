@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dayz/app/app_services.dart';
 import 'package:dayz/drafts/draft_coordinator.dart';
 import 'package:dayz/drafts/draft_recovery_status.dart';
 import 'package:dayz/drafts/lifecycle_bridge.dart';
@@ -39,11 +40,15 @@ class DayZApp extends StatefulWidget {
   /// 可选注入草稿协调器；生产入口注入后由根 Widget 挂生命周期桥。
   final DraftCoordinator? draftCoordinator;
 
+  /// 组合根；为 null（库打开失败 / 测试未注入）时各屏路由降级为占位。
+  final AppServices? services;
+
   const DayZApp({
     super.key,
     this.localeController,
     this.themeController,
     this.draftCoordinator,
+    this.services,
   });
 
   @override
@@ -95,6 +100,15 @@ class _DayZAppState extends State<DayZApp> {
 
   @override
   Widget build(BuildContext context) {
+    final services = widget.services;
+    final app = _buildApp(context);
+    if (services == null) {
+      return app;
+    }
+    return AppServicesScope(services: services, child: app);
+  }
+
+  Widget _buildApp(BuildContext context) {
     return LocaleControllerScope(
       controller: _localeController,
       child: ListenableBuilder(

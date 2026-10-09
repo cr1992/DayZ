@@ -44,9 +44,9 @@ T1 → T2 → T3 → T4 → T5
 
 -----
 
-- [ ] T2 · 组合根 AppServices + 时间线适配器 + 单库启动
+- [x] T2 · 组合根 AppServices + 时间线适配器 + 单库启动
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `timeline-screen：TimelineController / TimelinePage / TimelineJournalScopedRepository / TimelineMonthMetadataRepository`；`auto-save-draft：DraftCoordinator` ｜ **关联需求：** R1, R4 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/app/app_services.dart`, `lib/app/timeline_repository_adapter.dart`, `lib/app/timeline_host.dart`, `lib/main.dart`, `lib/app.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `timeline-screen：TimelineController / TimelinePage / TimelineJournalScopedRepository / TimelineMonthMetadataRepository`；`auto-save-draft：DraftCoordinator` ｜ **关联需求：** R1, R4 ｜ **依据设计：** D1, D2, D4 ｜ **可改文件：** `lib/app/app_services.dart`, `lib/app/timeline_repository_adapter.dart`, `lib/app/timeline_host.dart`, `lib/main.dart`, `lib/app.dart` ｜ **验收基建：** `test/app/app_test_db.dart`（内存库组合根 helper）
 
 ### 背景
 `AppServices` 持唯一 `AppDatabase` 与各 Repo；`TimelineRepositoryAdapter` 把 T1 的查询转为 controller 探测的两个接口；`TimelineHost` 管 controller 生命周期（首载 + `journalId` 变化时 `switchJournal` + dispose）。`main` 打开失败不抛出 main（D4）。
@@ -71,9 +71,10 @@ T1 → T2 → T3 → T4 → T5
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-09
+自动：`flutter test test/app/timeline_repository_adapter_test.dart test/app/timeline_host_test.dart` 通过；连带 `test/ui/timeline` + `test/drafts` 共 58 项通过
 人工：N/A
+备注：切本用例暴露 timeline-screen 的月份头 GlobalKey 在淡入期间重复的断言崩溃，已在 timeline_page.dart 修复（归 timeline-screen T7，单独提交）
 ```
 
 -----
