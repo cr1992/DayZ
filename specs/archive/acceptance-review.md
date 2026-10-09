@@ -109,6 +109,7 @@ bash spec-kit/scripts/archive_spec.sh ui-shell-navigation
 | `media-storage` | 通过 | `test/media/` 覆盖 AEAD smoke、设备媒体密钥消费、路径工具、codec 往返、100 MiB 流式读写正确性、nonce 唯一、篡改/错密钥失败、MediaStore put/openRead/soft/hard delete、备份重加密、路径安全与 Media demo；tag 验证旁路和绝对路径硬编码守卫无命中。真机吞吐/RSS、杀进程跨进程读取、demo UI 绝对路径目视、严格 crash fault-injection 作为后置项。 |
 | `thumbnail-cache` | 通过 | `test/thumbnails/` 覆盖缩略图生成、加密落盘、DB thumb 字段、脏失效、取消、并发上限、warmup、API 解耦守卫和 demo 入口；本轮定向 analyzer 清理后 `lib/thumbnails` + `test/thumbnails` 无静态问题。真机 isolate/RSS/JPEG 质量一致性、完整 demo 人工路径作为后置人工烟测，不阻塞归档。 |
 | `ui-shell-navigation` | 通过 | `test/ui/shell/` + `test/app_router_mount_test.dart` + `test/demo/` 覆盖路由常量/路径、真外壳启动、DebugHome 具名路由、抽屉（含头像/身份头、日记本/浏览/设置结构、计数注入）、FAB/sheet 交互、换肤、返回栈、44px 命中区、reduce-motion 与 Repository 边界；shell/demo 定向 analyzer 无 issue。生产壳层 journal 当前为入参/回调 + 内存 fallback，不持 Drift/SQL；真实 `JournalRepo` app bootstrap 接线归后续数据接入/页面 spec。 |
+| `app-composition-root` | 通过 | 精简档，T1–T5 自动验收通过：`test/data/` 按日记本过滤 / 按月计数 / 每本篇数查询、`test/app/` 单库装配与 `TimelineHost` 生命周期、`test/ui/shell/` 时间线路由挂真实页 + 页面自带顶栏时外壳不叠加、`test/demo/` 示例数据入口、`integration_test/app_cold_start_test.dart` 在 Android 真机（Xiaomi 24129RT7CC）冷启动通过。主密码模式启动只得占位屏（解锁 UI 归后续 spec）、写入后整页重载回顶与并发刷新拼旧数据的局限归 editor-integration-screen 接入时收紧，均记已知风险，不阻塞归档。 |
 
 ## 不作为归档阻塞
 

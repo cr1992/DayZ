@@ -39,6 +39,7 @@
 - **作者署名统一 `@Ray`**。
 - **授权 MPL-2.0（混合授权）**：新建 Dart 源文件 MUST 加 MPL-2.0 头注（模板见 README「License」）。`packages/appflowy-editor/` 保留上游 AGPL-3.0 / MPL-2.0 双授权，不可重新授权。
 - **包名 `com.dayz`**，iOS 13+，Android minSdk 26。
+- **`pubspec.lock` 以 pub.dev 为准**：本机 shell 全局设了 `PUB_HOSTED_URL=https://pub.flutter-io.cn`，直接跑 `flutter pub get` 会把 lock 里的 url 改写成镜像并重新解析版本。规则：跑 pub 用 `PUB_HOSTED_URL=https://pub.dev flutter pub get`；提交前 `git diff pubspec.lock`，只有 url / 顺带版本漂移的一律 `git checkout -- pubspec.lock`；真要升依赖单独一个 commit，并在 spec 的「文件变更」里列出。
 - **本地 Package 独立提交**：`packages/` 下的代码、测试、`pubspec.lock` 及 `packages/CHANGELOG.md` 必须作为独立 Git Commit，不得同业务或 Demo 层代码混合。
 - **vendored 包改动留痕**（三件套缺一不可）：① 成对标记 `// >>> DAYZ-PATCH[Pxxx]` … `// <<< DAYZ-PATCH[Pxxx]`；② `packages/CHANGELOG.md` 台账登记；③ 提交前 `bash scripts/check_patches.sh` 须退出 0。详见 `specs/archive/2026-05-29-appflowy-patch-tracking/`。
 - **静态资源 `flutter_gen`**：**禁止**硬编码资源路径，必须用 `Assets.images.xxx` 等强类型引用。新增/修改资源后运行 `dart run build_runner build`。
