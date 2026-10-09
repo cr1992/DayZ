@@ -3,6 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
@@ -12,6 +13,7 @@ import 'package:dayz/ui/util/dayz_motion.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart';
 import 'package:dayz/ui/widgets/dayz_empty_state.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 
 import 'timeline_calendar_panel.dart';
 import 'timeline_controller.dart';
@@ -22,6 +24,12 @@ class TimelinePage extends StatefulWidget {
   const TimelinePage({super.key, required this.controller});
 
   final TimelineController controller;
+
+  static const Key menuButtonKey = ValueKey<String>('timeline-menu-button');
+  static const Key searchButtonKey = ValueKey<String>('timeline-search-button');
+  static const Key onThisDayButtonKey = ValueKey<String>(
+    'timeline-onthisday-button',
+  );
 
   @override
   State<TimelinePage> createState() => _TimelinePageState();
@@ -75,10 +83,37 @@ class _TimelinePageState extends State<TimelinePage> {
                   slivers: [
                     DayzGlassAppBar(
                       scrollController: _scrollController,
+                      leading: Builder(
+                        builder: (context) => _TopBarIconButton(
+                          key: TimelinePage.menuButtonKey,
+                          label: l10n.menu,
+                          iconPath: DayzIcons.menuPath,
+                          onPressed: () {
+                            final scaffold = Scaffold.maybeOf(context);
+                            if (scaffold != null && scaffold.hasDrawer) {
+                              scaffold.openDrawer();
+                            }
+                          },
+                        ),
+                      ),
                       title: Text(
                         l10n.timeline,
                         key: ValueKey<String>('timeline-page-title'),
                       ),
+                      actions: [
+                        _TopBarIconButton(
+                          key: TimelinePage.searchButtonKey,
+                          label: l10n.search,
+                          iconPath: DayzIcons.searchPath,
+                          onPressed: () => context.pushNamed(Routes.search),
+                        ),
+                        _TopBarIconButton(
+                          key: TimelinePage.onThisDayButtonKey,
+                          label: l10n.onThisDay,
+                          iconPath: DayzIcons.historyClockPath,
+                          onPressed: () => context.pushNamed(Routes.onthisday),
+                        ),
+                      ],
                     ),
                     ..._buildBodySlivers(context, l10n),
                   ],
@@ -314,5 +349,44 @@ class _TimelinePageState extends State<TimelinePage> {
             );
           });
         });
+  }
+}
+
+/// 顶栏 44×44 图标钮，与外壳顶栏同一配方（菜单 / 搜索 / 往年今日）。
+class _TopBarIconButton extends StatelessWidget {
+  const _TopBarIconButton({
+    super.key,
+    required this.label,
+    required this.iconPath,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String iconPath;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: SizedBox.square(
+        dimension: 44,
+        child: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+          tooltip: label,
+          icon: SvgPicture.string(
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+            'xmlns="http://www.w3.org/2000/svg"><path d="$iconPath"/></svg>',
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(context.dayz.ink, BlendMode.srcIn),
+          ),
+          onPressed: onPressed,
+        ),
+      ),
+    );
   }
 }

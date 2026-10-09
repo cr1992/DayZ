@@ -247,7 +247,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 -----
 
-- [ ] T7 · 装配进 app_shell + 顶栏/FAB/抽屉导航接线
+- [x] T7 · 装配进 app_shell + 顶栏/FAB/抽屉导航接线
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `ui-shell-navigation：app_shell / Routes.timeline,search,onthisday,editor / ShellState(当前 journalId + 切本事件流) / fab_speed_dial`；`ui-kit-components：DayzGlassAppBar` ｜ **关联需求：** R7, NF1, NF7 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/ui/timeline/timeline_page.dart`
 
@@ -273,9 +273,10 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-09
+自动：`flutter test test/ui/timeline/timeline_shell_wiring_test.dart` 3 项通过（菜单钮开抽屉、搜索 / 往年今日钮导航、抽屉选本后时间线只剩该本条目）；连带 test/ui/timeline + test/ui/shell + test/app 共 121 项通过
 人工：N/A
+备注：① journalId 注入与切本由 app-composition-root 的 `TimelineHost` 承担（监听 ShellState → `switchJournal`），本屏不持 ShellState；生产路由挂载亦归该 spec T3。② 修复切本淡入期间新旧子树共用月份头 GlobalKey 的断言崩溃（commit 35ef617）。③ 真机发现：手势导航下左缘右滑被系统返回手势截获，菜单钮是唯一的抽屉入口。
 ```
 
 -----
