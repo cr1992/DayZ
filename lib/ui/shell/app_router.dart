@@ -115,6 +115,7 @@ final GoRouter appRouter = GoRouter(
               builder: (context, _) => TimelineHost(
                 repo: services.timelineRepo,
                 journalId: shellState.currentJournalId,
+                contentRevision: services.contentRevision,
               ),
             );
           },

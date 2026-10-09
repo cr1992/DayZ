@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dayz/demo/dev_seed_demo.dart';
 import 'package:dayz/demo/hello_demo.dart';
 
 import 'package:dayz/demo/editor_appflowy_demo.dart';
@@ -95,5 +96,10 @@ final List<DemoEntry> demos = [
     title: '备份与恢复 demo',
     subtitle: '整库备份（.mydiary）与覆盖式还原演示',
     builder: (context) => const BackupDemo(),
+  ),
+  DemoEntry(
+    title: '示例数据',
+    subtitle: '向真实加密库写入 / 清空示例条目，供时间线真机走查',
+    builder: (context) => const DevSeedDemo(),
   ),
 ];

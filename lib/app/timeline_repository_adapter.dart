@@ -12,7 +12,9 @@ import 'package:dayz/ui/timeline/timeline_month_section.dart';
 ///
 /// Author: @Ray
 class TimelineRepositoryAdapter extends EntryRepo
-    implements TimelineJournalScopedRepository, TimelineMonthMetadataRepository {
+    implements
+        TimelineJournalScopedRepository,
+        TimelineMonthMetadataRepository {
   TimelineRepositoryAdapter(super.db);
 
   @override

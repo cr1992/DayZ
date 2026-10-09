@@ -30,6 +30,11 @@ class AppServices {
   final JournalRepo journals;
   final EditingSessionRepo editingSessions;
 
+  /// 条目内容变更代次；写入方调 [notifyContentChanged]，列表类页面监听后重载。
+  final ValueNotifier<int> contentRevision = ValueNotifier<int>(0);
+
+  void notifyContentChanged() => contentRevision.value += 1;
+
   /// 打开设备上的加密库；失败（如主密码模式未解锁）记日志并返回 null，不抛出到 main。
   static Future<AppServices?> open({KeyProvider? keyProvider}) async {
     try {
@@ -74,7 +79,10 @@ class AppServices {
     await refreshJournals(shell);
   }
 
-  Future<void> close() => database.close();
+  Future<void> close() async {
+    contentRevision.dispose();
+    await database.close();
+  }
 }
 
 /// 把 [AppServices] 经 UI 树向下提供；路由 builder 用 [maybeOf] 取。

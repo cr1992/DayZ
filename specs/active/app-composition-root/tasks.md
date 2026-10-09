@@ -113,20 +113,22 @@ T1 → T2 → T3 → T4 → T5
 
 -----
 
-- [ ] T4 · Debug Home 示例数据入口
+- [x] T4 · Debug Home 示例数据入口
 
-**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/demo/dev_seed_demo.dart`, `lib/demo/demo_entry.dart`
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R6, R7 ｜ **依据设计：** D1, D5 ｜ **可改文件：** `lib/demo/dev_seed_demo.dart`, `lib/demo/demo_entry.dart`, `lib/app/app_services.dart`, `lib/app/timeline_host.dart`, `lib/ui/shell/app_router.dart`
 
 ### 背景
 编辑器交付前，真机上时间线只能看到空态。提供 debug 入口向真实加密库写入跨 6 个月、两本日记本的示例条目（正文带标记前缀便于清理），以及一键清空示例条目。
 
 ### 实施
-1. `DevSeed.seed(services)` / `DevSeed.clear(services)`：示例条目 `contentPlain` 以固定前缀标记，清空时只硬删带前缀的条目与示例日记本。
-2. `DevSeedDemo` 页：两个按钮 + 当前条目数；`demos` 末尾追加一行。
+1. `DevSeed.seed(services)` / `DevSeed.clear(services)`：示例条目以 `serverRev` 标记（同步字段未启用，不污染正文标题），示例日记本以名称前缀标记，清空时只硬删带标记的数据。
+2. `AppServices.contentRevision` + `notifyContentChanged()`；`TimelineHost` 监听后重载；路由把信号传给 host（D5）。
+3. `DevSeedDemo` 页：两个按钮 + 当前条目数；`demos` 末尾追加一行。
 
 ### 验收标准（做完即止）
 - 对内存库 `seed` 后条目跨 ≥6 个月、分属 2 本日记本；`clear` 后示例条目与示例日记本归零，非示例条目保留（自动）
 - `demos.last` 指向 `DevSeedDemo`，其余顺序不变（自动）
+- 时间线已挂载时写入示例数据，时间线从空态刷新出条目（自动，R7）
 
 ### 验收方式
 - 自动：
@@ -136,8 +138,8 @@ T1 → T2 → T3 → T4 → T5
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-09
+自动：`flutter test test/demo/dev_seed_demo_test.dart` 4 项通过
 人工：N/A
 ```
 

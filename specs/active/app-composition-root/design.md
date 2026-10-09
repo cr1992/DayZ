@@ -31,6 +31,12 @@
 - **理由：** 当前无 UI 可开启主密码模式，问题不可触达；先保证「不崩」，解锁流归后续 spec。
 - **代价：** 主密码模式下应用可启动但只有占位，属已知风险。
 
+### D5 · 内容变更信号 = `AppServices.contentRevision`（`ValueNotifier<int>`）
+- **背景：** 时间线只在首载 / 切本时取数；写入方（示例数据、后续编辑器）落库后，已挂载的时间线不会刷新（R7）。
+- **选择：** 组合根持一个代次计数器，写入方调 `notifyContentChanged()`；`TimelineHost` 监听后 `loadInitial(当前日记本)`。
+- **理由：** 最小机制，无需引入 Drift `watch` 流改造游标分页；写入点有限且都经组合根。
+- **代价：** 整页重载（滚动位置回顶）；写入方漏调则不刷新——编辑器接入时须在保存路径调用。
+
 ## 文件变更
 - `lib/data/repositories/entry_repo.dart`  修改（`timeline` 增 `journalId`；新增 `countByMonth` / `entryDaysOfMonth`，D2）
 - `lib/data/repositories/journal_repo.dart`  修改（新增 `entryCounts()`，R3）
