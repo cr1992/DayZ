@@ -15,7 +15,7 @@
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
 | [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（2026-10-10 四件套定稿，T1–T8 自动验收通过，真路由已挂真实屏，封面与标签已经 thumbnail-provider / entry-tags-query 接通；待 @Ray 真机走查两态 / ⋯ 菜单） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
-| [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
+| [search-screen](active/search-screen/) | P2 | 进行中（2026-10-10 四件套定稿，T1–T7 自动验收通过，Routes.search 已挂真实屏；待 @Ray 真机走查六态 + 决定 amberLight 高亮对比度 4.41 < 4.5 是登记 xfail 还是调 token）| design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [calendar-screen](active/calendar-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, reader-screen, timeline-screen, e2e-harness | @Ray | 2026-05-29 |
@@ -98,6 +98,8 @@
 - **ui-kit 小补**（归档后返工，精简档）— `DayzIcons` 缺左箭头（onthisday 返回钮暂用屏内私有 path）；`DayzEntryCard` 图位缺 frameBuilder / errorBuilder（无淡入、加载失败无兜底）；收藏星只读态语义误读「取消收藏」；`DayzSheet.actions` 无标题参数、item 图标只收 Material IconData。
 - **timeline-screen 无障碍专项收口**— `verification.md` 的 NF3 / NF5 / NF6 指定的 `timeline_a11y_test.dart` / `timeline_reduce_motion_test.dart` 尚不存在，T5 已覆盖其中日历部分；另开卡补齐后再勾。
 - **reader-screen 维护卡：封面 / 相册接解密图源**— 阅读路由不传 `thumbnailCache`，`ThumbnailCacheReaderAdapter` 就绪后仍返回透明占位；改阅读路由传入 `AppServices.thumbnailImages` 并把适配器 provider 换成 `providerFor`。
+- **ui-shell 维护卡：顶栏搜索词透传**— 外壳顶栏提交搜索时不带词（`app_shell.dart` 归 ui-shell），改为 `pushNamed(Routes.search, extra: 词)` 即可接上搜索屏已支持的初始查询。
+- **ui-kit 小补 II**— `DayzEntryCard` 标题 / 摘要开放富文本槽（搜索屏现用屏私有同形卡片做高亮，补上后换回并删私有卡片）；`DayzSearchField` 开放光标参数（reduce-motion 下不闪）。
 - **argon2id_ffi 发布真机闸门**（衍生自 `dayz-security-rust`）— iOS archive/TestFlight、Android 真机 release、整包 `--analyze-size`、并发 OOM；当前按模拟器口径归档，不阻塞主线，发布前再补。
 
 补 spec 时直接在 `active/` 下新建对应目录，并在本表添加一行。
