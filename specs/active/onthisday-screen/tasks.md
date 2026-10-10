@@ -107,7 +107,7 @@ graph LR
 
 -----
 
-- [ ] T3 · onthisday_controller 取数 + 缩略图编排（屏外，守红线）
+- [x] T3 · onthisday_controller 取数 + 缩略图编排（屏外，守红线）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `data-layer`：`EntryRepo.onThisDay(month, day)`/`MediaRepo`/`TagRepo`；`media-storage`：`MediaRepo` 封面解密读 + `ImageProvider`；`thumbnail-cache`：`ThumbnailCache.warmup`（异步入队，禁同步重建） ｜ **关联需求：** R1, R3, R4, R5, NF5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/onthisday/onthisday_controller.dart` ｜ **验收基建：** `test/ui/onthisday/onthisday_controller_test.dart`
 
@@ -140,8 +140,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_controller_test.dart` 通过（8 tests：按年份从新到旧分组 + yearsAgo + 标题/摘要/地点/日期映射、今年条目不计入「往年」、带封面项经假缩略图端口 `warmup` 一次性异步入队并取异步 provider、无缩略图端口时不查封面、空结果 → 空 groups、reload 复用同一天、端口注册/清空、`DataLayerOnThisDayRepository` 在内存库上映射同月同日条目并取首张 image 为封面）。假缩略图端口只有 `warmup`/`providerFor`，端口接口本身不含同步重建入口（NF5）。controller 只 import `EntryRepo`/`MediaRepo`，不持 `AppDatabase`/DAO、不写 SQL。`flutter analyze --no-pub` 无问题。
+说明：v1 不查标签（批量查询 spec 待立，tags 恒空）；「往年」口径排除今年当天的条目。
 人工：N/A
 ```
 
