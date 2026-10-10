@@ -259,7 +259,7 @@ graph LR
 
 -----
 
-- [ ] T7 · search_demo + 挂 Debug Home
+- [x] T7 · search_demo + 挂 Debug Home
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R9 ｜ **依据设计：** D1, D5 ｜ **可改文件：** `lib/demo/search_demo.dart`、`lib/demo/demo_entry.dart`
 
@@ -288,7 +288,8 @@ Debug Home 入口：demo 内置内存假 `SearchSource`（不能 import `test/`�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：N/A
+日期：2026-10-10
+自动：`flutter test --no-pub test/demo/search_demo_test.dart test/demo/debug_home_test.dart` 通过（search demo 3 tests：demos 末项为「搜索屏 demo」且构建 SearchDemo；Debug Home 滚动找到并进入 → SearchDemo + SearchPage；demo 内依次触达 idle（最近搜索分组）→ typing（防抖窗口内建议仍在）→ results（命中模式卡片 + 预置筛选区）→ querying（慢查询模式「正在搜索…」）→ empty（`searchEmptyTitle('梅雨')`）→ error（重试钮））；debug_home 回归通过。回归修正 `test/demo/onthisday_screen_demo_test.dart`：原用例钉死 `demos.last`，改按标题查找（design 文件变更已补列），`flutter test --no-pub test/demo/onthisday_screen_demo_test.dart` 通过。全量 `flutter test --no-pub test/ui/search test/app test/demo test/data` 全绿（151 tests）；`flutter test --no-pub test/ui/timeline test/ui/onthisday test/ui/shell` 回归全绿（135 tests）。`flutter analyze --no-pub` 触及文件无问题。
+说明：demo 内置假数据源（不 import `test/`），模式切换重建搜索屏；`demo_entry.dart` 只在 `demos` 末尾追加一行 + 一条 import。
+人工：待 @Ray（真机/模拟器进 Debug Home →「搜索屏 demo」，四种模式下走查六态、筛选去除、点卡片 toast，对照 `search.html` 的 typing / results / empty 三态确认观感）
 ```

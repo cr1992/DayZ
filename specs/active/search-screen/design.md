@@ -161,6 +161,7 @@ graph TD
 - `test/ui/search/fake_search_source.dart`  新建（测试用假 `SearchSource`，受控返回命中/空/抛错/延迟；共享基建，T1 `验收基建` 预批）
 - `test/data/entry_repo_search_test.dart`   新建（`EntryRepo.search` 内存库行为测试）
 - `test/demo/search_demo_test.dart`         新建（demo + Debug Home 入口测试）
+- `test/demo/onthisday_screen_demo_test.dart`  修改（2026-10-10 T7 补列，回归修正：原用例钉死 `demos.last` 为「往年今日屏 demo」，与「新 demo 末尾追加」约定冲突，改为按标题查找，断言意图不变）
 
 > **不触 `pubspec.yaml`**：本屏依赖（`flutter_svg`/`go_router`/`intl`/`drift`）均已引入，本 spec 不新增任何 pub 依赖；如执行中发现确需新依赖，停下回填本清单 + 复核升档再继续。
 > **不触旧文案桶**：本屏文案只进 ARB / `AppLocalizations`，不得新建 `search_strings.dart` 或追加临时静态文案。

@@ -14,11 +14,11 @@ import 'package:dayz/ui/onthisday/onthisday_screen.dart';
 import '../l10n/localized_test_app.dart';
 
 void main() {
-  test('onthisday demo is appended at the end of demos', () {
-    final last = demos.last;
-    expect(last.title, '往年今日屏 demo');
+  test('onthisday demo is registered in demos', () {
+    // 不钉死 demos.last：后续 demo 按约定继续在末尾追加。
+    final entry = demos.singleWhere((entry) => entry.title == '往年今日屏 demo');
     expect(
-      last.builder(_FakeContext()),
+      entry.builder(_FakeContext()),
       isA<OnThisDayScreenDemo>(),
     );
   });
