@@ -254,7 +254,7 @@ graph LR
 
 -----
 
-- [ ] T7 · Debug Home demo（两态 + 假 VM）+ 挂入口
+- [x] T7 · Debug Home demo（两态 + 假 VM）+ 挂入口
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** 无（demo 用内存 stub VM，不连真实 Repo/Cache） ｜ **关联需求：** R9 ｜ **依据设计：** D7 ｜ **可改文件：** `lib/demo/onthisday_screen_demo.dart`、`lib/demo/demo_entry.dart` ｜ **验收基建：** `test/demo/onthisday_screen_demo_test.dart`
 
@@ -285,9 +285,10 @@ Debug Home 入口：用内存 stub `OnThisDayData`（多年份段、含带封面
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：待确认（核查人 @Ray）
+日期：2026-10-10
+自动：`flutter test --no-pub test/demo/onthisday_screen_demo_test.dart` 通过（4 tests：`demos` 末项为「往年今日屏 demo」且构建 `OnThisDayScreenDemo`；Debug Home 滚到该项点击进入 demo；demo 内「有内容」见年份分隔 + 卡片 + 屏头篇数、「空态」见 `DayzEmptyState` 且无卡片/分隔，可切回；demo 内 ⋯ →「生成回忆卡片」走 demo 回调 toast、不离开屏）。`flutter test --no-pub test/demo` 全绿（43 tests）。`flutter analyze --no-pub` 触及文件无问题。
+说明：`demo_entry.dart` 仅在 `demos` 末尾追加一行 + 一条必需的 import；`test/demo/dev_seed_demo_test.dart` 原断言「demos 末项为示例数据」与末尾追加约定冲突，改为按标题查找（已补列 design「文件变更」）。demo 用内存 VM + 资源图 `Assets.editor.demoImage` 作封面，不连真实库、不触发缩略图生成。
+人工：待 @Ray（真机/模拟器进 Debug Home →「往年今日屏 demo」，切有内容 / 空态两态、滚动、弹 ⋯ 菜单，对照 `onthisday.html` 各状态确认观感）
 ```
 
 -----

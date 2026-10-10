@@ -63,9 +63,10 @@ void main() {
     expect(services.contentRevision.value, greaterThan(before));
   });
 
-  test('demos list ends with the dev seed demo', () {
-    expect(demos.last.title, '示例数据');
-    expect(demos.last.builder(_FakeContext()), isA<DevSeedDemo>());
+  test('demos list exposes the dev seed demo', () {
+    // 新 demo 一律追加到末尾，这里不再钉死「最后一项」。
+    final entry = demos.singleWhere((entry) => entry.title == '示例数据');
+    expect(entry.builder(_FakeContext()), isA<DevSeedDemo>());
   });
 
   testWidgets('seeding while timeline is mounted refreshes it', (tester) async {

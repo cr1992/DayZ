@@ -128,6 +128,7 @@ graph TD
 **测试目录（白名单 hook 对 `test/**/*_test.dart` 自动放行；非 `_test.dart` 共享基建由任务 `验收基建` 字段预批）**
 - `test/ui/onthisday/`                             新建（屏 widget test + VM 映射 test + 几何/样式/无障碍 test；共享假数据 helper `test/ui/onthisday/onthisday_test_data.dart`）
 - `test/demo/onthisday_screen_demo_test.dart`      新建（demo + Debug Home 入口测试）
+- `test/demo/dev_seed_demo_test.dart`              修改（2026-10-10 T7 补列，回归修正：原用例钉死 `demos.last` 为「示例数据」，与「新 demo 末尾追加」约定冲突，改为按标题查找，断言意图不变）
 
 ## 已知风险
 

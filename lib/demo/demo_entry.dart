@@ -19,6 +19,7 @@ import 'package:dayz/demo/reader_demo.dart';
 import 'package:dayz/demo/timeline_demo.dart';
 import 'package:dayz/demo/editor_screen_demo.dart';
 import 'package:dayz/demo/settings_screen_demo.dart';
+import 'package:dayz/demo/onthisday_screen_demo.dart';
 
 /// 新增 demo 在 demos 列表尾部追加，不在中间插入；不修改 DemoEntry 模型字段，避免影响其他模块。
 class DemoEntry {
@@ -126,4 +127,5 @@ final List<DemoEntry> demos = [
     subtitle: '向真实加密库写入 / 清空示例条目，供时间线真机走查',
     builder: (context) => const DevSeedDemo(),
   ),
+  DemoEntry(title: '往年今日屏 demo', subtitle: '往年今日有内容 / 空态两态与 ⋯ 菜单', builder: (context) => const OnThisDayScreenDemo()),
 ];
