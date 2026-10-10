@@ -223,7 +223,7 @@ graph LR
 
 -----
 
-- [ ] T6 · 无障碍 / 布局几何 / Repository 边界专项
+- [x] T6 · 无障碍 / 布局几何 / Repository 边界专项
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `design-tokens-theme`：对比度真源 `test/ui/theme/contrast_xfail.yaml` 与 `test/ui/theme/contrast_test.dart` 的计算函数（只读复用）；`ui-kit-components`：`dayzMotionDuration` ｜ **关联需求：** NF1, NF2, NF3 ｜ **依据设计：** D3, D4, D5, D7 ｜ **可改文件：** `test/ui/search/search_a11y_test.dart`、`test/ui/search/search_geometry_test.dart`、`test/ui/search/search_boundary_test.dart`（均 `*_test.dart`，白名单 hook 自动放行；本任务只产断言测试，不改 `lib/`）
 
@@ -251,9 +251,10 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：N/A
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/search/search_a11y_test.dart test/ui/search/search_geometry_test.dart test/ui/search/search_boundary_test.dart` 通过（11 tests：Semantics——`cancel`、以 `searchInputLabel` 开头的输入框容器、两张卡片 `searchOpenEntry(标题)`、空态 `searchEmptyTitle`、错误态标题与 `searchRetry` 均可 `find.bySemanticsLabel`；命中盒——取消钮、建议行、标签 chip、年份筛选去除叉、两张卡片均 ≥44×44；reduce-motion——`disableAnimations: true` 时切态 `AnimatedSwitcher.duration == 0`、常态 == `DayzMotion.dur`；对比度——六套主题 accentInk on accentSoft2 复用 contrast_test 计算函数与 contrast_xfail.yaml；几何——390 宽视口下计数行底 ≤ 首卡顶、卡片按 hits 顺序纵向递增且不越出视口宽、无溢出异常、`SliverPersistentHeader` 0 命中、滚动后末卡仍在前卡之后；边界——page/controller/state/highlight 无 Drift / data import，search_source 只 import `package:dayz/data/repositories/`、无 Drift / database.dart，目录内文件全覆盖）。`flutter analyze --no-pub test/ui/search` 无问题。未改 `lib/`。
+发现：amberLight 主题 accentInk on accentSoft2 = 4.41（< 4.5），未登记在 tokens-theme 的 contrast_xfail.yaml（本 spec 不可改该真源）。测试以显式待决集合 `{amberLight}` 钉住：新增失败主题或该项转达标 / 被登记，测试都会红提示同步，不是静默放行。
+人工：待 @Ray（决定在 contrast_xfail.yaml 登记 amberLight accentInk/accentSoft2，或由 design-tokens-theme 调整 token）
 ```
 
 -----
