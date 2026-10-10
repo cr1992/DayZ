@@ -65,7 +65,7 @@ graph LR
 
 -----
 
-- [ ] T2 · 命中词高亮 / 摘要截取纯函数（search_highlight.dart）
+- [x] T2 · 命中词高亮 / 摘要截取纯函数（search_highlight.dart）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, NF4 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/search/search_highlight.dart`
 
@@ -92,8 +92,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/search/search_highlight_test.dart` 通过（11 tests：空/空白 query 与无命中 → 单 base span；设计稿样例尾部命中；多处命中拼回原文且段序正确；相邻 + 首部命中；拉丁大小写不敏感且保留原大小写；query 先 trim；snippetAround 近处原样 / 远处截到命中前 lead 字加 `…` 且含命中 / 无命中原样 / 大小写不敏感）。`flutter analyze --no-pub lib/ui/search test/ui/search` 无问题。
+说明：小写后长度会变的字符（如 `İ`）退回大小写敏感匹配，保证切分下标对齐。
 人工：N/A
 ```
 
