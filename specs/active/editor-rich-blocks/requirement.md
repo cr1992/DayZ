@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-06-06
-最后更新：2026-06-06
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # editor-rich-blocks（编辑器富块扩展：标注块 callout）
@@ -17,9 +17,23 @@
 
 本 spec 是对该封闭契约的**扩展**（契约已归档、终态只读，扩展按 spec-guide「返工一律新建 spec」走）。**本轮只实现 callout**；代码块（§7）设计已再定档但实现后置，仅在本 spec 立一张占位卡记录，避免遗失。
 
+### 现状对齐（2026-10-10 定稿审阅）
+
+按设计真源 `editor.html`「列表与块」`data-block=ul|ol|todo|quote|code|callout|divider` 逐项核对（代码基线 `9d6fdf8`）：
+
+| 块类型 | 块契约（type / builder / codec / 降级） | 格式面板入口 | 本 spec 动作 |
+|---|---|---|---|
+| 段落 / 标题 / 无序 / 有序 / 待办 / 引用 / 分隔线 / 图片 | `editor-json-contract` 封闭集已覆盖 | `editor-integration-screen` S2 已实现（`[-]` 待 @Ray 人工签收） | 无（NF3 不回归） |
+| callout | 本 spec T1–T4 已交付（`0d4cfda`） | S2 已实现（「列表与块」标注项，`DayzIcons.callout`） | T7：渲染参数 / 图标收口到设计真源与仓库约束 |
+| code | 未覆盖（fork 仍无 code builder，2026-10-10 复核） | S2 本轮省略（handoff §7 延后） | T6 后置登记，v1 不实现 |
+| location / weather | `editor-json-contract` 自定义块 | 非面板项（meta 区） | 无 |
+
+审阅发现 T2 交付的 callout 渲染与设计真源 / 仓库约束有偏差：图标用 `Icons.info_outline_rounded`（违「图标一律走 `DayzIcons`」）、圆角写死 8（真源 `--r-md`=14）、内距 10/12（真源 `--sp-3 --sp-4`）、图标 18 / 间距 8（真源 20 / `--sp-3`）、块外距沿用 AppFlowy 默认上下 4（真源 `margin: --sp-4 0`）。R2 / NF2 已据此收紧，补 T7 落地。与 S2 的边界不变：S2 只负责入口与 type 切换，本 spec 只负责块本身。
+
 ## 范围外
 
-- **工具栏 / 格式面板的 callout 插入入口** SHALL NOT 在本 spec 实现——入口（格式面板「列表与块」段的标注项、状态双向同步）归 `editor-integration-screen`（S2）。本 spec 只交付 block type + 注册 + codec 往返 + 导出降级。
+- **工具栏 / 格式面板的 callout 插入入口** SHALL NOT 在本 spec 实现——入口（格式面板「列表与块」段的标注项、状态双向同步）归 `editor-integration-screen`（S2，已实现）。本 spec 只交付 block type + 块渲染 + 注册 + codec 往返 + 导出降级。
+- v1 拍板不做心情 mood、不做纸色轴；本 spec 不涉及二者，callout 配色只随既有 data-theme × data-mode。
 - **代码块（code block）本轮 MUST NOT 实现**——仅立占位卡记录再定档结论与后置理由（见 R4）。
 - callout 的**富文本嵌套结构 / 多段内容**：本轮 callout MUST 只承载单行 `delta` 文本（对齐原型 `.cb-callout .tx` 单段文字），不支持块内嵌子块。
 - callout 不引入「类型 / emoji / 多色变体」等扩展属性；样式固定走 `--accent-soft` + `--accent-ink`，SHALL NOT 预留左边框配色那套。
@@ -33,16 +47,16 @@
 - 操作：`EditorDocCodec.encode(doc)` 得字符串，再 `EditorDocCodec.decode(str)`
 - 结果：还原出的 `Document` 中该 callout 节点 `type=='callout'`、`delta` 文本与原文逐字一致；`EditorBlockTypes.supported.contains('callout')` 为真
 
-### R2 · callout 按主题映射的 `--accent-soft` 渲染（无左边框）
-系统 SHALL 用 `CalloutBlockComponentBuilder`（编辑 + 只读两态）渲染 callout：背景取**当前主题**的 `--accent-soft` 对应 Flutter 色（随 data-theme purple/amber/sage × data-mode light/dark 切换），信息图标取 `--accent-ink`，圆角 `--r-md`，正文取 `--ink`。
+### R2 · callout 按主题映射的 `--accent-soft` 渲染（无左边框，参数对齐 `.cb-callout`）
+系统 SHALL 用 `CalloutBlockComponentBuilder`（编辑 + 只读两态）渲染 callout：背景取**当前主题**的 `--accent-soft` 对应 Flutter 色（随 data-theme purple/amber/sage × data-mode light/dark 切换），信息图标取 `--accent-ink`，圆角 `--r-md`，正文取 `--ink`；几何参数对齐真源 `screen.css` `.compose-body .cb-callout`：内距 `--sp-3`（上下）`--sp-4`（左右）、图标与文字间距 `--sp-3`、图标 `DayzIcons.callout` 20px、块外距上下 `--sp-4`。
 - 前提：编辑器以某主题（如 amberDark）渲染含 callout 节点的文档
 - 操作：渲染该 callout
-- 结果：callout 容器背景色 == 该主题的 `DayzColors.accentSoft`，图标色 == `DayzColors.accentInk`；切到另一主题（如 sageLight）背景随之变为该主题的 accentSoft；容器 MUST NOT 出现左边框配色（无 `border-left` 等价物）
+- 结果：callout 容器背景色 == 该主题的 `DayzColors.accentSoft`，图标色 == `DayzColors.accentInk`；切到另一主题（如 sageLight）背景随之变为该主题的 accentSoft；容器 MUST NOT 出现左边框配色（无 `border-left` 等价物）；圆角 == `DayzRadii.md`、内距 == `DayzSpacing.s3`/`s4`、图标为 `DayzIcon(DayzIcons.callout, size: 20)`、块外距 == `DayzSpacing.s4`
 
 ### R3 · callout 导出降级（plain / markdown）
 系统 SHALL 为 callout 提供与 location / weather 同源的导出降级：`EditorExportFallback.fallbackLineForNode` 与 `EditorPlainTextExtractor` 对 callout 节点产出其 `delta` 纯文本行（markdown 降级用引用前缀 `> ` 标注语义），缺文本时产出空、不抛异常。
 - 前提：含 callout（`delta` 文本 = "记得复盘"）的文档
-- 操作：调 `EditorPlainTextExtractor.extract(doc)` 取 plain；调导出降级取 markdown 行
+- 操作：调 `EditorPlainTextExtractor.extract(doc)` 取 plain；调 `EditorExportFallback.fallbackLineForNode(node, format: EditorExportFallbackFormat.markdown)` 取 markdown 行（plain 为默认 `format`）
 - 结果：plain 含一行 `记得复盘`；markdown 行为 `> 记得复盘`；callout `delta` 为空时该行降级为空字符串、整条抽取不崩溃
 
 ### R4 · 代码块占位（本轮不实现，仅登记）
@@ -57,7 +71,7 @@
 callout 的 plain 抽取与导出降级 MUST 为纯同步函数、无文件 / 网络 I/O（与 `editor-json-contract` NF1 一致），保证可在任意线程同步调用。
 
 ### NF2 · 主题契约一致性（不发明颜色）
-callout 渲染 MUST 仅引用 `DayzColors` 既有语义色（`accentSoft` / `accentInk` / `ink`）与既有圆角 token，SHALL NOT 凭空写死 hex 或 `Colors.*` 字面色——颜色随主题切换由 `DayzColors` 唯一驱动（对齐 `tokens.css` 为色彩唯一真源）。
+callout 渲染 MUST 仅引用 `DayzColors` 既有语义色（`accentSoft` / `accentInk` / `ink`）、既有圆角 / 间距 token（`DayzRadii` / `DayzSpacing`）与既有图标标记（`DayzIcons.callout` 经 `DayzIcon` 渲染），SHALL NOT 凭空写死 hex、`Colors.*` 字面色、数值圆角或 `Icons.*`——颜色随主题切换由 `DayzColors` 唯一驱动（对齐 `tokens.css` 为色彩唯一真源）。
 
 ### NF3 · 封闭契约扩展不回归既有块
 新增 callout MUST NOT 改变 location / weather / 标准块既有的 codec 往返、抽取与降级行为——`editor-json-contract` 既有契约测试须保持通过（扩展是加法，不是改写）。

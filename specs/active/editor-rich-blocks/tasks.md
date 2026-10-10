@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-06-06
-最后更新：2026-06-06
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # 任务列表：editor-rich-blocks（标注块 callout）
@@ -16,6 +16,8 @@ graph LR
   T2 --> T4
   T3 --> T5
   T4 --> T5
+  T2 --> T7
+  T7 -.截图重跑.-> T5
 ```
 
 并行组：
@@ -24,6 +26,7 @@ graph LR
 - Group C：T3, T4（block 注册 / 导出降级可并行）
 - Group D：T5（端到端 + 视觉，归 verification）
 - 独立：T6（代码块后置登记，不阻塞、不被阻塞）
+- Group E：T7（2026-10-10 定稿审阅补：callout 几何参数 / 图标收口到设计真源，依赖 T2；完成后 T5 的 Patrol 截图需重跑）
 
 （无可独立交付 / 演示的中间切点——callout 需「注册 + codec + 降级」三者齐备才对用户产生价值，故不设里程碑。）
 
@@ -39,7 +42,7 @@ callout 进封闭契约的第一步：把 `type='callout'` 常量与其 data key
 ### 实施
 1. `EditorBlockTypes` 增 `static const String callout = 'callout';`
 2. `supported` 封闭 Set 加入 `callout`（保持其余成员不变）
-3. 新增 `abstract final class CalloutBlockDataKeys`，定义 callout 的 `delta` 之外若需的 data key（本轮 callout 文本走原生 `delta`，data key 仅在需要时定义，如无额外结构化字段则该类可只占位/省略——以 D2「文本走 delta」为准，不发明多余字段）
+3. 新增 `abstract final class CalloutBlockDataKeys`，定义 callout 的 `delta` 之外若需的 data key（本轮 callout 文本走原生 `delta`，data key 仅在需要时定义，如无额外结构化字段则该类可只占位/省略——以 D2「文本走 delta」为准，不发明多余字段）——2026-10-10 审阅：实际按 D2 省略，未新增该类
 
 ### 验收标准（做完即止）
 - `EditorBlockTypes.callout == 'callout'`，且 `EditorBlockTypes.supported` 含 `callout`、仍含原 location/weather 等全部既有成员（自动）
@@ -198,6 +201,8 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 人工：待确认（核查人 @Ray）
 ```
 
+> 2026-10-10 定稿审阅补记：T7 会改 callout 图标（`Icons.*` → `DayzIcon(DayzIcons.callout)`）与圆角，上面的截图工件早于 T7。收口本卡前须在设备上重跑一次上面的 Patrol 命令（需 iOS 模拟器 + patrol CLI），与 @Ray 人工签收同批完成。
+
 -----
 
 - [ ] T6 · 代码块（后置，本轮不实现）
@@ -230,4 +235,46 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 日期：—
 自动：N/A（后置）
 人工：N/A（后置）
+```
+
+-----
+
+- [ ] T7 · callout 几何参数对齐 `.cb-callout` 真源 + 图标迁 `DayzIcon`
+
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** design-tokens-theme：`DayzSpacing` / `DayzRadii` / `DayzColors`（只读）；ui-kit-components：`DayzIcon` + `DayzIcons.callout`（只读，不改 `lib/ui/widgets`） ｜ **关联需求：** R2, NF2 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/editor/contract/blocks/callout_block.dart`, `test/editor/contract/blocks/callout_block_test.dart`, `patrol_test/editor_callout_visual_test.dart`
+
+### 背景
+2026-10-10 定稿审阅发现 T2 交付的 callout 渲染与设计真源 `screen.css` `.compose-body .cb-callout` 有偏差，且用了 `Icons.info_outline_rounded`（违反「图标一律走 `DayzIcons`」）。本卡只改块渲染参数与图标，不动 type / 注册 / codec / 降级（T1/T3/T4 的产物），也不动 S2 的入口。
+
+### 实施
+1. 容器圆角 `BorderRadius.circular(DayzRadii.md)`（`--r-md`），内距 `EdgeInsets.symmetric(vertical: DayzSpacing.s3, horizontal: DayzSpacing.s4)`（`padding: --sp-3 --sp-4`）。
+2. 图标换成 `DayzIcon(DayzIcons.callout, size: 20, color: colors.accentInk)`（`.ic svg 20×20`），保留上移 2px（`.ic margin-top: 2px`，注明选择器）；图标与文字间距 `DayzSpacing.s3`（`gap: --sp-3`）。
+3. `CalloutBlockComponentBuilder` 的默认 `configuration` 给块外距 `EdgeInsets.symmetric(vertical: DayzSpacing.s4)`（`margin: --sp-4 0`）；调用方显式传 `configuration` 时以调用方为准；registry 不改。
+4. 测试：`callout_block_test.dart` 的图标 finder 改为 `DayzIcon`，补圆角 / 内距 / 图标尺寸 / 块外距断言，并断言 callout 子树内无 `Icon` widget；`patrol_test/editor_callout_visual_test.dart` 同步 finder 与圆角断言。
+
+### 验收标准（做完即止）
+- callout 容器 `BoxDecoration.borderRadius == BorderRadius.circular(DayzRadii.md)`、`border == null`，容器内距 == `EdgeInsets.symmetric(vertical: DayzSpacing.s3, horizontal: DayzSpacing.s4)`（自动，R2）
+- callout 子树内有且仅有一个 `DayzIcon`，`markup == DayzIcons.callout`、`size == 20`、`color == accentInk`；子树内无 `Icon` widget（自动，R2 / NF2）
+- builder 默认 `configuration.padding(node) == EdgeInsets.symmetric(vertical: DayzSpacing.s4)`（自动，R2）
+- T2/T3 既有断言（amberDark / sageLight 主题色、正文 `ink`、无左边框、codec 往返、registry 不落兜底）不回归（自动，NF3）
+- `dart analyze` 三个可改文件无 issue（自动）
+
+### 禁止
+- 不改 `lib/ui/widgets`、`lib/ui/theme`、`lib/ui/editor/**`；不写死 hex / `Colors.*` / `Icons.*` / 数值圆角。
+- 不改 type / 注册 / codec / 降级逻辑。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test --no-pub test/editor/contract/blocks/callout_block_test.dart
+  dart analyze lib/editor/contract/blocks/callout_block.dart test/editor/contract/blocks/callout_block_test.dart patrol_test/editor_callout_visual_test.dart
+  ```
+  （widget test 在 DayZ 主题下渲染 callout，读实际 `BoxDecoration` / `Container.padding` / `DayzIcon` 属性与 builder 配置断言；**不** grep 源文件）
+- 人工：Patrol 截图重跑与观感签收并入 T5 收口（需设备），本卡不单独设人工项。
+
+### 验收记录
+```
+日期：—
+自动：—
+人工：N/A（并入 T5）
 ```

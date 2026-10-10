@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-06-06
-最后更新：2026-06-06
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # 验证：editor-rich-blocks（标注块 callout）
@@ -15,6 +15,7 @@
 | callout codec 往返 | 含 callout（delta="记得复盘"）的 Document → `EditorDocCodec.encode` → `decode` | 还原节点 `type=='callout'`、delta 文本逐字一致；`supported` 含 callout | R1 | 自动 |
 | callout 注册渲染 | decode 结果用 `EditorBlockRegistry` builders 渲染 | callout 走 `CalloutBlockComponentBuilder`，不落 `_UnknownBlockComponentBuilder`（无「[未支持块]」） | R1 | 自动 |
 | callout 主题色渲染 | 在 amberDark / sageLight 两主题下分别渲染 callout | 背景 == 对应主题 `DayzColors.accentSoft`、图标 == `accentInk`、无左边框 | R2 | 自动 + 人工(@Ray 截图签收) |
+| callout 几何参数与图标（T7） | 渲染 callout 读容器 decoration / padding、`DayzIcon` 属性与 builder 默认配置 | 圆角 `DayzRadii.md`、内距 `DayzSpacing.s3`/`s4`、`DayzIcon(DayzIcons.callout)` 20px `accentInk`、子树无 `Icon`、块外距 `DayzSpacing.s4` | R2, NF2 | 自动 |
 | callout 真机视觉 | Patrol 设备上渲染 callout 并截图 | 截图工件产出，暖调 `--accent-soft` 底随主题，`Total:` 非零 | R2 | 自动（E2E，依赖 e2e-harness） |
 | callout plain 降级 | `EditorPlainTextExtractor.extract(含 callout 文档)` | plain 含一行 `记得复盘`（与降级同源） | R3 | 自动 |
 | callout markdown 降级 | callout 节点经 `EditorExportFallback` 取 markdown 行 | 前缀 `> ` + delta 文本 | R3 | 自动 |
@@ -31,6 +32,7 @@
 - [ ] callout 暖调质感与设计稿 `.cb-callout` 一致、无左边框俗套 — 人工（@Ray，复核 Patrol 截图）
 
 ### 契约一致性（R1, R3, NF2, NF3）
+- [ ] callout 几何参数 / 图标仅引用 `DayzSpacing`/`DayzRadii`/`DayzIcons`，无数值圆角、无 `Icons.*` — 自动：`flutter test --no-pub test/editor/contract/blocks/callout_block_test.dart`（T7 行为断言，非源码 grep，满足 NF2）
 - [ ] callout 配色仅引用 `DayzColors`（accentSoft/accentInk/ink），无写死 hex/`Colors.*` — 自动：`flutter test test/editor/contract/blocks/callout_block_test.dart`（断言渲染色 == 对应 `DayzColors` 取值，跨主题切换证随主题；行为断言而非源码 grep，满足 NF2）
 - [ ] callout 进封闭集且 codec 往返无损 — 自动：`flutter test test/editor/contract/block_types_test.dart test/editor/contract/blocks/callout_block_test.dart`
 - [ ] callout plain/markdown 降级与既有块同源、互不漂移 — 自动：`flutter test test/editor/contract/export_fallback_test.dart`
@@ -50,7 +52,7 @@ flutter test test/editor/contract/block_types_test.dart \
              test/editor/contract/blocks/callout_block_test.dart \
              test/editor/contract/export_fallback_test.dart
 flutter test test/editor/contract/   # 回归：既有契约测试不破坏
-bash scripts/patrol_test.sh -d <device-id> --target patrol_test/editor_callout_visual_test.dart  # R2 视觉
+bash scripts/patrol_test.sh -d <device-id> --target patrol_test/editor_callout_visual_test.dart  # R2 视觉（T7 后需重跑，并入 T5 收口）
 ```
 
 > 共享测试基建说明：`test/editor/contract/blocks/callout_block_test.dart` 针对 `blocks/callout_block.dart`、`export_fallback_test.dart` 针对 `export_fallback.dart`，均按栈测试命名约定落在测试目录，属隐含延伸预批（执行协议第 2 条），无需额外 `验收基建` 字段。`patrol_test/editor_callout_visual_test.dart` 已在 T5 可改文件白名单内。
