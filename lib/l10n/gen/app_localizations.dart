@@ -1333,6 +1333,96 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'打开日记：{title}'**
   String onThisDayOpenEntry(String title);
+
+  /// 搜索屏输入框的语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索日记'**
+  String get searchInputLabel;
+
+  /// 搜索屏 idle 态分组标题：最近搜索
+  ///
+  /// In zh, this message translates to:
+  /// **'最近搜索'**
+  String get searchRecent;
+
+  /// 搜索屏 idle 态分组标题：标签建议
+  ///
+  /// In zh, this message translates to:
+  /// **'标签'**
+  String get searchTags;
+
+  /// 搜索屏结果区分组标题：已生效筛选
+  ///
+  /// In zh, this message translates to:
+  /// **'筛选'**
+  String get searchFilters;
+
+  /// 搜索屏标签 / 筛选 chip 文案
+  ///
+  /// In zh, this message translates to:
+  /// **'# {name}'**
+  String searchTagChip(String name);
+
+  /// 最近搜索行右侧的命中篇数
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{{count} 篇}}'**
+  String searchRecentCount(int count);
+
+  /// 搜索结果计数行（.search-stat）
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{找到 {count} 篇 · 按时间倒序}}'**
+  String searchResultStat(int count);
+
+  /// 搜索屏查询进行中提示
+  ///
+  /// In zh, this message translates to:
+  /// **'正在搜索…'**
+  String get searchQuerying;
+
+  /// 搜索零命中空态标题
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到「{query}」'**
+  String searchEmptyTitle(String query);
+
+  /// 搜索零命中空态引导文案
+  ///
+  /// In zh, this message translates to:
+  /// **'换个关键词，或去掉一些筛选条件再试试。'**
+  String get searchEmptyDescription;
+
+  /// 搜索查询失败标题
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索出错了'**
+  String get searchErrorTitle;
+
+  /// 搜索查询失败说明
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时没能完成搜索，请稍后重试。'**
+  String get searchErrorDescription;
+
+  /// 搜索查询失败后的重试按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get searchRetry;
+
+  /// 搜索结果卡片的语义标签（可点打开阅读）
+  ///
+  /// In zh, this message translates to:
+  /// **'打开日记：{title}'**
+  String searchOpenEntry(String title);
+
+  /// 筛选 chip 去除叉的语义标签
+  ///
+  /// In zh, this message translates to:
+  /// **'移除筛选：{label}'**
+  String searchRemoveFilter(String label);
 }
 
 class _AppLocalizationsDelegate

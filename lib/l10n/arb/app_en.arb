@@ -221,5 +221,20 @@
   "onThisDayShareDone": "Sharing this day is coming soon",
   "onThisDayEmptyTitle": "No memories for today yet",
   "onThisDayEmptyDescription": "Keep writing, and this day will slowly gather memories.",
-  "onThisDayOpenEntry": "Open entry: {title}"
+  "onThisDayOpenEntry": "Open entry: {title}",
+  "searchInputLabel": "Search entries",
+  "searchRecent": "Recent",
+  "searchTags": "Tags",
+  "searchFilters": "Filters",
+  "searchTagChip": "# {name}",
+  "searchRecentCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "searchResultStat": "{count, plural, =1{Found 1 entry · newest first} other{Found {count} entries · newest first}}",
+  "searchQuerying": "Searching…",
+  "searchEmptyTitle": "No results for “{query}”",
+  "searchEmptyDescription": "Try another keyword, or remove some filters.",
+  "searchErrorTitle": "Search failed",
+  "searchErrorDescription": "Couldn't finish the search. Please try again.",
+  "searchRetry": "Retry",
+  "searchOpenEntry": "Open entry: {title}",
+  "searchRemoveFilter": "Remove filter: {label}"
 }

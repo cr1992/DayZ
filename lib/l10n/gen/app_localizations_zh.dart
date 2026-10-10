@@ -683,4 +683,71 @@ class AppLocalizationsZh extends AppLocalizations {
   String onThisDayOpenEntry(String title) {
     return '打开日记：$title';
   }
+
+  @override
+  String get searchInputLabel => '搜索日记';
+
+  @override
+  String get searchRecent => '最近搜索';
+
+  @override
+  String get searchTags => '标签';
+
+  @override
+  String get searchFilters => '筛选';
+
+  @override
+  String searchTagChip(String name) {
+    return '# $name';
+  }
+
+  @override
+  String searchRecentCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 篇',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchResultStat(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '找到 $count 篇 · 按时间倒序',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchQuerying => '正在搜索…';
+
+  @override
+  String searchEmptyTitle(String query) {
+    return '没有找到「$query」';
+  }
+
+  @override
+  String get searchEmptyDescription => '换个关键词，或去掉一些筛选条件再试试。';
+
+  @override
+  String get searchErrorTitle => '搜索出错了';
+
+  @override
+  String get searchErrorDescription => '暂时没能完成搜索，请稍后重试。';
+
+  @override
+  String get searchRetry => '重试';
+
+  @override
+  String searchOpenEntry(String title) {
+    return '打开日记：$title';
+  }
+
+  @override
+  String searchRemoveFilter(String label) {
+    return '移除筛选：$label';
+  }
 }

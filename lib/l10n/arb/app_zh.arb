@@ -410,5 +410,101 @@
         "example": "搬家第一夜"
       }
     }
+  },
+  "searchInputLabel": "搜索日记",
+  "@searchInputLabel": {
+    "description": "搜索屏输入框的语义标签"
+  },
+  "searchRecent": "最近搜索",
+  "@searchRecent": {
+    "description": "搜索屏 idle 态分组标题：最近搜索"
+  },
+  "searchTags": "标签",
+  "@searchTags": {
+    "description": "搜索屏 idle 态分组标题：标签建议"
+  },
+  "searchFilters": "筛选",
+  "@searchFilters": {
+    "description": "搜索屏结果区分组标题：已生效筛选"
+  },
+  "searchTagChip": "# {name}",
+  "@searchTagChip": {
+    "description": "搜索屏标签 / 筛选 chip 文案",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "家"
+      }
+    }
+  },
+  "searchRecentCount": "{count, plural, other{{count} 篇}}",
+  "@searchRecentCount": {
+    "description": "最近搜索行右侧的命中篇数",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "searchResultStat": "{count, plural, other{找到 {count} 篇 · 按时间倒序}}",
+  "@searchResultStat": {
+    "description": "搜索结果计数行（.search-stat）",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "searchQuerying": "正在搜索…",
+  "@searchQuerying": {
+    "description": "搜索屏查询进行中提示"
+  },
+  "searchEmptyTitle": "没有找到「{query}」",
+  "@searchEmptyTitle": {
+    "description": "搜索零命中空态标题",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "example": "梅子酱"
+      }
+    }
+  },
+  "searchEmptyDescription": "换个关键词，或去掉一些筛选条件再试试。",
+  "@searchEmptyDescription": {
+    "description": "搜索零命中空态引导文案"
+  },
+  "searchErrorTitle": "搜索出错了",
+  "@searchErrorTitle": {
+    "description": "搜索查询失败标题"
+  },
+  "searchErrorDescription": "暂时没能完成搜索，请稍后重试。",
+  "@searchErrorDescription": {
+    "description": "搜索查询失败说明"
+  },
+  "searchRetry": "重试",
+  "@searchRetry": {
+    "description": "搜索查询失败后的重试按钮"
+  },
+  "searchOpenEntry": "打开日记：{title}",
+  "@searchOpenEntry": {
+    "description": "搜索结果卡片的语义标签（可点打开阅读）",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "外婆教我腌的梅子"
+      }
+    }
+  },
+  "searchRemoveFilter": "移除筛选：{label}",
+  "@searchRemoveFilter": {
+    "description": "筛选 chip 去除叉的语义标签",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "家"
+      }
+    }
   }
 }

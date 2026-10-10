@@ -699,4 +699,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String onThisDayOpenEntry(String title) {
     return 'Open entry: $title';
   }
+
+  @override
+  String get searchInputLabel => 'Search entries';
+
+  @override
+  String get searchRecent => 'Recent';
+
+  @override
+  String get searchTags => 'Tags';
+
+  @override
+  String get searchFilters => 'Filters';
+
+  @override
+  String searchTagChip(String name) {
+    return '# $name';
+  }
+
+  @override
+  String searchRecentCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchResultStat(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count entries · newest first',
+      one: 'Found 1 entry · newest first',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchQuerying => 'Searching…';
+
+  @override
+  String searchEmptyTitle(String query) {
+    return 'No results for “$query”';
+  }
+
+  @override
+  String get searchEmptyDescription =>
+      'Try another keyword, or remove some filters.';
+
+  @override
+  String get searchErrorTitle => 'Search failed';
+
+  @override
+  String get searchErrorDescription =>
+      'Couldn\'t finish the search. Please try again.';
+
+  @override
+  String get searchRetry => 'Retry';
+
+  @override
+  String searchOpenEntry(String title) {
+    return 'Open entry: $title';
+  }
+
+  @override
+  String searchRemoveFilter(String label) {
+    return 'Remove filter: $label';
+  }
 }

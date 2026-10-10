@@ -140,7 +140,7 @@ graph LR
 
 -----
 
-- [ ] T4 · search_page 六态渲染（DayzSearchField + 取消 + 朴素 ListView + 高亮卡片 + 文案）
+- [x] T4 · search_page 六态渲染（DayzSearchField + 取消 + 朴素 ListView + 高亮卡片 + 文案）
 
 **同 spec 依赖：** T2, T3 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzSearchField`/`DayzTag`/`DayzEmptyState`/`DayzButton`/`DayzIcon`/`dayzMotionDuration`；`ui-shell-navigation`：`Routes.reader`、`Routes.timeline`；`design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Motion`、`intl` ｜ **关联需求：** R1, R3, R4, R5, R6, R7, R8, R10, NF1, NF4 ｜ **依据设计：** D1, D3, D4, D7, D8, D9, D10 ｜ **可改文件：** `lib/ui/search/search_page.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart`
 
@@ -177,8 +177,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/search/search_page_test.dart` 通过（11 tests：idle 渲「最近搜索」「标签」分组、建议行与「N 篇」、`# 标签` chip、占位 searchHint；键入后 typing 保留建议且未发查询 → 防抖到期 querying「正在搜索…」→ results；results 计数文案 == `searchResultStat(2)` 且卡片 2 张，`.search-stat` 根 ink3、计数段 ink2/600，标题/摘要命中 span 背景 accentSoft2 前景 accentInk、非命中段常规 ink、标题拼回原文、地点 meta；取消钮前景 accentInk；零命中 → DayzEmptyState 标题 `searchEmptyTitle('梅子酱')`；抛错 → 错误态 + 重试，重试同词重发后出结果；点最近搜索行 / 标签 chip 回填输入框并查询，清除钮回 idle；筛选区渲染日记本 + 年份（`DateFormat.y`）chip，点日记本去除叉以收窄筛选重查，去除叉语义 `searchRemoveFilter`；changes 事件静默重查后卡片与计数更新；测试 GoRouter 下点卡片推 `Routes.reader` extra == 'e1'；点取消出栈回来源页）。`flutter analyze --no-pub lib/ui/search test/ui/search lib/l10n` 无问题；`bash scripts/check_arb_sync.sh` 对齐（221 keys）；`flutter test --no-pub test/l10n` 回归通过。新增 ARB：searchInputLabel / searchRecent / searchTags / searchFilters / searchTagChip / searchRecentCount / searchResultStat / searchQuerying / searchEmptyTitle / searchEmptyDescription / searchErrorTitle / searchErrorDescription / searchRetry / searchOpenEntry / searchRemoveFilter。
+说明：切态用 `AnimatedSwitcher`（时长经 `dayzMotionDuration`），idle 与 typing 共用同一子树 key 不触发过渡；结果卡片为屏私有 `_SearchHitCard`（D3）。
 人工：N/A
 ```
 
