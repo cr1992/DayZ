@@ -13,6 +13,7 @@ import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_fonts.dart' as fonts;
 import 'package:dayz/ui/theme/dayz_theme.dart';
 import 'package:dayz/ui/theme/dayz_tokens.g.dart' hide DayzFonts;
+import 'package:dayz/ui/widgets/dayz_icon.dart';
 
 import '../../l10n/localized_test_app.dart';
 import 'onthisday_test_data.dart';
@@ -182,5 +183,19 @@ void main() {
     await tester.pump();
 
     expect(opened, 'a-2024');
+  });
+
+  testWidgets('back button draws the ui-kit chevron-left icon', (
+    tester,
+  ) async {
+    await _pump(tester, otdSampleData());
+
+    final icon = tester.widget<DayzIcon>(
+      find.descendant(
+        of: find.byKey(OnThisDayScreen.backButtonKey),
+        matching: find.byType(DayzIcon),
+      ),
+    );
+    expect(icon.markup, '<path d="${DayzIcons.chevronLeftPath}"/>');
   });
 }

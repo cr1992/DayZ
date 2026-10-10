@@ -165,7 +165,7 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
             leading: _TopIconButton(
               key: OnThisDayScreen.backButtonKey,
               label: l10n.onThisDayBack,
-              path: _OnThisDayIcons.backPath,
+              path: DayzIcons.chevronLeftPath,
               onPressed: _goBack,
             ),
             title: Text(l10n.onThisDay),
@@ -456,10 +456,4 @@ class _TopIconButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 本屏私有图标 path：`DayzIcons` 尚无左箭头（ui-kit 补齐前不越界改它）。
-abstract final class _OnThisDayIcons {
-  /// 屏源 `.app-top [data-nav-back]` 的 `<path d="m15 5-7 7 7 7"/>`。
-  static const String backPath = 'm15 5-7 7 7 7';
 }

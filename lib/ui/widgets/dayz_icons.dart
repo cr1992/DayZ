@@ -17,6 +17,10 @@ abstract final class DayzIcons {
   static const String checkPath = 'M20 6 9 17l-5-5';
   static const String closePath = 'M18 6 6 18M6 6l12 12';
   static const String chevronRightPath = 'm9 18 6-6-6-6';
+
+  /// 左箭头（返回钮）。真源：各屏 `.app-top [data-nav-back]` 的
+  /// `<path d="m15 5-7 7 7 7"/>`（非 lucide 原版 chevron-left）。
+  static const String chevronLeftPath = 'm15 5-7 7 7 7';
   static const String clockPath =
       'M12 7v5l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z';
   static const String historyClockPath =
