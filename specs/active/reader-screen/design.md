@@ -131,7 +131,10 @@ graph TD
 - `lib/ui/reader/reader_controller.dart`       新建（`ChangeNotifier`：favorite / galleryExpanded + toggleFavorite/delete/moveToJournal/share 编排，D6/D7）
 - `lib/ui/reader/reader_body.dart`             新建（`.r-body` 衬线段落只读正文，预留只读渲染器注入点，D5）
 - `lib/ui/reader/reader_meta.dart`             新建（`.r-kicker`（日期 intl）+ `.r-meta`（weather-chip/tag/地点）+ `.r-tags`，数据驱动条件渲染，D2/R3）
-- `lib/ui/reader/reader_image.dart`            新建（封面 / 九宫格格的异步缩略图 + 占位，禁同步重建，D4/NF2）
+- `lib/ui/reader/reader_image.dart`            新建（封面 / 九宫格格的异步缩略图 + 占位，禁同步重建，D4/NF2；S1 维护卡：`ThumbnailCacheReaderAdapter` 就绪后的 provider 换成解密图源 `ThumbnailImageLoader.providerFor`）
+
+**外壳路由 `lib/ui/shell/`（仅 `Routes.reader` builder，维护态补漏）**
+- `lib/ui/shell/app_router.dart`               修改（T9 真路由装配 `ReaderScreen`；S1 经 `AppServicesScope.maybeOf` 注入缩略图适配器与 `imageProviderFor`；其余路由归 ui-shell-navigation / 各屏 spec）
 
 **Debug Home 入口 `lib/demo/`**
 - `lib/demo/reader_demo.dart`                  新建（reader 屏 demo：四例假数据 + 主题切换走查，D8）

@@ -34,7 +34,7 @@ class ReaderScreen extends StatefulWidget {
     required this.repository,
     required this.loadData,
     this.thumbnailCache,
-    this.imageProviderFor = _defaultImageProvider,
+    this.imageProviderFor,
     this.onBack,
     this.onEdit,
   });
@@ -52,7 +52,10 @@ class ReaderScreen extends StatefulWidget {
   final ReaderRepository repository;
   final ReaderDataLoader loadData;
   final ReaderThumbnailCache? thumbnailCache;
-  final ReaderImageProviderBuilder imageProviderFor;
+
+  /// 内容图（相册格子 / 大图查看器，及未注入 [thumbnailCache] 时的封面）的图源；
+  /// null → 透明占位图。
+  final ReaderImageProviderBuilder? imageProviderFor;
   final VoidCallback? onBack;
   final ValueChanged<String>? onEdit;
 
@@ -115,7 +118,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
             return _ReaderLoadedScreen(
               controller: controller,
               thumbnailCache: widget.thumbnailCache,
-              imageProviderFor: widget.imageProviderFor,
+              imageProviderFor:
+                  widget.imageProviderFor ?? _defaultImageProvider,
               onBack: _goBack,
               onEdit: _editEntry,
             );

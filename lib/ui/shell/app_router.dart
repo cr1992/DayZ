@@ -8,6 +8,7 @@ import 'package:dayz/demo/debug_home.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import 'package:dayz/ui/onthisday/onthisday_controller.dart';
 import 'package:dayz/ui/onthisday/onthisday_screen.dart';
+import 'package:dayz/ui/reader/reader_image.dart';
 import 'package:dayz/ui/reader/reader_screen.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
 import 'package:dayz/ui/search/search_page.dart';
@@ -171,11 +172,23 @@ final GoRouter appRouter = GoRouter(
             showAppBar: true,
           );
         }
+        // 组合根就绪时封面 / 相册走解密缩略图图源；裸路由测试无组合根则退回占位图。
+        final services = AppServicesScope.maybeOf(context);
+        final images = services?.thumbnailImages;
         return ReaderScreen(
           key: ValueKey<String>('reader-route-$entryId'),
           entryId: entryId,
           repository: repository,
           loadData: loadData,
+          thumbnailCache: services == null
+              ? null
+              : ThumbnailCacheReaderAdapter(
+                  request: services.thumbnailCache.request,
+                  images: services.thumbnailImages,
+                ),
+          imageProviderFor: images == null
+              ? null
+              : (media) => images.providerFor(media.id),
           onBack: () => context.goNamed(Routes.timeline),
         );
       },

@@ -97,7 +97,6 @@
 - **纸色轴（data-bg）**— 设计稿有 mint / mist / cloud / tinted / custom 五档，Flutter 只有布尔 `paper`。2026-10-09 拍板：**v1 只做「纯净」**，settings-screen 不出纸色选择器；整条纸色轴连同 BACKLOG 的「每本独立纸色」一起后置为一张 spec。
 - **design-tokens-theme 生成器收口**— `dayz_tokens.g.dart` 里仍生成带 CSS 字符串的 `DayzFonts` / `DayzMotion.ease`，与手写 `dayz_fonts.dart` 同名；Material `textTheme` 只映射 8 个槽。归档后返工 → 新建精简档。
 - **timeline-screen 无障碍专项收口**— `verification.md` 的 NF3 / NF5 / NF6 指定的 `timeline_a11y_test.dart` / `timeline_reduce_motion_test.dart` 尚不存在，T5 已覆盖其中日历部分；另开卡补齐后再勾。
-- **reader-screen 维护卡：封面 / 相册接解密图源**— 阅读路由不传 `thumbnailCache`，`ThumbnailCacheReaderAdapter` 就绪后仍返回透明占位；改阅读路由传入 `AppServices.thumbnailImages` 并把适配器 provider 换成 `providerFor`。
 - **ui-shell 维护卡：顶栏搜索词透传**— 外壳顶栏提交搜索时不带词（`app_shell.dart` 归 ui-shell），改为 `pushNamed(Routes.search, extra: 词)` 即可接上搜索屏已支持的初始查询。
 - **ui-kit 小补 II**— `DayzEntryCard` 标题 / 摘要开放富文本槽（搜索屏现用屏私有同形卡片做高亮，补上后换回并删私有卡片）；`DayzSearchField` 开放光标参数（reduce-motion 下不闪）。
 - **argon2id_ffi 发布真机闸门**（衍生自 `dayz-security-rust`）— iOS archive/TestFlight、Android 真机 release、整包 `--analyze-size`、并发 OOM；当前按模拟器口径归档，不阻塞主线，发布前再补。

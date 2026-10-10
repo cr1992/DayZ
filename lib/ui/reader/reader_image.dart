@@ -1,14 +1,13 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 
-import '../../thumbnails/thumbnail_cache.dart' as thumbnails;
 import '../../thumbnails/thumbnail_handle.dart' as thumbnails;
+import '../../thumbnails/thumbnail_image_provider.dart';
 import '../theme/dayz_colors.dart';
 import '../util/dayz_motion.dart';
+import '../widgets/dayz_image_slot.dart';
 
 /// Reader-facing thumbnail state.
 ///
@@ -32,26 +31,52 @@ abstract interface class ReaderThumbnailCache {
   Future<void> warmup(List<String> mediaIds);
 }
 
-/// Adapter from the current thumbnail cache API to the reader contract.
+/// Adapter from the composition-root thumbnail pipeline to the reader contract.
 ///
-/// The current lower-level handle exposes readiness but not a provider. Until
-/// that API grows one, ready thumbnails resolve to a stable in-memory provider.
+/// Readiness comes from the thumbnail cache handle ([request] is
+/// `ThumbnailCache.request`); once ready, the provider is the decrypting
+/// [ThumbnailImageLoader.providerFor] image source (decrypts and decodes
+/// asynchronously, no synchronous rebuild path).
+///
+/// Equal when built from the same requester and loader, so route rebuilds do
+/// not make [ReaderImage] re-request.
 ///
 /// Author: @Ray
 class ThumbnailCacheReaderAdapter implements ReaderThumbnailCache {
-  const ThumbnailCacheReaderAdapter(this._cache);
+  const ThumbnailCacheReaderAdapter({
+    required ThumbnailRequester request,
+    required ThumbnailImageLoader images,
+  }) // 命名参数保持公开名（request / images），字段私有。
+    // ignore: prefer_initializing_formals
+    : _request = request,
+       // ignore: prefer_initializing_formals
+       _images = images;
 
-  final thumbnails.ThumbnailCache _cache;
+  final ThumbnailRequester _request;
+  final ThumbnailImageLoader _images;
 
   @override
   ReaderThumbnailHandle request(String mediaId) {
-    return _ThumbnailHandleAdapter(_cache.request(mediaId));
+    return _ThumbnailHandleAdapter(
+      _request(mediaId),
+      _images.providerFor(mediaId),
+    );
   }
 
   @override
   Future<void> warmup(List<String> mediaIds) async {
-    _cache.warmup(mediaIds);
+    _images.warmup(mediaIds);
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ThumbnailCacheReaderAdapter &&
+        other._request == _request &&
+        identical(other._images, _images);
+  }
+
+  @override
+  int get hashCode => Object.hash(_request, identityHashCode(_images));
 }
 
 /// Async thumbnail image for reader cover and gallery tiles.
@@ -117,7 +142,8 @@ class _ReaderImageState extends State<ReaderImage> {
               key: const ValueKey('reader-image-placeholder'),
               color: context.dayz.accentSoft2,
             )
-          : Image(
+          // 解密图源就绪前无帧：DayzImageSlot 保持同色占位，出帧淡入、失败兜底。
+          : DayzImageSlot(
               key: ValueKey<String>('reader-image-${widget.mediaId}'),
               image: provider,
               fit: widget.fit,
@@ -127,9 +153,10 @@ class _ReaderImageState extends State<ReaderImage> {
 }
 
 class _ThumbnailHandleAdapter implements ReaderThumbnailHandle {
-  _ThumbnailHandleAdapter(this._handle);
+  _ThumbnailHandleAdapter(this._handle, this._provider);
 
   final thumbnails.ThumbnailHandle _handle;
+  final ImageProvider _provider;
 
   @override
   ReaderThumbnailState get state {
@@ -146,83 +173,9 @@ class _ThumbnailHandleAdapter implements ReaderThumbnailHandle {
     if (state != ReaderThumbnailState.ready) {
       return null;
     }
-    return _readyPlaceholderProvider;
+    return _provider;
   }
 
   @override
   Future<void> get ready => _handle.future.then<void>((_) {}, onError: (_) {});
 }
-
-final ImageProvider _readyPlaceholderProvider = MemoryImage(
-  Uint8List.fromList(_transparentPixelPng),
-);
-
-const _transparentPixelPng = <int>[
-  0x89,
-  0x50,
-  0x4E,
-  0x47,
-  0x0D,
-  0x0A,
-  0x1A,
-  0x0A,
-  0x00,
-  0x00,
-  0x00,
-  0x0D,
-  0x49,
-  0x48,
-  0x44,
-  0x52,
-  0x00,
-  0x00,
-  0x00,
-  0x01,
-  0x00,
-  0x00,
-  0x00,
-  0x01,
-  0x08,
-  0x06,
-  0x00,
-  0x00,
-  0x00,
-  0x1F,
-  0x15,
-  0xC4,
-  0x89,
-  0x00,
-  0x00,
-  0x00,
-  0x0A,
-  0x49,
-  0x44,
-  0x41,
-  0x54,
-  0x78,
-  0x9C,
-  0x63,
-  0x00,
-  0x01,
-  0x00,
-  0x00,
-  0x05,
-  0x00,
-  0x01,
-  0x0D,
-  0x0A,
-  0x2D,
-  0xB4,
-  0x00,
-  0x00,
-  0x00,
-  0x00,
-  0x49,
-  0x45,
-  0x4E,
-  0x44,
-  0xAE,
-  0x42,
-  0x60,
-  0x82,
-];

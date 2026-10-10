@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-10-09
+最后更新：2026-10-10
 文档状态：定稿
 ---
 
@@ -23,6 +23,8 @@ graph LR
   T3 --> T8[T8 内容图开大图查看器 DayzImageViewer]
   T6 --> T8
   T6 --> T9[T9 真路由接线 + 编辑带原文 + 时间线回刷]
+  T3 --> S1[S1 封面 / 相册接解密图源]
+  T9 --> S1
 ```
 
 并行组：
@@ -383,7 +385,7 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 - 人工：@Ray 真机走查上述闭环。
 
 ### 已知边界（不在本卡）
-- 真路由下 reader 未注入 `thumbnailCache`：`ThumbnailCacheReaderAdapter` 的 ready provider 仍是透明占位（T3 遗留，见 `reader_image.dart` 注释），封面 / 九宫格暂不出真图，待缩略图 provider 补齐后一并接入。
+- 真路由下 reader 未注入 `thumbnailCache`：`ThumbnailCacheReaderAdapter` 的 ready provider 仍是透明占位（T3 遗留，见 `reader_image.dart` 注释），封面 / 九宫格暂不出真图，待缩略图 provider 补齐后一并接入。（2026-10-10 已由 S1 接通。）
 - 非编辑器写入的历史条目（`contentPlain` 首行并非标题、正文 JSON 又含该行）编辑时标题会与正文首行重复；编辑器写入的条目不受影响。
 
 ### 验收记录
@@ -393,4 +395,42 @@ Debug Home 入口：用内存假 `ReaderViewData`（default 长篇 / text 短篇
 自动：`dart analyze lib test` 与改动前同为 18 条既有 warning/info、无新增；本卡验收方式所列 6 个测试文件全绿。
 回归：`flutter test -j 1` 全量 528 通过；失败仅 golden 2（`reader_default`/`reader_text`，干净 HEAD 上同像素差 2.17%/1.84% 复现——基线为 macOS 渲染，Linux 字体栅格不同，非本卡引入）+ argon2/KeyProvider 11（Linux 缺 `libargon2id_ffi.so`；经 `ARGON2ID_FFI_LIB` 指向 cargo 现编产物后重跑 test/security 全绿）。
 人工：待 @Ray 真机走查（核查人 @Ray）
+```
+
+-----
+
+- [x] S1 · 维护卡：封面 / 相册接解密图源（真路由出图）
+
+**同 spec 依赖：** T3, T9 ｜ **跨 spec 依赖：** thumbnail-cache：`ThumbnailCache.request`，及其修复档 thumbnail-provider（已归档）交付的 `ThumbnailImageLoader.providerFor` / `AppServices.thumbnailImages`；ui-kit-components：`DayzImageSlot`（修复档 ui-kit-patch T2 交付）；ui-shell-navigation：`Routes.reader` builder ｜ **关联需求：** R4, NF2 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/shell/app_router.dart`（仅 `Routes.reader` builder + 一行 import）、`lib/ui/reader/reader_image.dart`、`lib/ui/reader/reader_screen.dart` ｜ **验收基建：** `test/ui/reader/reader_thumbnail_source_test.dart`
+
+### 背景
+T9 已知边界：真路由不给 `ReaderScreen` 传 `thumbnailCache`，`ThumbnailCacheReaderAdapter` 就绪后返回透明占位，封面 / 九宫格不出真图。thumbnail-provider 已在组合根构造 `AppServices.thumbnailImages`（解密图源，只有异步入口），本卡把它接进阅读路由。归属：本卡只改阅读路由 builder 与本屏图源装配；组合根、`lib/thumbnails/`、其它路由不动。
+
+### 实施
+1. `ThumbnailCacheReaderAdapter({request, images})`：就绪态取自 `request`（传 `ThumbnailCache.request` tear-off）的 handle，就绪后 provider = `images.providerFor(mediaId)`；`warmup` → `images.warmup`；按 (request, images 同一性) 判等，路由重建不触发重复请求。删掉透明占位字节。
+2. `ReaderImage` 就绪分支改用 `DayzImageSlot`：解密完成前保持同色占位，出帧淡入，失败兜底。
+3. `ReaderScreen.imageProviderFor` 改可空（null → 透明占位），供路由按组合根有无二选一。
+4. `Routes.reader` builder 经 `AppServicesScope.maybeOf(context)` 取组合根：有则注入适配器 + `imageProviderFor: (m) => thumbnailImages.providerFor(m.id)`（相册 / 大图查看器）；无（裸路由测试）则两者为 null，行为同前。
+
+### 验收标准（做完即止）
+- 假图源（可控 handle + 明文 PNG 落盘 + 原样「解密」）：handle 就绪前显示占位；就绪后 `ReaderImage` 内 `Image` 的图源是绑定该 loader 的 `ThumbnailImageProvider`，`RawImage` 出帧且尺寸 4×3，无异常（自动，R4 / NF2）。
+- 同一 requester + loader 构造的两个适配器相等、hashCode 相同，换 loader 不等（自动，NF2：路由重建不重复请求）。
+- 真路由 + 组合根：`ReaderScreen.thumbnailCache` 等于由 `services.thumbnailCache.request` + `services.thumbnailImages` 构造的适配器；`imageProviderFor` 产出绑定 `services.thumbnailImages` 的 `ThumbnailImageProvider`（自动，R4）。
+- 真路由无组合根：两者为 null，既有 reader 路由 / 屏 / 图 / 查看器测试不改即绿（自动）。
+
+### 禁止
+- 不改 `lib/thumbnails/`、`lib/app/`、其它路由 builder；不新增同步取图 / 同步重建入口（NF2）。
+
+### 验收方式
+- 自动：
+  ```bash
+  flutter test --no-pub test/ui/reader/reader_thumbnail_source_test.dart test/ui/reader test/ui/shell/reader_route_test.dart test/app
+  ```
+  （断言出帧尺寸、图源类型与 loader 同一性、适配器相等性与路由注入；不 grep 源码）
+
+### 验收记录
+```
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/reader/reader_thumbnail_source_test.dart` 通过（4 tests：假图源就绪前占位 → 就绪后 ThumbnailImageProvider 出帧 4×3、无异常；适配器同源相等 / 换 loader 不等；真路由 + AppServicesScope 注入组合根适配器与 imageProviderFor；无组合根时两者为 null）；回归 `flutter test --no-pub test/ui/reader test/ui/shell test/app` 115 全绿；`flutter analyze --no-pub lib/ui/shell/app_router.dart lib/ui/reader` No issues。
+人工：N/A
 ```
