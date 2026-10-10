@@ -22,7 +22,7 @@
 | [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage, e2e-harness | @Ray | 2026-05-29 |
 | [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | 无 | @Ray | 2026-06-04 |
 | [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 进行中（2026-10-10 四件套定稿；T1–T4、T7 callout 对齐真源已完成；只差 T5 设备上重跑 Patrol 截图 + @Ray 签收；T6 代码块 v1 后置占位，归档前收口为 N/A 或拆后置 spec） | editor-json-contract, e2e-harness | @Ray | 2026-06-06 |
-| [ui-kit-patch](active/ui-kit-patch/) | P1 | 进行中（修复自 [ui-kit-components](archive/2026-06-06-ui-kit-components/)，精简档：左箭头 / 图位占位淡入 / 收藏星只读语义 / sheet 标题与 DayzIcons 图标） | ui-kit-components | @Ray | 2026-10-10 |
+| [ui-kit-patch](active/ui-kit-patch/) | P1 | 进行中（修复自 [ui-kit-components](archive/2026-06-06-ui-kit-components/)，精简档：左箭头 / 图位占位淡入 / 收藏星只读语义 / sheet 标题与 DayzIcons 图标；2026-10-10 T1–T4 自动验收通过，待归档） | ui-kit-components | @Ray | 2026-10-10 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
 

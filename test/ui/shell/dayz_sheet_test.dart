@@ -5,6 +5,8 @@ import 'package:dayz/ui/shell/dayz_sheet.dart';
 import '../../l10n/localized_test_app.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/widgets/dayz_button.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -52,6 +54,115 @@ void main() {
 
     expect(taps, 1);
     expect(find.text(testL10n.edit), findsNothing);
+  });
+
+  testWidgets('actions sheet title renders as a .sheet-head header', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pumpSheetHost(
+      tester,
+      onOpen: (context) {
+        DayzSheet.actions<void>(
+          context,
+          title: testL10n.more,
+          items: [DayzSheetItem(label: testL10n.edit, onTap: () {})],
+        );
+      },
+    );
+
+    await _openSheet(tester);
+
+    final title = tester.widget<Text>(find.byKey(DayzSheet.titleKey));
+    expect(title.data, testL10n.more);
+    expect(title.textAlign, TextAlign.center);
+    expect(title.style?.fontSize, 17);
+    expect(title.style?.fontWeight, FontWeight.w600);
+    expect(title.style?.color, DayzColors.purpleLight.ink);
+    final node = tester.getSemantics(find.byKey(DayzSheet.titleKey));
+    expect(node.flagsCollection.isHeader, isTrue);
+    handle.dispose();
+  });
+
+  testWidgets('actions sheet without title renders no title node', (
+    tester,
+  ) async {
+    await _pumpSheetHost(
+      tester,
+      onOpen: (context) {
+        DayzSheet.actions<void>(
+          context,
+          items: [DayzSheetItem(label: testL10n.edit, onTap: () {})],
+        );
+      },
+    );
+
+    await _openSheet(tester);
+
+    expect(find.text(testL10n.edit), findsOneWidget);
+    expect(find.byKey(DayzSheet.titleKey), findsNothing);
+  });
+
+  testWidgets('sheet items accept DayzIcons path / markup and keep IconData', (
+    tester,
+  ) async {
+    await _pumpSheetHost(
+      tester,
+      onOpen: (context) {
+        DayzSheet.actions<void>(
+          context,
+          items: [
+            DayzSheetItem(
+              label: testL10n.delete,
+              iconPath: DayzIcons.trashPath,
+              tone: DayzSheetTone.danger,
+              onTap: () {},
+            ),
+            DayzSheetItem(
+              label: testL10n.more,
+              iconMarkup: DayzIcons.checklist,
+              onTap: () {},
+            ),
+            DayzSheetItem(
+              label: testL10n.edit,
+              icon: Icons.edit_outlined,
+              onTap: () {},
+            ),
+          ],
+        );
+      },
+    );
+
+    await _openSheet(tester);
+
+    DayzIcon iconOf(String label) => tester.widget<DayzIcon>(
+      find.descendant(
+        of: find.byKey(ValueKey('dayz-sheet-item-$label')),
+        matching: find.byType(DayzIcon),
+      ),
+    );
+
+    final pathIcon = iconOf(testL10n.delete);
+    expect(pathIcon.markup, '<path d="${DayzIcons.trashPath}"/>');
+    expect(pathIcon.color, DayzColors.purpleLight.danger);
+    expect(pathIcon.size, 21);
+
+    final markupIcon = iconOf(testL10n.more);
+    expect(markupIcon.markup, DayzIcons.checklist);
+    expect(markupIcon.color, DayzColors.purpleLight.ink);
+
+    final legacy = find.descendant(
+      of: find.byKey(ValueKey('dayz-sheet-item-${testL10n.edit}')),
+      matching: find.byType(Icon),
+    );
+    expect(tester.widget<Icon>(legacy).icon, Icons.edit_outlined);
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('dayz-sheet-item-${testL10n.edit}')),
+        matching: find.byType(DayzIcon),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('keepOpen item stays visible and scrim dismisses sheet', (

@@ -111,7 +111,7 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 -----
 
-- [ ] T4 · `DayzSheet.actions` 可选标题 + `DayzSheetItem` 支持 `DayzIcons`
+- [x] T4 · `DayzSheet.actions` 可选标题 + `DayzSheetItem` 支持 `DayzIcons`
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** ui-kit-components：`DayzIcon` ｜ **关联需求：** R4 ｜ **依据设计：** D4 ｜ **可改文件：** `lib/ui/shell/dayz_sheet.dart` ｜ **验收基建：** `test/ui/shell/dayz_sheet_test.dart`
 
@@ -136,7 +136,7 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/shell/dayz_sheet_test.dart` 通过（10 tests，新增 3：带 title 出 titleKey 文本、居中、17 / w600 / ink、isHeader=true；不带 title 无标题节点；iconPath 条目 DayzIcon 标记 = path 包装、色 = danger、21px，iconMarkup 条目标记 = 原标记、色 = ink，IconData 条目仍为 Icon 且无 DayzIcon）；回归 `flutter test --no-pub test/ui/shell test/ui/settings test/ui/onthisday test/ui/reader test/demo` 192 全绿；`flutter analyze --no-pub` 两文件 No issues。
 人工：N/A
 ```

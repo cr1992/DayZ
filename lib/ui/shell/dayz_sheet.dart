@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 
 import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
+import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../util/dayz_motion.dart';
 import '../widgets/dayz_button.dart';
+import '../widgets/dayz_icon.dart';
 
 /// Semantic tone for bottom sheet items and actions.
 ///
@@ -39,18 +41,28 @@ class DayzSheetItem {
     required this.label,
     this.desc,
     this.icon,
+    this.iconPath,
+    this.iconMarkup,
     this.swatch,
     this.tone = DayzSheetTone.defaultTone,
     this.selected = false,
     this.keepOpen = false,
     this.onTap,
     this.sep = false,
-  });
+  }) : assert(
+         (icon == null ? 0 : 1) +
+                 (iconPath == null ? 0 : 1) +
+                 (iconMarkup == null ? 0 : 1) <=
+             1,
+         'Pass at most one of icon / iconPath / iconMarkup.',
+       );
 
   const DayzSheetItem.sep()
     : label = '',
       desc = null,
       icon = null,
+      iconPath = null,
+      iconMarkup = null,
       swatch = null,
       tone = DayzSheetTone.defaultTone,
       selected = false,
@@ -60,7 +72,15 @@ class DayzSheetItem {
 
   final String label;
   final String? desc;
+
+  /// Material 图标（兼容存量调用方）；新代码优先用 [iconPath] / [iconMarkup]。
   final IconData? icon;
+
+  /// `DayzIcons` 的单 path 常量（如 `DayzIcons.trashPath`），经 `DayzIcon.path` 渲染。
+  final String? iconPath;
+
+  /// `DayzIcons` 的复合标记常量（如 `DayzIcons.checklist`），经 `DayzIcon` 渲染。
+  final String? iconMarkup;
   final Color? swatch;
   final DayzSheetTone tone;
   final bool selected;
@@ -73,9 +93,11 @@ class DayzSheetItem {
 ///
 /// Author: @Ray
 abstract final class DayzSheet {
+  /// 动作菜单；[title] 非空时在列表上方出 `.sheet-head .t` 标题。
   static Future<T?> actions<T>(
     BuildContext context, {
     required List<DayzSheetItem> items,
+    String? title,
     String? cancelLabel,
   }) {
     final l10n = AppLocalizations.of(context);
@@ -83,11 +105,15 @@ abstract final class DayzSheet {
       context,
       _DayzSheetItems(
         items: items,
+        title: title,
         showSelectedCheck: false,
         cancelLabel: cancelLabel ?? l10n.sheetCancel,
       ),
     );
   }
+
+  /// `Key` of the optional sheet title (`.sheet-head .t`).
+  static const Key titleKey = ValueKey<String>('dayz-sheet-title');
 
   static Future<T?> picker<T>(
     BuildContext context, {
@@ -240,17 +266,20 @@ class _DayzSheetItems extends StatelessWidget {
   const _DayzSheetItems({
     required this.items,
     required this.showSelectedCheck,
+    this.title,
     this.cancelLabel,
   });
 
   final List<DayzSheetItem> items;
   final bool showSelectedCheck;
+  final String? title;
   final String? cancelLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dayz;
     final hasCancel = cancelLabel != null;
+    final title = this.title;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: DayzSpacing.s3),
@@ -258,6 +287,7 @@ class _DayzSheetItems extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (title != null) _DayzSheetTitle(title: title),
           for (final item in items)
             item.sep
                 ? Divider(
@@ -277,6 +307,44 @@ class _DayzSheetItems extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// `.sheet-head`：居中衬线标题，带标题语义。
+class _DayzSheetTitle extends StatelessWidget {
+  const _DayzSheetTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.dayz;
+
+    return Padding(
+      // `.sheet-head { padding: 2px var(--sp-3) var(--sp-3) }`
+      padding: const EdgeInsets.fromLTRB(
+        DayzSpacing.s3,
+        2,
+        DayzSpacing.s3,
+        DayzSpacing.s3,
+      ),
+      child: Semantics(
+        header: true,
+        child: Text(
+          title,
+          key: DayzSheet.titleKey,
+          textAlign: TextAlign.center,
+          // `.sheet-head .t { font-family: serif; font-size: 17px;
+          //   font-weight: 600; color: var(--ink); letter-spacing: -0.01em }`
+          style: context.dayzText.h2.copyWith(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.01 * 17,
+            color: colors.ink,
+          ),
+        ),
       ),
     );
   }
@@ -417,6 +485,23 @@ class _DayzSheetLeading extends StatelessWidget {
             child: const SizedBox.square(dimension: 18),
           ),
         ),
+      );
+    }
+
+    // `.sheet-item > .ic svg { width: 21px; height: 21px }`
+    final markup = item.iconMarkup;
+    if (markup != null) {
+      return SizedBox.square(
+        dimension: 24,
+        child: Center(child: DayzIcon(markup, size: 21, color: color)),
+      );
+    }
+
+    final path = item.iconPath;
+    if (path != null) {
+      return SizedBox.square(
+        dimension: 24,
+        child: Center(child: DayzIcon.path(path, size: 21, color: color)),
       );
     }
 
