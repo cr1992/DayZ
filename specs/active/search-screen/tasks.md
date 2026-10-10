@@ -100,7 +100,7 @@ graph LR
 
 -----
 
-- [ ] T3 · SearchController（状态机 + 防抖 + seq 丢弃旧查询 + retry/筛选/回刷）
+- [x] T3 · SearchController（状态机 + 防抖 + seq 丢弃旧查询 + retry/筛选/回刷）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R2, R4, R5, R8, R10, NF2 ｜ **依据设计：** D1, D2, D8, D10 ｜ **可改文件：** `lib/ui/search/search_controller.dart` ｜ **验收基建：** `test/ui/search/fake_search_source.dart`（T1 已建，复用）
 
@@ -132,8 +132,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/search/search_controller_test.dart` 通过（11 tests：防抖窗口内连键只对「梅子酱」发一次、状态序列 typing→querying→results；旧查询延迟 2s 迟到不覆盖新结果；count>0 → results 全量 hits、0 → empty；抛错 → SearchError(message=StateError)、retry 同词重发 querying→results；清空输入 → idle 且在途结果作废；start() 拉 recent/tags；pickSuggestion 跳过防抖；removeFilter 以收窄筛选重查 / 无词时只改筛选；refresh 在 results 静默重查不经 querying、idle 无副作用、结果变空 → empty；dispose 取消挂起防抖）。`flutter analyze --no-pub lib/ui/search test/ui/search` 无问题。
+说明：类名避开 Material 同名 `SearchController`，落为 `SearchScreenController`（文件名不变）；防抖窗口常量 `searchDebounce = 300ms`；成功查询后重拉一次 recent（适配层会把本次词记入最近搜索）。
 人工：N/A
 ```
 
