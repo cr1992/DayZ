@@ -392,5 +392,13 @@
   "onThisDayShareDone": "分享这一天稍后支持",
   "@onThisDayShareDone": {
     "description": "往年今日点「分享这一天」后的 toast（分享能力未接入前如实提示）"
+  },
+  "onThisDayEmptyTitle": "今天还没有往事",
+  "@onThisDayEmptyTitle": {
+    "description": "往年今日空态标题"
+  },
+  "onThisDayEmptyDescription": "等你写得久一些，这一天会慢慢攒下回忆。",
+  "@onThisDayEmptyDescription": {
+    "description": "往年今日空态说明"
   }
 }

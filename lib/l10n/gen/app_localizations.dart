@@ -1315,6 +1315,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'分享这一天稍后支持'**
   String get onThisDayShareDone;
+
+  /// 往年今日空态标题
+  ///
+  /// In zh, this message translates to:
+  /// **'今天还没有往事'**
+  String get onThisDayEmptyTitle;
+
+  /// 往年今日空态说明
+  ///
+  /// In zh, this message translates to:
+  /// **'等你写得久一些，这一天会慢慢攒下回忆。'**
+  String get onThisDayEmptyDescription;
 }
 
 class _AppLocalizationsDelegate

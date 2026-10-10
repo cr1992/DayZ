@@ -184,7 +184,7 @@ graph LR
 
 -----
 
-- [ ] T5 · 空态 + 卡片配图占位/异步呈现
+- [x] T5 · 空态 + 卡片配图占位/异步呈现
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzEmptyState`/`DayzEntryCard` 图位 API/`dayzMotionDuration`；`thumbnail-cache`：异步 `ImageProvider`（消费，不触发重建） ｜ **关联需求：** R4, R5, NF4 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补空态 zh/en ARB key，运行 gen-l10n 更新生成产物） ｜ **验收基建：** `test/ui/onthisday/onthisday_empty_image_test.dart`
 
@@ -211,8 +211,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_empty_image_test.dart` 通过（3 tests：空 VM → 仅 `DayzEmptyState`（`onThisDayEmptyTitle`/`onThisDayEmptyDescription`、插画为 `DayzIcons.historyClockPath`），无卡片/年份分隔/屏头，顶栏返回与更多钮仍在；只有空段的 groups 也按空态处理；仅带封面的卡片渲染图位 `Image`（图源即 VM 的 `coverImage`）且外层为 token `accentSoft2` 占位底，无封面卡片不渲染图位）。`flutter analyze --no-pub` 无问题；arb 对齐。新增 ARB：`onThisDayEmptyTitle` / `onThisDayEmptyDescription`。
+说明：按 2026-10-10 修正后的 D4，v1 不做淡入（ui-kit 卡片无 frameBuilder 钩子），故无淡入时长断言。
 人工：N/A
 ```
 

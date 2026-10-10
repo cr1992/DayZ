@@ -35,6 +35,10 @@ class OnThisDayScreen extends StatefulWidget {
   static const Key kickerKey = ValueKey<String>('onthisday-kicker');
   static const Key headlineKey = ValueKey<String>('onthisday-headline');
   static const Key subtitleKey = ValueKey<String>('onthisday-subtitle');
+  static const Key emptyStateKey = ValueKey<String>('onthisday-empty');
+  static const Key emptyIllustrationKey = ValueKey<String>(
+    'onthisday-empty-illustration',
+  );
 
   static ValueKey<String> yearSeparatorKey(int year) =>
       ValueKey<String>('onthisday-year-$year');
@@ -99,17 +103,37 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
               ),
             ],
           ),
-          SliverToBoxAdapter(child: _OnThisDayHeader(data: data)),
-          SliverPadding(
-            // `.app-scroll > :last-child { margin-bottom: 92px }`
-            padding: const EdgeInsets.only(bottom: 92),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildRow(rows, index),
-                childCount: rows.length,
+          // `data-when="empty"`：整屏换空态，不渲染屏头与年份段。
+          if (data.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: DayzEmptyState(
+                key: OnThisDayScreen.emptyStateKey,
+                title: l10n.onThisDayEmptyTitle,
+                description: l10n.onThisDayEmptyDescription,
+                // `.empty .ill`：时钟回拨线性图，1.7 描边、ink-2。
+                illustration: DayzIcon.path(
+                  DayzIcons.historyClockPath,
+                  key: OnThisDayScreen.emptyIllustrationKey,
+                  size: 30,
+                  color: colors.ink2,
+                  strokeWidth: 1.7,
+                ),
+              ),
+            )
+          else ...[
+            SliverToBoxAdapter(child: _OnThisDayHeader(data: data)),
+            SliverPadding(
+              // `.app-scroll > :last-child { margin-bottom: 92px }`
+              padding: const EdgeInsets.only(bottom: 92),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildRow(rows, index),
+                  childCount: rows.length,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

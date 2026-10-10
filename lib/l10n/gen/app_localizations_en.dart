@@ -687,4 +687,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onThisDayShareDone => 'Sharing this day is coming soon';
+
+  @override
+  String get onThisDayEmptyTitle => 'No memories for today yet';
+
+  @override
+  String get onThisDayEmptyDescription =>
+      'Keep writing, and this day will slowly gather memories.';
 }

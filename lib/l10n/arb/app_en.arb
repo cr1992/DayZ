@@ -218,5 +218,7 @@
   "onThisDayMenuMemoryCard": "Create memory card",
   "onThisDayMenuMemoryCardDesc": "Turn this day into a shareable card image",
   "onThisDayMenuShare": "Share this day",
-  "onThisDayShareDone": "Sharing this day is coming soon"
+  "onThisDayShareDone": "Sharing this day is coming soon",
+  "onThisDayEmptyTitle": "No memories for today yet",
+  "onThisDayEmptyDescription": "Keep writing, and this day will slowly gather memories."
 }

@@ -672,4 +672,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onThisDayShareDone => '分享这一天稍后支持';
+
+  @override
+  String get onThisDayEmptyTitle => '今天还没有往事';
+
+  @override
+  String get onThisDayEmptyDescription => '等你写得久一些，这一天会慢慢攒下回忆。';
 }
