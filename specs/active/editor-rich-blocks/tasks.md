@@ -239,7 +239,7 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 
 -----
 
-- [ ] T7 · callout 几何参数对齐 `.cb-callout` 真源 + 图标迁 `DayzIcon`
+- [x] T7 · callout 几何参数对齐 `.cb-callout` 真源 + 图标迁 `DayzIcon`
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** design-tokens-theme：`DayzSpacing` / `DayzRadii` / `DayzColors`（只读）；ui-kit-components：`DayzIcon` + `DayzIcons.callout`（只读，不改 `lib/ui/widgets`） ｜ **关联需求：** R2, NF2 ｜ **依据设计：** D3, D5 ｜ **可改文件：** `lib/editor/contract/blocks/callout_block.dart`, `test/editor/contract/blocks/callout_block_test.dart`, `patrol_test/editor_callout_visual_test.dart`
 
@@ -274,7 +274,7 @@ callout 须有导出降级，否则导出时落 `_unknownFallback`（语义丢�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：N/A（并入 T5）
+日期：2026-10-10
+自动：RED（新测试 + 旧实现）`flutter test --no-pub test/editor/contract/blocks/callout_block_test.dart` → +4 -3（主题几何 / builder 默认块外距 / 只读几何 3 条失败：`Icon` 非 `DayzIcon`、圆角 8、默认 padding v4）；GREEN 同命令 → +7: All tests passed!；`dart analyze lib/editor/contract/blocks/callout_block.dart test/editor/contract/blocks/callout_block_test.dart patrol_test/editor_callout_visual_test.dart` → No issues found!；回归 `flutter test --no-pub test/ui/editor test/editor test/demo` → +117: All tests passed!
+人工：N/A（并入 T5；Patrol 截图因本机无启动的 iOS 模拟器且未装 patrol CLI，本卡未重跑，已在 T5 补记）
 ```

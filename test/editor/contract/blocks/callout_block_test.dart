@@ -9,6 +9,9 @@ import 'package:dayz/editor/contract/editor_doc_codec.dart';
 import 'package:dayz/ui/editor/editor_style.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_theme.dart';
+import 'package:dayz/ui/theme/dayz_tokens.g.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,6 +67,39 @@ void main() async {
 
       await _pumpCalloutEditor(tester, theme: DayzThemes.sageLight);
       _expectCalloutTheme(tester, DayzColors.sageLight);
+    });
+
+    test('builder default block padding mirrors .cb-callout margin', () {
+      final node = calloutNode(text: '记得复盘');
+
+      expect(
+        CalloutBlockComponentBuilder().configuration.padding(node),
+        const EdgeInsets.symmetric(vertical: DayzSpacing.s4),
+      );
+      expect(
+        (EditorBlockRegistry.editableBuilders()[EditorBlockTypes.callout]!)
+            .configuration
+            .padding(node),
+        const EdgeInsets.symmetric(vertical: DayzSpacing.s4),
+      );
+
+      final custom = CalloutBlockComponentBuilder(
+        configuration: BlockComponentConfiguration(
+          padding: (_) => EdgeInsets.zero,
+        ),
+      );
+      expect(custom.configuration.padding(node), EdgeInsets.zero);
+    });
+
+    testWidgets('readonly callout keeps the same .cb-callout geometry', (
+      tester,
+    ) async {
+      await _pumpCalloutEditor(
+        tester,
+        theme: DayzThemes.purpleLight,
+        readOnly: true,
+      );
+      _expectCalloutTheme(tester, DayzColors.purpleLight);
     });
 
     testWidgets('decoded callouts render through the registry, not fallback', (
@@ -132,25 +168,47 @@ void _expectCalloutTheme(WidgetTester tester, DayzColors colors) {
   expect(calloutFinder, findsOneWidget);
   expect(find.textContaining('记得复盘', findRichText: true), findsOneWidget);
 
-  final icon = tester.widget<Icon>(
-    find.descendant(
-      of: calloutFinder,
-      matching: find.byIcon(Icons.info_outline_rounded),
-    ),
+  // `.cb-callout .ic`：DayzIcons.callout，20px，--accent-ink；不得回落 Icons.*。
+  final icon = tester.widget<DayzIcon>(
+    find.descendant(of: calloutFinder, matching: find.byType(DayzIcon)),
   );
+  expect(icon.markup, DayzIcons.callout);
+  expect(icon.size, 20);
   expect(icon.color, colors.accentInk);
+  expect(
+    find.descendant(of: calloutFinder, matching: find.byType(Icon)),
+    findsNothing,
+  );
 
-  final decoration = tester
+  final container = tester
       .widgetList<Container>(
         find.descendant(of: calloutFinder, matching: find.byType(Container)),
       )
-      .map((container) => container.decoration)
-      .whereType<BoxDecoration>()
-      .singleWhere((decoration) => decoration.color == colors.accentSoft);
+      .singleWhere(
+        (container) =>
+            container.decoration is BoxDecoration &&
+            (container.decoration! as BoxDecoration).color == colors.accentSoft,
+      );
+  final decoration = container.decoration! as BoxDecoration;
 
   expect(decoration.color, colors.accentSoft);
-  expect(decoration.borderRadius, BorderRadius.circular(8));
+  expect(decoration.borderRadius, BorderRadius.circular(DayzRadii.md));
   expect(decoration.border, isNull);
+  expect(
+    container.padding,
+    const EdgeInsets.symmetric(
+      vertical: DayzSpacing.s3,
+      horizontal: DayzSpacing.s4,
+    ),
+  );
+
+  // `.cb-callout { gap: var(--sp-3) }`：图标与正文之间的间距。
+  final gaps = tester
+      .widgetList<SizedBox>(
+        find.descendant(of: calloutFinder, matching: find.byType(SizedBox)),
+      )
+      .where((box) => box.width == DayzSpacing.s3 && box.height == null);
+  expect(gaps, isNotEmpty);
 
   final richTextHasInk = tester
       .widgetList<RichText>(find.byType(RichText))

@@ -14,6 +14,9 @@ import 'package:dayz/editor/contract/plain_text_extractor.dart';
 import 'package:dayz/ui/editor/editor_style.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
 import 'package:dayz/ui/theme/dayz_theme.dart';
+import 'package:dayz/ui/theme/dayz_tokens.g.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -104,12 +107,11 @@ void _expectCalloutTheme(WidgetTester tester, DayzColors colors) {
   expect(calloutFinder, findsOneWidget);
   expect(find.textContaining('记得复盘', findRichText: true), findsOneWidget);
 
-  final icon = tester.widget<Icon>(
-    find.descendant(
-      of: calloutFinder,
-      matching: find.byIcon(Icons.info_outline_rounded),
-    ),
+  final icon = tester.widget<DayzIcon>(
+    find.descendant(of: calloutFinder, matching: find.byType(DayzIcon)),
   );
+  expect(icon.markup, DayzIcons.callout);
+  expect(icon.size, 20);
   expect(icon.color, colors.accentInk);
 
   final decoration = tester
@@ -120,7 +122,7 @@ void _expectCalloutTheme(WidgetTester tester, DayzColors colors) {
       .whereType<BoxDecoration>()
       .singleWhere((decoration) => decoration.color == colors.accentSoft);
 
-  expect(decoration.borderRadius, BorderRadius.circular(8));
+  expect(decoration.borderRadius, BorderRadius.circular(DayzRadii.md));
   expect(decoration.border, isNull);
 }
 

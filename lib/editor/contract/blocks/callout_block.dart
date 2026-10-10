@@ -4,6 +4,9 @@
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:dayz/editor/contract/block_types.dart';
 import 'package:dayz/ui/theme/dayz_colors.dart';
+import 'package:dayz/ui/theme/dayz_tokens.g.dart';
+import 'package:dayz/ui/widgets/dayz_icon.dart';
+import 'package:dayz/ui/widgets/dayz_icons.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
@@ -40,8 +43,21 @@ Node calloutNode({
   );
 }
 
+/// 块外距：`.compose-body .cb-callout { margin: var(--sp-4) 0 }`。
+EdgeInsets _calloutBlockPadding(Node node) =>
+    const EdgeInsets.symmetric(vertical: DayzSpacing.s4);
+
+/// callout 默认块配置（只覆盖块外距，其余沿用 AppFlowy 默认）。
+const BlockComponentConfiguration calloutBlockComponentConfiguration =
+    BlockComponentConfiguration(padding: _calloutBlockPadding);
+
 class CalloutBlockComponentBuilder extends BlockComponentBuilder {
-  CalloutBlockComponentBuilder({super.configuration, this.readOnly = false});
+  CalloutBlockComponentBuilder({
+    BlockComponentConfiguration? configuration,
+    this.readOnly = false,
+  }) : super(
+         configuration: configuration ?? calloutBlockComponentConfiguration,
+       );
 
   final bool readOnly;
 
@@ -119,26 +135,33 @@ class _CalloutBlockComponentWidgetState
       layoutDirection: Directionality.maybeOf(context),
     );
 
+    // `.compose-body .cb-callout`：display:flex; gap:--sp-3;
+    // background:--accent-soft; border-radius:--r-md; padding:--sp-3 --sp-4。
     Widget child = Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: colors.accentSoft,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(DayzRadii.md),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        vertical: DayzSpacing.s3,
+        horizontal: DayzSpacing.s4,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         textDirection: textDirection,
         children: [
           Padding(
+            // `.cb-callout .ic { margin-top: 2px }`
             padding: const EdgeInsets.only(top: 2),
-            child: Icon(
-              Icons.info_outline_rounded,
-              size: 18,
+            // `.cb-callout .ic svg { width: 20px; height: 20px }`，色 --accent-ink
+            child: DayzIcon(
+              DayzIcons.callout,
+              size: 20,
               color: colors.accentInk,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: DayzSpacing.s3),
           Flexible(
             child: AppFlowyRichText(
               key: forwardKey,
