@@ -8,6 +8,7 @@ import 'package:dayz/data/repositories/tag_repo.dart';
 import 'package:dayz/drafts/draft_coordinator.dart';
 import 'package:dayz/media/media_store.dart';
 import 'package:dayz/security/key_provider.dart';
+import 'package:dayz/ui/onthisday/onthisday_controller.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 
@@ -40,6 +41,12 @@ void bindRouterPorts(
       restoreEntry: services.entries.restore,
     ),
   );
+  registerOnThisDayRepository(
+    DataLayerOnThisDayRepository(
+      entryRepo: services.entries,
+      mediaRepo: mediaRepo,
+    ),
+  );
   registerEditorServices(
     draftCoordinator: draftCoordinator,
     mediaStore: mediaStore,
@@ -51,5 +58,6 @@ void bindRouterPorts(
 void unbindRouterPorts() {
   registerTimelineEntryRepo(null);
   registerReaderRepository(null);
+  registerOnThisDayRepository(null);
   registerEditorServices();
 }

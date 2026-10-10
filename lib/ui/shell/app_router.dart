@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:dayz/app/app_services.dart';
 import 'package:dayz/demo/debug_home.dart';
 import 'package:dayz/l10n/gen/app_localizations.dart';
+import 'package:dayz/ui/onthisday/onthisday_controller.dart';
+import 'package:dayz/ui/onthisday/onthisday_screen.dart';
 import 'package:dayz/ui/reader/reader_screen.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
 import 'package:dayz/ui/settings/settings_screen.dart';
@@ -179,10 +181,19 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.onthisday,
       path: Routes.onthisdayPath,
-      builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.onThisDay,
-        showAppBar: true,
-      ),
+      builder: (context, state) {
+        final repository = onThisDayRepositoryPort;
+        if (repository == null) {
+          return PlaceholderScreen(
+            titleBuilder: (l10n) => l10n.onThisDay,
+            showAppBar: true,
+          );
+        }
+        return OnThisDayPage(
+          repository: repository,
+          thumbnails: onThisDayThumbnailsPort,
+        );
+      },
     ),
     GoRoute(
       name: Routes.settings,

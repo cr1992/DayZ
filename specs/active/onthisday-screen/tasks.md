@@ -293,7 +293,7 @@ Debug Home 入口：用内存 stub `OnThisDayData`（多年份段、含带封面
 
 -----
 
-- [ ] T8 · 路由接线（app_router 占位 → 真实屏）
+- [x] T8 · 路由接线（app_router 占位 → 真实屏）
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-shell-navigation`：`Routes.onthisday`/`app_router.dart`/`PlaceholderScreen`（D1 约定页面级 spec 改对应 builder 行） ｜ **关联需求：** R8 ｜ **依据设计：** D1, D8 ｜ **可改文件：** `lib/ui/shell/app_router.dart`（**仅** `Routes.onthisday` 一行 builder + 一条 import）、`lib/app/router_ports.dart`（**仅** bind/unbind 各一行注册 + 一条 import，2026-10-10 补列） ｜ **验收基建：** `test/ui/onthisday/onthisday_route_test.dart`
 
@@ -322,7 +322,8 @@ Debug Home 入口：用内存 stub `OnThisDayData`（多年份段、含带封面
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_route_test.dart` 通过（7 tests：出数前只渲染顶栏骨架且更多钮不可用；端口未注册时 `Routes.onthisday` 仍落 `PlaceholderScreen`；`bindRouterPorts` + 内存库后落 `OnThisDayPage`/`OnThisDayScreen`，只列同月同日的往年条目（2 篇、2 个年份分隔、屏头篇数 2，别的日子不出现）；空库显示往年今日空态；屏开着时写库经 `watchChanges` 回刷出新卡片；点卡片进 `ReaderScreen` 且 entryId 对应；回归：`Routes.calendar` / `Routes.memory` 仍是占位）。回归 `flutter test --no-pub test/ui/onthisday test/app test/demo test/ui/timeline` 112/112、`test/ui/shell test/ui/reader test/l10n` 121/121 全绿；`flutter analyze --no-pub lib test/ui/onthisday test/app test/demo` 无 error（仅 3 条既有的非本屏 warning/info）。
+说明：`app_router.dart` 只改 `Routes.onthisday` 的 builder（+ 两条 import）；`router_ports.dart` 只在 bind/unbind 各补一行 `registerOnThisDayRepository`（+ 一条 import）。该文件原不在 design「文件变更」，已于执行前修正 commit 补列（D8）。缩略图端口未注入（thumbnail-cache 暂无解密 provider），真路由下封面暂不渲染。
 人工：N/A
 ```

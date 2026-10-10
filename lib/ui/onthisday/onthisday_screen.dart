@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +15,80 @@ import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
 import '../widgets/dayz_icon.dart';
+import 'onthisday_controller.dart';
 import 'onthisday_view_model.dart';
+
+/// 路由层宿主：持有 [OnThisDayController]，首帧取今天的往年今日，条目表变更
+/// （阅读屏改收藏 / 删除等）即回刷；出数前只渲染顶栏骨架。
+///
+/// Author: @Ray
+class OnThisDayPage extends StatefulWidget {
+  const OnThisDayPage({
+    super.key,
+    required this.repository,
+    this.thumbnails,
+    this.clock,
+  });
+
+  final OnThisDayRepository repository;
+  final OnThisDayThumbnails? thumbnails;
+  final DateTime Function()? clock;
+
+  @override
+  State<OnThisDayPage> createState() => _OnThisDayPageState();
+}
+
+class _OnThisDayPageState extends State<OnThisDayPage> {
+  late OnThisDayController _controller;
+  late StreamSubscription<void> _changes;
+
+  @override
+  void initState() {
+    super.initState();
+    _attach();
+  }
+
+  @override
+  void didUpdateWidget(covariant OnThisDayPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.repository != widget.repository ||
+        oldWidget.thumbnails != widget.thumbnails) {
+      _detach();
+      _attach();
+    }
+  }
+
+  @override
+  void dispose() {
+    _detach();
+    super.dispose();
+  }
+
+  void _attach() {
+    _controller = OnThisDayController(
+      repository: widget.repository,
+      thumbnails: widget.thumbnails,
+      clock: widget.clock,
+    );
+    _changes = widget.repository.watchChanges().listen(
+      (_) => unawaited(_controller.reload()),
+    );
+    unawaited(_controller.load());
+  }
+
+  void _detach() {
+    unawaited(_changes.cancel());
+    _controller.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) => OnThisDayScreen(data: _controller.data),
+    );
+  }
+}
 
 /// 往年今日屏：顶栏 + 屏头摘要 + 年份分隔（普通行，非吸顶）与日记卡片的扁平列表。
 ///
@@ -46,7 +121,8 @@ class OnThisDayScreen extends StatefulWidget {
   static ValueKey<String> entryCardKey(String entryId) =>
       ValueKey<String>('onthisday-entry-$entryId');
 
-  final OnThisDayData data;
+  /// 屏数据；null 表示加载中（只渲染顶栏骨架，更多钮不可用）。
+  final OnThisDayData? data;
 
   /// 点卡片；缺省经 `go_router` 推 [Routes.reader]（携 entryId）。
   final ValueChanged<String>? onOpenEntry;
@@ -76,7 +152,7 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
     final l10n = AppLocalizations.of(context);
     final colors = context.dayz;
     final data = widget.data;
-    final rows = flatten(data);
+    final rows = data == null ? const <OnThisDayRow>[] : flatten(data);
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -99,12 +175,14 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
                 label: l10n.more,
                 path: DayzIcons.morePath,
                 filled: true,
-                onPressed: _openMenu,
+                onPressed: data == null ? null : _openMenu,
               ),
             ],
           ),
           // `data-when="empty"`：整屏换空态，不渲染屏头与年份段。
-          if (data.isEmpty)
+          if (data == null)
+            const SliverToBoxAdapter(child: SizedBox.shrink())
+          else if (data.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: DayzEmptyState(
@@ -200,7 +278,7 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
   }
 
   void _openMemory() {
-    final date = widget.data.date;
+    final date = widget.data!.date;
     final open = widget.onOpenMemory;
     if (open != null) {
       open(date);
@@ -354,7 +432,7 @@ class _TopIconButton extends StatelessWidget {
 
   final String label;
   final String path;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool filled;
 
   @override
