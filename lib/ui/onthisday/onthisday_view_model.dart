@@ -4,14 +4,30 @@
 
 import 'package:flutter/widgets.dart';
 
+/// Screen view model for 往年今日: plain data only, no repository or Drift
+/// types, so the screen can be pumped with fake data.
+///
+/// Author: @Ray
 @immutable
 class OnThisDayData {
-  const OnThisDayData({required this.totalCount, required this.groups});
+  const OnThisDayData({
+    required this.date,
+    required this.totalCount,
+    required this.groups,
+  });
 
+  /// The queried day (only month/day matter); drives the header kicker and
+  /// the memory-card entry arguments.
+  final DateTime date;
   final int totalCount;
   final List<YearGroup> groups;
+
+  bool get isEmpty => groups.every((group) => group.entries.isEmpty);
 }
 
+/// Entries of one past year that share the queried month/day.
+///
+/// Author: @Ray
 @immutable
 class YearGroup {
   const YearGroup({
@@ -25,18 +41,19 @@ class YearGroup {
   final List<EntryCardVM> entries;
 }
 
+/// Card data mirroring the `DayzEntryCard` inputs (the card formats the date
+/// rail via `intl`, so the date stays a [DateTime] here).
+///
+/// Author: @Ray
 @immutable
 class EntryCardVM {
   const EntryCardVM({
     required this.entryId,
     required this.title,
     required this.excerpt,
-    required this.dayNum,
-    required this.monthAbbr,
-    required this.weekday,
-    this.tag,
+    required this.date,
+    this.tags = const <String>[],
     this.place,
-    this.mood,
     this.favorite = false,
     this.coverImage,
   });
@@ -44,12 +61,9 @@ class EntryCardVM {
   final String entryId;
   final String title;
   final String excerpt;
-  final String dayNum;
-  final String monthAbbr;
-  final String weekday;
-  final String? tag;
+  final DateTime date;
+  final List<String> tags;
   final String? place;
-  final String? mood;
   final bool favorite;
   final ImageProvider? coverImage;
 }
@@ -73,6 +87,8 @@ final class EntryCardRow extends OnThisDayRow {
   final EntryCardVM entry;
 }
 
+/// Flattens year groups into `[separator, card, card, separator, ...]`, years
+/// newest first, so a plain (non-pinned) sliver list can render them.
 List<OnThisDayRow> flatten(OnThisDayData data) {
   if (data.groups.isEmpty) {
     return const <OnThisDayRow>[];

@@ -656,4 +656,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorHeadingLabelH3 => 'Subheading';
+
+  @override
+  String onThisDayHeadline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You wrote $count entries on this day',
+      one: 'You wrote 1 entry on this day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onThisDaySubtitle =>
+      'The same day, different years. Look back slowly.';
+
+  @override
+  String get onThisDayBack => 'Back';
 }

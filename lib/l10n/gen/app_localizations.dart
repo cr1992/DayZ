@@ -1273,6 +1273,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'小标题'**
   String get editorHeadingLabelH3;
+
+  /// 往年今日屏头标题，count 为命中条目总数
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{过去的今天，你写过 {count} 篇}}'**
+  String onThisDayHeadline(int count);
+
+  /// 往年今日屏头副文案
+  ///
+  /// In zh, this message translates to:
+  /// **'同一天，不同的年份。慢慢往回看。'**
+  String get onThisDaySubtitle;
+
+  /// 往年今日顶栏返回钮的语义标签与提示
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get onThisDayBack;
 }
 
 class _AppLocalizationsDelegate

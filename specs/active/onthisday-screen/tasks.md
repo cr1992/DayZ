@@ -64,7 +64,7 @@ graph LR
 
 -----
 
-- [ ] T2 · OnThisDayScreen 装配（顶栏 + 屏头 + 非吸顶 SliverList）
+- [x] T2 · OnThisDayScreen 装配（顶栏 + 屏头 + 非吸顶 SliverList）
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Fonts`/`AppLocalizations` 约定；`ui-kit-components`：`DayzGlassAppBar`/`DayzEntryCard`/`DayzYearSeparator`/`DayzFavoriteStar`；`ui-shell-navigation`：`Routes.reader`；`i18n-localization`：gen-l10n ｜ **关联需求：** R1, R2, R3, R6, R8, NF6 ｜ **依据设计：** D1, D2, D3, D6 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/ui/onthisday/onthisday_view_model.dart`（按 D3「对齐现状 API」调整 VM 字段，2026-10-10 补列）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/onthisday/onthisday_screen_test.dart`
 
@@ -100,8 +100,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_screen_test.dart` 通过（6 tests：flatten 顺序 + 无溢出、屏头 intl kicker/`onThisDayHeadline(5)`/副文案、屏头样式取 token、年份分隔滚动 180px 后越过顶栏下沿（非吸顶，且不在 SliverPersistentHeader 内）、收藏星仅收藏卡、点卡回调 entryId）；按 design D3 对齐 VM 后 `onthisday_view_model_test.dart` 同步更新仍绿（3 tests）。`flutter analyze --no-pub lib/ui/onthisday test/ui/onthisday` 无问题；`bash scripts/check_arb_sync.sh` 对齐。新增 ARB：`onThisDayHeadline` / `onThisDaySubtitle` / `onThisDayBack`。（验收命令加 `--no-pub`，避免隐式 pub get 改写 lock。）
 人工：N/A
 ```
 

@@ -211,5 +211,8 @@
   "editorHeadingParagraphLabel": "Paragraph",
   "editorHeadingLabelH1": "Title",
   "editorHeadingLabelH2": "Heading",
-  "editorHeadingLabelH3": "Subheading"
+  "editorHeadingLabelH3": "Subheading",
+  "onThisDayHeadline": "{count, plural, =1{You wrote 1 entry on this day} other{You wrote {count} entries on this day}}",
+  "onThisDaySubtitle": "The same day, different years. Look back slowly.",
+  "onThisDayBack": "Back"
 }

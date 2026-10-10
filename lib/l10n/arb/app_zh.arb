@@ -358,5 +358,23 @@
   "editorHeadingParagraphLabel": "段落",
   "editorHeadingLabelH1": "大标题",
   "editorHeadingLabelH2": "中标题",
-  "editorHeadingLabelH3": "小标题"
+  "editorHeadingLabelH3": "小标题",
+  "onThisDayHeadline": "{count, plural, other{过去的今天，你写过 {count} 篇}}",
+  "@onThisDayHeadline": {
+    "description": "往年今日屏头标题，count 为命中条目总数",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "onThisDaySubtitle": "同一天，不同的年份。慢慢往回看。",
+  "@onThisDaySubtitle": {
+    "description": "往年今日屏头副文案"
+  },
+  "onThisDayBack": "返回",
+  "@onThisDayBack": {
+    "description": "往年今日顶栏返回钮的语义标签与提示"
+  }
 }

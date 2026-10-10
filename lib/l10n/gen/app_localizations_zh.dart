@@ -644,4 +644,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorHeadingLabelH3 => '小标题';
+
+  @override
+  String onThisDayHeadline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '过去的今天，你写过 $count 篇',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onThisDaySubtitle => '同一天，不同的年份。慢慢往回看。';
+
+  @override
+  String get onThisDayBack => '返回';
 }

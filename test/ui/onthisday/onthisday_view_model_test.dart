@@ -13,6 +13,7 @@ void main() {
   group('OnThisDayData', () {
     test('flattens year groups in descending year order', () {
       final data = OnThisDayData(
+        date: DateTime(2026, 5, 29),
         totalCount: 4,
         groups: [
           YearGroup(
@@ -40,9 +41,14 @@ void main() {
     });
 
     test('returns an empty row list when groups are empty', () {
-      const data = OnThisDayData(totalCount: 0, groups: []);
+      final data = OnThisDayData(
+        date: DateTime(2026, 5, 29),
+        totalCount: 0,
+        groups: const [],
+      );
 
       expect(flatten(data), isEmpty);
+      expect(data.isEmpty, isTrue);
     });
 
     test('exposes immutable entry card data without repo dependencies', () {
@@ -51,12 +57,9 @@ void main() {
         entryId: 'entry-1',
         title: 'A clear morning',
         excerpt: 'Coffee on the balcony.',
-        dayNum: '29',
-        monthAbbr: 'May',
-        weekday: 'Friday',
-        tag: 'home',
+        date: DateTime(2021, 5, 29),
+        tags: const ['home'],
         place: 'Shanghai',
-        mood: 'calm',
         favorite: true,
         coverImage: image,
       );
@@ -64,9 +67,9 @@ void main() {
       expect(entry.entryId, 'entry-1');
       expect(entry.favorite, isTrue);
       expect(entry.coverImage, same(image));
-      expect(entry.tag, 'home');
+      expect(entry.tags, ['home']);
       expect(entry.place, 'Shanghai');
-      expect(entry.mood, 'calm');
+      expect(entry.date, DateTime(2021, 5, 29));
     });
   });
 }
@@ -76,8 +79,6 @@ EntryCardVM _entry(String id) {
     entryId: id,
     title: 'Title $id',
     excerpt: 'Excerpt $id',
-    dayNum: '29',
-    monthAbbr: 'May',
-    weekday: 'Friday',
+    date: DateTime(2024, 5, 29),
   );
 }
