@@ -81,11 +81,97 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('filled state uses unfavorite semantics label', (tester) async {
+  testWidgets('interactive filled star reads unfavorite as a button', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      localizedTestApp(
+        child: DayzFavoriteStar(isFavorite: true, onPressed: () {}),
+      ),
+    );
+
+    final star = find.bySemanticsLabel(testL10n.unfavorite);
+    expect(star, findsOneWidget);
+    expect(tester.getSemantics(star).flagsCollection.isButton, isTrue);
+    handle.dispose();
+  });
+
+  testWidgets('read-only filled star reads its state, not an action', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
     await tester.pumpWidget(
       localizedTestApp(child: const DayzFavoriteStar(isFavorite: true)),
     );
 
-    expect(find.bySemanticsLabel(testL10n.unfavorite), findsOneWidget);
+    final star = find.bySemanticsLabel(testL10n.favorited);
+    expect(star, findsOneWidget);
+    expect(tester.getSemantics(star).flagsCollection.isButton, isFalse);
+    expect(find.bySemanticsLabel(testL10n.unfavorite), findsNothing);
+    expect(find.byType(Tooltip), findsNothing);
+    handle.dispose();
+  });
+
+  testWidgets('read-only outline star exposes no semantics label', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      localizedTestApp(child: const DayzFavoriteStar(isFavorite: false)),
+    );
+
+    for (final label in [
+      testL10n.favorite,
+      testL10n.unfavorite,
+      testL10n.favorited,
+    ]) {
+      expect(find.bySemanticsLabel(label), findsNothing);
+    }
+    expect(find.byType(Tooltip), findsNothing);
+    handle.dispose();
+  });
+
+  testWidgets('entry card read-only star follows the same rule', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      localizedTestApp(
+        child: DayzEntryCard(
+          title: 'Title',
+          summary: 'Summary',
+          date: DateTime(2026, 10, 10),
+          favorite: true,
+        ),
+      ),
+    );
+
+    final star = find.bySemanticsLabel(testL10n.favorited);
+    expect(star, findsOneWidget);
+    expect(tester.getSemantics(star).flagsCollection.isButton, isFalse);
+    expect(find.bySemanticsLabel(testL10n.unfavorite), findsNothing);
+    handle.dispose();
+  });
+
+  testWidgets('entry card interactive star keeps the action label', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      localizedTestApp(
+        child: DayzEntryCard(
+          title: 'Title',
+          summary: 'Summary',
+          date: DateTime(2026, 10, 10),
+          onFavoritePressed: () {},
+        ),
+      ),
+    );
+
+    final star = find.bySemanticsLabel(testL10n.favorite);
+    expect(star, findsOneWidget);
+    expect(tester.getSemantics(star).flagsCollection.isButton, isTrue);
+    handle.dispose();
   });
 }

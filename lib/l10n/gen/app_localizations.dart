@@ -218,6 +218,12 @@ abstract class AppLocalizations {
   /// **'取消收藏'**
   String get unfavorite;
 
+  /// No description provided for @favorited.
+  ///
+  /// In zh, this message translates to:
+  /// **'已收藏'**
+  String get favorited;
+
   /// No description provided for @menu.
   ///
   /// In zh, this message translates to:

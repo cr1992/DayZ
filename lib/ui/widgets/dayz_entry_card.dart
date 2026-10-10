@@ -170,17 +170,14 @@ class DayzEntryCard extends StatelessWidget {
                         // from the right edge like `.card .head`.
                         top: _starBoxTop,
                         right: _starBoxRight,
-                        child: Semantics(
-                          container: true,
-                          button: onFavoritePressed != null,
-                          label: favorite ? l10n.unfavorite : l10n.favorite,
-                          child: ExcludeSemantics(
-                            child: DayzFavoriteStar(
-                              isFavorite: favorite,
-                              onPressed: onFavoritePressed,
-                              size: _starSize,
-                            ),
+                        child: _EntryFavoriteStar(
+                          favorite: favorite,
+                          label: DayzFavoriteStar.semanticsLabelFor(
+                            l10n,
+                            isFavorite: favorite,
+                            interactive: onFavoritePressed != null,
                           ),
+                          onPressed: onFavoritePressed,
                         ),
                       ),
                   ],
@@ -204,6 +201,39 @@ class DayzEntryCard extends StatelessWidget {
       DayzSpacing.s3 + _titleFontSize * _titleLineHeight / 2 - _starHitSize / 2;
   static const double _starBoxRight =
       DayzSpacing.s4 + _starSize / 2 - _starHitSize / 2;
+}
+
+/// 卡片星位：语义按 [DayzFavoriteStar.semanticsLabelFor]（只读读状态、不标按钮）。
+class _EntryFavoriteStar extends StatelessWidget {
+  const _EntryFavoriteStar({
+    required this.favorite,
+    required this.label,
+    this.onPressed,
+  });
+
+  final bool favorite;
+  final String? label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final star = ExcludeSemantics(
+      child: DayzFavoriteStar(
+        isFavorite: favorite,
+        onPressed: onPressed,
+        size: DayzEntryCard._starSize,
+      ),
+    );
+    if (label == null) {
+      return star;
+    }
+    return Semantics(
+      container: true,
+      button: onPressed != null,
+      label: label,
+      child: star,
+    );
+  }
 }
 
 class _EntrySurface extends StatelessWidget {

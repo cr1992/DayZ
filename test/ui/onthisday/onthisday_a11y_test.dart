@@ -62,8 +62,11 @@ void main() {
 
     expect(find.bySemanticsLabel(testL10n.onThisDayBack), findsOneWidget);
     expect(find.bySemanticsLabel(testL10n.more), findsOneWidget);
-    // 收藏星语义由 ui-kit 卡片提供（已收藏态读作 unfavorite）。
-    expect(find.bySemanticsLabel(testL10n.unfavorite), findsOneWidget);
+    // 收藏星语义由 ui-kit 卡片提供：只读星读状态「已收藏」、不标按钮（ui-kit-patch R3）。
+    final star = find.bySemanticsLabel(testL10n.favorited);
+    expect(star, findsOneWidget);
+    expect(tester.getSemantics(star).flagsCollection.isButton, isFalse);
+    expect(find.bySemanticsLabel(testL10n.unfavorite), findsNothing);
 
     final card = find.bySemanticsLabel(
       testL10n.onThisDayOpenEntry('Title a-2024'),

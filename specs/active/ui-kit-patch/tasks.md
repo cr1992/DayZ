@@ -75,7 +75,7 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 -----
 
-- [ ] T3 · 收藏星只读态读状态而非动作
+- [x] T3 · 收藏星只读态读状态而非动作
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** i18n-localization：gen-l10n 流程 ｜ **关联需求：** R3 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/widgets/dayz_favorite_star.dart`、`lib/ui/widgets/dayz_entry_card.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart` ｜ **验收基建：** `test/ui/widgets/dayz_favorite_star_test.dart`、`test/ui/onthisday/onthisday_a11y_test.dart`
 
@@ -104,8 +104,8 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/widgets/dayz_favorite_star_test.dart test/ui/onthisday/onthisday_a11y_test.dart` 通过（11 tests：只读已收藏读 favorited、isButton=false、无 Tooltip、无 unfavorite；只读未收藏三种标签均不存在；可点击读 favorite / unfavorite 且 isButton=true、点击生效；卡片只读 / 可点击星同规则；往年今日只读星读「已收藏」）；`bash scripts/check_arb_sync.sh` 207 keys aligned；`flutter gen-l10n` 产物仅新增 favorited；回归 widgets / onthisday / timeline / reader 144 全绿；`flutter analyze --no-pub` 触及文件 No issues。
 人工：N/A
 ```
 

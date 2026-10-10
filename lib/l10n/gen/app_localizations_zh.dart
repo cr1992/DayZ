@@ -86,6 +86,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unfavorite => '取消收藏';
 
   @override
+  String get favorited => '已收藏';
+
+  @override
   String get menu => '菜单';
 
   @override

@@ -88,6 +88,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unfavorite => 'Unfavorite';
 
   @override
+  String get favorited => 'Favorited';
+
+  @override
   String get menu => 'Menu';
 
   @override
