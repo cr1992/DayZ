@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart' show ImageProvider;
 
 import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/data/repositories/media_repo.dart';
+import 'package:dayz/data/repositories/tag_repo.dart';
 import 'onthisday_view_model.dart';
 
 /// 往年今日只读数据端口（屏私有，测试可注入假实现）。
@@ -52,6 +53,7 @@ class OnThisDayEntryRecord {
     required this.localDay,
     required this.isFavorite,
     this.placeName,
+    this.tags = const <String>[],
   });
 
   final String id;
@@ -61,6 +63,9 @@ class OnThisDayEntryRecord {
   final int localDay;
   final bool isFavorite;
   final String? placeName;
+
+  /// 未删除标签名，按名称升序；数据端口未接标签仓时为空。
+  final List<String> tags;
 }
 
 /// 把数据层 Repo 适配成 [OnThisDayRepository]（只调 Repo 公共方法，不碰 SQL）。
@@ -70,15 +75,29 @@ class DataLayerOnThisDayRepository implements OnThisDayRepository {
   DataLayerOnThisDayRepository({
     required EntryRepo entryRepo,
     required MediaRepo mediaRepo,
+    TagRepo? tagRepo,
   }) : _entryRepo = entryRepo,
-       _mediaRepo = mediaRepo;
+       _mediaRepo = mediaRepo,
+       _tagRepo = tagRepo;
 
   final EntryRepo _entryRepo;
   final MediaRepo _mediaRepo;
+  final TagRepo? _tagRepo;
 
   @override
   Future<List<OnThisDayEntryRecord>> onThisDay(int month, int day) async {
     final entries = await _entryRepo.onThisDay(month, day);
+    final tagRepo = _tagRepo;
+    // 整次加载只发一次批量标签查询（空列表时不查库）。
+    final tagNames = <String, List<String>>{};
+    if (tagRepo != null) {
+      final tags = await tagRepo.tagsByEntryIds([
+        for (final entry in entries) entry.id,
+      ]);
+      tags.forEach((id, rows) {
+        tagNames[id] = [for (final tag in rows) tag.name];
+      });
+    }
     return [
       for (final entry in entries)
         OnThisDayEntryRecord(
@@ -89,6 +108,7 @@ class DataLayerOnThisDayRepository implements OnThisDayRepository {
           localDay: entry.localDay,
           isFavorite: entry.isFavorite,
           placeName: entry.placeName,
+          tags: tagNames[entry.id] ?? const <String>[],
         ),
     ];
   }
@@ -218,6 +238,7 @@ class OnThisDayController extends ChangeNotifier {
                 record.localMonth,
                 record.localDay,
               ),
+              tags: record.tags,
               place: _blankToNull(record.placeName),
               favorite: record.isFavorite,
               coverImage: mediaId == null

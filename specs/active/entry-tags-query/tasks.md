@@ -78,7 +78,7 @@ T1 → T2, T3（T2 / T3 可并行）
 
 -----
 
-- [ ] T3 · 往年今日接线：数据端口批量取标签并填入 `EntryCardVM.tags`
+- [x] T3 · 往年今日接线：数据端口批量取标签并填入 `EntryCardVM.tags`
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R5 ｜ **依据设计：** D3 ｜ **可改文件：** `lib/ui/onthisday/onthisday_controller.dart`、`lib/app/router_ports.dart`、`test/ui/onthisday/onthisday_controller_tags_test.dart`
 
@@ -105,7 +105,7 @@ T1 → T2, T3（T2 / T3 可并行）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_controller_tags_test.dart` 通过（3 tests：R5 注入 tagRepo 时 VM 标签按名升序、滤软删，整次加载 entry_tags SELECT 恰 1 次；未注入时 0 次、标签空、其余字段不变；bindRouterPorts 注册的端口记录带标签）；回归 `flutter test --no-pub test/data test/ui/timeline test/ui/onthisday test/app test/demo` 166 tests 全绿；`flutter analyze --no-pub` 全部触及文件无 issue。
 人工：N/A
 ```

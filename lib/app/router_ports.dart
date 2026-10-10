@@ -31,12 +31,14 @@ void bindRouterPorts(
     mediaRepo: mediaRepo,
   );
 
+  final tagRepo = TagRepo(database);
+
   registerTimelineEntryRepo(services.timelineRepo);
   registerReaderRepository(
     DataLayerReaderRepository(
       entryRepo: services.entries,
       mediaRepo: mediaRepo,
-      tagRepo: TagRepo(database),
+      tagRepo: tagRepo,
       journalRepo: services.journals,
       restoreEntry: services.entries.restore,
     ),
@@ -45,6 +47,7 @@ void bindRouterPorts(
     DataLayerOnThisDayRepository(
       entryRepo: services.entries,
       mediaRepo: mediaRepo,
+      tagRepo: tagRepo,
     ),
   );
   registerEditorServices(
