@@ -14,16 +14,14 @@
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
-| [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（2026-10-10 四件套定稿，T1–T8 自动验收通过，真路由已挂真实屏；待 @Ray 真机走查两态 / ⋯ 菜单；真路由下封面暂不显示，等 thumbnail-cache 补解密 provider） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
+| [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（2026-10-10 四件套定稿，T1–T8 自动验收通过，真路由已挂真实屏，封面与标签已经 thumbnail-provider / entry-tags-query 接通；待 @Ray 真机走查两态 / ⋯ 菜单） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [calendar-screen](active/calendar-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, reader-screen, timeline-screen, e2e-harness | @Ray | 2026-05-29 |
 | [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage, e2e-harness | @Ray | 2026-05-29 |
 | [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | 无 | @Ray | 2026-06-04 |
-| [entry-tags-query](active/entry-tags-query/) | P1 | 进行中（修复自 data-layer；2026-10-10 精简档定稿） | data-layer | @Ray | 2026-10-10 |
 | [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 进行中（2026-10-10 四件套定稿；T1–T4、T7 callout 对齐真源已完成；只差 T5 设备上重跑 Patrol 截图 + @Ray 签收；T6 代码块 v1 后置占位，归档前收口为 N/A 或拆后置 spec） | editor-json-contract, e2e-harness | @Ray | 2026-06-06 |
-| [thumbnail-provider](active/thumbnail-provider/) | P1 | 进行中（修复自 thumbnail-cache：解密 ImageProvider + 组合根接线往年今日封面；阅读屏接线不在范围） | thumbnail-cache, media-storage | @Ray | 2026-10-10 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
 
@@ -57,6 +55,8 @@
 
 | 功能 | 结果 | 归档日期 |
 |------|------|----------|
+| [thumbnail-provider](archive/2026-10-10-thumbnail-provider/) | 已完成 | 2026-10-10 |
+| [entry-tags-query](archive/2026-10-10-entry-tags-query/) | 已完成 | 2026-10-10 |
 | [ui-kit-components](archive/2026-06-06-ui-kit-components/) | 已完成 | 2026-06-06 |
 | [app-composition-root](archive/2026-10-09-app-composition-root/) | 已完成 | 2026-10-09 |
 | [ui-shell-navigation](archive/2026-05-31-ui-shell-navigation/) | 已完成 | 2026-05-31 |
@@ -97,6 +97,7 @@
 - **design-tokens-theme 生成器收口**— `dayz_tokens.g.dart` 里仍生成带 CSS 字符串的 `DayzFonts` / `DayzMotion.ease`，与手写 `dayz_fonts.dart` 同名；Material `textTheme` 只映射 8 个槽。归档后返工 → 新建精简档。
 - **ui-kit 小补**（归档后返工，精简档）— `DayzIcons` 缺左箭头（onthisday 返回钮暂用屏内私有 path）；`DayzEntryCard` 图位缺 frameBuilder / errorBuilder（无淡入、加载失败无兜底）；收藏星只读态语义误读「取消收藏」；`DayzSheet.actions` 无标题参数、item 图标只收 Material IconData。
 - **timeline-screen 无障碍专项收口**— `verification.md` 的 NF3 / NF5 / NF6 指定的 `timeline_a11y_test.dart` / `timeline_reduce_motion_test.dart` 尚不存在，T5 已覆盖其中日历部分；另开卡补齐后再勾。
+- **reader-screen 维护卡：封面 / 相册接解密图源**— 阅读路由不传 `thumbnailCache`，`ThumbnailCacheReaderAdapter` 就绪后仍返回透明占位；改阅读路由传入 `AppServices.thumbnailImages` 并把适配器 provider 换成 `providerFor`。
 - **argon2id_ffi 发布真机闸门**（衍生自 `dayz-security-rust`）— iOS archive/TestFlight、Android 真机 release、整包 `--analyze-size`、并发 OOM；当前按模拟器口径归档，不阻塞主线，发布前再补。
 
 补 spec 时直接在 `active/` 下新建对应目录，并在本表添加一行。

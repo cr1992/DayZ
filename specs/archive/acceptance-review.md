@@ -126,6 +126,8 @@ bash spec-kit/scripts/archive_spec.sh ui-kit-components
 | `ui-shell-navigation` | 通过 | `test/ui/shell/` + `test/app_router_mount_test.dart` + `test/demo/` 覆盖路由常量/路径、真外壳启动、DebugHome 具名路由、抽屉（含头像/身份头、日记本/浏览/设置结构、计数注入）、FAB/sheet 交互、换肤、返回栈、44px 命中区、reduce-motion 与 Repository 边界；shell/demo 定向 analyzer 无 issue。生产壳层 journal 当前为入参/回调 + 内存 fallback，不持 Drift/SQL；真实 `JournalRepo` app bootstrap 接线归后续数据接入/页面 spec。 |
 | `ui-kit-components` | 通过 | 组件层 T1–T9 已完成；widget/demo/reader 大图相关 19 个测试通过；`DayzImageViewer` 组件、reader 消费路径与 UI Kit 画廊均有回归覆盖；Patrol 视觉用例 `dayz_image_viewer_visual_test.dart` 通过并产出多页截图，@Ray 目检暂未发现问题。reader-screen 对 `DayzImageViewer` 的消费任务仍归 reader-screen 维护，不反向阻塞组件层归档。 |
 | `app-composition-root` | 通过 | 精简档，T1–T5 自动验收通过：`test/data/` 按日记本过滤 / 按月计数 / 每本篇数查询、`test/app/` 单库装配与 `TimelineHost` 生命周期、`test/ui/shell/` 时间线路由挂真实页 + 页面自带顶栏时外壳不叠加、`test/demo/` 示例数据入口、`integration_test/app_cold_start_test.dart` 在 Android 真机（Xiaomi 24129RT7CC）冷启动通过。主密码模式启动只得占位屏（解锁 UI 归后续 spec）、写入后整页重载回顶与并发刷新拼旧数据的局限归 editor-integration-screen 接入时收紧，均记已知风险，不阻塞归档。 |
+| `entry-tags-query` | 通过 | 精简档（修复自 data-layer）。`TagRepo.tagsByEntryIds` 每 500 个 id 一次 JOIN，`test/data/tag_repo_tags_by_entry_ids_test.dart` 用 QueryInterceptor 断言查询次数（空 0 / 28 条 1 / 501 条 2）、软删过滤、排序；时间线每页一次批量取标签、往年今日每次加载一次均有次数断言；全量 582/582。已知风险：标签变更不单独触发时间线回刷；深滚后 refresh 查询数随已加载条目增长。 |
+| `thumbnail-provider` | 通过 | 精简档（修复自 thumbnail-cache）。`ThumbnailImageLoader` / `ThumbnailImageProvider`：构造惰性、就绪前无帧、后台 isolate 解密、LRU 64 张 / 8 MiB、错密钥抛 `MediaCorruptedException` 不缓存；组合根构造唯一 `ThumbnailCache` 并经 `bindRouterPorts` 接往年今日端口；`test/thumbnails` + `test/app/thumbnail_wiring_test.dart` 14 项，全量 596/596。阅读屏封面接线归 reader-screen 维护卡；卡片图位无帧占位 / 失败兜底归 ui-kit 小补。 |
 
 ## 不作为归档阻塞
 

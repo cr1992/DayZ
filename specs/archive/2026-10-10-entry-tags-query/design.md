@@ -50,7 +50,7 @@
 - `lib/ui/onthisday/onthisday_controller.dart`  修改（T3：记录 `tags` + 数据端口批量取 + 控制器透传）
 - `lib/app/router_ports.dart`  修改（T3：注入 `TagRepo`）
 - `test/ui/onthisday/onthisday_controller_tags_test.dart`  新建（T3）
-- `specs/active/entry-tags-query/requirement.md` / `design.md` / `tasks.md`  新建
+- `specs/archive/2026-10-10-entry-tags-query/requirement.md` / `design.md` / `tasks.md`  新建
 - `specs/README.md`  修改（进行中表加一行；删「待立 spec」对应条目）
 
 ## 已知风险

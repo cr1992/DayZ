@@ -72,7 +72,7 @@
 - `lib/app/router_ports.dart`                       修改（D5：往年今日缩略图端口适配并注册；`MediaStore` 缺省用 `services.keyProvider`）
 - `test/thumbnails/thumbnail_image_provider_test.dart`  新建
 - `test/app/thumbnail_wiring_test.dart`             新建
-- `specs/active/thumbnail-provider/`               新建（本 spec）
+- `specs/archive/2026-10-10-thumbnail-provider/`               新建（本 spec）
 - `specs/README.md`                                 修改（进行中表加一行；删掉「待立 spec」里对应的那条）
 
 ## 已知风险
