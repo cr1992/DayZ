@@ -128,6 +128,7 @@ bash spec-kit/scripts/archive_spec.sh ui-kit-components
 | `app-composition-root` | 通过 | 精简档，T1–T5 自动验收通过：`test/data/` 按日记本过滤 / 按月计数 / 每本篇数查询、`test/app/` 单库装配与 `TimelineHost` 生命周期、`test/ui/shell/` 时间线路由挂真实页 + 页面自带顶栏时外壳不叠加、`test/demo/` 示例数据入口、`integration_test/app_cold_start_test.dart` 在 Android 真机（Xiaomi 24129RT7CC）冷启动通过。主密码模式启动只得占位屏（解锁 UI 归后续 spec）、写入后整页重载回顶与并发刷新拼旧数据的局限归 editor-integration-screen 接入时收紧，均记已知风险，不阻塞归档。 |
 | `entry-tags-query` | 通过 | 精简档（修复自 data-layer）。`TagRepo.tagsByEntryIds` 每 500 个 id 一次 JOIN，`test/data/tag_repo_tags_by_entry_ids_test.dart` 用 QueryInterceptor 断言查询次数（空 0 / 28 条 1 / 501 条 2）、软删过滤、排序；时间线每页一次批量取标签、往年今日每次加载一次均有次数断言；全量 582/582。已知风险：标签变更不单独触发时间线回刷；深滚后 refresh 查询数随已加载条目增长。 |
 | `thumbnail-provider` | 通过 | 精简档（修复自 thumbnail-cache）。`ThumbnailImageLoader` / `ThumbnailImageProvider`：构造惰性、就绪前无帧、后台 isolate 解密、LRU 64 张 / 8 MiB、错密钥抛 `MediaCorruptedException` 不缓存；组合根构造唯一 `ThumbnailCache` 并经 `bindRouterPorts` 接往年今日端口；`test/thumbnails` + `test/app/thumbnail_wiring_test.dart` 14 项，全量 596/596。阅读屏封面接线归 reader-screen 维护卡；卡片图位无帧占位 / 失败兜底归 ui-kit 小补。 |
+| `ui-kit-patch` | 通过 | 精简档（修复自 ui-kit-components）。T1 左箭头 path 并替换往年今日私有常量；T2 `DayzImageSlot` 无帧占位 / 出帧淡入经 `dayzMotionDuration` / 失败兜底，卡片封面与相册格子改用；T3 只读收藏星读状态不读动作、`button:false`；T4 `DayzSheet.actions` 标题 + `DayzSheetItem` 支持 `iconPath` / `iconMarkup`。验收 270 项 + 全量 681/681（含 i18n 迁移回归一处按新语义规则调整）。选档争议（T3 触及无障碍语义是否应升标准档）controller 裁决：维持精简档——只更正既有语义、单任务可测、无新增约束；记录于此以备复议。 |
 
 ## 不作为归档阻塞
 

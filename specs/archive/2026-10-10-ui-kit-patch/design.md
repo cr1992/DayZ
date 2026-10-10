@@ -56,7 +56,7 @@
 - `test/ui/widgets/dayz_favorite_star_test.dart`   修改（T3）
 - `test/ui/onthisday/onthisday_a11y_test.dart`     修改（T3：只读星断言改为「已收藏」）
 - `test/ui/shell/dayz_sheet_test.dart`             修改（T4）
-- `specs/active/ui-kit-patch/`                     新建（本 spec）
+- `specs/archive/2026-10-10-ui-kit-patch/`                     新建（本 spec）
 - `specs/README.md`                                修改（进行中表加一行；删掉「待立 spec」里「ui-kit 小补」那条）
 
 ## 已知风险
