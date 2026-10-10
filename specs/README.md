@@ -14,7 +14,7 @@
 | [backup-full-snapshot](active/backup-full-snapshot/) | P2 | 进行中（功能域自动验收通过；性能真机基准后置记录；待 @Ray 真机演示 / 回归确认） | app-scaffold, key-management, data-layer, media-storage, thumbnail-cache, observability | @Ray | 2026-05-23 |
 | [design-sync-automation](active/design-sync-automation/) | P2 | 进行中（期一 M1 已完成；期二待首屏） | design-tokens-theme | @Ray | 2026-05-29 |
 | [ui-i18n-migration](active/ui-i18n-migration/) | P1 | 进行中（迁移与聚焦自动验收通过；全仓库 analyze 剩既有非本次 warning/info） | i18n-localization, ui-kit-components, ui-shell-navigation | @Ray | 2026-05-31 |
-| [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（T1 已完成） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
+| [onthisday-screen](active/onthisday-screen/) | P2 | 进行中（2026-10-10 四件套定稿，T1–T8 自动验收通过，真路由已挂真实屏；待 @Ray 真机走查两态 / ⋯ 菜单；真路由下封面暂不显示，等 thumbnail-cache 补解密 provider） | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, media-storage, thumbnail-cache | @Ray | 2026-05-29 |
 | [search-screen](active/search-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [calendar-screen](active/calendar-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
 | [favorites-screen](active/favorites-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer | @Ray | 2026-05-29 |
@@ -94,6 +94,9 @@
 - **心情（mood）字段**— 设计稿卡片 / 阅读屏画了心情 meta，schema 只有 weather。2026-10-09 拍板：**v1 不做心情**，各屏按「无 mood」实现；要做时再开 schema + 设计稿联动 spec，并同步设计稿把心情从 v1 屏里去掉或标为后置。
 - **纸色轴（data-bg）**— 设计稿有 mint / mist / cloud / tinted / custom 五档，Flutter 只有布尔 `paper`。2026-10-09 拍板：**v1 只做「纯净」**，settings-screen 不出纸色选择器；整条纸色轴连同 BACKLOG 的「每本独立纸色」一起后置为一张 spec。
 - **design-tokens-theme 生成器收口**— `dayz_tokens.g.dart` 里仍生成带 CSS 字符串的 `DayzFonts` / `DayzMotion.ease`，与手写 `dayz_fonts.dart` 同名；Material `textTheme` 只映射 8 个槽。归档后返工 → 新建精简档。
+- **thumbnail-cache 解密 ImageProvider**（归档后返工）— `ThumbnailHandle` 只给 relPath，屏拿不到可渲染的 provider，生产组合根也未构造 `ThumbnailCache`；onthisday / reader 封面都卡在这。补上后在 `bindRouterPorts` 传 thumbnails 即生效。
+- **ui-kit 小补**（归档后返工，精简档）— `DayzIcons` 缺左箭头（onthisday 返回钮暂用屏内私有 path）；`DayzEntryCard` 图位缺 frameBuilder / errorBuilder（无淡入、加载失败无兜底）；收藏星只读态语义误读「取消收藏」；`DayzSheet.actions` 无标题参数、item 图标只收 Material IconData。
+- **timeline-screen 无障碍专项收口**— `verification.md` 的 NF3 / NF5 / NF6 指定的 `timeline_a11y_test.dart` / `timeline_reduce_motion_test.dart` 尚不存在，T5 已覆盖其中日历部分；另开卡补齐后再勾。
 - **argon2id_ffi 发布真机闸门**（衍生自 `dayz-security-rust`）— iOS archive/TestFlight、Android 真机 release、整包 `--analyze-size`、并发 OOM；当前按模拟器口径归档，不阻塞主线，发布前再补。
 
 补 spec 时直接在 `active/` 下新建对应目录，并在本表添加一行。
