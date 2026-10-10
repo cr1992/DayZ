@@ -1291,6 +1291,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'返回'**
   String get onThisDayBack;
+
+  /// 往年今日 ⋯ 菜单：生成回忆卡片
+  ///
+  /// In zh, this message translates to:
+  /// **'生成回忆卡片'**
+  String get onThisDayMenuMemoryCard;
+
+  /// 往年今日 ⋯ 菜单：生成回忆卡片的副文案
+  ///
+  /// In zh, this message translates to:
+  /// **'把这一天做成一张可分享的卡片图'**
+  String get onThisDayMenuMemoryCardDesc;
+
+  /// 往年今日 ⋯ 菜单：分享这一天
+  ///
+  /// In zh, this message translates to:
+  /// **'分享这一天'**
+  String get onThisDayMenuShare;
+
+  /// 往年今日点「分享这一天」后的 toast（分享能力未接入前如实提示）
+  ///
+  /// In zh, this message translates to:
+  /// **'分享这一天稍后支持'**
+  String get onThisDayShareDone;
 }
 
 class _AppLocalizationsDelegate

@@ -674,4 +674,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onThisDayBack => 'Back';
+
+  @override
+  String get onThisDayMenuMemoryCard => 'Create memory card';
+
+  @override
+  String get onThisDayMenuMemoryCardDesc =>
+      'Turn this day into a shareable card image';
+
+  @override
+  String get onThisDayMenuShare => 'Share this day';
+
+  @override
+  String get onThisDayShareDone => 'Sharing this day is coming soon';
 }

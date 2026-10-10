@@ -148,7 +148,7 @@ graph LR
 
 -----
 
-- [ ] T4 · ⋯ 菜单 + 「生成回忆卡片」入口
+- [x] T4 · ⋯ 菜单 + 「生成回忆卡片」入口
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzSheet.actions`/`DayzSheetItem`/`DayzToast`；`ui-shell-navigation`：`Routes.memory` ｜ **关联需求：** R7 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 ⋯ 菜单 zh/en ARB key，运行 gen-l10n 更新生成产物） ｜ **验收基建：** `test/ui/onthisday/onthisday_menu_test.dart`
 
@@ -176,8 +176,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_menu_test.dart` 通过（4 tests：更多钮弹出含「生成回忆卡片」（带副文案）/「分享这一天」两项的 `DayzSheet.actions`；点「生成回忆卡片」经测试 GoRouter `pushNamed(Routes.memory)`，extra == `{'month': 5, 'day': 29}`，pop 后回到往年今日；点「分享这一天」关闭 sheet 并出 `DayzToast`；无 GoRouter 时走 `onOpenMemory` 回调拿到当天日期）。`flutter analyze --no-pub` 无问题；arb 对齐。新增 ARB：`onThisDayMenuMemoryCard` / `onThisDayMenuMemoryCardDesc` / `onThisDayMenuShare` / `onThisDayShareDone`。
+说明：只做入口与导航，不做导出（归 memory-card-export）。「分享这一天」toast 如实提示「稍后支持」，未照抄屏源 screen.js 的「已生成分享链接」（分享能力未接入，不出假成功提示）。
 人工：N/A
 ```
 

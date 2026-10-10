@@ -25,6 +25,7 @@ class OnThisDayScreen extends StatefulWidget {
     super.key,
     required this.data,
     this.onOpenEntry,
+    this.onOpenMemory,
     this.onBack,
   });
 
@@ -45,6 +46,10 @@ class OnThisDayScreen extends StatefulWidget {
 
   /// 点卡片；缺省经 `go_router` 推 [Routes.reader]（携 entryId）。
   final ValueChanged<String>? onOpenEntry;
+
+  /// ⋯ 菜单「生成回忆卡片」；缺省经 `go_router` 推 [Routes.memory]
+  /// （extra 携 `{'month', 'day'}`）。
+  final ValueChanged<DateTime>? onOpenMemory;
 
   /// 返回钮在路由栈无法出栈时的兜底；可出栈时一律先出栈。
   final VoidCallback? onBack;
@@ -90,7 +95,7 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
                 label: l10n.more,
                 path: DayzIcons.morePath,
                 filled: true,
-                onPressed: () {},
+                onPressed: _openMenu,
               ),
             ],
           ),
@@ -146,6 +151,41 @@ class _OnThisDayScreenState extends State<OnThisDayScreen> {
       return;
     }
     GoRouter.maybeOf(context)?.pushNamed(Routes.reader, extra: entryId);
+  }
+
+  void _openMenu() {
+    final l10n = AppLocalizations.of(context);
+    DayzSheet.actions<void>(
+      context,
+      items: [
+        DayzSheetItem(
+          label: l10n.onThisDayMenuMemoryCard,
+          desc: l10n.onThisDayMenuMemoryCardDesc,
+          onTap: _openMemory,
+        ),
+        DayzSheetItem(
+          label: l10n.onThisDayMenuShare,
+          onTap: () => DayzToast.show(
+            context,
+            l10n.onThisDayShareDone,
+            DayzToastTone.ok,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openMemory() {
+    final date = widget.data.date;
+    final open = widget.onOpenMemory;
+    if (open != null) {
+      open(date);
+      return;
+    }
+    GoRouter.maybeOf(context)?.pushNamed(
+      Routes.memory,
+      extra: <String, int>{'month': date.month, 'day': date.day},
+    );
   }
 
   void _goBack() {

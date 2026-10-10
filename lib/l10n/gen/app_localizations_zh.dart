@@ -660,4 +660,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onThisDayBack => '返回';
+
+  @override
+  String get onThisDayMenuMemoryCard => '生成回忆卡片';
+
+  @override
+  String get onThisDayMenuMemoryCardDesc => '把这一天做成一张可分享的卡片图';
+
+  @override
+  String get onThisDayMenuShare => '分享这一天';
+
+  @override
+  String get onThisDayShareDone => '分享这一天稍后支持';
 }

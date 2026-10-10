@@ -214,5 +214,9 @@
   "editorHeadingLabelH3": "Subheading",
   "onThisDayHeadline": "{count, plural, =1{You wrote 1 entry on this day} other{You wrote {count} entries on this day}}",
   "onThisDaySubtitle": "The same day, different years. Look back slowly.",
-  "onThisDayBack": "Back"
+  "onThisDayBack": "Back",
+  "onThisDayMenuMemoryCard": "Create memory card",
+  "onThisDayMenuMemoryCardDesc": "Turn this day into a shareable card image",
+  "onThisDayMenuShare": "Share this day",
+  "onThisDayShareDone": "Sharing this day is coming soon"
 }

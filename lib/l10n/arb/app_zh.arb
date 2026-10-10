@@ -376,5 +376,21 @@
   "onThisDayBack": "返回",
   "@onThisDayBack": {
     "description": "往年今日顶栏返回钮的语义标签与提示"
+  },
+  "onThisDayMenuMemoryCard": "生成回忆卡片",
+  "@onThisDayMenuMemoryCard": {
+    "description": "往年今日 ⋯ 菜单：生成回忆卡片"
+  },
+  "onThisDayMenuMemoryCardDesc": "把这一天做成一张可分享的卡片图",
+  "@onThisDayMenuMemoryCardDesc": {
+    "description": "往年今日 ⋯ 菜单：生成回忆卡片的副文案"
+  },
+  "onThisDayMenuShare": "分享这一天",
+  "@onThisDayMenuShare": {
+    "description": "往年今日 ⋯ 菜单：分享这一天"
+  },
+  "onThisDayShareDone": "分享这一天稍后支持",
+  "@onThisDayShareDone": {
+    "description": "往年今日点「分享这一天」后的 toast（分享能力未接入前如实提示）"
   }
 }
