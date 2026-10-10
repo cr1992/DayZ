@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 
 import '../database.dart';
 import '../ids.dart';
@@ -66,6 +66,48 @@ class TagRepo {
     }
     tags.sort((a, b) => a.name.compareTo(b.name));
     return tags;
+  }
+
+  /// 一块条目 id 的上限：远低于 SQLite 旧版 999 个绑定变量的限制。
+  static const int tagsByEntryIdsChunkSize = 500;
+
+  /// 按条目 id 集批量取标签：每块 id 只发 1 条 `entry_tags ⋈ tags` 查询。
+  ///
+  /// 每个请求过的 id（去重后）都有键；值只含未软删除的标签、按名称升序，
+  /// 无标签或不存在的条目映射为空列表。空输入直接返回空映射，不查库。
+  Future<Map<String, List<Tag>>> tagsByEntryIds(
+    Iterable<String> entryIds,
+  ) async {
+    final ids = entryIds.toSet().toList(growable: false);
+    if (ids.isEmpty) {
+      return const <String, List<Tag>>{};
+    }
+
+    final grouped = <String, List<Tag>>{for (final id in ids) id: <Tag>[]};
+    for (var start = 0; start < ids.length; start += tagsByEntryIdsChunkSize) {
+      final end = start + tagsByEntryIdsChunkSize < ids.length
+          ? start + tagsByEntryIdsChunkSize
+          : ids.length;
+      final chunk = ids.sublist(start, end);
+      final query =
+          _db.select(_db.entryTags).join([
+              innerJoin(_db.tags, _db.tags.id.equalsExp(_db.entryTags.tagId)),
+            ])
+            ..where(
+              _db.entryTags.entryId.isIn(chunk) & _db.tags.deletedAt.isNull(),
+            )
+            ..orderBy([OrderingTerm.asc(_db.tags.name)]);
+
+      for (final row in await query.get()) {
+        final link = row.readTable(_db.entryTags);
+        grouped[link.entryId]!.add(row.readTable(_db.tags));
+      }
+    }
+
+    return {
+      for (final entry in grouped.entries)
+        entry.key: List<Tag>.unmodifiable(entry.value),
+    };
   }
 
   Future<List<Entry>> listEntriesForTag(String tagId) async {

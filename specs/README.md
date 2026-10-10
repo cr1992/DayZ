@@ -21,6 +21,7 @@
 | [trash-screen](active/trash-screen/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, data-layer, reader-screen, timeline-screen, e2e-harness | @Ray | 2026-05-29 |
 | [memory-card-export](active/memory-card-export/) | P2 | 草稿 | design-tokens-theme, ui-kit-components, ui-shell-navigation, onthisday-screen, media-storage, e2e-harness | @Ray | 2026-05-29 |
 | [e2e-harness](active/e2e-harness/) | P2 | 进行中（M1 iOS+Android 冒烟双端绿；M2 复现 SOP / flaky wrapper / 验收分层骨架 / R8 测试隔离·产物清理工件已交付，wrapper 逻辑自验过——live 连跑+干净 checkout 走查留 @Ray；T5 跨 spec、T7 CI 后置） | 无 | @Ray | 2026-06-04 |
+| [entry-tags-query](active/entry-tags-query/) | P1 | 进行中（修复自 data-layer；2026-10-10 精简档定稿） | data-layer | @Ray | 2026-10-10 |
 | [editor-rich-blocks](active/editor-rich-blocks/) | P1 | 进行中（2026-10-10 四件套定稿；T1–T4、T7 callout 对齐真源已完成；只差 T5 设备上重跑 Patrol 截图 + @Ray 签收；T6 代码块 v1 后置占位，归档前收口为 N/A 或拆后置 spec） | editor-json-contract, e2e-harness | @Ray | 2026-06-06 |
 
 > **优先级分层**（治此前「全 P1」导致选取规则退化为创建序）：**P0** = 数据/加密主干（被依赖最多、当前就绪的关键路径）｜ **P1** = 核心功能 + UI 地基（主干推进项 + 可立即并行的无依赖项）｜ **P2** = 上层 / 支撑（依赖较深或非关键路径）。通用排序纪律（新增/归档触发的相对定位与复核、区分度要求）见 [`spec-kit/spec-guide.md`](../spec-kit/spec-guide.md)；UI 页面级 spec 的优先级（按页面层级 × 数据依赖、波次 W0–W4）见 [`docs/spec-guide-ai.md`](../docs/spec-guide-ai.md) + [`docs/design/10-ui-restore-and-design-sync.md`](../docs/design/10-ui-restore-and-design-sync.md) §9。
@@ -90,7 +91,6 @@
 
 ## 待立 spec（工程后置件）
 
-- **条目标签批量查询**（`EntryRepo` / `TagRepo` 增「按条目 id 集取标签」）— 时间线卡片、阅读屏、搜索屏都要显示标签，当前 `TimelineEntry.tags` 永远为空；依附 data-layer（归档后返工 → 新建精简档）。2026-10-09 拍板：先立这张，不在各屏 spec 里各自绕。
 - **心情（mood）字段**— 设计稿卡片 / 阅读屏画了心情 meta，schema 只有 weather。2026-10-09 拍板：**v1 不做心情**，各屏按「无 mood」实现；要做时再开 schema + 设计稿联动 spec，并同步设计稿把心情从 v1 屏里去掉或标为后置。
 - **纸色轴（data-bg）**— 设计稿有 mint / mist / cloud / tinted / custom 五档，Flutter 只有布尔 `paper`。2026-10-09 拍板：**v1 只做「纯净」**，settings-screen 不出纸色选择器；整条纸色轴连同 BACKLOG 的「每本独立纸色」一起后置为一张 spec。
 - **design-tokens-theme 生成器收口**— `dayz_tokens.g.dart` 里仍生成带 CSS 字符串的 `DayzFonts` / `DayzMotion.ease`，与手写 `dayz_fonts.dart` 同名；Material `textTheme` 只映射 8 个槽。归档后返工 → 新建精简档。
