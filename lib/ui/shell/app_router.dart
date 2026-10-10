@@ -10,6 +10,8 @@ import 'package:dayz/ui/onthisday/onthisday_controller.dart';
 import 'package:dayz/ui/onthisday/onthisday_screen.dart';
 import 'package:dayz/ui/reader/reader_screen.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
+import 'package:dayz/ui/search/search_page.dart';
+import 'package:dayz/ui/search/search_source.dart';
 import 'package:dayz/ui/settings/settings_screen.dart';
 import 'package:dayz/ui/shell/app_shell.dart';
 import 'package:dayz/ui/shell/new_journal_sheet.dart';
@@ -304,10 +306,20 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: Routes.search,
       path: Routes.searchPath,
-      builder: (context, state) => PlaceholderScreen(
-        titleBuilder: (l10n) => l10n.search,
-        showAppBar: true,
-      ),
+      builder: (context, state) {
+        final source = searchSourcePort;
+        if (source == null) {
+          return PlaceholderScreen(
+            titleBuilder: (l10n) => l10n.search,
+            showAppBar: true,
+          );
+        }
+        final extra = state.extra;
+        return SearchPage(
+          source: source,
+          initialQuery: extra is String ? extra : null,
+        );
+      },
     ),
     GoRoute(
       name: Routes.debugHome,

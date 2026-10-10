@@ -13,6 +13,7 @@ import 'package:dayz/security/key_provider.dart';
 import 'package:dayz/thumbnails/thumbnail_image_provider.dart';
 import 'package:dayz/ui/onthisday/onthisday_controller.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
+import 'package:dayz/ui/search/search_source.dart';
 import 'package:dayz/ui/shell/app_router.dart';
 
 /// 把组合根里的 Repo 注入路由层的数据端口（时间线 / 阅读 / 编辑）。
@@ -54,6 +55,9 @@ void bindRouterPorts(
     ),
     thumbnails: _OnThisDayThumbnailsAdapter(services.thumbnailImages),
   );
+  registerSearchSource(
+    RepoSearchSource(entryRepo: services.entries, tagRepo: TagRepo(database)),
+  );
   registerEditorServices(
     draftCoordinator: draftCoordinator,
     mediaStore: mediaStore,
@@ -66,6 +70,7 @@ void unbindRouterPorts() {
   registerTimelineEntryRepo(null);
   registerReaderRepository(null);
   registerOnThisDayRepository(null);
+  registerSearchSource(null);
   registerEditorServices();
 }
 

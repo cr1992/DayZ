@@ -269,3 +269,53 @@ class EntryRepo {
     return value == null ? const Value.absent() : Value(value);
   }
 }
+
+/// 检索查询（search-screen D6）。以同库 extension 落地而非实例方法：不扩大
+/// `EntryRepo` 的隐式接口，`implements EntryRepo` 的既有假实现（时间线 demo /
+/// 测试 fake）无需跟改；同库可直接用私有 `_db`。
+extension EntryRepoSearch on EntryRepo {
+  /// 正文子串检索（v1 LIKE，不走 FTS）：`content_plain` 含 [query]（字面匹配，
+  /// `%`/`_` 不作通配；SQLite LIKE 对 ASCII 大小写不敏感）的未删除条目，按
+  /// 时间倒序；[journalId] / [year]（本地年）非空时追加等值过滤。
+  /// 空白 [query] 直接返回空列表、不发查询。
+  Future<List<Entry>> search(
+    String query, {
+    String? journalId,
+    int? year,
+    int limit = 100,
+  }) async {
+    if (limit < 1) {
+      throw ArgumentError.value(limit, 'limit', 'must be greater than zero');
+    }
+    final needle = query.trim();
+    if (needle.isEmpty) {
+      return const [];
+    }
+    final escaped = needle
+        .replaceAll(r'\', r'\\')
+        .replaceAll('%', r'\%')
+        .replaceAll('_', r'\_');
+
+    final select = _db.select(_db.entries)
+      ..where((table) {
+        var predicate =
+            table.deletedAt.isNull() &
+            table.contentPlain.like('%$escaped%', escapeChar: r'\');
+        if (journalId != null) {
+          predicate = predicate & table.journalId.equals(journalId);
+        }
+        if (year != null) {
+          predicate = predicate & table.localYear.equals(year);
+        }
+        return predicate;
+      })
+      ..orderBy([
+        (table) =>
+            OrderingTerm(expression: table.entryDtUtc, mode: OrderingMode.desc),
+        (table) => OrderingTerm(expression: table.id, mode: OrderingMode.desc),
+      ])
+      ..limit(limit);
+
+    return select.get();
+  }
+}

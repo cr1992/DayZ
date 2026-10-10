@@ -429,7 +429,11 @@ class _SuggestRow extends StatelessWidget {
             ),
             child: Row(
               children: [
-                DayzIcon.path(DayzIcons.clockPath, size: 18, color: colors.ink3),
+                DayzIcon.path(
+                  DayzIcons.clockPath,
+                  size: 18,
+                  color: colors.ink3,
+                ),
                 const SizedBox(width: DayzSpacing.s3),
                 Expanded(
                   child: Text(

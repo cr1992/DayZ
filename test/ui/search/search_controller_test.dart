@@ -27,7 +27,10 @@ void main() {
   late List<String> transitions;
 
   void build({SearchFilters filters = SearchFilters.none}) {
-    controller = SearchScreenController(source: source, initialFilters: filters);
+    controller = SearchScreenController(
+      source: source,
+      initialFilters: filters,
+    );
     transitions = [];
     controller.addListener(() {
       final label = kind(controller.state);
@@ -172,23 +175,26 @@ void main() {
     expect(controller.state, isA<SearchIdle>());
   });
 
-  test('refresh() silently re-queries in results; no-op in idle (R10)', () async {
-    build();
-    await controller.refresh();
-    expect(source.calls, isEmpty);
+  test(
+    'refresh() silently re-queries in results; no-op in idle (R10)',
+    () async {
+      build();
+      await controller.refresh();
+      expect(source.calls, isEmpty);
 
-    await controller.submit('梅子');
-    source.hits['梅子'] = [fakeHit('a')];
-    transitions.clear();
-    await controller.refresh();
-    expect(source.calls.map((call) => call.query), ['梅子', '梅子']);
-    expect(transitions, ['results']); // 不经 querying
-    expect((controller.state as SearchResults).hits.single.id, 'a');
+      await controller.submit('梅子');
+      source.hits['梅子'] = [fakeHit('a')];
+      transitions.clear();
+      await controller.refresh();
+      expect(source.calls.map((call) => call.query), ['梅子', '梅子']);
+      expect(transitions, ['results']); // 不经 querying
+      expect((controller.state as SearchResults).hits.single.id, 'a');
 
-    source.hits['梅子'] = const [];
-    await controller.refresh();
-    expect(controller.state, isA<SearchEmpty>());
-  });
+      source.hits['梅子'] = const [];
+      await controller.refresh();
+      expect(controller.state, isA<SearchEmpty>());
+    },
+  );
 
   test('pending debounce is cancelled on dispose', () {
     fakeAsync((async) {

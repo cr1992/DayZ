@@ -185,7 +185,7 @@ graph LR
 
 -----
 
-- [ ] T5 · 取数接线：EntryRepo.search + RepoSearchSource + 端口注册 + 路由 builder
+- [x] T5 · 取数接线：EntryRepo.search + RepoSearchSource + 端口注册 + 路由 builder
 
 **同 spec 依赖：** T1, T4 ｜ **跨 spec 依赖：** `data-layer`：`EntryRepo`（本任务新增 `search`）/ `watchChanges`、`TagRepo.list`；`ui-shell-navigation`：`app_router.dart` 的 `Routes.search` builder、`PlaceholderScreen` ｜ **关联需求：** R4, R5, R10, NF2 ｜ **依据设计：** D5, D6, D10 ｜ **可改文件：** `lib/data/repositories/entry_repo.dart`、`lib/ui/search/search_source.dart`、`lib/app/router_ports.dart`、`lib/ui/shell/app_router.dart`
 
@@ -215,8 +215,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/data/entry_repo_search_test.dart test/ui/search/repo_search_source_test.dart test/ui/search/search_route_test.dart` 通过（15 tests：EntryRepo.search 子串命中按时间倒序、ASCII 大小写不敏感、`%`/`_`/`\` 字面匹配、排除软删、journal / year / 组合过滤、limit 截断 + 空白词返回空 + limit<1 抛错；RepoSearchSource 映射标题（首个非空行）/ 摘要 / 本地日期（Asia/Shanghai 跨日）/ 地点去空白、筛选透传、最近搜索去重置顶带计数且封顶 5 条、无 TagRepo 空 / 有则只返回未删标签、changes 随写入发事件；未注册端口 → Routes.search 占位，bind 注册 RepoSearchSource、unbind 清空，extra '梅子' 直接出真实库 results 且倒序，软删一条后自动少一张、计数变 1，无 extra 开在 idle）。回归 `flutter test --no-pub test/app test/ui/shell test/ui/search test/data` 全绿（157 tests）。`flutter analyze --no-pub` 触及文件无 error（仅 fab_speed_dial / shell_drawer 既有 warning/info，非本卡改动）。
+说明：`EntryRepo` 已有两处 `implements EntryRepo` 假实现（timeline demo / 测试 fake），加实例方法会编译失败，故 `search` 以同文件 extension `EntryRepoSearch` 落地（design D6 已同步）；app_router 连带两条 import（屏 + 端口）。`dart format` 只格式化了 search_page.dart 一处长行（T4 文件，纯格式）。
 人工：N/A
 ```
 

@@ -60,7 +60,9 @@ Widget host(SearchPage page) => localizedMaterialApp(home: page);
 /// 找根 TextSpan 下文本 == [text] 的子 span。
 TextSpan spanWithText(WidgetTester tester, Key key, String text) {
   final root = tester.widget<Text>(find.byKey(key)).textSpan! as TextSpan;
-  return root.children!.cast<TextSpan>().firstWhere((span) => span.text == text);
+  return root.children!.cast<TextSpan>().firstWhere(
+    (span) => span.text == text,
+  );
 }
 
 DayzColors colorsOf(WidgetTester tester) =>
@@ -84,9 +86,7 @@ void main() {
     expect(find.text(testL10n.searchHint), findsOneWidget);
   });
 
-  testWidgets('typing → querying → results state machine (R1)', (
-    tester,
-  ) async {
+  testWidgets('typing → querying → results state machine (R1)', (tester) async {
     final source = sampleSource()..delay = const Duration(milliseconds: 200);
     await tester.pumpWidget(host(SearchPage(source: source)));
     await tester.pumpAndSettle();
@@ -158,12 +158,14 @@ void main() {
     );
     expect(excerptHit.style!.backgroundColor, colors.accentSoft2);
     expect(excerptHit.style!.color, colors.accentInk);
-    final plainTitle = tester
-        .widget<Text>(find.byKey(SearchPage.hitTitleKey('e2')))
-        .textSpan! as TextSpan;
+    final plainTitle =
+        tester.widget<Text>(find.byKey(SearchPage.hitTitleKey('e2'))).textSpan!
+            as TextSpan;
     expect(plainTitle.children, hasLength(1));
-    expect((plainTitle.children!.single as TextSpan).style!.backgroundColor,
-        isNull);
+    expect(
+      (plainTitle.children!.single as TextSpan).style!.backgroundColor,
+      isNull,
+    );
     // 地点 meta。
     expect(find.text('杭州'), findsOneWidget);
   });
@@ -199,7 +201,9 @@ void main() {
     tester,
   ) async {
     final source = sampleSource();
-    await tester.pumpWidget(host(SearchPage(source: source, initialQuery: '坏')));
+    await tester.pumpWidget(
+      host(SearchPage(source: source, initialQuery: '坏')),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byKey(SearchPage.errorStateKey), findsOneWidget);
@@ -225,7 +229,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(source.calls.last.query, '梅子');
     expect(find.byKey(SearchPage.resultsListKey), findsOneWidget);
-    final field = tester.widget<TextField>(find.byKey(DayzSearchField.inputKey));
+    final field = tester.widget<TextField>(
+      find.byKey(DayzSearchField.inputKey),
+    );
     expect(field.controller!.text, '梅子');
 
     // 清空回 idle，再点标签。
@@ -333,8 +339,10 @@ void main() {
           GoRoute(
             name: Routes.search,
             path: Routes.searchPath,
-            builder: (context, state) =>
-                SearchPage(source: source, initialQuery: state.extra as String?),
+            builder: (context, state) => SearchPage(
+              source: source,
+              initialQuery: state.extra as String?,
+            ),
           ),
           GoRoute(
             name: Routes.reader,

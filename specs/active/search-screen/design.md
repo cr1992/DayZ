@@ -63,7 +63,7 @@
 - **状态：** 采纳（2026-10-10 对齐现状改判：原「依赖 data-layer 新增，待确认」→ 由本 spec 落地最小方法）
 - **背景：** 现状 `EntryRepo` 只有 `timeline` / `countByMonth` / `entryDaysOfMonth` / `onThisDay` / `byId` / 写入方法，**无检索入口**。`entries_fts` 虚拟表默认 tokenizer（中文不可用）、无同步触发器，且 data-layer D8 不暴露 FTS。`TagRepo` 有 `list()` / `listForEntry` / `listEntriesForTag`，无批量查询。
 - **选项：** (A) 屏自己写 LIKE SQL —— 违反 NF2，否决；(B) 本 spec 在 `EntryRepo` **只加一个查询方法**，查询逻辑留在 Repo 内；(C) 等远期 FTS spec（阻塞本屏）；(D) 改 schema / 修 FTS（越界，需停下另立）。
-- **选择：** B。新增（仅新增方法，不改既有方法、不改 schema、不动 FTS 表）：
+- **选择：** B。新增（仅新增方法，不改既有方法、不改 schema、不动 FTS 表；T5 执行时发现 `lib/demo/timeline_demo.dart` 与 `test/ui/timeline/fake_entry_repo.dart` 以 `implements EntryRepo` 做假实现，加实例方法会破坏它们，故以**同文件 extension `EntryRepoSearch on EntryRepo`** 落地——调用形态仍是 `entryRepo.search(...)`，不扩大隐式接口，同库可用私有 `_db`）：
   ```dart
   Future<List<Entry>> search(
     String query, {
@@ -100,7 +100,7 @@
 ### D10 · 真路由接线：屏私有端口 + 组合根注册 + 宿主回刷
 - **状态：** 采纳（2026-10-10 新增，对齐 `onthisday-screen` D8 写法）
 - **背景：** `app_router.dart` 的 `Routes.search` 现为 `PlaceholderScreen`；组合根 `bindRouterPorts` 已为时间线 / 阅读 / 往年今日注册端口。外壳顶栏提交搜索时 `onNavigate(Routes.search)` 不带搜索词。
-- **选择：** `search_source.dart` 暴露 `SearchSource? get searchSourcePort` + `registerSearchSource(SearchSource?)`；`router_ports.dart` 在 `bindRouterPorts` 补一行 `registerSearchSource(RepoSearchSource(entryRepo: services.entries, tagRepo: TagRepo(database)))`、在 `unbindRouterPorts` 补 `registerSearchSource(null)`（连带一条 import）；`app_router.dart` **只改** `Routes.search` 的 builder：端口未注册保持 `PlaceholderScreen`，已注册 → `SearchPage(source: 端口, initialQuery: extra is String ? extra : null)`（连带一条 import）。`SearchPage` 是宿主：持有 `SearchController` 与 `TextEditingController`，`initState` 调 `start()`（拉建议；有初始词则回填并立即查），订阅 `source.changes()` → `controller.refresh()`（仅 results / empty 态以当前词静默重查，不经 querying 闪烁），`dispose` 取消订阅与计时器。
+- **选择：** `search_source.dart` 暴露 `SearchSource? get searchSourcePort` + `registerSearchSource(SearchSource?)`；`router_ports.dart` 在 `bindRouterPorts` 补一行 `registerSearchSource(RepoSearchSource(entryRepo: services.entries, tagRepo: TagRepo(database)))`、在 `unbindRouterPorts` 补 `registerSearchSource(null)`（连带一条 import）；`app_router.dart` **只改** `Routes.search` 的 builder：端口未注册保持 `PlaceholderScreen`，已注册 → `SearchPage(source: 端口, initialQuery: extra is String ? extra : null)`（连带屏 + 端口两条 import）。`SearchPage` 是宿主：持有 `SearchController` 与 `TextEditingController`，`initState` 调 `start()`（拉建议；有初始词则回填并立即查），订阅 `source.changes()` → `controller.refresh()`（仅 results / empty 态以当前词静默重查，不经 querying 闪烁），`dispose` 取消订阅与计时器。
 - **理由：** 与既有端口同构，裸路由测试（未 bind）保持占位不受影响；回刷保证阅读屏删除后结果不陈旧（R10）。
 - **代价：** 外壳透传搜索词仍缺（归 ui-shell）；本屏已就绪接收 `extra`。
 
@@ -142,10 +142,10 @@ graph TD
 - `lib/ui/search/search_source.dart`        新建（`SearchSource` 接口 + `RepoSearchSource` 适配 `EntryRepo`/`TagRepo` + `searchSourcePort`/`registerSearchSource`；唯一接触 Repository 处，D5/D10/NF2）
 
 **数据层查询方法（2026-10-10 补列，D6）**
-- `lib/data/repositories/entry_repo.dart`   修改（**仅新增** `search(query, {journalId, year, limit})` 一个查询方法；不改既有方法、不改 schema、不动 `entries_fts`）
+- `lib/data/repositories/entry_repo.dart`   修改（**仅新增** `search(query, {journalId, year, limit})` 一个查询方法，以同文件 extension `EntryRepoSearch` 落地；不改既有方法、不改 schema、不动 `entries_fts`）
 
 **外壳路由接线（2026-10-10 补列，D10；归属在 ui-shell-navigation D1 已约定「由各屏 spec 改 `app_router.dart` 对应行」）**
-- `lib/ui/shell/app_router.dart`            修改（**仅** `Routes.search` 一行的 `builder`：端口未注册保持 `PlaceholderScreen`、已注册 → `SearchPage`；连带一条 import；不新增/改其它路由常量与 builder）
+- `lib/ui/shell/app_router.dart`            修改（**仅** `Routes.search` 一行的 `builder`：端口未注册保持 `PlaceholderScreen`、已注册 → `SearchPage`；连带两条 import（屏 + 端口）；不新增/改其它路由常量与 builder）
 - `lib/app/router_ports.dart`               修改（**仅**在 `bindRouterPorts` 补 `registerSearchSource(...)`、在 `unbindRouterPorts` 补 `registerSearchSource(null)`，连带一条 import；不动其它端口）
 
 **gen-l10n 文案**
