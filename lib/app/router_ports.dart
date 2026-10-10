@@ -2,12 +2,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import 'package:flutter/widgets.dart' show ImageProvider;
+
 import 'package:dayz/app/app_services.dart';
 import 'package:dayz/data/repositories/media_repo.dart';
 import 'package:dayz/data/repositories/tag_repo.dart';
 import 'package:dayz/drafts/draft_coordinator.dart';
 import 'package:dayz/media/media_store.dart';
 import 'package:dayz/security/key_provider.dart';
+import 'package:dayz/thumbnails/thumbnail_image_provider.dart';
 import 'package:dayz/ui/onthisday/onthisday_controller.dart';
 import 'package:dayz/ui/reader/reader_view_data.dart';
 import 'package:dayz/ui/shell/app_router.dart';
@@ -27,7 +30,7 @@ void bindRouterPorts(
   final database = services.database;
   final mediaRepo = MediaRepo(database);
   final mediaStore = MediaStore(
-    keyProvider: keyProvider ?? KeyProvider(),
+    keyProvider: keyProvider ?? services.keyProvider,
     mediaRepo: mediaRepo,
   );
 
@@ -49,6 +52,7 @@ void bindRouterPorts(
       mediaRepo: mediaRepo,
       tagRepo: tagRepo,
     ),
+    thumbnails: _OnThisDayThumbnailsAdapter(services.thumbnailImages),
   );
   registerEditorServices(
     draftCoordinator: draftCoordinator,
@@ -63,4 +67,17 @@ void unbindRouterPorts() {
   registerReaderRepository(null);
   registerOnThisDayRepository(null);
   registerEditorServices();
+}
+
+/// 往年今日缩略图端口 → 组合根的解密图源加载器（只有异步入队 + 异步 provider）。
+class _OnThisDayThumbnailsAdapter implements OnThisDayThumbnails {
+  const _OnThisDayThumbnailsAdapter(this._images);
+
+  final ThumbnailImageLoader _images;
+
+  @override
+  void warmup(List<String> mediaIds) => _images.warmup(mediaIds);
+
+  @override
+  ImageProvider providerFor(String mediaId) => _images.providerFor(mediaId);
 }

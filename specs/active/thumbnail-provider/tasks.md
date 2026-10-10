@@ -47,7 +47,7 @@ T1 → T2
 
 -----
 
-- [ ] T2 · 组合根构造缩略图缓存，并接上往年今日缩略图端口
+- [x] T2 · 组合根构造缩略图缓存，并接上往年今日缩略图端口
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `thumbnail-cache`：`ThumbnailCache`；`media-storage`：`MediaStore` ｜ **关联需求：** R5 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/app/app_services.dart`、`lib/app/router_ports.dart` ｜ **验收基建：** `test/app/thumbnail_wiring_test.dart`
 
@@ -75,7 +75,7 @@ onthisday-screen 的 `registerOnThisDayRepository` 已经留好了 `thumbnails:`
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub -j 1 test/app/thumbnail_wiring_test.dart` 通过（4 tests：端口注册 / 清空、端口图源解出 384×288 缩略图、warmup 落库 thumb_path 且文件存在、controller 带图条目 coverImage 为 ThumbnailImageProvider / 无图为 null）；回归 `flutter test --no-pub -j 1 test/thumbnails test/app test/ui/onthisday test/demo` 全绿（124 tests）；`flutter analyze --no-pub lib/app lib/thumbnails test/app test/thumbnails` No issues（全仓 error 仅在 packages/ 下 vendored 包，既有、与本次无关）。
 人工：N/A
 ```

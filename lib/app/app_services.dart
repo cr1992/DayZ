@@ -9,8 +9,11 @@ import 'package:dayz/data/database.dart';
 import 'package:dayz/data/repositories/editing_session_repo.dart';
 import 'package:dayz/data/repositories/entry_repo.dart';
 import 'package:dayz/data/repositories/journal_repo.dart';
+import 'package:dayz/data/repositories/media_repo.dart';
 import 'package:dayz/observability/observability.dart';
 import 'package:dayz/security/key_provider.dart';
+import 'package:dayz/thumbnails/thumbnail_cache.dart';
+import 'package:dayz/thumbnails/thumbnail_image_provider.dart';
 import 'package:dayz/ui/shell/shell_drawer.dart';
 import 'package:dayz/ui/shell/shell_state.dart';
 
@@ -18,10 +21,26 @@ import 'package:dayz/ui/shell/shell_state.dart';
 ///
 /// Author: @Ray
 class AppServices {
-  AppServices.forDatabase(this.database)
-    : timelineRepo = TimelineRepositoryAdapter(database),
-      journals = JournalRepo(database),
-      editingSessions = EditingSessionRepo(database);
+  AppServices.forDatabase(
+    this.database, {
+    KeyProvider? keyProvider,
+    DocumentsDirectoryProvider? documentsDirectoryProvider,
+  }) : timelineRepo = TimelineRepositoryAdapter(database),
+       journals = JournalRepo(database),
+       editingSessions = EditingSessionRepo(database),
+       keyProvider = keyProvider ?? KeyProvider() {
+    thumbnailCache = ThumbnailCache(
+      mediaRepo: MediaRepo(database),
+      keyProvider: this.keyProvider,
+      db: database,
+      documentsDirectoryProvider: documentsDirectoryProvider,
+    );
+    thumbnailImages = ThumbnailImageLoader(
+      request: thumbnailCache.request,
+      loadDeviceMediaKey: this.keyProvider.getDeviceMediaKey,
+      documentsDirectoryProvider: documentsDirectoryProvider,
+    );
+  }
 
   final AppDatabase database;
 
@@ -34,6 +53,15 @@ class AppServices {
   final JournalRepo journals;
   final EditingSessionRepo editingSessions;
 
+  /// 设备密钥来源（库密钥 / 设备媒体密钥）；媒体与缩略图共用。
+  final KeyProvider keyProvider;
+
+  /// 进程内唯一的缩略图缓存：生成队列与并发上限全局生效。
+  late final ThumbnailCache thumbnailCache;
+
+  /// 缩略图解密图源（异步 provider + 内存 LRU），供各屏缩略图端口使用。
+  late final ThumbnailImageLoader thumbnailImages;
+
   /// 条目内容变更代次；写入方调 [notifyContentChanged]，列表类页面监听后重载。
   final ValueNotifier<int> contentRevision = ValueNotifier<int>(0);
 
@@ -42,8 +70,9 @@ class AppServices {
   /// 打开设备上的加密库；失败（如主密码模式未解锁）记日志并返回 null，不抛出到 main。
   static Future<AppServices?> open({KeyProvider? keyProvider}) async {
     try {
-      final database = await AppDatabase.open(keyProvider ?? KeyProvider());
-      return AppServices.forDatabase(database);
+      final keys = keyProvider ?? KeyProvider();
+      final database = await AppDatabase.open(keys);
+      return AppServices.forDatabase(database, keyProvider: keys);
     } catch (error) {
       AppLogger.instance.logSevere(
         'app.services.open_failed',
@@ -84,6 +113,7 @@ class AppServices {
   }
 
   Future<void> close() async {
+    thumbnailImages.clear();
     contentRevision.dispose();
     await database.close();
   }
