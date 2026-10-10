@@ -26,6 +26,13 @@ abstract interface class TimelineMonthMetadataRepository {
   Future<Set<int>> entryDaysInMonth(String? journalId, int year, int month);
 }
 
+/// 可选能力：按条目 id 集批量取标签名（每条目内按名称升序）。
+///
+/// 控制器每次页加载只调一次；仓不实现时卡片标签为空。
+abstract interface class TimelineEntryTagsRepository {
+  Future<Map<String, List<String>>> tagNamesByEntryIds(List<String> entryIds);
+}
+
 class TimelineController extends ChangeNotifier {
   TimelineController({required this._repo, this.pageSize = defaultPageSize});
 
@@ -99,7 +106,8 @@ class TimelineController extends ChangeNotifier {
       _monthCounts ??= await _loadMonthCounts();
 
       final page = await _loadTimelinePage(cursor: _cursor, limit: pageSize);
-      final entries = _mapPageEntries(page.items);
+      final tagNames = await _loadTagNames(page.items);
+      final entries = _mapPageEntries(page.items, tagNames);
       _cursor = page.nextCursor;
       _reachedEnd = page.nextCursor == null;
       _sections = mergeMonthSections(
@@ -141,6 +149,7 @@ class TimelineController extends ChangeNotifier {
         cursor: null,
         limit: math.max(pageSize, loadedCount),
       );
+      final tagNames = await _loadTagNames(page.items);
       if (_disposed) {
         return;
       }
@@ -150,7 +159,7 @@ class TimelineController extends ChangeNotifier {
       }
       _loadedEntryDays.clear();
       _resolvedEntryDays.clear();
-      final entries = _mapPageEntries(page.items);
+      final entries = _mapPageEntries(page.items, tagNames);
       _monthCounts = monthCounts;
       _cursor = page.nextCursor;
       _reachedEnd = page.nextCursor == null;
@@ -283,12 +292,33 @@ class TimelineController extends ChangeNotifier {
     return EntryTimelinePage(items: items.cast(), nextCursor: nextCursor);
   }
 
-  List<TimelineEntry> _mapPageEntries(Iterable<Object> pageItems) {
-    return [for (final row in pageItems) _mapEntryRow(row)];
+  /// 整页一次批量取标签名；仓不支持标签或页为空时返回空映射（不查库）。
+  Future<Map<String, List<String>>> _loadTagNames(
+    Iterable<Object> pageItems,
+  ) async {
+    final tagsRepo = _repo is TimelineEntryTagsRepository
+        ? _repo as TimelineEntryTagsRepository
+        : null;
+    if (tagsRepo == null) {
+      return const <String, List<String>>{};
+    }
+    final ids = [for (final row in pageItems) (row as dynamic).id as String];
+    if (ids.isEmpty) {
+      return const <String, List<String>>{};
+    }
+    return tagsRepo.tagNamesByEntryIds(ids);
   }
 
-  TimelineEntry _mapEntryRow(Object row) {
+  List<TimelineEntry> _mapPageEntries(
+    Iterable<Object> pageItems,
+    Map<String, List<String>> tagNames,
+  ) {
+    return [for (final row in pageItems) _mapEntryRow(row, tagNames)];
+  }
+
+  TimelineEntry _mapEntryRow(Object row, Map<String, List<String>> tagNames) {
     final entry = row as dynamic;
+    final id = entry.id as String;
     final plain = (entry.contentPlain as String?)?.trim() ?? '';
     final localDate = DateTime(
       entry.localYear as int,
@@ -302,10 +332,11 @@ class TimelineController extends ChangeNotifier {
     (_loadedEntryDays[monthKey] ??= <int>{}).add(entry.localDay as int);
 
     return TimelineEntry(
-      id: entry.id as String,
+      id: id,
       journalId: entry.journalId as String?,
       title: _extractTitle(plain),
       summary: _extractSummary(plain),
+      tags: tagNames[id] ?? const <String>[],
       localDate: localDate,
       sortDateUtc: (entry.entryDtUtc as DateTime).toUtc(),
       placeName: entry.placeName as String?,

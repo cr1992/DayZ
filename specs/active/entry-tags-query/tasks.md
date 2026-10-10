@@ -45,7 +45,7 @@ T1 → T2, T3（T2 / T3 可并行）
 
 -----
 
-- [ ] T2 · 时间线接线：按页批量填 `TimelineEntry.tags`
+- [x] T2 · 时间线接线：按页批量填 `TimelineEntry.tags`
 
 **同 spec 依赖：** T1 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R3, R4 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/timeline/timeline_controller.dart`、`lib/app/timeline_repository_adapter.dart`、`test/ui/timeline/timeline_controller_tags_test.dart`、`test/app/timeline_repository_adapter_tags_test.dart`
 
@@ -71,8 +71,8 @@ T1 → T2, T3（T2 / T3 可并行）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/timeline/timeline_controller_tags_test.dart test/app/timeline_repository_adapter_tags_test.dart` 通过（3 tests：R3 首屏 / 翻页 / 刷新各恰 1 次批量请求且 id 集 = 该页；R4 无标签能力仓分页正常、标签空；R3 真内存库经 AppServices.timelineRepo 带按名升序、滤软删标签）；回归 `flutter test --no-pub test/ui/timeline test/app` 48 tests 全绿；`flutter analyze --no-pub` 触及文件无 issue。
 人工：N/A
 ```
 
