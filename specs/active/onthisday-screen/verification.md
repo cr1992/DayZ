@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # 验证：onthisday-screen
@@ -40,10 +40,10 @@
 ### 无障碍（NF2, NF3, NF4）
 - [ ] 返回钮/更多钮/可点卡片命中区 ≥ 44×44 px — 自动：`flutter test test/ui/onthisday/onthisday_a11y_test.dart`（`tester.getSize` 断言）
 - [ ] 返回/更多/收藏星/可点卡片有 Semantics 标签 — 自动：同上（`find.bySemanticsLabel(l10n.xxx)`）
-- [ ] reduce-motion：`MediaQueryData(disableAnimations: true)` 下顶栏渐显/配图淡入/ sheet 动效时长为 0（经 `dayzMotionDuration` 门）— 自动：`onthisday_a11y_test.dart` + `onthisday_empty_image_test.dart`
+- [ ] reduce-motion：`MediaQueryData(disableAnimations: true)` 下顶栏渐显 / sheet 动效时长为 0（经 `dayzMotionDuration` 门；配图 v1 不做淡入，见 design D4）— 自动：`onthisday_a11y_test.dart`
 
 ### 对比度（NF1）
-> 按本屏实际渲染对算相对亮度比，六套主题逐项；复用 `design-tokens-theme` NF1 分族口径与其 `contrast_xfail.yaml` 机器真源（单一来源，不另开第二处）。
+> 按本屏实际渲染对算相对亮度比，六套主题逐项（v1 拍板不做纸色轴：只验「纯净」纸色）；复用 `design-tokens-theme` NF1 分族口径与其 `contrast_xfail.yaml` 机器真源（单一来源，不另开第二处）。
 - [ ] kicker（`--accent-ink` 落浅底）、卡片标题/摘要（`--ink`/`--ink-2` 对 `--surface`）≥ 4.5:1 — 自动：`flutter test test/ui/onthisday/onthisday_contrast_test.dart`（按渲染对算比值）
 - [ ] 卡片 meta / 年份「N 年前」/ 空态说明若用 `--ink-3` 作真实辅助文本 ≥ 4.5:1（否则改 `--ink-2`）— 自动：同上（**复用 tokens-theme 已登记 ink-3 expected-fail → 阻塞、报 @Ray 或改 ink-2**）
 - [ ] 收藏星 `--favorite` / accent 作有意义 UI 贴底 ≥ 3.0:1 — 自动：同上

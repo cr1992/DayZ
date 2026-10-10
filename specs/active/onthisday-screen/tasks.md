@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-31
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # 任务列表：onthisday-screen
@@ -66,16 +66,17 @@ graph LR
 
 - [ ] T2 · OnThisDayScreen 装配（顶栏 + 屏头 + 非吸顶 SliverList）
 
-**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Fonts`/`AppLocalizations` 约定；`ui-kit-components`：`DayzGlassAppBar`/`DayzEntryCard`/`DayzYearSeparator`/`DayzFavoriteStar`；`ui-shell-navigation`：`Routes.reader`；`i18n-localization`：gen-l10n ｜ **关联需求：** R1, R2, R3, R6, R8, NF6 ｜ **依据设计：** D1, D2, D6 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/onthisday/onthisday_screen_test.dart`
+**同 spec 依赖：** T1 ｜ **跨 spec 依赖：** `design-tokens-theme`：`context.dayz.*`/`DayzSpacing/Radii/Fonts`/`AppLocalizations` 约定；`ui-kit-components`：`DayzGlassAppBar`/`DayzEntryCard`/`DayzYearSeparator`/`DayzFavoriteStar`；`ui-shell-navigation`：`Routes.reader`；`i18n-localization`：gen-l10n ｜ **关联需求：** R1, R2, R3, R6, R8, NF6 ｜ **依据设计：** D1, D2, D3, D6 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/ui/onthisday/onthisday_view_model.dart`（按 D3「对齐现状 API」调整 VM 字段，2026-10-10 补列）、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations.dart`、`lib/l10n/gen/app_localizations_zh.dart`、`lib/l10n/gen/app_localizations_en.dart` ｜ **验收基建：** `test/ui/onthisday/onthisday_screen_test.dart`
 
 ### 背景
 用 `CustomScrollView` 装配：`DayzGlassAppBar`（标题「往年今日」+ 返回 + 更多 slot）→ 屏头 `SliverToBoxAdapter`（kicker 日期 + 衬线标题「过去的今天，你写过 N 篇」+ 副文案）→ `SliverList`（`flatten` 后的扁平项：`DayzYearSeparator` 普通行 + `DayzEntryCard`，卡片收藏项带 `DayzFavoriteStar`，可点经 `Routes.reader` 携 entryId）。**年份分隔是普通列表项，MUST NOT 包进 `SliverPersistentHeader`/pinned**（D2）。屏头篇数 N、kicker 日期、年份/「N 年前」走 `package:intl`；标题/副文案模板入 `AppLocalizations`。视觉全走 token（NF6）。
 归属：本任务装配静态结构 + 屏头 + 列表渲染（吃 T1 的 VM）；⋯ 菜单交互归 T4、空态/配图异步归 T5、无障碍专项断言归 T6、demo 归 T7、路由接线归 T8、取数 controller 归 T3。
 
 ### 实施
-1. `OnThisDayScreen(OnThisDayData data, {onOpenEntry, onOpenMenu, onBack})`：`CustomScrollView` + slivers（顶栏 / 屏头 / `SliverList`）。
+0. 先按 design D3「对齐现状 API」调整 T1 的 VM：`EntryCardVM` 改吃 `date: DateTime` + `tags: List<String>`（默认空），删 `dayNum/monthAbbr/weekday/mood`；`OnThisDayData` 增 `date`；同步更新 `onthisday_view_model_test.dart`。
+1. `OnThisDayScreen(OnThisDayData data, {onOpenEntry, onOpenMemory, onBack})`：`CustomScrollView` + slivers（顶栏 / 屏头 / `SliverList`）；回调缺省时经 `go_router` 导航（`Routes.reader` 携 entryId）。
 2. 顶栏用 `DayzGlassAppBar`，标题/按钮文案 `AppLocalizations`；更多钮预留回调（接线归 T4）。
-3. 屏头：kicker `DateFormat`（中文 locale）、标题 `l10n.onThisDayCount(totalCount)`（内部 `intl` 数字）、副文案 `AppLocalizations`。
+3. 屏头：kicker `DateFormat.MMMd`（当前 locale）、标题 `l10n.onThisDayHeadline(totalCount)`（ARB ICU plural，内部 `intl` 数字）、副文案 `l10n.onThisDaySubtitle`。
 4. `SliverList`：消费 `flatten(data)`，按行类型渲染 `DayzYearSeparator`（年份/「N 年前」走 intl）或 `DayzEntryCard`（封面图位接 `coverImage`、收藏星按 `favorite`、点击 `onOpenEntry(entryId)` → 上层经 `Routes.reader` 导航）。
 5. 间距/圆角/字体全经 `DayzSpacing/DayzRadii/DayzFonts`、颜色经 `context.dayz.*`；屏内禁裸中文、禁裸数字拼接。
 6. 向 `app_zh.arb` / `app_en.arb` 补 onthisday 文案 key，保持 key 集合一致并跑 `flutter gen-l10n`；不得新增屏内 strings 类或静态文案常量。
@@ -83,7 +84,7 @@ graph LR
 ### 验收标准（做完即止）
 - 给定假 `OnThisDayData`（多年份段、含收藏/无封面项），渲染出对应数量的 `DayzYearSeparator` + `DayzEntryCard`，顺序与 `flatten` 一致（自动，widget test `find.byType`）。
 - 年份分隔**非吸顶**：滚动后年份分隔随内容离开视口（自动，几何 test：滚动前后 `tester.getRect(分隔)` 顶部位置随滚动改变、未停靠在顶栏下；见 verification 布局几何闸）。
-- 屏头篇数 == VM `totalCount`、经 `find.text(l10n.onThisDayCount(n))` 命中（自动），屏内无裸中文（断言用 `AppLocalizations`/`intl` 文本，非裸字面量）。
+- 屏头篇数 == VM `totalCount`、经 `find.text(l10n.onThisDayHeadline(n))` 命中（自动），屏内无裸中文（断言用 `AppLocalizations`/`intl` 文本，非裸字面量）。
 - 收藏项渲染 `DayzFavoriteStar`、非收藏项不渲染（自动）。
 
 ### 验收方式
@@ -115,10 +116,11 @@ graph LR
 归属：本任务只做取数/缩略图编排与 VM 组装（吃 Repo/Cache 接口、产出 VM）；屏渲染归 T2。
 
 ### 实施
-1. 定义 controller 构造注入 `EntryRepo`/`MediaRepo`/`ThumbnailCache`（接口/抽象，未就绪用 stub）。
+1. 定义 controller 构造注入屏私有端口 `OnThisDayRepository`（同文件 `DataLayerOnThisDayRepository` 适配 `EntryRepo.onThisDay` + `MediaRepo.listByEntry` + `EntryRepo.watchChanges`）与可空 `OnThisDayThumbnails{ warmup, providerFor }`（缩略图端口未注入时不产出封面，见 design D3）；`registerOnThisDayRepository` 端口注册函数也放本文件（D8）。
 2. `load(month, day)`：调 `EntryRepo.onThisDay` → 按 year 分组（从新到旧、算 `yearsAgo`）→ 带封面项调 `ThumbnailCache.warmup` 入队 + 取异步 `ImageProvider` → 产出 `OnThisDayData`；空结果产出 `groups` 为空（驱动 T5 空态）。
 3. 滚动可见项可选触发 `warmup`（异步、不阻塞、不同步 decode）。
-4. 断言依赖只经 Repo/Cache 抽象，**不** import `lib/data` Drift 类型、不写 SQL。
+4. 断言依赖只经 Repo/Cache 抽象，**不** import `lib/data` Drift 句柄（`AppDatabase`/DAO）、不写 SQL；适配器只调 Repo 公共方法。
+5. 标签：批量查询 spec 待立，v1 不查 `TagRepo`，`tags` 恒为空（design D3）。
 
 ### 验收标准（做完即止）
 - 给 fake `EntryRepo`（返回多年份多条目）+ fake `ThumbnailCache`，`load` 产出年份从新到旧、`yearsAgo` 正确、带封面项 `coverImage` 非空（自动）。
@@ -150,19 +152,19 @@ graph LR
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzSheet.actions`/`DayzSheetItem`/`DayzToast`；`ui-shell-navigation`：`Routes.memory` ｜ **关联需求：** R7 ｜ **依据设计：** D5 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 ⋯ 菜单 zh/en ARB key，运行 gen-l10n 更新生成产物） ｜ **验收基建：** `test/ui/onthisday/onthisday_menu_test.dart`
 
 ### 背景
-顶栏「更多」钮点击经 `DayzSheet.actions` 弹动作菜单（标题「往年今日」），含「生成回忆卡片」（`onTap` → `context.go(Routes.memory)` 携 month/day 入参）与「分享这一天」（`onTap` → `DayzToast.show`）。文案/Semantics 取自 `AppLocalizations`。
+顶栏「更多」钮点击经 `DayzSheet.actions` 弹动作菜单（现行 API 无标题行，见 design D5），含「生成回忆卡片」（`onTap` → `context.pushNamed(Routes.memory)` 携 month/day 入参）与「分享这一天」（`onTap` → `DayzToast.show`）。文案/Semantics 取自 `AppLocalizations`。
 归属：本任务接线顶栏更多钮的 `onOpenMenu` 回调与 sheet 内容（T2 已预留更多钮 slot）。
 
 ### 实施
-1. 更多钮 `onTap` → `DayzSheet.actions(context, title: l10n.onThisDayMenuTitle, items:[...])`。
-2. 「生成回忆卡片」item → `context.go(Routes.memory, extra: {month, day})`（目标屏未就绪落 `PlaceholderScreen`）。
-3. 「分享这一天」item → `DayzToast.show(context, l10n.shareThisDayDone)`。
+1. 更多钮 `onTap` → `DayzSheet.actions(context, items:[...])`。
+2. 「生成回忆卡片」item（带 `desc`）→ `context.pushNamed(Routes.memory, extra: {'month': m, 'day': d})`（目标屏未就绪落 `PlaceholderScreen`）；屏外无 `GoRouter`（demo）时走 `onOpenMemory` 回调。
+3. 「分享这一天」item → `DayzToast.show(context, l10n.onThisDayShareDone, DayzToastTone.ok)`。
 4. 菜单标题/项 label/desc 入 `AppLocalizations`。
 
 ### 验收标准（做完即止）
 - 点更多钮 → 出现含两项的 sheet，项文案 `find.text(l10n.xxx)` 命中（自动）。
 - 点「生成回忆卡片」→ 触发 `Routes.memory` 导航（自动：用测试用 router/mock，断言导航到 `Routes.memory` 且携 month/day）。
-- 点「分享这一天」→ 出现 toast（自动：`find.text(l10n.shareThisDayDone)` 或 `ScaffoldMessenger` 断言）。
+- 点「分享这一天」→ 出现 toast（自动：`find.text(l10n.onThisDayShareDone)` 或 `ScaffoldMessenger` 断言）。
 
 ### 验收方式
 - 自动：
@@ -185,25 +187,25 @@ graph LR
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components`：`DayzEmptyState`/`DayzEntryCard` 图位 API/`dayzMotionDuration`；`thumbnail-cache`：异步 `ImageProvider`（消费，不触发重建） ｜ **关联需求：** R4, R5, NF4 ｜ **依据设计：** D1, D4 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补空态 zh/en ARB key，运行 gen-l10n 更新生成产物） ｜ **验收基建：** `test/ui/onthisday/onthisday_empty_image_test.dart`
 
 ### 背景
-两件事：① `groups` 为空（VM）→ body 整屏换 `DayzEmptyState`（插画徽 + 标题「今天还没有往事」 + 引导说明，对应 `data-when="empty"`），不渲染年份段/屏头；② 卡片封面 `coverImage` 异步呈现——就绪前占位灰块（中性 `--surface-2`/`accent-soft-2` 走 token）、就绪后经 `dayzMotionDuration` 淡入、失败兜底灰块；`coverImage == null` 不渲染图位。
-归属：本任务做空态分支与配图占位/淡入；缩略图入队归 T3、reduce-motion 门由 ui-kit `dayzMotionDuration` 提供（本任务调用、不重造）。
+两件事：① `groups` 为空（VM）→ body 整屏换 `DayzEmptyState`（插画徽 + 标题「今天还没有往事」 + 引导说明，对应 `data-when="empty"`），不渲染年份段/屏头；② 卡片封面 `coverImage` 异步呈现——就绪前占位 = `DayzEntryCard` 图位自带的 `accentSoft2` 底（token）；`coverImage == null` 不渲染图位。淡入/失败兜底需 ui-kit 卡片补 `frameBuilder`/`errorBuilder` 钩子，v1 不做（design D4，2026-10-10 修正）。
+归属：本任务做空态分支与配图占位；缩略图入队归 T3、reduce-motion 门由 ui-kit `dayzMotionDuration` 提供（本任务调用、不重造）。
 
 ### 实施
 1. `OnThisDayData.groups` 空 → 渲 `DayzEmptyState`（标题/说明 `AppLocalizations`，插画走 §5 单色线性 SVG），不进列表。
-2. 卡片图位：`coverImage != null` → `Image` + `frameBuilder` 占位灰块（token 色）+ `dayzMotionDuration` 淡入 + `errorBuilder` 兜底；`== null` → 不渲染 `.photo` 位。
+2. 卡片图位：`coverImage != null` → 传给 `DayzEntryCard.cover`（卡片自带 `accentSoft2` 占位底 + 异步 `Image`）；`== null` → 不传、不渲染 `.photo` 位。
 3. 空态文案条目入 `AppLocalizations`。
 
 ### 验收标准（做完即止）
 - VM `groups` 空 → 屏显 `DayzEmptyState`，`find.text(l10n.onThisDayEmptyTitle)` 命中，无 `DayzEntryCard`/`DayzYearSeparator`（自动）。
 - 有封面项渲染图位 + 占位；无封面项不渲染图位（自动，`find` 图位 widget 计数）。
-- 系统「减弱动态效果」开启（`MediaQueryData(disableAnimations: true)`）时配图淡入时长为 0（自动，经 `dayzMotionDuration` 门）。
+- 空态插画走 `DayzIcons.historyClockPath`（对应屏源 `.empty .ill` 时钟回拨图），空态下不渲染屏头摘要（自动）。
 
 ### 验收方式
 - 自动：
   ```bash
   flutter test test/ui/onthisday/onthisday_empty_image_test.dart
   ```
-  （pump 空 VM / 有封面 VM / disableAnimations，断言空态、图位计数、淡入时长 0；**不** grep 屏源码自身）
+  （pump 空 VM / 有封面 VM，断言空态、插画、图位计数与占位底色；**不** grep 屏源码自身）
 
 ### 验收记录
 ```
@@ -229,7 +231,7 @@ graph LR
 
 ### 验收标准（做完即止）
 - 返回钮/更多钮/可点卡片命中区 ≥ 44×44 px（自动，`tester.getSize` 断言）。
-- `find.bySemanticsLabel(l10n.back/more/favorited/...)` 可定位（自动，NF3）。
+- `find.bySemanticsLabel(l10n.onThisDayBack / l10n.more / l10n.unfavorite（卡片收藏星的已收藏语义）/ l10n.onThisDayOpenEntry(title))` 可定位（自动，NF3）。
 - `MediaQueryData(disableAnimations: true)` 下屏内带动效元素时长为 0（自动，NF4）。
 
 ### 验收方式
@@ -288,18 +290,19 @@ Debug Home 入口：用内存 stub `OnThisDayData`（多年份段、含带封面
 
 - [ ] T8 · 路由接线（app_router 占位 → 真实屏）
 
-**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-shell-navigation`：`Routes.onthisday`/`app_router.dart`/`PlaceholderScreen`（D1 约定页面级 spec 改对应 builder 行） ｜ **关联需求：** R8 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/shell/app_router.dart`（**仅** `Routes.onthisday` 一行 builder） ｜ **验收基建：** `test/ui/onthisday/onthisday_route_test.dart`
+**同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-shell-navigation`：`Routes.onthisday`/`app_router.dart`/`PlaceholderScreen`（D1 约定页面级 spec 改对应 builder 行） ｜ **关联需求：** R8 ｜ **依据设计：** D1, D8 ｜ **可改文件：** `lib/ui/shell/app_router.dart`（**仅** `Routes.onthisday` 一行 builder + 一条 import）、`lib/app/router_ports.dart`（**仅** bind/unbind 各一行注册 + 一条 import，2026-10-10 补列） ｜ **验收基建：** `test/ui/onthisday/onthisday_route_test.dart`
 
 ### 背景
 把 `app_router.dart` 里 `Routes.onthisday` 的 `builder` 从 `PlaceholderScreen` 换成真实 `OnThisDayScreen`（外壳经 `onthisday_controller` 喂 VM；data-layer 未就绪期间用 stub）。**仅改这一行 builder**，不新增/改其它路由常量、不动 `Routes.memory`/其它 builder。该文件归 ui-shell，按其 D1「页面级 spec 改对应屏 builder 行」约定接线；若文件/常量未就绪 → 停下协调（见 design 已知风险）。
 归属：本任务只做这一条 builder 接线。
 
 ### 实施
-1. `app_router.dart` 中 `Routes.onthisday` 路由 `builder` → 返回 `OnThisDayScreen`（经外壳/ controller 提供 VM）。
-2. 不改其它路由、不改 `Routes` 常量集。
+1. `app_router.dart` 中 `Routes.onthisday` 路由 `builder` → 端口（`registerOnThisDayRepository`）已注册时返回 `OnThisDayPage`（内部 controller 喂 VM 给 `OnThisDayScreen`），未注册时保持 `PlaceholderScreen`（裸路由测试依赖）。
+2. `router_ports.dart`：`bindRouterPorts` 注册 `DataLayerOnThisDayRepository(entryRepo: services.entries, mediaRepo: mediaRepo)`，`unbindRouterPorts` 注册 `null`。
+3. 不改其它路由、不改 `Routes` 常量集。
 
 ### 验收标准（做完即止）
-- 经 `go_router` 导航到 `Routes.onthisday` → 落到 `OnThisDayScreen`（而非 `PlaceholderScreen`）（自动，router widget test 断言屏类型）。
+- 端口已注册（`bindRouterPorts` + 内存库）时经 `go_router` 导航到 `Routes.onthisday` → 落到 `OnThisDayScreen`（而非 `PlaceholderScreen`），且渲染库里同月同日的条目（自动，router widget test 断言屏类型与卡片）；端口未注册时仍落 `PlaceholderScreen`（自动）。
 - 其它路由 builder 未受影响（自动，回归：导航另一路由仍落原占位/屏）。
 
 ### 验收方式

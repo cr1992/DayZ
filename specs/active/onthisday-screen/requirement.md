@@ -1,8 +1,8 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-05-29
-文档状态：草稿
+最后更新：2026-10-10
+文档状态：定稿
 ---
 
 # onthisday-screen（往年今日屏）
@@ -26,6 +26,7 @@
 - **真实相册/相机选图链路、缩略图生成算法本体** —— 归 `media-storage` / `thumbnail-cache` / media-picker；本屏只**消费** `ImageProvider` 与 `warmup` 入队。
 - **每日本地通知（往年今日）** —— 归通知 spec，非 UI 屏。
 - **`EntryRepo.onThisDay` 查询实现本体、月/日冗余字段重算** —— 归 `data-layer`；本屏只调用其方法签名。
+- **v1 拍板不做（2026-10-10）**：心情 mood（卡片不显示心情）；纸色轴（只按「纯净」纸色验六套主题）；卡片标签（条目标签批量查询 spec 待立，卡片标签入参可空，v1 恒为空）。
 - **参数/几何抽取 harness 与 SSIM 兜底** —— 归 `design-sync-automation`；本屏几何/样式断言用 Flutter 原生 `tester.getRect`/解析 widget 属性自验（见 verification）。
 
 ## 功能需求
@@ -48,13 +49,14 @@
 系统 SHALL 在列表顶部渲染屏头：日期 kicker（如「5月29日」，着 `--accent-ink`）、衬线大标题（如「过去的今天，你写过 N 篇」，N = 命中条目总数）、次要副文案。
 - 前提：`default` 态、命中 N (>0) 条。
 - 操作：渲染屏头。
-- 结果：标题中的篇数 N 经 `intl` 数字格式化、随取数结果变化；kicker 日期经 `intl` 格式化；副文案取自 `AppLocalizations`。
+- 结果：标题中的篇数 N 经 `intl` 数字格式化、随取数结果变化（`AppLocalizations.onThisDayHeadline(n)`）；kicker 日期经 `intl` 格式化；副文案取自 `AppLocalizations`。
 
 ### R4 · 卡片配图（加密媒体 + 异步缩略图）
 Where 某条目带封面媒体，the 系统 SHALL 在 `DayzEntryCard` 的 `.photo` 位渲染封面缩略图，图源经 `MediaRepo` + `thumbnail-cache` 异步获得（解密在外、`ImageProvider` 异步取），并在缩略图就绪前显示占位、就绪后平滑呈现。
 - 前提：条目有封面 media。
 - 操作：卡片进入视口、滚动浏览。
 - 结果：封面经 `ThumbnailCache.warmup` 异步入队 + 异步 `ImageProvider` 渲染；**滚动期间不发生同步缩略图重建**（NF5 红线）；无封面的条目不渲染 `.photo` 位、不留空洞。
+- v1 现状（2026-10-10）：占位 = `DayzEntryCard` 图位自带的 `accentSoft2` 底，不做淡入（卡片无 `frameBuilder` 钩子）；`thumbnail-cache` 尚无解密后的 `ImageProvider`、组合根未构造 `ThumbnailCache`，真路由下暂不渲染封面（视同无封面），能力就绪后由组合根注入缩略图端口即生效（见 design D3/D4）。
 
 ### R5 · 空态
 If 今天的 month/day **无任何历史条目**，then 系统 SHALL 渲染空态（`DayzEmptyState`，对应 `data-when="empty"`）：居中插画徽 + 标题「今天还没有往事」 + 引导说明，MUST NOT 渲染年份段/屏头摘要。
@@ -72,7 +74,7 @@ Where 某条目被收藏，the 系统 SHALL 在该卡片 `.head` 位显示收藏
 系统 SHALL 在顶栏右侧提供「更多」按钮（`data-otd-menu`），点击经 `DayzSheet.actions` 弹出动作菜单，含「生成回忆卡片」（经 `Routes.memory` 导航 memory-card-export 屏）与「分享这一天」两项。
 - 前提：本屏任意态。
 - 操作：点顶栏「更多」→ 弹 sheet → 点「生成回忆卡片」。
-- 结果：经 `Routes.memory` 导航（目标屏未就绪时落 `PlaceholderScreen`）；「分享这一天」触发一条 toast（`DayzToast`）。菜单标题/项文案取自 `AppLocalizations`。
+- 结果：经 `Routes.memory` 导航（`pushNamed`，携 month/day；目标屏未就绪时落 `PlaceholderScreen`）；「分享这一天」触发一条 toast（`DayzToast`）。菜单项文案取自 `AppLocalizations`（现行 `DayzSheet.actions` 无标题行参数，v1 不渲染菜单标题）。
 
 ### R8 · 顶栏与返回
 系统 SHALL 以 `DayzGlassAppBar`（覆盖式毛玻璃顶栏）承载标题「往年今日」+ 左侧返回钮 + 右侧更多钮；返回钮经路由出栈返回来源屏。
