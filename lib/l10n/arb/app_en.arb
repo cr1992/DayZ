@@ -220,5 +220,6 @@
   "onThisDayMenuShare": "Share this day",
   "onThisDayShareDone": "Sharing this day is coming soon",
   "onThisDayEmptyTitle": "No memories for today yet",
-  "onThisDayEmptyDescription": "Keep writing, and this day will slowly gather memories."
+  "onThisDayEmptyDescription": "Keep writing, and this day will slowly gather memories.",
+  "onThisDayOpenEntry": "Open entry: {title}"
 }

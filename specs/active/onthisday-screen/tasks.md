@@ -219,7 +219,7 @@ graph LR
 
 -----
 
-- [ ] T6 · 无障碍：命中区 ≥44 / Semantics / reduce-motion
+- [x] T6 · 无障碍：命中区 ≥44 / Semantics / reduce-motion
 
 **同 spec 依赖：** T2 ｜ **跨 spec 依赖：** `ui-kit-components`：组件自带命中盒/Semantics/`dayzMotionDuration` ｜ **关联需求：** NF2, NF3, NF4 ｜ **依据设计：** D1 ｜ **可改文件：** `lib/ui/onthisday/onthisday_screen.dart`、`lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`（补 Semantics 标签 zh/en ARB key，运行 gen-l10n 更新生成产物） ｜ **验收基建：** `test/ui/onthisday/onthisday_a11y_test.dart`
 
@@ -246,8 +246,9 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/onthisday/onthisday_a11y_test.dart` 通过（4 tests：返回钮/更多钮/卡片命中区 ≥ 44×44；`bySemanticsLabel` 命中 `onThisDayBack`、`more`、收藏星（ui-kit 卡片提供）与卡片 `onThisDayOpenEntry(title)`，卡片节点为 button 且带 tap 动作，经语义 tap 打开对应条目；`disableAnimations: true` 下屏内 `dayzMotionDuration` 为 0、⋯ sheet 首帧即到位无滑入，对照组（动效开启）sheet 有滑入过程）。全屏无硬编码 `Duration`。`flutter analyze --no-pub` 无问题；arb 对齐。新增 ARB：`onThisDayOpenEntry`。
+说明：卡片 InkWell 在 ui-kit 中 `excludeFromSemantics`，本屏在卡片外补 `Semantics(button, label, onTap, explicitChildNodes)`；收藏星只读时 ui-kit 读作「取消收藏」，语义欠准，属 ui-kit 侧问题（见汇报风险）。
 人工：N/A
 ```
 

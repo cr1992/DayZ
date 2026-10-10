@@ -678,4 +678,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onThisDayEmptyDescription => '等你写得久一些，这一天会慢慢攒下回忆。';
+
+  @override
+  String onThisDayOpenEntry(String title) {
+    return '打开日记：$title';
+  }
 }

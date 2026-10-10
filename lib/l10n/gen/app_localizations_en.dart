@@ -694,4 +694,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onThisDayEmptyDescription =>
       'Keep writing, and this day will slowly gather memories.';
+
+  @override
+  String onThisDayOpenEntry(String title) {
+    return 'Open entry: $title';
+  }
 }

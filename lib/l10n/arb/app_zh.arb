@@ -400,5 +400,15 @@
   "onThisDayEmptyDescription": "等你写得久一些，这一天会慢慢攒下回忆。",
   "@onThisDayEmptyDescription": {
     "description": "往年今日空态说明"
+  },
+  "onThisDayOpenEntry": "打开日记：{title}",
+  "@onThisDayOpenEntry": {
+    "description": "往年今日卡片的语义标签（可点打开阅读）",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "搬家第一夜"
+      }
+    }
   }
 }

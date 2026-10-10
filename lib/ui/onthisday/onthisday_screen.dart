@@ -301,19 +301,28 @@ class _OnThisDayEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final place = entry.place;
-    return DayzEntryCard(
-      title: entry.title,
-      summary: entry.excerpt,
-      date: entry.date,
-      tags: entry.tags,
-      meta: [
-        if (place != null && place.isNotEmpty)
-          DayzEntryMeta(label: place, icon: const _MetaIcon()),
-      ],
-      favorite: entry.favorite,
-      showFavorite: entry.favorite,
-      cover: entry.coverImage,
+    // 卡片 InkWell 自身不进语义树（excludeFromSemantics），由这里补「可点 +
+    // 打开某篇」语义，读屏可直接激活。
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      button: true,
+      label: AppLocalizations.of(context).onThisDayOpenEntry(entry.title),
       onTap: onTap,
+      child: DayzEntryCard(
+        title: entry.title,
+        summary: entry.excerpt,
+        date: entry.date,
+        tags: entry.tags,
+        meta: [
+          if (place != null && place.isNotEmpty)
+            DayzEntryMeta(label: place, icon: const _MetaIcon()),
+        ],
+        favorite: entry.favorite,
+        showFavorite: entry.favorite,
+        cover: entry.coverImage,
+        onTap: onTap,
+      ),
     );
   }
 }

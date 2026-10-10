@@ -1327,6 +1327,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'等你写得久一些，这一天会慢慢攒下回忆。'**
   String get onThisDayEmptyDescription;
+
+  /// 往年今日卡片的语义标签（可点打开阅读）
+  ///
+  /// In zh, this message translates to:
+  /// **'打开日记：{title}'**
+  String onThisDayOpenEntry(String title);
 }
 
 class _AppLocalizationsDelegate
