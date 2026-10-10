@@ -188,6 +188,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backToToday => '回到今天';
 
   @override
+  String get calendarPreviousMonth => '上个月';
+
+  @override
+  String get calendarNextMonth => '下个月';
+
+  @override
+  String get calendarPreviousYear => '上一年';
+
+  @override
+  String get calendarNextYear => '下一年';
+
+  @override
+  String get calendarMonthNoEntries => '—';
+
+  @override
   String get drawerProfileName => 'DayZ';
 
   @override

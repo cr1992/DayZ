@@ -404,6 +404,36 @@ abstract class AppLocalizations {
   /// **'回到今天'**
   String get backToToday;
 
+  /// No description provided for @calendarPreviousMonth.
+  ///
+  /// In zh, this message translates to:
+  /// **'上个月'**
+  String get calendarPreviousMonth;
+
+  /// No description provided for @calendarNextMonth.
+  ///
+  /// In zh, this message translates to:
+  /// **'下个月'**
+  String get calendarNextMonth;
+
+  /// No description provided for @calendarPreviousYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一年'**
+  String get calendarPreviousYear;
+
+  /// No description provided for @calendarNextYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一年'**
+  String get calendarNextYear;
+
+  /// No description provided for @calendarMonthNoEntries.
+  ///
+  /// In zh, this message translates to:
+  /// **'—'**
+  String get calendarMonthNoEntries;
+
   /// No description provided for @drawerProfileName.
   ///
   /// In zh, this message translates to:

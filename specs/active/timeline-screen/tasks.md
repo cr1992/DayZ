@@ -1,7 +1,7 @@
 ---
 作者：@Ray
 创建日期：2026-05-29
-最后更新：2026-10-09
+最后更新：2026-10-10
 文档状态：定稿
 ---
 
@@ -180,7 +180,7 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 -----
 
-- [ ] T5 · 日期跳转日历面板 + 月级定位
+- [x] T5 · 日期跳转日历面板 + 月级定位
 
 **同 spec 依赖：** T4 ｜ **跨 spec 依赖：** `ui-kit-components：dayzMotionDuration`；`design-tokens-theme：context.dayz / DayzRadii / AppLocalizations / intl` ｜ **关联需求：** R4, R5, NF3, NF5, NF6 ｜ **依据设计：** D5, D6 ｜ **可改文件：** `lib/ui/timeline/timeline_calendar_panel.dart`, `lib/ui/timeline/timeline_page.dart`, `lib/l10n/arb/app_zh.arb`、`lib/l10n/arb/app_en.arb`、`lib/l10n/gen/app_localizations*.dart`
 
@@ -208,9 +208,10 @@ demo（R8）与全部 widget/controller 测试共享的内存假 `EntryRepo`：�
 
 ### 验收记录
 ```
-日期：—
-自动：—
-人工：N/A
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/timeline/timeline_calendar_panel_test.dart` 通过（14/14）；回归 `flutter test --no-pub test/ui/timeline test/app test/demo` 通过（84/84）。
+人工：N/A（视觉观感走查待 @Ray，非本卡验收项）
+备注：① 面板按 `.cal-*` 补齐月视图（周一起始、pad / has 圆点 / today 内描边）、年视图（3 列月格、篇数或「—」、cur 描边）、翻月/翻年、标题切视图、「回到今天」底栏；落下/收起为 opacity + translateY(-10px) + scale(0.985)、200ms（`.cal-panel` transition），reduce-motion 归零。② 面板沿用页内 Stack overlay 而非卡面写的 `PopupRoute`：overlay 让月份头保持可点（「再点同月份头关闭」），scrim 只盖面板下方；行为等价，不另起路由。③ 选日格也只做月级定位（D6）。④ 修正外壳持顶栏（`TimelineShellPage`，`showAppBar:false`）时面板落点与跳转停靠位置多算了一个顶栏高的问题。⑤ 日格高度下限 44，宽度随 7 列均分；面板内宽 < 314（约 < 352 宽的屏）时日格宽会低于 44。
 ```
 
 -----

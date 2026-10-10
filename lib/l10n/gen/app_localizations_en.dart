@@ -192,6 +192,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToToday => 'Back to today';
 
   @override
+  String get calendarPreviousMonth => 'Previous month';
+
+  @override
+  String get calendarNextMonth => 'Next month';
+
+  @override
+  String get calendarPreviousYear => 'Previous year';
+
+  @override
+  String get calendarNextYear => 'Next year';
+
+  @override
+  String get calendarMonthNoEntries => '—';
+
+  @override
   String get drawerProfileName => 'DayZ';
 
   @override

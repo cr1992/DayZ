@@ -119,6 +119,11 @@
   "timelineEmptyDescription": "轻点右下角，写下第一页。",
   "jumpToDate": "跳转到日期",
   "backToToday": "回到今天",
+  "calendarPreviousMonth": "上个月",
+  "calendarNextMonth": "下个月",
+  "calendarPreviousYear": "上一年",
+  "calendarNextYear": "下一年",
+  "calendarMonthNoEntries": "—",
 
   "drawerProfileName": "DayZ",
   "drawerProfileInitial": "D",

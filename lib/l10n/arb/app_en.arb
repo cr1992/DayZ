@@ -65,6 +65,11 @@
   "timelineEmptyDescription": "Tap the button in the lower right to write the first page.",
   "jumpToDate": "Jump to date",
   "backToToday": "Back to today",
+  "calendarPreviousMonth": "Previous month",
+  "calendarNextMonth": "Next month",
+  "calendarPreviousYear": "Previous year",
+  "calendarNextYear": "Next year",
+  "calendarMonthNoEntries": "—",
 
   "drawerProfileName": "DayZ",
   "drawerProfileInitial": "D",
