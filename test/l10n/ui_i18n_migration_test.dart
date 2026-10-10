@@ -18,7 +18,9 @@ void main() {
         const Column(
           children: [
             DayzEmptyState(),
-            DayzFavoriteStar(isFavorite: false),
+            // 只读未收藏态按 ui-kit-patch T3 不出语义节点；这里验的是 locale，给个
+            // 回调让它成为可点按钮，语义标签才存在。
+            DayzFavoriteStar(isFavorite: false, onPressed: _noop),
             DayzSearchField(onCancel: _noop),
           ],
         ),
