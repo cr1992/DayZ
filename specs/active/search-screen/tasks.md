@@ -31,7 +31,7 @@ graph LR
 
 -----
 
-- [ ] T1 · 状态模型 + SearchSource 接口（search_state.dart + search_source.dart 接口部分）
+- [x] T1 · 状态模型 + SearchSource 接口（search_state.dart + search_source.dart 接口部分）
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** 无 ｜ **关联需求：** R1, R5, R8, NF2 ｜ **依据设计：** D1, D5, D8 ｜ **可改文件：** `lib/ui/search/search_state.dart`、`lib/ui/search/search_source.dart` ｜ **验收基建：** `test/ui/search/fake_search_source.dart`
 
@@ -58,8 +58,8 @@ graph LR
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/search/search_state_test.dart` 通过（5 tests：六态构造 + 穷尽 switch 描述、results hits 不可变、SearchFilters isEmpty/without/值相等、模型字段与 tags 不可变、FakeSearchSource 命中/空/抛错 + 调用记录 + recent/tags + changes 事件）。`flutter analyze --no-pub lib/ui/search test/ui/search` 无问题。
 人工：N/A
 ```
 
