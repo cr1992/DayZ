@@ -10,6 +10,7 @@ import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
 import 'dayz_favorite_star.dart';
 import 'dayz_gallery.dart';
+import 'dayz_image_slot.dart';
 
 /// Entry card metadata item.
 ///
@@ -93,10 +94,7 @@ class DayzEntryCard extends StatelessWidget {
                 else if (cover != null)
                   SizedBox(
                     height: 116,
-                    child: ColoredBox(
-                      color: colors.accentSoft2,
-                      child: Image(image: cover!, fit: BoxFit.cover),
-                    ),
+                    child: DayzImageSlot(image: cover!),
                   ),
                 // `.card .body` + `.head`: the 44px star hit target is laid
                 // over the body so it never inflates the title row

@@ -7,6 +7,7 @@ import 'package:dayz/l10n/gen/app_localizations.dart';
 import '../theme/dayz_colors.dart';
 import '../theme/dayz_text_theme.dart';
 import '../theme/dayz_tokens.g.dart';
+import 'dayz_image_slot.dart';
 
 /// Token-driven image gallery grid for entry cards and reader pages.
 ///
@@ -106,10 +107,7 @@ class _DayzGalleryTile extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          ColoredBox(
-            color: colors.accentSoft2,
-            child: Image(image: image, fit: BoxFit.cover),
-          ),
+          DayzImageSlot(image: image),
           if (moreLabel != null)
             ColoredBox(
               color: const Color(0x7514100A),

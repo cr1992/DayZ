@@ -42,7 +42,7 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 -----
 
-- [ ] T2 · 卡片封面 / 相册格子补 `frameBuilder` 淡入与 `errorBuilder` 兜底
+- [x] T2 · 卡片封面 / 相册格子补 `frameBuilder` 淡入与 `errorBuilder` 兜底
 
 **同 spec 依赖：** 无 ｜ **跨 spec 依赖：** design-tokens-theme：`dayzMotionDuration` / `DayzMotion.dur` / `accentSoft2` ｜ **关联需求：** R2 ｜ **依据设计：** D2 ｜ **可改文件：** `lib/ui/widgets/dayz_image_slot.dart`、`lib/ui/widgets/dayz_entry_card.dart`、`lib/ui/widgets/dayz_gallery.dart`、`lib/ui/components.dart` ｜ **验收基建：** `test/ui/widgets/dayz_image_slot_test.dart`
 
@@ -68,8 +68,8 @@ T1, T2, T3, T4（彼此独立，可并行）
 
 ### 验收记录
 ```
-日期：—
-自动：—
+日期：2026-10-10
+自动：`flutter test --no-pub test/ui/widgets/dayz_image_slot_test.dart` 通过（5 tests：无帧 opacity 0 + 底色 accentSoft2；出帧 opacity 1、duration == DayzMotion.dur；disableAnimations 时 duration == 0；图源失败出 placeholderKey 且 takeException 为 null；卡片封面 1 个 / 相册 2 格均经 DayzImageSlot）；回归 `flutter test --no-pub test/ui/widgets test/ui/onthisday test/ui/timeline test/ui/reader` 140 全绿；`flutter analyze --no-pub` 五文件 No issues。
 人工：N/A
 ```
 
